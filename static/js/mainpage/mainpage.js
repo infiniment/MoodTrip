@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const bdFilterRight = document.querySelector('.bd-filter.right');
   const rollingWeatherContentActive = document.querySelector('.rolling-weather-content.active');
   const weatherInfoSections = document.querySelectorAll('.weather-info-section');
-  const container = document.querySelector('.container');
+  const containers = document.querySelector('.containers');
 
   // 날씨별 배경색 매핑
   const weatherColors = {
@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (bdFilterLeft) bdFilterLeft.style.background = 'linear-gradient(90deg, ' + color + ' 90%, rgba(255,255,255,0) 100%)';
       if (bdFilterRight) bdFilterRight.style.background = 'linear-gradient(270deg, ' + color + ' 90%, rgba(255,255,255,0) 100%)';
       if (rollingWeatherContentActive) rollingWeatherContentActive.style.backgroundColor = color;
-      if (container) container.style.backgroundColor = color;
+      if (containers) containers.style.backgroundColor = color;
 
       // weather-info-section와 weather-box 모두 흰색으로 고정
       weatherInfoSections.forEach(section => {
@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (bdFilterLeft) bdFilterLeft.style.background = '';
       if (bdFilterRight) bdFilterRight.style.background = '';
       if (rollingWeatherContentActive) rollingWeatherContentActive.style.backgroundColor = '';
-      if (container) container.style.backgroundColor = '';
+      if (containers) containers.style.backgroundColor = '';
 
       // weather-info-section와 weather-box 모두 흰색으로 고정
       weatherInfoSections.forEach(section => {
@@ -140,3 +140,120 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 });
+
+
+
+// 동행매칭 방 리스트를 가져와서 표시하는 함수
+// 예시 데이터 (실제 서비스에서는 서버에서 받아옴)
+
+const rooms = [
+  {
+    profileImg: '/static/image/mainpage/profile.png',
+    title: '도봉산 등산 같이 갈 사람',
+    host: '노상민',
+    memberCount: '4/6',
+    location: '도봉역',
+    tags: ['#슬픔', '#우울', '#고민']
+  },
+  {
+    profileImg: '/static/image/mainpage/profile.png',
+    title: '해운대 같이 갈 사람',
+    host: '김구',
+    memberCount: '4/6',
+    location: '해운대',
+    tags: ['#즐거움', '#행복', '#설레임']
+  }
+   ,{
+    profileImg: '/static/image/mainpage/profile.png',
+    title: '5호선 근방 글램핑',
+    host: '서진유',
+    memberCount: '4/6',
+    location: '여의나루',
+    tags: ['#즐거움', '#행복', '#설레임']
+  },
+  {
+    profileImg: '/static/image/mainpage/profile.png',
+    title: '제주도 게하',
+    host: '노민상',
+    memberCount: '4/6',
+    location: '제주도 서귀포',
+    tags: ['#즐거움', '#설레임', '#인연']
+  }
+];
+
+// 카드 HTML 생성 함수
+function createRoomCard(room) {
+  const tagButtons = room.tags.map(tag =>
+    `<button class="tag-btn">${tag}</button>`
+  ).join('');
+
+  return `
+    <div class="room-card">
+      <div class="room-profile">
+        <img src="${room.profileImg}" alt="프로필" class="profile-img">
+      </div>
+      <div class="room-info">
+        <div class="room-details">
+          <div class="room-title">방 제목: ${room.title}</div>
+          <div class="room-host">방장명: ${room.host}</div>
+          <div class="room-meta">
+            <span class="room-member">
+              ${room.memberCount}
+            </span>
+          </div>
+          <div class="room-location">여행지: ${room.location}</div>
+          <div class="room-tags">${tagButtons}</div>
+        </div>
+        <div class="room-buttons">
+          <button class="room-enter-btn">방 입장</button>
+          <button class="room-out-btn">방 나가기</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// 카드 렌더링 함수
+function renderRooms(roomArray) {
+  const track = document.getElementById('roomSliderTrack');
+  if (track) {
+    let slides = [];
+    for (let i = 0; i < roomArray.length; i += 2) {
+      // 2개씩 카드 생성
+      const cards = [roomArray[i], roomArray[i + 1]]
+        .filter(Boolean)
+        .map(createRoomCard)
+        .join('');
+      slides.push(`<div class="slider-slide">${cards}</div>`);
+    }
+    track.innerHTML = slides.join('');
+  }
+}
+// DOMContentLoaded 이벤트에 등록
+document.addEventListener('DOMContentLoaded', function() {
+  renderRooms(rooms);
+});
+
+function renderRooms(roomArray) {
+  const track = document.getElementById('roomSliderTrack');
+  if (track) {
+    track.innerHTML = roomArray.map(createRoomCard).join('');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  renderRooms(rooms);
+
+  const track = document.getElementById('roomSliderTrack');
+  const leftBtn = document.querySelector('.slider-arrow.left');
+  const rightBtn = document.querySelector('.slider-arrow.right');
+  const cardWidth = 524; // 카드+gap(px), 카드 min-width + gap
+
+  leftBtn.addEventListener('click', () => {
+    track.scrollBy({ left: -cardWidth, behavior: 'smooth' });
+  });
+  rightBtn.addEventListener('click', () => {
+    track.scrollBy({ left: cardWidth, behavior: 'smooth' });
+  });
+});
+

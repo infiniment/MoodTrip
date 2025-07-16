@@ -34,7 +34,7 @@ body {
 
 .container {
     width: 100%;
-    max-width: 1280px; /* 원하는 최대 크기 */
+    max-width: 1380px; /* 원하는 최대 크기 */
     margin: 0 auto;
 }
 
@@ -189,10 +189,8 @@ a {
 .weather .container {
     padding: 100px 0 0;
 }
-.container {
-    width: 1080px;
-    margin: 0 auto;
-}
+
+
 .text-weather {
     color: #3ba3c7;
 }

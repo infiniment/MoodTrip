@@ -615,7 +615,7 @@ button{
 .label-float {
     transform: translateY(-0.4rem) scale(0.75);
     transform-origin: top left;
-    color: #005792;
+    /*color: #005792;*/
     transition: transform 0.3s ease, color 0.3s ease;
 }
 
@@ -642,7 +642,7 @@ button{
     z-index: 1;
 }
 .label-float-hover {
-    color: #005792 !important;
+    color: #005792;
     transition: color 0.3s;
 }
 
@@ -658,3 +658,4 @@ input[type="checkbox"][name="remember"]:checked + div[role="checkbox-button"] sv
   visibility: visible;
   color: #1877F2; /* 원하는 색상으로 변경 가능 */
 }
+

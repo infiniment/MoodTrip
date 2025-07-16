@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 경고 메시지 요소
     const warningMessage = document.createElement("div");
-    warningMessage.textContent = "위시켓 서비스 이용을 위해서 반드시 동의를 해주셔야 합니다.";
+    warningMessage.textContent = "무드트립 서비스 이용을 위해서 반드시 동의를 해주셔야 합니다.";
     warningMessage.className = "text-w-red-500 typo-body1 mt-1 ml-6 terms-warning";
     warningMessage.style.color = "#e52929";
 

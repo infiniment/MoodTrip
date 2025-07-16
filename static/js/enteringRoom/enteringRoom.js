@@ -63,6 +63,7 @@ let currentPage = 1;
 let currentPeopleFilter = 'all'; // 인원별 서브 필터 추가
 let currentRegionFilter = 'all'; // 지역별 서브 필터 추가
 let filteredRooms = [...roomsData];
+let currentDetailRoomId = null; // 현재 상세보기 중인 방 ID
 
 // 방 상태 계산 함수
 function calculateRoomStatus(room) {
@@ -161,7 +162,7 @@ function initializeEventListeners() {
         }
     });
 
-    // 마감 임박 체크박스 (수정사항 1: 텍스트 변경)
+    // 마감 임박 체크박스
     const urgentOnly = document.getElementById('urgentOnly');
     urgentOnly.addEventListener('change', applyFilters);
 
@@ -169,16 +170,134 @@ function initializeEventListeners() {
     initializePagination();
 }
 
-// 방 상세보기 페이지로 이동
+// 방 상세보기 모달 열기 (원래대로 복구)
 function viewRoomDetail(roomId) {
-    // 방 정보를 localStorage에 저장하여 상세 페이지에서 사용
     const room = roomsData.find(r => r.id === roomId);
     if (room) {
-        localStorage.setItem('selectedRoomData', JSON.stringify(room));
-        // 상세보기 페이지로 이동
-        window.location.href = 'enteringRoom-detail.html';
+        currentDetailRoomId = roomId;
+        openDetailModal(room);
+        
+        // 조회수 증가 (실제로는 서버에 요청)
+        room.viewCount += 1;
+        room.views = `${room.viewCount}명이 봄`;
     }
 }
+
+// 상세보기 모달 열기
+function openDetailModal(room) {
+    const modal = document.getElementById('detailModal');
+    
+    // 모달 내용 업데이트
+    document.getElementById('detailRoomImage').src = room.image;
+    document.getElementById('detailRoomImage').alt = room.title;
+    document.getElementById('detailRoomStatus').textContent = room.status;
+    document.getElementById('detailRoomStatus').className = `detail-room-status ${room.urgent ? 'urgent' : ''}`;
+    document.getElementById('detailRoomTitle').textContent = room.title;
+    document.getElementById('detailRoomLocation').textContent = room.location;
+    document.getElementById('detailRoomDate').textContent = room.date;
+    document.getElementById('detailRoomParticipants').textContent = `${room.currentParticipants} / ${room.maxParticipants}명`;
+    document.getElementById('detailRoomViews').textContent = room.views;
+    document.getElementById('detailRoomPeriod').textContent = room.createdDate;
+    document.getElementById('detailRoomDesc').textContent = room.description;
+    
+    // 태그 업데이트
+    const tagsContainer = document.getElementById('detailRoomTags');
+    tagsContainer.innerHTML = room.tags.map(tag => `<span class="tag"># ${tag}</span>`).join('');
+    
+    // 모달 표시
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+// 상세보기 모달 닫기
+function closeDetailModal() {
+    const modal = document.getElementById('detailModal');
+    modal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+    currentDetailRoomId = null;
+}
+
+// 상세보기 페이지로 이동 (모달에서 "자세히 보기" 클릭 시)
+function goToDetailPage() {
+    if (currentDetailRoomId) {
+        const room = roomsData.find(r => r.id === currentDetailRoomId);
+        if (room) {
+            // localStorage에 방 데이터 저장
+            localStorage.setItem('selectedRoomData', JSON.stringify(room));
+            // 상세보기 페이지로 이동
+            window.location.href = 'enteringRoom-detail.html';
+        }
+        closeDetailModal();
+    }
+}
+
+// 이제 사용하지 않는 함수들 (주석 처리)
+/*
+// 상세보기 페이지 열기
+function openDetailPage(roomId) {
+    const room = roomsData.find(r => r.id === roomId);
+    if (!room) return;
+    
+    currentDetailRoomId = roomId;
+    
+    // 페이지 내용 업데이트
+    document.getElementById('detailPageStatus').textContent = room.status;
+    document.getElementById('detailPageStatus').className = `detail-page-status ${room.urgent ? 'urgent' : ''}`;
+    document.getElementById('detailPageRegDate').textContent = formatRegDate(new Date());
+    document.getElementById('detailPageTitle').textContent = room.title;
+    document.getElementById('detailPagePeople').textContent = `${room.maxParticipants}명`;
+    document.getElementById('detailPageDateRange').textContent = room.date;
+    document.getElementById('detailPageTravelDate').textContent = room.createdDate;
+    document.getElementById('detailPageDeadline').textContent = formatDeadline(room.dateValue);
+    document.getElementById('detailPageDepartureDate').textContent = '모집 이후 채팅으로 협의';
+    document.getElementById('detailPageCurrentPeople').textContent = `${room.currentParticipants} / ${room.maxParticipants}명`;
+    document.getElementById('detailPageRegionFee').textContent = '지역 차액은 따로 없고, 사전 할 것는 준비 다들 다 합업합니다!';
+    document.getElementById('detailPageImage').src = room.image;
+    document.getElementById('detailPageDescription').textContent = room.description;
+    
+    // 감정 태그 업데이트
+    const emotionTagsContainer = document.getElementById('detailPageEmotionTags');
+    emotionTagsContainer.innerHTML = room.tags.map(tag => `<span class="emotion-tag">${tag}</span>`).join('');
+    
+    // 페이지 표시
+    document.getElementById('detailPage').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+// 상세보기 페이지 닫기
+function closeDetailPage() {
+    document.getElementById('detailPage').style.display = 'none';
+    document.body.style.overflow = 'auto';
+    currentDetailRoomId = null;
+}
+
+// 상세보기 페이지에서 신청하기
+function applyFromDetailPage() {
+    if (currentDetailRoomId) {
+        closeDetailPage();
+        applyRoom(currentDetailRoomId);
+    }
+}
+*/
+
+// 헬퍼 함수들 (일부 제거)
+/*
+function formatRegDate(date) {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}.${month}.${day}`;
+}
+
+function formatDeadline(dateValue) {
+    const deadline = new Date(dateValue);
+    deadline.setDate(deadline.getDate() - 7); // 7일 전
+    const year = deadline.getFullYear();
+    const month = deadline.getMonth() + 1;
+    const day = deadline.getDate();
+    return `${year}년 ${month}월 ${day}일`;
+}
+*/
 
 // 검색 처리
 function handleSearch() {
@@ -207,7 +326,7 @@ function applyFilters() {
     const urgentOnly = document.getElementById('urgentOnly').checked;
     
     filteredRooms = roomsData.filter(room => {
-        // 마감 임박 보기 필터 (체크되면 마감임박만 보기) - 수정사항 1
+        // 마감 임박 보기 필터 (체크되면 마감임박만 보기)
         if (urgentOnly && !room.urgent) {
             return false;
         }
@@ -245,11 +364,11 @@ function applyFilters() {
     updatePagination();
 }
 
-// 정렬 적용 (수정사항 2 & 3 & 4)
+// 정렬 적용
 function applySorting() {
     switch (currentSort) {
         case 'nearest':
-            // 수정사항 3: 가까운 날짜 순 (현재 날짜와 가까운 순)
+            // 가까운 날짜 순 (현재 날짜와 가까운 순)
             filteredRooms.sort((a, b) => {
                 const aDiff = Math.abs(a.dateValue.getTime() - currentDate.getTime());
                 const bDiff = Math.abs(b.dateValue.getTime() - currentDate.getTime());
@@ -257,13 +376,13 @@ function applySorting() {
             });
             break;
         case 'popular':
-            // 수정사항 4: 인기순 = 조회수가 높은 순 (viewCount 기준)
+            // 인기순 = 조회수가 높은 순 (viewCount 기준)
             filteredRooms.sort((a, b) => {
                 return b.viewCount - a.viewCount;
             });
             break;
         default:
-            // 수정사항 2: 기본 정렬 (모집중 먼저, 그 다음 마감임박)
+            // 기본 정렬 (모집중 먼저, 그 다음 마감임박)
             filteredRooms.sort((a, b) => {
                 // 먼저 상태별로 정렬 (모집중이 먼저)
                 if (a.urgent !== b.urgent) {
@@ -533,6 +652,7 @@ function submitApplication() {
 // ESC 키로 모달 닫기
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
+        closeDetailModal();
         closeApplicationModal();
     }
 });
@@ -540,6 +660,7 @@ document.addEventListener('keydown', function(e) {
 // 모달 오버레이 클릭으로 닫기
 document.addEventListener('click', function(e) {
     if (e.target.classList.contains('modal-overlay')) {
+        closeDetailModal();
         closeApplicationModal();
     }
 });
@@ -611,4 +732,3 @@ function formatDate(date) {
 document.addEventListener('DOMContentLoaded', function() {
     loadUserCreatedRooms();
 });
-        

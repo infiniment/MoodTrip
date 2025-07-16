@@ -1,0 +1,479 @@
+.main {
+  min-height: 100vh;
+  background: linear-gradient(135deg, rgba(248, 250, 252, 0.8) 0%, rgba(226, 232, 240, 0.8) 100%);
+  padding: 20px 0;
+}
+
+.main:after {
+    content: " ";
+    display: block;
+    clear: both;
+}
+
+.container {
+    width: 1080px;
+    margin: 0 auto;
+}
+
+.container::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+
+.weather-detail-container {
+    
+    padding: 100px 0;
+
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+}
+
+.weather-detail-container::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.today-weather {
+    padding: 0 70px;
+    background: linear-gradient(135deg, #005792 0%, #001A2C 100%);
+    border-radius: 25px;
+    box-shadow: 0px 48px 48px -12px #00589228;
+    width: 960px;
+}
+
+.time {
+    padding-top: 10px;
+    font-weight: 500;
+    font-size: 18px;
+    line-height: 26px;
+    margin-bottom: 6px;
+    color: white;
+}
+
+.current-degree {
+    display: flex;
+    /* 가로 정렬 */
+    align-items: center;
+    /* 세로 정중앙 정렬 */
+    gap: 25px;
+    /* 이미지와 텍스트 사이 간격 */
+
+    padding-left: 10px;
+    font-weight: 700;
+    font-size: 40px;
+    line-height: 44px;
+    color: white;
+}
+
+.weater-state {
+    margin-left: 10px;
+    font-weight: 600;
+    font-size: 25px;
+    line-height: 26px;
+    margin-bottom: 30px;
+color: white;
+    
+}
+
+.highest-lowest-degree {
+    margin-left: 10px;
+    font-weight: 400;
+    font-size: 20px;
+    line-height: 26px;
+    margin-bottom: 6px;
+    padding-bottom: 50px;
+    color: white;
+}
+
+
+
+.weather-recommand-region {
+    position: absolute;
+    top: 150px;
+    /* today-weather 위로 겹치게 */
+    right: 9%;
+    transform: translateX(23%);
+    background-color: #fff;
+    padding: 20px;
+
+    height: 350px;
+
+    box-shadow: 0px 20px 40px rgba(0, 0, 0, 0.1);
+    z-index: 2;
+
+    display: flex;
+    justify-content: space-between;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+/* 기본 접힘 상태 */
+.weather-recommand-region.collapsed {
+    width: 550px;
+    transform: translateX(17%);
+    /* 오른쪽으로 붙어 있음 */
+}
+
+/* 확장된 상태 */
+.weather-recommand-region.expanded {
+    width: 1040px;
+    /* today-weather와 정확히 맞춤 */
+    transform: translateX(9%);
+    /* 왼쪽으로 확장되도록 이동 */
+}
+
+.region-button-list {
+    background: rgba(240, 240, 240, 0.6);
+    backdrop-filter: blur(2px);
+    min-width: 449px;
+    padding: 20px;
+
+    display: none;
+    /* 처음엔 숨김 */
+    flex-direction: column;
+    gap: 16px;
+}
+
+.weather-recommand-region.expanded .region-button-list {
+    display: flex;
+}
+
+.recommand-region {
+    min-width: 550px;
+    padding: 20px;
+}
+
+.search-btn-wrapper {
+    width: 489px;
+    display: flex;
+    align-items: center;
+    min-height: 40px;
+    margin-right: 20px;
+    margin-left: 5px;
+
+}
+
+.search-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.search-btn img {
+    width: 30px;
+    height: 45px;
+}
+
+.location-icon {
+    width: 25px;
+    height: 25px;
+    margin-right: 6px;
+}
+
+.region-name {
+    display: flex;
+    align-items: center;
+    margin-top: 0px;
+    font-weight: 600;
+    font-size: 25px;
+    color: #333;
+
+}
+
+.region-image {
+    padding: 0;
+    width: 440px;
+    height: 250px;
+    margin: 0 10px 0 20px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.region-button {
+    background: none;
+    border: none;
+    padding: 20px 4px 20px;
+    margin-left: 30px;
+    font-weight: 600;
+    font-size: 20px;
+    color: #1f1f1f;
+    cursor: pointer;
+
+    /* 밑줄 제거 + bottom border만 */
+    border-bottom: 1px solid #ccc;
+    border-radius: 0;
+    text-decoration: none;
+    outline: none;
+
+    /* 애니메이션 효과 */
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.region-button:hover {
+    transform: translateY(-3px);
+    border-color: #999;
+    /* hover 시 밑줄 색상 진하게 */
+}
+
+.heart-button-wrapper {
+    display: flex;
+    justify-content: space-between;
+    /* 좌우 정렬 */
+    align-items: center;
+    width: 100%;
+}
+
+.blank {
+    flex: 1;
+    /* 왼쪽 공간 확보용 */
+}
+
+.heart-img-wrapper {
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    margin-top: 2px;
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.heart-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+/* 마우스 올릴 때 효과 */
+.heart-img-wrapper:hover {
+    transform: scale(1.1);
+    filter: brightness(1.2);
+}
+
+.section-content {
+    display: none;
+    margin-top: 20px;
+}
+
+.section-content.active {
+    display: block;
+}
+
+.place-detail {
+    font-size: 28px;
+    font-weight: 700;
+    color: #2d3748;
+    margin: 50px 0 30px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.detail-icon {
+    font-size: 32px;
+}
+
+.place-detail-info {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 30px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px;
+    background: rgba(0, 87, 146, 0.1);
+    border-radius: 12px;
+    border-left: 4px solid #005792;
+    transition: background 0.2s ease;
+    backdrop-filter: blur(10px);
+}
+
+.info-item:hover {
+    background: rgba(0, 87, 146, 0.15);
+}
+
+.info-label {
+    font-weight: 600;
+    color: #005792;
+    font-size: 14px;
+}
+
+.info-value {
+    font-size: 16px;
+    color: #2d3748;
+}
+
+.info-value small {
+    color: #4a5568;
+    font-size: 14px;
+}
+
+/* 상세 내용 스타일 */
+.place-detail-wrapper {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    padding: 32px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.content-section {
+    margin-bottom: 24px;
+}
+
+.content-section h4 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.content-section p {
+    font-size: 16px;
+    color: #4a5568;
+    margin-bottom: 16px;
+    line-height: 1.8;
+}
+
+.extra-info {
+    overflow: hidden;
+    transition: all 0.5s ease;
+}
+
+.hidden {
+    max-height: 0;
+    opacity: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #005792 0%, #001A2C 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 87, 146, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.toggle-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 87, 146, 0.4);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.toggle-icon {
+    transition: transform 0.3s ease;
+}
+
+.toggle-btn.active .toggle-icon {
+    transform: rotate(180deg);
+}
+
+/* 장소 태그 스타일  */
+
+.place-tag {
+    font-size: 28px;
+    font-weight: 700;
+    color: #2d3748;
+    margin: 50px 0 30px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.tag-icon {
+    font-size: 32px;
+}
+
+.tag-info {
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 30px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+
+.tag-item {
+    background: linear-gradient(135deg, #005792 0%, #001A2C 100%);
+    color: white;
+    padding: 10px 18px;
+    border-radius: 20px;
+    font-size: 16px;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.tag-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 87, 146, 0.4);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.map-info {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 30px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.place-map {
+    font-size: 28px;
+    font-weight: 700;
+    color: #2d3748;
+    margin: 50px 0 30px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.map-icon {
+    font-size: 32px;
+}

@@ -104,6 +104,63 @@
         </div>
     </div>
 
+    <!-- 상세보기 모달 -->
+    <div id="detailModal" class="modal" style="display: none;">
+        <div class="modal-overlay" onclick="closeDetailModal()"></div>
+        <div class="modal-content detail-modal-content">
+            <div class="modal-header">
+                <h3>방 상세보기</h3>
+                <button class="modal-close" onclick="closeDetailModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="detail-room-image">
+                    <img id="detailRoomImage" src="" alt="방 이미지">
+                    <div class="detail-room-status" id="detailRoomStatus">모집중</div>
+                </div>
+                <div class="detail-room-info">
+                    <h2 id="detailRoomTitle">방 제목</h2>
+                    <div class="detail-room-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">📍 위치</span>
+                            <span id="detailRoomLocation">서울</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">📅 일정</span>
+                            <span id="detailRoomDate">7월 셋째주</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">👥 인원</span>
+                            <span id="detailRoomParticipants">2 / 8명</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">👀 조회수</span>
+                            <span id="detailRoomViews">3명이 봄</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">📆 기간</span>
+                            <span id="detailRoomPeriod">25/07/21 ~ 25/07/25</span>
+                        </div>
+                    </div>
+                    <div class="detail-room-description">
+                        <h4>방 소개</h4>
+                        <p id="detailRoomDesc">방 설명이 여기에 표시됩니다.</p>
+                    </div>
+                    <div class="detail-room-tags">
+                        <h4>태그</h4>
+                        <div class="tags-container" id="detailRoomTags">
+                            <!-- 태그들이 여기에 동적으로 추가됩니다 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cancel" onclick="closeDetailModal()">닫기</button>
+                <button class="btn btn-primary" onclick="goToDetailPage()">자세히 보기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 입장 신청 모달 -->
     <div id="applicationModal" class="modal" style="display: none;">
         <div class="modal-overlay" onclick="closeApplicationModal()"></div>
         <div class="modal-content">
@@ -124,6 +181,98 @@
             <div class="modal-footer">
                 <button class="btn btn-cancel" onclick="closeApplicationModal()">취소</button>
                 <button class="btn btn-primary" onclick="submitApplication()">신청하기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 상세보기 페이지 -->
+    <div id="detailPage" class="detail-page" style="display: none;">
+        <div class="detail-page-container">
+            <div class="detail-page-header">
+                <button class="back-button" onclick="closeDetailPage()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="m15 18-6-6 6-6"/>
+                    </svg>
+                    뒤로가기
+                </button>
+                <div class="detail-page-status" id="detailPageStatus">모집중</div>
+                <div class="detail-page-date">등록 일자: <span id="detailPageRegDate">2025.07.25</span></div>
+            </div>
+
+            <div class="detail-page-content">
+                <h1 class="detail-page-title" id="detailPageTitle">경복궁 간장 게장 같이 먹으러 가요~!!</h1>
+                
+                <div class="detail-info-section">
+                    <h3 class="section-title">📍 인원</h3>
+                    <div class="detail-info-boxes">
+                        <div class="info-box">
+                            <div class="info-icon">👥</div>
+                            <div class="info-text">
+                                <span class="info-label">인원</span>
+                                <span class="info-value" id="detailPagePeople">4명</span>
+                            </div>
+                        </div>
+                        <div class="info-box">
+                            <div class="info-icon">📅</div>
+                            <div class="info-text">
+                                <span class="info-label">날짜 기간 :</span>
+                                <span class="info-value" id="detailPageDateRange">7월</span>
+                            </div>
+                        </div>
+                        <div class="info-box">
+                            <div class="info-icon">🗓️</div>
+                            <div class="info-text">
+                                <span class="info-label">여행 날짜 :</span>
+                                <span class="info-value" id="detailPageTravelDate">2025.07.21 - 2025.07.31</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-info-list">
+                    <div class="info-row">
+                        <span class="info-label">모집 마감일 :</span>
+                        <span class="info-value" id="detailPageDeadline">2025년 7월 31일</span>
+                        <span class="deadline-highlight">* 마감 7일 전</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">예상 출발일 :</span>
+                        <span class="info-value" id="detailPageDepartureDate">모집 이후 채팅으로 협의</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">현재 인원 :</span>
+                        <span class="info-value" id="detailPageCurrentPeople">2 / 4명</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">지역 차액 :</span>
+                        <span class="info-value" id="detailPageRegionFee">지역 차액은 따로 없고, 사전 할 것는 준비 다들 다 합업합니다!</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">감정 태그 :</span>
+                        <div class="emotion-tags" id="detailPageEmotionTags">
+                            <span class="emotion-tag">행복</span>
+                            <span class="emotion-tag">설렘</span>
+                            <span class="emotion-tag">뜨뜻함</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-image-section">
+                    <img id="detailPageImage" src="" alt="여행 이미지" class="detail-main-image">
+                </div>
+
+                <div class="detail-description-section">
+                    <h3 class="section-title">📝 여행 설명</h3>
+                    <div class="description-content" id="detailPageDescription">
+                        안녕하세요! 저는 여행 여행에 방문한 할 수가지고 있습니다. 처음은 경복궁 아미지 재미 혹중 할게이게 합니다. 저는고 경복궁 아미지 재미 혹즁이 있의 지 개이디. 처음은 경복궁 아미지 재미 혹주이 있의 치게인게. 저는고 어장 혹륜을 때를 둘주지인습니다. 재기는 전쟁을 때을 둘주지고 있어서 새벽과 종하고 져은 지의여행을 친옵기가라리십니다. 지젼요. 지는다 계양 아미지 해미 혹주이 있의 차 개이 개이곳록 때을 된습니다.
+                        처음은 경복궁 아미지 재미 혹주이 있의 치게. 저는고 께양중 아미지 해미 혹주이 있의 지 개이에어. 간력 게직 즐여이머나 이려 게직 자는 해을 써벌게기 버여쁘십나.
+                    </div>
+                </div>
+
+                <div class="detail-page-actions">
+                    <button class="btn-back" onclick="closeDetailPage()">이전</button>
+                    <button class="btn-apply-detail" onclick="applyFromDetailPage()">신청하기</button>
+                </div>
             </div>
         </div>
     </div>
