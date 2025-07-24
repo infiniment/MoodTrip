@@ -1,0 +1,741 @@
+.big-frame {
+    min-width : 1080px;
+    height : auto;
+    min-height : 70%;
+}
+* {
+    margin : 0;
+    padding : 0;
+    font-family : "NotoSansKR", "Sans-serif";
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    box-sizing: border-box;
+}
+
+body.room-create .room-create-formview .container {
+    width : 1080px;
+}
+.container {
+    margin : 0 auto;
+}
+/* 진행 상태 바 - 흰색 배경 박스 추가 */
+body.room-create .submit-progress {
+    margin-right: 24px;
+    float: left;
+    width: 256px;
+    padding: 24px; /* 패딩 증가 */
+    background: #fff; /* 흰색 배경 추가 */
+    border-radius: 8px; /* 모서리 둥글게 */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* 그림자 추가 */
+}
+
+body.room-create .submit-progress .room-status-box {
+    margin-bottom: 50px;
+}
+body.room-create .submit-progress .room-status-box .back-to-before {
+    color: #005792;
+    margin-bottom: 8px;
+    display: block;
+}
+.link-text {
+    text-decoration: none;
+}
+body.room-create .submit-progress .room-status-box .back-to-before .back-to-before-img {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 8px;
+}
+body.room-create .submit-progress .room-status-box .back-to-before .back-to-before-title {
+    display: inline-block;
+    vertical-align: middle;
+}
+.body-1-medium {
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 26px;
+}
+body.room-create .submit-progress .room-status-box .menu-title {
+    color: #212121;
+}
+.subtitle-1-medium {
+    font-weight: 500;
+    font-size: 24px;
+    line-height: 36px;
+}
+.mb4 {
+    margin-bottom: 4px;
+}
+body.room-create .submit-progress .input-group-status .status-main-menu {
+    color: #bdbdbd;
+}
+.body-2 {
+    font-size: 14px;
+    line-height: 24px;
+    font-weight: 400;
+}
+body.room-create .submit-progress .input-group-status .status-main-menu+.status-main-menu {
+    margin-top: 24px;
+}
+body.room-create .submit-progress .input-group-status .status-main-menu.active {
+    color: #616161;
+    font-weight: 400;
+}
+body.room-create .submit-progress .input-group-status .status-main-menu .status-mark {
+    display: none;
+}
+body.room-create .submit-progress .input-group-status .status-sub-menu {
+    margin-left: 8px;
+}
+body.room-create .submit-progress .input-group-status .status-sub-menu .status-sub-menu-title.active {
+    color: #616161;
+}
+body.room-create .submit-progress .input-group-status .status-sub-menu .status-sub-menu-title:first-child {
+    margin-top: 16px;
+}
+body.room-create .submit-progress .input-group-status .status-sub-menu .status-sub-menu-title.active,
+body.room-create .submit-progress .input-group-status .status-sub-menu .status-sub-menu-title {
+    font-size: 14px;
+    line-height: 24px;
+    font-weight: 400;
+}
+body.room-create .submit-progress .input-group-status .status-sub-menu .status-sub-menu-title {
+    padding: 8px 0;
+    position: relative;
+}
+body.room-create .submit-progress .input-group-status .status-sub-menu .status-sub-menu-title .bottom-border {
+    height: 9px;
+    width: 1px;
+    left: 6px;
+    position: absolute;
+    bottom: 0;
+    border-left: 1px solid #e0e0e0;
+}
+body.room-create .submit-progress .input-group-status .status-sub-menu .status-sub-menu-title.active .sub-menu-marker {
+    background-color: #005792;
+}
+body.room-create .submit-progress .input-group-status .status-sub-menu .status-sub-menu-title .sub-menu-marker {
+    width: 14px;
+    height: 14px;
+    border-radius: 14px;
+    border: none;
+    display: inline-block;
+    color: #fff;
+    background-color: #bdbdbd;
+    font-size: 10px;
+    padding: 2.5px 4.5px;
+    margin-right: 20px;
+    vertical-align: top;
+    margin-top: 5px;
+}
+.required {
+    color: red;
+}
+body.room-create .submit-progress .input-group-status .status-sub-menu .status-sub-menu-title .phase-complete-icon {
+    display: none;
+}
+body.room-create .submit-progress .input-group-status .status-sub-menu .status-sub-menu-title {
+    color: #bdbdbd;
+    padding: 8px 0;
+    position: relative;
+}
+body.room-create .submit-progress .input-group-status .status-sub-menu .status-sub-menu-title {
+    font-size: 14px;
+    line-height: 24px;
+    font-weight: 400;
+}
+body.room-create .submit-progress .input-group-status .status-sub-menu .status-sub-menu-title .top-border {
+    position: absolute;
+    height: 9px;
+    width: 1px;
+    top: 0;
+    left: 6px;
+    border-left: 1px solid #e0e0e0;
+}
+body.room-create .submit-progress .input-group-status .status-main-menu.status-menu-with-tooltip {
+    display: inline-block;
+}
+body.room-create .submit-progress .input-group-status .status-main-menu {
+    color: #bdbdbd;
+}
+body.room-create .room-create-form-section {
+    background-color: #fff;
+    width: 800px;
+    float: left;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px 0 rgba(0, 0, 0, .16);
+}
+body.room-create .room-create-form-section .form-section-header {
+    padding: 26px 32px;
+    border-bottom: 1px solid #e0e0e0;
+    position: relative;
+}
+.subtitle-1 {
+    font-size: 24px;
+    line-height: 36px;
+    font-weight: 400;
+}
+.category-card.selected {
+    border: 2px solid #3CC796; 
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.15);
+}
+body.room-create .room-create-form-section .form-section-header .room-form-guide-button {
+    display: flex;        
+    align-items: center;       
+    gap: 6px;                   
+    padding: 8px 16px;
+    font-size: 14px;
+    line-height: 24px;
+    background-color: #fff;
+    color: #005792;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    cursor: pointer;
+}
+body.room-create .room-create-form-section .form-section-header .header-button {
+    position: absolute;
+    top: 24px;
+    right: 32px;
+}
+.btn-8-16 {
+    padding: 8px 16px;
+    font-size: 14px;
+    line-height: 24px;
+    font-weight: 400;
+}
+.btn {
+    cursor: pointer;
+    display: inline-block;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    user-select: none;
+}
+button {
+    background : none;
+}
+body.room-create .room-create-form-section .form-input-section {
+    padding: 32px;
+    padding-bottom: 60px;
+}
+.mb48 {
+    margin-bottom: 48px;
+}
+.form-group-light {
+    display: block;
+}
+.form-group-light .form-group-title {
+    display: block;
+}
+.body-1-bold {
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 26px;
+}
+.mb16 {
+    margin-bottom: 16px;
+}
+.phase-1 .select-category {
+    display: flex;
+    gap: 20px;
+}
+.mb32 {
+    margin-bottom: 32px;
+}
+.phase-1 .select-category .category-card {
+    width: 232px;
+    padding: 25px 17px;
+    border-radius: 4px;
+    border: 1px solid #e0e0e0;
+    background-color: #fff; 
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    cursor: pointer;
+}
+
+.category-icon img {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 8px;
+}
+
+.check-mark img {
+    width: 16px;
+    height: 16px;
+    position: absolute;
+    top: 18px;
+    left: 18px;
+}
+.form-group-light:last-child {
+    margin-bottom: 0;
+}
+.form-group-light {
+    display: block;
+}
+.form-group-light .form-group-title {
+    display: block;
+}
+.mb8 {
+    margin-bottom: 8px;
+}
+.roomName-search-form .roomName-search-typing-box {
+    position: relative;
+}
+.roomName-search-form .roomName-search-typing-box .roomName-search-input-group {
+    position: relative;
+}
+.search_icon {
+    position: absolute; 
+    left: 16px;
+    top: 50%; 
+    transform: translateY(-50%);
+    width: 5px;
+    height: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+.roomName-search-form .roomName-search-typing-box .roomName-search-input-group .roomName-search-typing-input {
+    width: 100%;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    background-color: #fff;
+    padding: 9px 12px 9px 36px;
+}
+body.room-create .room-create-form-section .form-section-footer {
+    padding: 16px 32px;
+    border-top: 1px solid #e0e0e0;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+.btn-client, .btn-client-not-active {
+    background: linear-gradient(to right, #005792, #001A2C);
+    color: #fff;
+    border: none;
+}
+.btn-right {
+    float: right;
+}
+.btn {
+    cursor: pointer;
+    display: inline-block;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    user-select: none;
+    border-radius: 4px;
+}
+.btn-11-24 {
+    font-size: 16px;
+    line-height: 26px;
+    font-weight: 400;
+    padding: 11px 24px;
+}
+button {
+    background: none;
+}
+.btn-white-wishket-border {
+    border: 1px solid #e0e0e0;
+    background-color: #fff;
+    color: #005792;
+}
+body.room-create .room-create-form-section::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+body.room-create .room-create-formview .container::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+.big-frame:after {
+    content: " ";
+    display: block;
+    clear: both;
+}
+.form-group-light2:last-child {
+    margin-bottom: 0;
+}
+.form-group-light2 {
+    display: block;
+    margin-bottom: 48px;
+}
+.form-group-light2 .form-group-title {
+    display: block;
+}
+.roomName-search-form2 .roomName-search-typing-box2 {
+    position: relative;
+}
+.roomName-search-form2 .roomName-search-typing-box2 .roomName-search-input-group2 {
+    position: relative;
+}
+.roomName-search-form2 .roomName-search-typing-box2 .roomName-search-input-group2 .roomName-search-typing-input2 {
+    width: 100%;
+    height : 150px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    background-color: #fff;
+    padding: 9px 12px 9px 36px;
+}
+.category-card.selected {
+    border: 2px solid #005792;
+    background-color: #f0f8ff;
+}
+
+/* 기본 정보 도움말 모달 스타일 */
+.help-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.help-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+}
+
+.help-modal-content {
+    position: relative;
+    background: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 700px;
+    max-height: 85vh;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    animation: modalSlideIn 0.3s ease-out;
+    overflow-y: auto;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.help-modal-header {
+    padding: 24px 24px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    background: white;
+    border-radius: 16px 16px 0 0;
+}
+
+.help-modal-header h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #005792;
+    margin: 0;
+    flex: 1;
+}
+
+.help-modal-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: background 0.2s ease;
+}
+
+.help-modal-close:hover {
+    background: #f5f5f5;
+}
+
+.help-modal-body {
+    padding: 24px;
+}
+
+.help-section {
+    margin-bottom: 36px;
+}
+
+.help-section:last-child {
+    margin-bottom: 0;
+}
+
+.help-section h4 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* 인원 선택 가이드 */
+.people-guide {
+    display: grid;
+    gap: 16px;
+}
+
+.people-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 20px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border-left: 4px solid #005792;
+}
+
+.people-icon {
+    font-size: 32px;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border-radius: 12px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.people-content strong {
+    display: block;
+    color: #005792;
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 6px;
+}
+
+.people-content p {
+    margin: 0 0 8px 0;
+    color: #333;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.people-benefit {
+    color: #666;
+    font-size: 12px;
+    font-style: italic;
+}
+
+/* 방 이름 짓기 팁 */
+.naming-tips {
+    display: grid;
+    gap: 20px;
+}
+
+.tip-category h5 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tip-examples {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.example-tag {
+    display: inline-block;
+    padding: 6px 12px;
+    background: linear-gradient(135deg, #005792 0%, #1976d2 100%);
+    color: white;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* 방 소개 작성 가이드 */
+.intro-guide {
+    display: grid;
+    gap: 24px;
+}
+
+.intro-template {
+    padding: 20px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.intro-template h5 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 16px;
+}
+
+.template-structure {
+    display: grid;
+    gap: 12px;
+}
+
+.template-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px;
+    background: white;
+    border-radius: 8px;
+    border-left: 3px solid #005792;
+}
+
+.template-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #005792;
+}
+
+.template-example {
+    font-size: 13px;
+    color: #666;
+    font-style: italic;
+}
+
+.intro-examples h5 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 16px;
+}
+
+.example-messages {
+    display: grid;
+    gap: 12px;
+}
+
+.message-bubble {
+    padding: 16px;
+    background: linear-gradient(135deg, #e3f2fd 0%, #f0f8ff 100%);
+    border-radius: 16px;
+    border: 1px solid #bbdefb;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #333;
+    position: relative;
+}
+
+.message-bubble::before {
+    content: '💬';
+    position: absolute;
+    top: -8px;
+    left: 16px;
+    background: white;
+    padding: 4px;
+    border-radius: 50%;
+    font-size: 12px;
+}
+
+/* 주의사항 */
+.help-warnings {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.help-warnings li {
+    color: #666;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 10px;
+}
+
+.help-warnings li:last-child {
+    margin-bottom: 0;
+}
+
+.help-modal-footer {
+    padding: 16px 24px 24px;
+    border-top: 1px solid #f0f0f0;
+    margin-top: 0;
+}
+
+.help-footer-info {
+    text-align: center;
+    padding: 16px;
+    background: linear-gradient(135deg, #f0f8ff 0%, #e3f2fd 100%);
+    border-radius: 12px;
+    border: 1px solid #bbdefb;
+}
+
+.help-footer-info p {
+    margin: 0;
+    color: #005792;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .help-modal-content {
+        width: 95%;
+        margin: 20px;
+        max-height: 90vh;
+    }
+    
+    .help-modal-header {
+        padding: 16px 20px 12px;
+    }
+    
+    .help-modal-header h3 {
+        font-size: 18px;
+    }
+    
+    .help-modal-body {
+        padding: 16px 20px;
+    }
+    
+    .help-section {
+        margin-bottom: 28px;
+    }
+    
+    .help-section h4 {
+        font-size: 16px;
+    }
+    
+    .people-option {
+        flex-direction: column;
+        text-align: center;
+        gap: 12px;
+    }
+    
+    .people-icon {
+        align-self: center;
+    }
+    
+    .tip-examples {
+        justify-content: center;
+    }
+    
+    .template-item {
+        text-align: center;
+    }
+    
+    .help-modal-footer {
+        padding: 12px 20px 20px;
+    }
+}

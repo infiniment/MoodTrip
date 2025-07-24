@@ -1,0 +1,107 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../../static/css/fix/header.css">
+     <link rel="stylesheet" href="/static/css/creatingRoom/creatingRoom-detail.css">
+    <script src = "/static/js/creatingRoom/creatingRoom-detail.js">
+    </script>
+     <script src = "/static/js/fix/header.js">
+    </script>
+</head>
+<link href="https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/static/woff2/SUIT.css" rel="stylesheet">
+
+<body>
+
+<header class="header">
+  
+  <div class="header-nav">
+    <div class="container">
+      <a href="/">
+        <div class="nav-logo-wrapper">
+          <div class="nav-logo"></div>
+        </div>
+      </a>
+      <div class="left-nav">
+        <a href="/project/add/">
+          <div class="left-nav-menu main-header text-header" >동행 매칭</div>
+          
+        </a>
+        <a href="/project/#clear">
+          <div class="left-nav-menu pr-12 main-header text-header">
+             공지사항
+            <div class="img-container">
+              
+            </div>
+          </div>
+        </a>
+        <a href="/partners/#clear">
+          <div class="left-nav-menu main-header text-header">감정 여행</div>
+        </a>
+      
+
+<div class="left-nav-menu pr-12 main-header text-header search-bar-wrapper" style="margin-left: 100px;">
+  <form class="search-bar" action="/search" method="get">
+    <input
+      type="text"
+      name="q"
+      placeholder="감정을 입력하세요"
+      class="search-input"
+    />
+    <button type="submit" class="search-btn" aria-label="검색">
+      <img src="/static/image/default-common/search.png" alt="검색" class="search-icon">
+    </button>
+  </form>
+</div>
+
+
+        
+      </div>
+      <div class="right-nav">
+        <a href="templates/login/login.html">
+          <div class="log-in-section main-header text-header">로그인</div>
+        </a>
+        <a href="https://auth.wishket.com/signup?next=/project/create/">
+          <div class="sign-up-button body-2-medium">회원가입</div>
+        </a>
+      </div>
+    </div>
+
+
+
+<!-- 드롭다운 -->
+<div class="dropdown-nav-container" style="top: 65px;">
+  <div class="dropdown-nav">
+  <div class="dropdown-menu-container" style="margin-left: 130px;">
+      <!-- 동행 매칭 -->
+      <div class="dropdown-menu-list" style="width: 109px;">
+        <a class="dropdown-menu-item" href="/project/add/">방 만들기</a>
+        <a class="dropdown-menu-item" href="/project/list/">방 입창하기</a>
+        <a class="dropdown-menu-item" href="/project/my/">스케줄 짜기</a>
+      </div>
+    
+      <!-- 공지 사항 -->
+      <div class="dropdown-menu-list" style="width: 90px;">
+        <a class="dropdown-menu-item" href="/project/add/">자주 찾는 질문</a>
+      </div>
+      <!-- 감정 여행 -->
+      <div class="dropdown-menu-list" style="width: 145px;">
+      
+      </div>
+      
+    </div>
+  </div>
+</div>
+
+
+  </div>
+
+ 
+</header>
+
+</body>
+
+</html>

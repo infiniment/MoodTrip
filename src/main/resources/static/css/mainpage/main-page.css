@@ -1,0 +1,453 @@
+.gaia {
+    min-width: 1080px;
+    height: auto;
+    min-height: 70%;
+}
+body {
+    height: 100%;
+    background-color: #f5f5f5;
+}
+
+
+/*감정기반 페이지*/
+
+.mood-do-not-fail {
+   background: linear-gradient(to right, #005792, #001A2C);
+}
+
+* {
+    box-sizing: border-box;
+    font-family: 'NotoSansKR', Sans-serif;
+    margin: 0;
+    padding: 0;
+    line-height: 1rem;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.mood-do-not-fail .container {
+    display: flex;
+    align-items: center;
+    gap: 100px; /* flex 아이템 사이 간격 */
+    padding: 100px 20px;
+}
+
+.container {
+    width: 100%;
+    max-width: 1380px; /* 원하는 최대 크기 */
+    margin: 0 auto;
+}
+
+ .mood-do-not-fail .container .mood-question {
+   
+    width: 1000px;
+    margin-left: 60x;
+   
+}
+
+.text-white {
+    color: #fff;
+}
+
+.title-Mood-bold {
+    font-weight: 900;
+    font-size: 50px;
+    line-height: 60px;
+     white-space: nowrap; /* 줄바꿈 방지 */
+      
+
+}
+
+.text-Q {
+    margin-bottom: 56px;
+}
+.mood-do-not-fail.container .mood-gif img {
+    width: 500px;
+}
+
+
+.container::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+
+
+/*동행 매칭*/
+.introduction {
+    padding: 103px 0 52px;
+    background-color: #fff;
+     background-image: -webkit-image-set(url(/static/img/acquisition/background.png?20250620) 1x, url(/static/img/acquisition/background@2x.png?20250620) 2x, url(/static/img/acquisition/background@3x.png?20250620) 3x);
+    background-position: top center;
+    background-repeat: no-repeat;
+}
+.introduction .introduction-guide {
+    padding-top: 10px;
+    float: left;
+    margin: 40px 0 32px;
+}
+.introduction .introduction-guide .title-wrapper {
+    width: 580px;
+    margin-bottom: 40px;
+    
+}
+.introduction .introduction-guide .title {
+    display: flex;
+    overflow: hidden;
+    height: 64px;
+}
+
+.introduction .introduction-guide .title .rolling-title {
+    position: relative;
+    display: inline-block;
+}
+ul {
+    list-style: none;
+}
+ul li {
+    padding: 0;
+    margin: 0;
+}
+.title-matching{
+    font-weight: 700;
+    font-size: 48px;
+    line-height: 64px;
+}
+.textSevice {
+    color: #212121;
+}
+.introduction .introduction-guide .guide-body {
+    margin-bottom: 40px;
+    margin-top: 2px;
+    color: #616161;
+}
+.textIntro {
+    color: #616161;
+}
+
+.subtitle-2 {
+    font-size: 28px;
+    line-height: 38px;
+    font-weight: 700;
+}
+.btn {
+    cursor: pointer;
+    display: inline-block;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    user-select: none;
+    border: none;
+}
+a {
+    color: #212121;
+}
+.introduction .introduction-img {
+    float: right;
+}
+ .introduction .introduction-img img {
+    width: 500px;
+    margin-top: 4px;
+}
+.introduction .introduction-guide .guide-btn {
+    background: linear-gradient(to right, #005792, #001A2C);
+    padding: 16px 24px;
+    border-radius: 12px;
+    color: #fff;
+    box-shadow: 0px 32px 32px -12px rgba(46, 107, 170, .12);
+}
+
+.match-top-btn {
+    position: relative;
+    transition: top ease .5s;
+    top: 0;
+}
+.subtitle-2-medium {
+    font-weight: 500;
+     font-size: 18px;
+    line-height: 28px;
+}
+
+.introduction .introduction-guide .ask-btn {
+    background-color: #fff;
+    padding: 16px 24px;
+    border-radius: 12px;
+    color: linear-gradient(to right, #005792, #001A2C);
+    border: 1px solid #005792;
+}
+.container::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+/*날씨별 여행*/
+
+.weather-block {
+    background-color: #fff;
+}
+.weather .container {
+    padding: 100px 0 0;
+}
+
+
+.text-weather {
+    color: #3ba3c7;
+}
+.body-weather-bold {
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 26px;
+}
+
+.weather-box-title {
+    margin-bottom: 6px;
+}
+.link-text {
+    text-decoration: none;
+   color: linear-gradient(to right, #005792, #001A2C);
+    display: inline-block;
+}
+
+
+.body-weather-medium {
+    font-size: 16px;
+    line-height: 26px;
+   font-weight: 500;
+}
+
+.weather-block .rolling-weather-section {
+    background-color: #fff;
+}
+.weather-block .rolling-weather {
+    position: relative;
+}
+.weather-block .rolling-weather .rolling-list {
+    overflow-x: hidden;
+    overflow-y: visible;
+    padding-left: calc(50% - 540px);
+    padding-right: calc(50% - 540px);
+    max-width: 100%;
+    margin: 0 auto;
+    display: block;
+    position: relative;
+}
+.weather-block .rolling-weather .rolling-list .bd-filter.left {
+    background: linear-gradient(90deg, #fff 90%, rgba(255, 255, 255, 0) 100%);
+    left: 0;
+    top: 0;
+    z-index: 83;
+    bottom: 0;
+    width: calc(50% - 540px);
+}
+.weather-block .rolling-weather .rolling-list .bd-filter {
+    position: absolute;
+}
+.weather-block .rolling-weather .rolling-list .bd-filter.right {
+    background: linear-gradient(270deg, #fff 90%, rgba(255, 255, 255, 0) 100%);
+    z-index: 83;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: calc(50% - 540px);
+}
+
+.weather-block .rolling-weather .btn-portfolio-step {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    align-content: center;
+    border-radius: 40px;
+    background: #fff;
+    box-shadow: 0px 12px 24px 0px rgba(46, 107, 170, .08);
+    cursor: pointer;
+    transition: top ease .5s;
+    top: 270px;
+    z-index: 100;
+}
+
+button {
+    border: none;
+    background: none;
+}
+.weather-block .rolling-weather .btn-portfolio-step img {
+     width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+
+
+.weather-block .rolling-weather .rolling-list .rolling-inner .rolling-weather-content.active {
+    display: flex;
+}
+.weather-block .rolling-weather .rolling-list .rolling-inner .rolling-weather-content {
+    gap: 24px;
+    padding-top: 44px;
+    padding-bottom: 100px;
+    width: 2184px;
+}
+.weather-block .rolling-weather .rolling-list .weather-box {
+    float: left;
+    cursor: pointer;
+    width: 344px;
+    height: 510px;
+    border-bottom-left-radius: 24px;
+    border-top-left-radius: 24px;
+    border-bottom-right-radius: 24px;
+    border-top-right-radius: 24px;
+    box-shadow: 0px 12px 32px -12px rgba(46, 107, 170, .24);
+   background-color: transparent;
+}
+
+.weather-block .rolling-weather .rolling-list .weather-box-Label {
+    float: left;
+    cursor: pointer;
+    width: 344px;
+    height: 510px;
+    border-bottom-left-radius: 24px;
+    border-top-left-radius: 24px;
+    border-bottom-right-radius: 24px;
+    border-top-right-radius: 24px;
+    box-shadow: 0px 12px 32px -12px rgba(46, 107, 170, .24);
+   background-color: transparent;
+}
+
+
+a {
+    text-decoration: none;
+    color: #212121;
+}
+.weather-block .rolling-weather .rolling-list .weather-box .img-box {
+    width: 344px;
+    height: 250px;
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    overflow: hidden;
+    padding-bottom: 32px;
+}
+
+
+
+
+
+
+.caption-1-medium {
+    font-weight: 500;
+}
+
+
+.weather-block .rolling-weather .rolling-list .weather-box .img-box .portfolio-thumbnail-image {
+    width: 344px;
+    height: 344px;
+    border-radius: 4px;
+}
+
+.weather-block .rolling-weather .rolling-list .weather-box .weather-info-section {
+    padding: 32px 24px;
+}
+
+.weather-block .rolling-weather .rolling-list .weather-box .title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.subtitle-2-medium {
+    font-size: 18px;
+    line-height: 28px;
+    font-weight: 500;
+}
+.text-gray {
+    color: #9e9e9e;
+}
+.body-weather-subtext{
+    font-size: 14px;
+    line-height: 24px;
+    font-weight: 400;
+}
+.weather-subtext {
+    margin-bottom: 20px;
+}
+
+.weather-block .rolling-weather .rolling-list .weather-box .category .seperator {
+    display: inline-block;
+    width: 1px;
+    height: 12px;
+    margin: 0 8px;
+    position: relative;
+    top: 2px;
+    background-color: #e0e0e0;
+}
+
+.weather-block .rolling-weather .rolling-list .skill-badge.multiple {
+    max-width: 104px;
+}
+
+.weather-block .rolling-weather .rolling-list .skill-badge {
+    display: inline-block;
+    border-radius: 8px;
+    color: #616161;
+    padding: 2px 8px;
+    background-color: #eee;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 13px;
+    line-height: 20px;
+    font-weight: 400;
+}
+
+.weather-block .rolling-weather .rolling-list .skill-badge+.skill-badge {
+    margin-left: 8px;
+}
+
+.caption-1 {
+    font-size: 12px;
+    line-height: 18px;
+    font-weight: 400;
+}
+.weather-block .container .tab-navigation-section .step-nav .step-selector {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    background-color: #212121;
+    width: var(--step-selector-width);
+    transform: translateX(var(--step-selector-x));
+    transition: all .4s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.weather-block .rolling-weather .btn-portfolio-step.left {
+    left: calc(50% - 612px);
+}
+.weather-block .rolling-weather .btn-portfolio-step.right {
+    right: calc(50% - 612px);
+}
+.rolling-inner {
+  transition: margin-left 0.5s ease-in-out;
+}
+.custom-divider {
+  width: 100%;
+  height: 2px; /* 선 두께 */
+  background: linear-gradient(to right, rgba(255,255,255,1), rgba(0,87,146,0.15), rgba(255,255,255,1));
+  margin: 20px 0;
+  border-radius: 1px;
+  border: none;
+  background-color: #fff; /* 배경 흰색 */
+  box-sizing: border-box;
+  /* 그림자나 여백이 필요 없으면 padding, box-shadow 등은 빼세요 */
+}
+
+/* 슬라이드 효과를 위해 overflow와 width 지정 */
+.rolling-list {
+  overflow: hidden;
+  position: relative;
+}
+
+.rolling-weather-content.active {
+  display: flex;
+  transition: margin-left 0.5s ease-in-out;
+  width: max-content; /* 카드가 여러 개일 때 한 줄로 쭉 나열 */
+}
+

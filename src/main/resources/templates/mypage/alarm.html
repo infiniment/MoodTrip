@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="/css/mypage/alarm.css">
+</head>
+<body>
+    <div>
+        <div class="wrap"> <!--여기가 min-width : 1200px 부분-->
+            <div class="page"> <!-- 여기가 W-full 부분-->
+                <div class="page-inner"> <!--css-1jnf2ee eglsog60-->
+                    <aside class="user-settings-nav">
+                        <div class="account-settings">계정 설정</div>
+                        <hr orientation="horizontal" class="horizontal-line">
+                        <a class="my_profile active" href="/templates/mypage/my-profile.html">내 정보</a>
+                        <a class="my_matching active" href="/templates/mypage/my-matching.html">매칭 정보</a>
+                        <a class="join_requests active" href="/templates/mypage/join-requests.html">
+                            방 입장 요청 관리
+                            <span class="notification-badge" id="join-requests-badge" style="display: none;">0</span>
+                        </a>
+                        <a class="my_reviews active" href="/templates/mypage/my-reviews.html">내가 쓴 후기</a>
+                        <a class="my_tourist_attraction_wishlist active" href="/templates/mypage/my-tourist-attraction-wishlist.html">관광지 찜 목록</a>
+                        <a class="change_password active" href="/templates/mypage/change-password.html">비밀번호 변경 정보</a>
+                        <a class="alarm active" href="/templates/mypage/alarm.html">알림 설정</a>     
+                    </aside>
+                    <main class="mypage_info"> <!--css-1rr4qq7 eglsog61-->
+                        <div class="total-wrapper">
+                            <h1 class="alarm-title">알림설정</h1>
+                            <div class="alarm-settings-wrapper">
+                                <div class="companion-matching-service-wrapper">
+                                    <div class="companion-matching-service-text">
+                                        동행 매칭 서비스
+                                    </div>
+                                    <div class="alarm-switch-text-wrapper">
+                                        <div class="alarm-switch-SMS">SMS</div>
+                                        <div class="alarm-switch-email">이메일</div>
+                                    </div>
+                                </div>
+                                <div class="companion-matching-service-wrapper">
+                                    <div class="room-entry-request-notification">방 입장 요청 알림</div>
+                                    <div class="switching-entry-request-notification">
+                                        <div class="custom-switch" style="position: relative; display: inline-block; text-align: left; opacity: 1; direction: ltr; border-radius: 11px; transition: opacity 0.25s; touch-action: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); user-select: none;">
+                                            <div class="switch-bg" style="height: 22px; width: 40px; margin: 0px; position: relative; background: rgb(33, 34, 36); border-radius: 11px; cursor: pointer; transition: background 0.25s;"></div>
+                                            <div class="switch-handle" style="height: 18px; width: 18px; background: rgb(255, 255, 255); display: inline-block; cursor: pointer; border-radius: 50%; position: absolute; transform: translateX(20px); top: 2px; outline: 0px; border: 0px; transition: background-color 0.25s, transform 0.25s, box-shadow 0.15s;"></div>
+                                            <input type="checkbox" role="switch" aria-checked="true" style="border: 0px; clip: rect(0px, 0px, 0px, 0px); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px;">
+                                        </div>
+                                        <div class="custom-switch" style="position: relative; display: inline-block; text-align: left; opacity: 1; direction: ltr; border-radius: 11px; transition: opacity 0.25s; touch-action: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); user-select: none;">
+                                            <div class="switch-bg" style="height: 22px; width: 40px; margin: 0px; position: relative; background: rgb(33, 34, 36); border-radius: 11px; cursor: pointer; transition: background 0.25s;"></div>
+                                            <div class="switch-handle" style="height: 18px; width: 18px; background: rgb(255, 255, 255); display: inline-block; cursor: pointer; border-radius: 50%; position: absolute; transform: translateX(20px); top: 2px; outline: 0px; border: 0px; transition: background-color 0.25s, transform 0.25s, box-shadow 0.15s;"></div>
+                                            <input type="checkbox" role="switch" aria-checked="true" style="border: 0px; clip: rect(0px, 0px, 0px, 0px); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px;">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="companion-matching-service-wrapper">
+                                    <div class="completion-matching-room-notification">방 매칭 완료 알림</div>
+                                    <div class="switching-completion-matching-notification">
+                                        <div class="custom-switch" style="position: relative; display: inline-block; text-align: left; opacity: 1; direction: ltr; border-radius: 11px; transition: opacity 0.25s; touch-action: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); user-select: none;">
+                                            <div class="switch-bg" style="height: 22px; width: 40px; margin: 0px; position: relative; background: rgb(33, 34, 36); border-radius: 11px; cursor: pointer; transition: background 0.25s;"></div>
+                                            <div class="switch-handle" style="height: 18px; width: 18px; background: rgb(255, 255, 255); display: inline-block; cursor: pointer; border-radius: 50%; position: absolute; transform: translateX(20px); top: 2px; outline: 0px; border: 0px; transition: background-color 0.25s, transform 0.25s, box-shadow 0.15s;"></div>
+                                            <input type="checkbox" role="switch" aria-checked="true" style="border: 0px; clip: rect(0px, 0px, 0px, 0px); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px;">
+                                        </div>
+                                        <div class="custom-switch" style="position: relative; display: inline-block; text-align: left; opacity: 1; direction: ltr; border-radius: 11px; transition: opacity 0.25s; touch-action: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); user-select: none;">
+                                            <div class="switch-bg" style="height: 22px; width: 40px; margin: 0px; position: relative; background: rgb(33, 34, 36); border-radius: 11px; cursor: pointer; transition: background 0.25s;"></div>
+                                            <div class="switch-handle" style="height: 18px; width: 18px; background: rgb(255, 255, 255); display: inline-block; cursor: pointer; border-radius: 50%; position: absolute; transform: translateX(20px); top: 2px; outline: 0px; border: 0px; transition: background-color 0.25s, transform 0.25s, box-shadow 0.15s;"></div>
+                                            <input type="checkbox" role="switch" aria-checked="true" style="border: 0px; clip: rect(0px, 0px, 0px, 0px); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px;">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="consent-receive-marketing-information-wrapper">
+                                    <div class="consent-receive-marketing-information">마케팅 정보 수신 동의</div>
+                                    <div class="alarm-switch-text-wrapper">
+                                        <div class="alarm-switch-SMS">SMS</div>
+                                        <div class="alarm-switch-email">이메일</div>
+                                    </div>
+                                </div>
+                                <div class="events-coupons-notification-wrapper">
+                                    <div class="events-coupons-notification">이벤트∙쿠폰 등의 할인 혜택 알림</div>
+                                    <div class="switching-events-coupons-notification">
+                                        <div class="custom-switch" style="position: relative; display: inline-block; text-align: left; opacity: 1; direction: ltr; border-radius: 11px; transition: opacity 0.25s; touch-action: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); user-select: none;">
+                                            <div class="switch-bg" style="height: 22px; width: 40px; margin: 0px; position: relative; background: rgb(200, 202, 210); border-radius: 11px; cursor: pointer; transition: background 0.25s;"></div>
+                                            <div class="switch-handle" style="height: 18px; width: 18px; background: rgb(255, 255, 255); display: inline-block; cursor: pointer; border-radius: 50%; position: absolute; transform: translateX(2px); top: 2px; outline: 0px; border: 0px; transition: background-color 0.25s, transform 0.25s, box-shadow 0.15s;"></div>
+                                            <input type="checkbox" role="switch" aria-checked="false" style="border: 0px; clip: rect(0px, 0px, 0px, 0px); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px;">
+                                        </div>
+                                        <div class="custom-switch" style="position: relative; display: inline-block; text-align: left; opacity: 1; direction: ltr; border-radius: 11px; transition: opacity 0.25s; touch-action: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); user-select: none;">
+                                            <div class="switch-bg" style="height: 22px; width: 40px; margin: 0px; position: relative; background: rgb(200, 202, 210); border-radius: 11px; cursor: pointer; transition: background 0.25s;"></div>
+                                            <div class="switch-handle" style="height: 18px; width: 18px; background: rgb(255, 255, 255); display: inline-block; cursor: pointer; border-radius: 50%; position: absolute; transform: translateX(2px); top: 2px; outline: 0px; border: 0px; transition: background-color 0.25s, transform 0.25s, box-shadow 0.15s;"></div>
+                                            <input type="checkbox" role="switch" aria-checked="false" style="border: 0px; clip: rect(0px, 0px, 0px, 0px); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px;">
+                                            <!--이 속성이 위에 속성으로 바껴야함 방 매칭 쪽 js활용-->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/js/mypage/alarm.js"></script>
+</body>
+</html>

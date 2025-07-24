@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>무드트립 - 스케줄 짜기</title>
+    <link rel="stylesheet" href="/css/schedule-with-companion/scheduling.css">
+    <script src="/js/schedule-with-companion/scheduling.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌟 함께 떠나는 여행</h1>
+            <p>동행자들과 완벽한 여행 계획을 세워보세요</p>
+        </div>
+        <div class="trip-info">
+            <div class="trip-details">
+                <div class="trip-detail">
+                    <div class="icon">📍</div>
+                    <div>
+                        <strong>부산</strong>
+                        <p>2박 3일</p>
+                    </div>
+                </div>
+                <div class="trip-detail">
+                    <div class="icon">👶</div>
+                    <div>
+                        <strong>동행자 4명</strong>
+                        <p>노수민, 김상우, 김민규, 서유진</p>
+                    </div>
+                </div>
+                <div class="trip-detail">
+                    <div class="icon">🧡</div>
+                    <div>
+                        <strong>실시간 접속 인원 :</strong>
+                        <p id="onlineUsers">김상우, 노수민</p>
+                        <div class="online-status">
+                            <span class="online-indicator"></span>
+                            <span id="onlineCount">2명 온라인</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="main-content">
+            <div class="section-tabs">
+                <div class="tab active" onclick="showSection('schedule')">📅 일정 짜기</div>
+                <div class="tab" onclick="showSection('weather')">🌤️ 날씨 확인</div>
+                <div class="tab" onclick="showSection('transport')">🚗 교통편</div>
+            </div>
+            <div id="schedule" class="content-section active">
+                <div class="schedule-section">
+                    <div class="calendar-container">
+                        <div class="calendar-header">
+                            <h3>2025년 7월</h3>
+                            <div class="calendar-nav">
+                                <button class="nav-btn">‹</button>
+                                <button class="nav-btn">›</button>
+                            </div>
+                        </div>
+                        <div class="calendar-grid">
+                            <div class="calendar-day" style="color: #ccc;">일</div>
+                            <div class="calendar-day" style="color: #ccc;">월</div>
+                            <div class="calendar-day" style="color: #ccc;">화</div>
+                            <div class="calendar-day" style="color: #ccc;">수</div>
+                            <div class="calendar-day" style="color: #ccc;">목</div>
+                            <div class="calendar-day" style="color: #ccc;">금</div>
+                            <div class="calendar-day" style="color: #ccc;">토</div>
+                            <div class="calendar-day">1</div>
+                            <div class="calendar-day">2</div>
+                            <div class="calendar-day">3</div>
+                            <div class="calendar-day">4</div>
+                            <div class="calendar-day">5</div>
+                            <div class="calendar-day">6</div>
+                            <div class="calendar-day">7</div>
+                            <div class="calendar-day">8</div>
+                            <div class="calendar-day">9</div>
+                            <div class="calendar-day">10</div>
+                            <div class="calendar-day">11</div>
+                            <div class="calendar-day">12</div>
+                            <div class="calendar-day">13</div>
+                            <div class="calendar-day">14</div>
+                            <div class="calendar-day">15</div>
+                            <div class="calendar-day">16</div>
+                            <div class="calendar-day">17</div>
+                            <div class="calendar-day">18</div>
+                            <div class="calendar-day">19</div>
+                            <div class="calendar-day">20</div>
+                            <div class="calendar-day">21</div>
+                            <div class="calendar-day">22</div>
+                            <div class="calendar-day">23</div>
+                            <div class="calendar-day">24</div>
+                            <div class="calendar-day">25</div>
+                            <div class="calendar-day">26</div>
+                            <div class="calendar-day">27</div>
+                            <div class="calendar-day">28</div>
+                            <div class="calendar-day">29</div>
+                            <div class="calendar-day">30</div>
+                            <div class="calendar-day">31</div>
+                        </div>
+                    </div>
+                    <div class="schedule-list">
+                        <h3 style="margin-bottom: 20px; color: #333;">일정을 선택해주세요</h3>
+                        <div class="no-schedule">
+                            <div class="no-schedule-icon">📅</div>
+                            <p>달력에서 날짜를 선택하면<br>해당 날짜의 일정을 확인할 수 있습니다</p>
+                        </div>
+                        <button class="add-btn" onclick="openScheduleModal()">새 일정 추가</button>
+                    </div>
+                </div>
+            </div>
+            <div id="weather" class="content-section">
+                <div class="weather-section">
+                    <div class="weather-current">
+                        <div class="weather-icon">☀️</div>
+                        <div class="weather-temp">28°C</div>
+                        <p>맑음</p>
+                        <p>부산 · 7월 12일</p>
+                        <p style="margin-top: 15px; opacity: 0.8;">습도 65% · 바람 2m/s</p>
+                    </div>
+
+                    <div class="weather-forecast">
+                        <h3 style="margin-bottom: 20px; color: #333;">3일 예보</h3>
+                        <div class="forecast-item">
+                            <div>
+                                <strong>7월 12일 (토)</strong>
+                                <p>맑음</p>
+                            </div>
+                            <div style="text-align: right;">
+                                <span style="font-size: 24px;">☀️</span>
+                                <p><strong>28°C</strong> / 22°C</p>
+                            </div>
+                        </div>
+                        <div class="forecast-item">
+                            <div>
+                                <strong>7월 13일 (일)</strong>
+                                <p>구름 많음</p>
+                            </div>
+                            <div style="text-align: right;">
+                                <span style="font-size: 24px;">⛅</span>
+                                <p><strong>26°C</strong> / 20°C</p>
+                            </div>
+                        </div>
+                        <div class="forecast-item">
+                            <div>
+                                <strong>7월 14일 (월)</strong>
+                                <p>소나기</p>
+                            </div>
+                            <div style="text-align: right;">
+                                <span style="font-size: 24px;">🌧️</span>
+                                <p><strong>24°C</strong> / 19°C</p>
+                            </div>
+                        </div>
+                        <button class="add-btn">상세 예보 보기</button>
+                    </div>
+                </div>
+            </div>
+            <div id="transport" class="content-section">
+                <div class="transport-section">
+                    <div class="map-container">
+                        <div style="text-align: center;">
+                            <div style="font-size: 48px; margin-bottom: 20px;">🗺️</div>
+                            <p>카카오맵 API 연동 예정</p>
+                            <p style="margin-top: 10px; font-size: 14px;">실시간 교통정보 및 경로 안내</p>
+                        </div>
+                    </div>
+
+                    <div class="transport-options">
+                        <h3 style="margin-bottom: 20px; color: #333;">교통편 옵션</h3>
+                        <div class="transport-item">
+                            <div class="transport-icon">🚄</div>
+                            <div class="transport-info">
+                                <h4>KTX (서울→부산)</h4>
+                                <p>2시간 30분 · 55,000원</p>
+                                <p>매시 정각 출발</p>
+                            </div>
+                        </div>
+                        <div class="transport-item">
+                            <div class="transport-icon">✈️</div>
+                            <div class="transport-info">
+                                <h4>항공편 (김포→김해)</h4>
+                                <p>1시간 20분 · 89,000원</p>
+                                <p>하루 6회 운항</p>
+                            </div>
+                        </div>
+                        <div class="transport-item">
+                            <div class="transport-icon">🚌</div>
+                            <div class="transport-info">
+                                <h4>고속버스</h4>
+                                <p>4시간 30분 · 32,000원</p>
+                                <p>30분 간격 운행</p>
+                            </div>
+                        </div>
+                        <div class="transport-item">
+                            <div class="transport-icon">🚗</div>
+                            <div class="transport-info">
+                                <h4>렌터카</h4>
+                                <p>4시간 · 일일 60,000원</p>
+                                <p>자유로운 이동</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 일정 추가 모달 (새로 추가된 부분) -->
+    <div class="modal-overlay" id="scheduleModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>새 일정 추가</h2>
+                <button class="modal-close" onclick="closeScheduleModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="scheduleTime">시간</label>
+                    <input type="time" id="scheduleTime" class="form-input" placeholder="예: 14:30">
+                </div>
+                <div class="form-group">
+                    <label for="scheduleTitle">일정 제목</label>
+                    <input type="text" id="scheduleTitle" class="form-input" placeholder="일정 제목을 입력하세요">
+                </div>
+                <div class="form-group">
+                    <label for="scheduleDescription">설명 (선택사항)</label>
+                    <textarea id="scheduleDescription" class="form-textarea" placeholder="일정에 대한 상세 설명을 입력하세요"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeScheduleModal()">취소</button>
+                <button class="btn-confirm" onclick="addScheduleFromModal()">일정 추가</button>
+            </div>
+        </div>
+    </div>
+    <!-- 메신저 팝업 트리거 버튼 -->
+    <button class="messenger-trigger" onclick="openMessenger()">
+        <img src="/static/image/schedule-with-companion/label-logo.jpg" alt="무드트립">
+    </button>
+    <!-- 메신저 앱 모달 -->
+    <div class="modal-overlay" id="messengerModal" onclick="closeMessenger(event)">
+        <div class="messenger-app" onclick="event.stopPropagation()">
+            <!-- HOME 탭 -->
+            <div class="messenger-tab-content active" id="homeTab">
+                <div class="messenger-header">
+                    <div class="messenger-profile">
+                        <div class="profile-avatar">
+                            <img src="/static/image/schedule-with-companion/label-logo.jpg" alt="무드트립">
+                        </div>
+                        <div class="profile-info">
+                            <h3>무드트립(MoodTrip)</h3>
+                            <div class="status">See business hours ></div>
+                        </div>
+                    </div>
+                    <button class="close-btn" onclick="closeMessenger()">×</button>
+                </div>
+                <div class="messenger-content">
+                    <div class="welcome-section">
+                        <div class="welcome-avatar">
+                            <img src="/static/image/schedule-with-companion/label-logo.jpg" alt="무드트립">
+                        </div>
+                        <div class="welcome-info">
+                            <h3>무드트립(MoodTrip)</h3>
+                            <div class="welcome-status">See Business Hours ></div>
+                        </div>
+                    </div>
+                    <div class="company-message-card">
+                        <div class="message-avatar">
+                            <img src="/static/image/schedule-with-companion/label-logo.jpg" alt="무드트립">
+                        </div>
+                        <div class="message-info">
+                            <div class="message-header">
+                                <strong>무드트립(MoodTrip)</strong>
+                                <span class="message-time">17 minutes ago</span>
+                            </div>
+                            <div class="message-text">나의 감정을 여행과 함께 떠나는 이곳은 무드트립! 궁금한 사항 물어봐주세요!</div>
+                        </div>
+                    </div>
+                    <div class="service-options">
+                        <div class="service-card" onclick="handleServiceClick('pricing')">
+                            <div class="service-icon">🏝️</div>
+                            <div class="service-text">
+                                <strong>무드트립에 대해 궁금하신가요?</strong>
+                                <small>아래 버튼 눌러 궁금하신 점을 확인해보세요 😊</small>
+                            </div>
+                        </div>
+                        <div class="service-card" onclick="handleServiceClick('schedule')">
+                            <div class="service-icon">⚪</div>
+                            <div class="service-text">
+                                <strong>메시지 상담은 평일 10:00~18:00...</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="manager-message">
+                        <div class="manager-header">
+                            <div class="manager-avatar">
+                                <img src="/static/image/schedule-with-companion/label-logo.jpg" alt="무드트립">
+                            </div>
+                            <div class="manager-info">
+                                <strong>무드트립 매니저 김상우</strong>
+                                <small>06-23</small>
+                            </div>
+                        </div>
+                        <p>가벼운 질문들이 있으신가요? 저에게 물어봐주세요!</p>
+                    </div>
+                    <div class="footer-notice">
+                        •   30분 내 답변을 받으실 수 있습니다. 
+                    </div>
+                </div>
+                <div class="messenger-footer">
+                    <button class="contact-btn" onclick="startChatMode()">문의하기 ↗</button>
+                    <div class="quick-actions">
+                        <button class="quick-action" onclick="makeCall()" title="전화">📞</button>
+                        <button class="quick-action" onclick="closeMessenger()" title="닫기">❌</button>
+                    </div>
+                </div>
+            </div>
+            <!-- MESSAGES 탭 -->
+            <div class="messenger-tab-content" id="messagesTab">
+                <div class="messages-header">
+                    <h2>Messages</h2>
+                    <button class="close-btn" onclick="closeMessenger()">×</button>
+                </div>
+
+                <div class="unread-section">
+                    <div class="unread-header">
+                        <span>1 unrelated messages</span>
+                        <button class="read-all-btn">Read All</button>
+                    </div>
+                </div>
+                <div class="message-list">
+                    <div class="message-item">
+                        <div class="message-avatar">
+                            <img src="/static/image/schedule-with-companion/label-logo.jpg" alt="정북궁">
+                        </div>
+                        <div class="message-info">
+                            <div class="message-title">경복궁 야간 개장 갔다가 간장 게장 먹으러가요!!</div>
+                            <div class="message-preview">1 new messages</div>
+                        </div>
+                        <div class="message-meta">
+                            <span class="message-time">now</span>
+                        </div>
+                    </div>
+                    <div class="message-item">
+                        <div class="message-avatar">
+                            <img src="/static/image/schedule-with-companion/label-logo.jpg" alt="전주">
+                        </div>
+                        <div class="message-info">
+                            <div class="message-title">전주 한옥마을</div>
+                            <div class="message-preview">2 new messages</div>
+                        </div>
+                        <div class="message-meta">
+                            <span class="message-time">3 days ago</span>
+                        </div>
+                    </div>
+                    <div class="message-item">
+                        <div class="message-avatar">
+                            <img src="/static/image/schedule-with-companion/label-logo.jpg" alt="정북궁2">
+                        </div>
+                        <div class="message-info">
+                            <div class="message-title">고양시로 놀러 가는 고양</div>
+                            <div class="message-preview">1 new messages</div>
+                        </div>
+                        <div class="message-meta">
+                            <span class="message-time">1 days ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- SETTINGS 탭 -->
+            <div class="messenger-tab-content" id="settingsTab">
+                <div class="settings-header">
+                    <h2>Settings</h2>
+                    <button class="close-btn" onclick="closeMessenger()">×</button>
+                </div>
+                <div class="settings-content">
+                    <div class="profile-section">
+                        <div class="settings-avatar">
+                            <img src="/static/image/schedule-with-companion/label-logo.jpg" alt="무드트립">
+                        </div>
+                        <div class="profile-details">
+                            <div class="profile-name">Name</div>
+                            <div class="profile-contact">Contact information</div>
+                            <button class="edit-info-btn">📝 Edit information</button>
+                        </div>
+                    </div>
+                    <div class="settings-section">
+                        <div class="section-title">Language</div>
+                        <div class="setting-item">
+                            <div class="setting-icon">🌐</div>
+                            <div class="setting-label">Language</div>
+                            <div class="setting-value">
+                                English
+                                <span class="arrow">></span>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-icon">🔄</div>
+                            <div class="setting-label">Show message translation</div>
+                            <div class="toggle-switch active"></div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-icon">🔔</div>
+                            <div class="setting-label">Alert sound</div>
+                            <div class="toggle-switch active"></div>
+                        </div>
+                    </div>
+                    <div class="settings-section">
+                        <div class="section-title">Advertisement Settings</div>
+                        <div class="setting-item">
+                            <div class="setting-icon">📱</div>
+                            <div class="setting-label">Disable text notifications</div>
+                            <div class="toggle-switch"></div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-icon">📧</div>
+                            <div class="setting-label">Disable email notifications</div>
+                            <div class="toggle-switch"></div>
+                        </div>
+                    </div>
+                    <div class="version-info">v15.1.1</div>
+                </div>
+            </div>
+            <!-- 하단 네비게이션 -->
+            <div class="messenger-nav">
+                <button class="nav-item active" onclick="switchMessengerTab('home')">
+                    <div class="nav-icon">🏠</div>
+                    <span>Home</span>
+                </button>
+                <button class="nav-item" onclick="switchMessengerTab('messages')">
+                    <div class="nav-icon">💬</div>
+                    <span>Messages</span>
+                </button>
+                <button class="nav-item" onclick="switchMessengerTab('settings')">
+                    <div class="nav-icon">⚙️</div>
+                    <span>Settings</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

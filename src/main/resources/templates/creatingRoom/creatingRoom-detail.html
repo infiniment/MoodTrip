@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>무드트립 : 동행자 매칭 방 만들기 상세 페이지</title>
+    <link rel="stylesheet" href="/css/creatingRoom/creatingRoom-detail.css">
+    <script src="/js/creatingRoom/creatingRoom-detail.js"></script>
+</head>
+<body class="room-create phase-1">
+    <div class="big-frame">
+        <div class="room-create-formview">
+            <div class="container">
+                <div class="submit-progress">
+                    <div class="room-status-box">
+                        <a class="back-to-before link-text" onclick="exitWithSubmit('temporary_room_phase_1', 'False')" style="cursor: pointer;">
+                            <img class="back-to-before-img" src="/static/image/creatingRoom/back-to-before.svg">
+                            <p class="back-to-before-title body-1-medium">뒤로 가기</p>
+                        </a>
+                        <p class="menu-title subtitle-1-medium mb4">방 정보 입력하기</p>
+                    </div>
+                    <div class="input-group-status">
+                        <p class="status-main-menu active body-2">방 상세 정보 입력</p>
+                        <div class="status-sub-menu">
+                            <p class="status-sub-menu-title active">
+                                <span class="bottom-border"></span>
+                                <span class="sub-menu-marker">1</span>
+                                <img class="phase-complete-icon" src="/static/image/creatingRoom/checkbox-checked.svg">
+                                기본 정보
+                            </p>
+                            <p class="status-sub-menu-title">
+                                <span class="top-border"></span>
+                                <span class="bottom-border"></span>
+                                <span class="sub-menu-marker">2</span>
+                                <img class="phase-complete-icon" src="/static/image/creatingRoom/checkbox-checked.svg">
+                                감정 선택
+                            </p>
+                            <p class="status-sub-menu-title">
+                                <span class="top-border"></span>
+                                <span class="bottom-border"></span>
+                                <span class="sub-menu-marker">3</span>
+                                <img class="phase-complete-icon" src="/static/image/creatingRoom/checkbox-checked.svg">
+                                여행지 선택
+                            </p>
+                            <p class="status-sub-menu-title">
+                                <span class="top-border"></span>
+                                <span class="sub-menu-marker">4</span>
+                                <img class="phase-complete-icon" src="/static/image/creatingRoom/checkbox-checked.svg">
+                                일정 선택
+                            </p>
+                        </div>
+                        <p class="status-main-menu status-menu-with-tooltip body-2">방 최종 등록</p>
+                    </div>
+                </div>
+                <form autocomplete="off" enctype="multipart/form-data" id="temporary_room_phase_1" method="POST" onsubmit="return validationPhase(this);" data-hs-cf-bound="true">
+                    <input name="csrfmiddlewaretoken" type="hidden" value="tLyscS3cOgu3CROlEEk0U8u43AL0s2XJkUqonCkA8AGVb6qzImREIKoGdO5DQoNU">
+                    <div class="room-create-form-section">
+                        <div class="form-section-header">
+                            <p class="form-section-title subtitle-1">기본 정보</p>
+                            <button class="room-form-guide-button header-button btn btn-8-16" type="button" onclick="openHelpModal()">
+                                <img class="room-form-guide-button-img" src="/static/image/creatingRoom/question.svg">
+                                도움말
+                            </button>
+                        </div>
+                        <div class="form-input-section">
+                            <div class="form-group-light mb48">
+                                <label class="form-group-title body-1-bold mb16">
+                                    인원 선택 <span class="required">*</span>
+                                </label>
+                                <div class="select-category mb32">
+                                    <div class="category-card" data-target="twopeople">
+                                        <div class="check-mark">
+                                            <img src="/static/image/creatingRoom/checkbox.svg" alt="체크박스" width="16" height="16">
+                                        </div>
+                                        <div class="category-icon">
+                                            <img src="/static/image/creatingRoom/twopeople.svg" alt="2명 아이콘" width="60" height="60">
+                                        </div>
+                                        <div class="category-title body-2-medium text900">2명</div>
+                                    </div>
+                                    <div class="category-card" data-target="fourpeople">
+                                        <div class="check-mark">
+                                            <img src="/static/image/creatingRoom/checkbox.svg" alt="체크박스" width="16" height="16">
+                                        </div>
+                                        <div class="category-icon">
+                                            <img src="/static/image/creatingRoom/fourpeople.svg" alt="4명 아이콘" width="60" height="60">
+                                        </div>
+                                        <div class="category-title body-2-medium text900">4명</div>
+                                    </div>
+                                    <div class="category-card" data-target="etc">
+                                        <div class="check-mark">
+                                            <img src="/static/image/creatingRoom/checkbox.svg" alt="체크박스" width="16" height="16">
+                                        </div>
+                                        <div class="category-icon">
+                                            <img src="/static/image/creatingRoom/etc.svg" alt="기타 아이콘" width="60" height="60">
+                                        </div>
+                                        <div class="category-title body-2-medium text900">기타</div>
+                                    </div>
+                                </div>
+
+                                <input type="hidden" name="selected_people" value="">
+
+                                <div class="form-group-light">
+                                    <label class="form-group-title body-1-bold mb4">방 이름</label>
+                                    <p class="mb16 body-2 text900">사용하고 싶은 방 이름을 입력해주세요.</p>
+                                    <div class="form-content">
+                                        <div class="roomName-search-form theme-client mb8">
+                                            <input name="roomName_name" type="hidden">
+                                            <div class="roomName-search-typing-box">
+                                                <div class="roomName-search-input-group">
+                                                    <i class="search_icon">
+                                                        <img class="text-icon" src="/static/image/creatingRoom/search.svg">
+                                                    </i>
+                                                    <div class="roomName-search-selected"></div>
+                                                    <input class="roomName-search-typing-input theme-client body-2" placeholder="방 이름을 입력해주세요 ex)고양시로 가는 고양" type="text">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group-light2">
+                                    <label class="form-group-title body-1-bold mb4">방 소개</label>
+                                    <p class="mb16 body-2 text900">당신의 방을 소개해주세요.</p>
+                                    <div class="form-content2">
+                                        <div class="roomName-search-form2 theme-client mb8">
+                                            <input name="roomName_name2" type="hidden">
+                                            <div class="roomName-search-typing-box2">
+                                                <div class="roomName-search-input-group2">
+                                                    <i class="search_icon">
+                                                        <img class="text-icon" src="/static/image/creatingRoom/search.svg">
+                                                    </i>
+                                                    <div class="roomName-search-selected"></div>
+                                                    <input class="roomName-search-typing-input2 theme-client body-2" placeholder="간단하게 동행자들에게 하고 싶은 말을 적어주세요       ex) 안녕하세요!!! 우리 함께 고양으로 가는고양!!야옹야옹" type="text">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-section-footer" style="position: sticky; bottom: 0; background-color: white; z-index: 50">
+                                <button class="btn btn-client btn-11-24 btn-right" name="can_submit" type="submit" value="False">다음</button>
+                                <div style="clear: both;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 기본 정보 도움말 모달 -->
+    <div id="helpModal" class="help-modal" style="display: none;">
+        <div class="help-modal-overlay" onclick="closeHelpModal()"></div>
+        <div class="help-modal-content">
+            <div class="help-modal-header">
+                <h3>기본 정보 입력 도움말</h3>
+                <button class="help-modal-close" onclick="closeHelpModal()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M18 6L6 18M6 6L18 18" stroke="#666" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="help-modal-body">
+                <div class="help-section">
+                    <h4>👥 인원 선택 가이드</h4>
+                    <div class="people-guide">
+                        <div class="people-option">
+                            <div class="people-icon">👥</div>
+                            <div class="people-content">
+                                <strong>2명</strong>
+                                <p>나와 1명의 동행자가 함께하는 소규모 여행</p>
+                                <span class="people-benefit">• 친밀한 관계 형성 가능 • 의사결정 빠름</span>
+                            </div>
+                        </div>
+                        <div class="people-option">
+                            <div class="people-icon">👨‍👩‍👧‍👦</div>
+                            <div class="people-content">
+                                <strong>4명</strong>
+                                <p>나와 3명의 동행자가 함께하는 그룹 여행</p>
+                                <span class="people-benefit">• 다양한 재미 • 비용 분담 효과</span>
+                            </div>
+                        </div>
+                        <div class="people-option">
+                            <div class="people-icon">🎪</div>
+                            <div class="people-content">
+                                <strong>기타</strong>
+                                <p>5명 이상의 대규모 여행이나 특별한 구성</p>
+                                <span class="people-benefit">• 대규모 이벤트 • 다양한 만남</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="help-section">
+                    <h4>📝 방 이름 짓기 팁</h4>
+                    <div class="naming-tips">
+                        <div class="tip-category">
+                            <h5>🎯 목적지 활용</h5>
+                            <div class="tip-examples">
+                                <span class="example-tag">제주도 힐링 여행</span>
+                                <span class="example-tag">부산 바다 투어</span>
+                                <span class="example-tag">경주 역사 탐방</span>
+                            </div>
+                        </div>
+                        <div class="tip-category">
+                            <h5>😊 재미있는 표현</h5>
+                            <div class="tip-examples">
+                                <span class="example-tag">고양시로 가는고양</span>
+                                <span class="example-tag">떠나자! 여행멘토들</span>
+                                <span class="example-tag">힐링이 필요해</span>
+                            </div>
+                        </div>
+                        <div class="tip-category">
+                            <h5>🗓️ 시기 포함</h5>
+                            <div class="tip-examples">
+                                <span class="example-tag">여름 바캉스 팀</span>
+                                <span class="example-tag">가을 단풍 구경단</span>
+                                <span class="example-tag">연말 여행 모임</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="help-section">
+                    <h4>💬 방 소개 작성 가이드</h4>
+                    <div class="intro-guide">
+                        <div class="intro-template">
+                            <h5>📋 추천 구성</h5>
+                            <div class="template-structure">
+                                <div class="template-item">
+                                    <span class="template-label">인사</span>
+                                    <span class="template-example">"안녕하세요! 함께 여행할 동행자를 찾고 있어요"</span>
+                                </div>
+                                <div class="template-item">
+                                    <span class="template-label">여행 목적</span>
+                                    <span class="template-example">"힐링과 맛집 투어가 목적입니다"</span>
+                                </div>
+                                <div class="template-item">
+                                    <span class="template-label">기대하는 점</span>
+                                    <span class="template-example">"새로운 친구들과 즐거운 추억 만들어요!"</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="intro-examples">
+                            <h5>✨ 예시 문구</h5>
+                            <div class="example-messages">
+                                <div class="message-bubble">
+                                    "20대 직장인입니다! 스트레스 해소차 여행 떠나려고 해요. 사진 찍기 좋아하고 맛집 탐방 좋아하는 분들 환영! 🌟"
+                                </div>
+                                <div class="message-bubble">
+                                    "혼자 여행도 좋지만 함께 하면 더 재밌잖아요? 계획보단 즉흥적인 여행 스타일이에요. 편하게 대화하며 여행해요! 😊"
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="help-section">
+                    <h4>⚠️ 작성 시 주의사항</h4>
+                    <ul class="help-warnings">
+                        <li>개인정보(전화번호, 주소 등)는 포함하지 마세요</li>
+                        <li>너무 구체적인 일정보다는 전반적인 여행 스타일을 적어주세요</li>
+                        <li>긍정적이고 친근한 톤으로 작성하면 더 많은 관심을 받을 수 있어요</li>
+                        <li>특별한 요구사항이 있다면 미리 명시해주세요</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="help-modal-footer">
+                <div class="help-footer-info">
+                    <p>💡 멋진 방 이름과 소개로 더 많은 동행자를 만나보세요!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>무드트립 - 공지사항 상세</title>
+    <link rel="stylesheet" href="/static/css/customer-center/announcement-detail.css">
+</head>
+<body>
+    <div class="announcement-detail-layout">
+        <div class="announcement-detail-main">
+            <main role="main">
+                <div class="section-page">
+                    <div class="announcement-detail-container">
+                        
+                        <!-- 상단 네비게이션 -->
+                        <nav class="breadcrumb-nav">
+                            <div class="breadcrumb">
+                                <a href="/customer-center" class="breadcrumb-link">고객센터</a>
+                                <span class="breadcrumb-separator">&gt;</span>
+                                <a href="/announcement" class="breadcrumb-link">공지사항</a>
+                                <span class="breadcrumb-separator">&gt;</span>
+                                <span class="breadcrumb-current">공지사항 상세</span>
+                            </div>
+                            
+                            <div class="nav-actions">
+                                <button class="back-button" onclick="history.back()">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <polyline points="15,18 9,12 15,6"></polyline>
+                                    </svg>
+                                    목록으로
+                                </button>
+                            </div>
+                        </nav>
+
+                        <!-- 공지사항 헤더 -->
+                        <header class="announcement-header">
+                            <div class="announcement-badge important">중요</div>
+                            <h1 class="announcement-title">
+                                [중요] 무드트립을 사칭하며 개인정보를 요구하는 피싱 메시지에 주의하세요!
+                            </h1>
+                            
+                            <div class="announcement-meta">
+                                <div class="meta-left">
+                                    <span class="meta-item">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <circle cx="12" cy="12" r="3"></circle>
+                                            <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"></path>
+                                        </svg>
+                                        2025.04.17
+                                    </span>
+                                    <span class="meta-item">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                            <circle cx="12" cy="12" r="3"></circle>
+                                        </svg>
+                                        조회 1,254
+                                    </span>
+                                </div>
+                                
+                                <div class="meta-right">
+                                    <button class="share-button" id="share-button">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <circle cx="18" cy="5" r="3"></circle>
+                                            <circle cx="6" cy="12" r="3"></circle>
+                                            <circle cx="18" cy="19" r="3"></circle>
+                                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                                        </svg>
+                                        공유
+                                    </button>
+                                    
+                                    <button class="print-button" onclick="window.print()">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <polyline points="6,9 6,2 18,2 18,9"></polyline>
+                                            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                                            <polyline points="6,14 6,22 18,22 18,14"></polyline>
+                                        </svg>
+                                        인쇄
+                                    </button>
+                                </div>
+                            </div>
+                        </header>
+
+                        <!-- 공지사항 내용 -->
+                        <article class="announcement-content">
+                            <div class="content-body">
+                                <div class="alert-section">
+                                    <div class="alert-icon">⚠️</div>
+                                    <div class="alert-text">
+                                        <strong>중요한 보안 알림</strong><br>
+                                        무드트립을 사칭한 피싱 메시지가 발견되었습니다. 개인정보 보호를 위해 아래 내용을 꼭 확인해주세요.
+                                    </div>
+                                </div>
+
+                                <h2>📧 피싱 메시지 특징</h2>
+                                <ul>
+                                    <li><strong>발신자 위장:</strong> 무드트립 공식 이메일과 유사하지만 약간 다른 주소 사용</li>
+                                    <li><strong>긴급성 강조:</strong> "24시간 내 확인 필요", "계정 정지 위험" 등의 문구 사용</li>
+                                    <li><strong>개인정보 요구:</strong> 비밀번호, 카드번호, 주민번호 등 민감정보 요구</li>
+                                    <li><strong>의심스러운 링크:</strong> 공식 도메인이 아닌 링크로 이동 유도</li>
+                                </ul>
+
+                                <h2>🚫 절대 하지 말아야 할 것</h2>
+                                <div class="warning-box">
+                                    <ol>
+                                        <li>의심스러운 메시지의 링크를 클릭하지 마세요</li>
+                                        <li>개인정보(비밀번호, 카드번호 등)를 입력하지 마세요</li>
+                                        <li>첨부파일을 다운로드하거나 실행하지 마세요</li>
+                                        <li>요구사항에 즉시 응답하지 마세요</li>
+                                    </ol>
+                                </div>
+
+                                <h2>✅ 피싱 메시지 의심 시 대처방법</h2>
+                                <div class="action-steps">
+                                    <div class="step">
+                                        <div class="step-number">1</div>
+                                        <div class="step-content">
+                                            <h4>메시지 삭제</h4>
+                                            <p>의심스러운 메시지는 즉시 삭제하세요</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="step">
+                                        <div class="step-number">2</div>
+                                        <div class="step-content">
+                                            <h4>공식 채널 확인</h4>
+                                            <p>무드트립 공식 웹사이트나 앱을 통해 직접 확인하세요</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="step">
+                                        <div class="step-number">3</div>
+                                        <div class="step-content">
+                                            <h4>고객센터 문의</h4>
+                                            <p>의심스러운 내용은 무드트립 고객센터로 문의해주세요</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <h2>🔒 개인정보 보호를 위한 추가 팁</h2>
+                                <div class="tip-box">
+                                    <div class="tip-item">
+                                        <div class="tip-icon">🔐</div>
+                                        <div class="tip-text">
+                                            <strong>강력한 비밀번호 사용</strong><br>
+                                            영문, 숫자, 특수문자를 조합한 8자리 이상의 비밀번호를 사용하세요
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="tip-item">
+                                        <div class="tip-icon">📱</div>
+                                        <div class="tip-text">
+                                            <strong>2차 인증 활성화</strong><br>
+                                            계정 보안을 위해 2차 인증을 설정해주세요
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="tip-item">
+                                        <div class="tip-icon">🔄</div>
+                                        <div class="tip-text">
+                                            <strong>정기적인 비밀번호 변경</strong><br>
+                                            3-6개월마다 비밀번호를 변경하는 것을 권장합니다
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="contact-section">
+                                    <h3>📞 문의사항이 있으시면</h3>
+                                    <div class="contact-info">
+                                        <div class="contact-item">
+                                            <strong>고객센터:</strong> 1588-0000 (평일 09:00-18:00)
+                                        </div>
+                                        <div class="contact-item">
+                                            <strong>이메일:</strong> support@moodtrip.com
+                                        </div>
+                                        <div class="contact-item">
+                                            <strong>온라인 문의:</strong> 무드트립 앱 > 고객센터 > 1:1 문의
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+
+                        <!-- 하단 액션 버튼 -->
+                        <footer class="announcement-footer">
+                            <div class="footer-actions">
+                                <button class="helpful-button" id="helpful-button">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+                                    </svg>
+                                    도움이 되었나요?
+                                </button>
+                                
+                                <div class="navigation-buttons">
+                                    <button class="nav-btn prev-btn">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <polyline points="15,18 9,12 15,6"></polyline>
+                                        </svg>
+                                        이전 글
+                                    </button>
+                                    
+                                    <button class="nav-btn next-btn">
+                                        다음 글
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <polyline points="9,18 15,12 9,6"></polyline>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </footer>
+
+                        <!-- 관련 공지사항 -->
+                        <section class="related-announcements">
+                            <h3 class="related-title">관련 공지사항</h3>
+                            <div class="related-list">
+                                <a href="#" class="related-item">
+                                    <div class="related-badge">중요</div>
+                                    <div class="related-content">
+                                        <div class="related-text">[중요] 무드트립에서 안전하게 동행을 구해요!</div>
+                                        <div class="related-date">2025.04.15</div>
+                                    </div>
+                                </a>
+                                
+                                <a href="#" class="related-item">
+                                    <div class="related-badge">공지</div>
+                                    <div class="related-content">
+                                        <div class="related-text">[공지] 2차 인증 도입 안내 (2025.04.21)</div>
+                                        <div class="related-date">2025.04.09</div>
+                                    </div>
+                                </a>
+                                
+                                <a href="#" class="related-item">
+                                    <div class="related-badge">공지</div>
+                                    <div class="related-content">
+                                        <div class="related-text">[공지] 개인정보처리방침 개정 안내 (2025.06.03)</div>
+                                        <div class="related-date">2025.06.03</div>
+                                    </div>
+                                </a>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="/static/js/customer-center/announcement-detail.js"></script>
+</body>
+</html>

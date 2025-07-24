@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>무드 트립 - 방 입장 요청 관리</title>
+    <link rel="stylesheet" href="/css/mypage/join-requests.css">
+</head>
+<body>
+    <div>
+        <div class="wrap">
+            <div class="page">
+                <div class="page-inner">
+                    <aside class="user-settings-nav">
+                        <div class="account-settings">계정 설정</div>
+                        <hr orientation="horizontal" class="horizontal-line">
+                        <a class="my_profile active" href="/templates/mypage/my-profile.html">내 정보</a>
+                        <a class="my_matching active" href="/templates/mypage/my-matching.html">매칭 정보</a>
+                        <a class="join_requests active" href="/templates/mypage/join-requests.html">
+                            방 입장 요청 관리
+                            <span class="notification-badge" id="join-requests-badge">3</span>
+                        </a>
+                        <a class="my_reviews active" href="/templates/mypage/my-reviews.html">내가 쓴 후기</a>
+                        <a class="my_tourist_attraction_wishlist active" href="/templates/mypage/my-tourist-attraction-wishlist.html">관광지 찜 목록</a>
+                        <a class="change_password active" href="/templates/mypage/change-password.html">비밀번호 변경 정보</a>
+                        <a class="alarm active" href="/templates/mypage/alarm.html">알림 설정</a>     
+                    </aside>
+                    <main class="mypage_info">
+                        <div class="total-wrapper">
+                            <div class="requests-header">
+                                <h1 class="info-title">방 입장 요청 관리</h1>
+                                <div class="bulk-actions">
+                                    <button class="btn-bulk btn-approve-all" id="approve-all-btn">모두 승인</button>
+                                    <button class="btn-bulk btn-reject-all" id="reject-all-btn">모두 거절</button>
+                                </div>
+                            </div>
+                            
+                            <!-- 통계 카드 -->
+                            <div class="requests-stats">
+                                <div class="stat-card">
+                                    <div class="stat-number" id="total-requests">3</div>
+                                    <div class="stat-label">총 요청</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-number" id="today-requests">1</div>
+                                    <div class="stat-label">오늘 요청</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-number" id="urgent-requests">1</div>
+                                    <div class="stat-label">긴급 요청</div>
+                                </div>
+                            </div>
+                            
+                            <!-- 필터 바 -->
+                            <div class="filter-bar">
+                                <select class="filter-select" id="room-filter">
+                                    <option value="all">모든 방</option>
+                                    <option value="경복궁 야간 개장">경복궁 야간 개장</option>
+                                    <option value="대전 대동 하늘공원">대전 대동 하늘공원</option>
+                                </select>
+                                <select class="filter-select" id="priority-filter">
+                                    <option value="all">모든 우선순위</option>
+                                    <option value="high">높음</option>
+                                    <option value="normal">보통</option>
+                                </select>
+                                <input type="text" class="search-input" placeholder="이름 또는 메시지로 검색..." id="search-requests">
+                            </div>
+                            
+                            <div class="main-wrapper">
+                                <!-- 방별 요청 섹션 1 -->
+                                <div class="room-section" data-room-id="room-1">
+                                    <div class="room-header">
+                                        <div>
+                                            <h3 class="room-title">경복궁 야간 개장 같이 보러 가요~!</h3>
+                                            <div class="room-meta">여행 날짜: 25/05/13 | 현재 인원: 3/5명</div>
+                                        </div>
+                                        <div class="waiting-count">2건 대기</div>
+                                    </div>
+                                    
+                                    <div class="requests-container">
+                                        <!-- 요청 1 -->
+                                        <div class="request-item-detailed" data-request-id="1" data-room-id="room-1">
+                                            <div class="request-checkbox">
+                                                <input type="checkbox" class="request-select" data-request-id="1">
+                                            </div>
+                                            <div class="request-avatar-large">
+                                                <img src="/static/image/mypage/test-profile-img.jpg" alt="김여행">
+                                            </div>
+                                            <div class="request-details">
+                                                <div class="request-name-large">
+                                                    김여행
+                                                    <span class="priority-badge priority-high">높음</span>
+                                                </div>
+                                                <div class="request-message">안녕하세요! 경복궁 야간 개장을 정말 보고 싶었는데 혼자 가기는 아쉬워서 신청합니다. 사진 찍는 것을 좋아해서 좋은 스팟도 함께 찾아보면 좋을 것 같아요!</div>
+                                                <div class="request-meta-detailed">
+                                                    <span class="verification-badge verified">신원 인증</span>
+                                                    <span class="verification-badge unverified">연락처 등록</span>
+                                                    <span class="separator">|</span>
+                                                    <span>2025-07-01 14:30 신청</span>
+                                                    <span class="time-ago">2시간 전</span>
+                                                </div>
+                                            </div>
+                                            <div class="request-actions-detailed">
+                                                <button class="btn-approve" data-request-id="1" data-room-id="room-1">승인</button>
+                                                <button class="btn-reject" data-request-id="1" data-room-id="room-1">거절</button>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- 요청 2 -->
+                                        <div class="request-item-detailed" data-request-id="2" data-room-id="room-1">
+                                            <div class="request-checkbox">
+                                                <input type="checkbox" class="request-select" data-request-id="2">
+                                            </div>
+                                            <div class="request-avatar-large">
+                                                <img src="/static/image/mypage/test-profile-img.jpg" alt="박모험">
+                                            </div>
+                                            <div class="request-details">
+                                                <div class="request-name-large">
+                                                    박모험
+                                                    <span class="priority-badge priority-normal">보통</span>
+                                                </div>
+                                                <div class="request-message">여행 경험이 많아요. 경복궁은 여러 번 가봤지만 야간 개장은 처음이라 기대됩니다. 잘 부탁드립니다!</div>
+                                                <div class="request-meta-detailed">
+                                                    <span class="verification-badge unverified">신원 인증</span>
+                                                    <span class="verification-badge verified">연락처 등록</span>
+                                                    <span class="separator">|</span>
+                                                    <span>2025-07-01 16:20 신청</span>
+                                                    <span class="time-ago">30분 전</span>
+                                                </div>
+                                            </div>
+                                            <div class="request-actions-detailed">
+                                                <button class="btn-approve" data-request-id="2" data-room-id="room-1">승인</button>
+                                                <button class="btn-reject" data-request-id="2" data-room-id="room-1">거절</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 방별 요청 섹션 2 -->
+                                <div class="room-section" data-room-id="room-2">
+                                    <div class="room-header">
+                                        <div>
+                                            <h3 class="room-title">대전 대동 하늘공원</h3>
+                                            <div class="room-meta">여행 날짜: 25/05/13 | 현재 인원: 3/5명</div>
+                                        </div>
+                                        <div class="waiting-count">1건 대기</div>
+                                    </div>
+                                    
+                                    <div class="requests-container">
+                                        <!-- 요청 3 -->
+                                        <div class="request-item-detailed" data-request-id="3" data-room-id="room-2">
+                                            <div class="request-checkbox">
+                                                <input type="checkbox" class="request-select" data-request-id="3">
+                                            </div>
+                                            <div class="request-avatar-large">
+                                                <img src="/static/image/mypage/test-profile-img.jpg" alt="이산행">
+                                            </div>
+                                            <div class="request-details">
+                                                <div class="request-name-large">
+                                                    이산행
+                                                    <span class="priority-badge priority-normal">보통</span>
+                                                </div>
+                                                <div class="request-message">등산을 정말 좋아합니다! 대전 지역은 잘 모르지만 새로운 곳을 탐험하는 것을 좋아해서 신청해봅니다.</div>
+                                                <div class="request-meta-detailed">
+                                                    <span class="verification-badge verified">신원 인증</span>
+                                                    <span class="verification-badge verified">연락처 등록</span>
+                                                    <span class="separator">|</span>
+                                                    <span>2025-07-02 09:15 신청</span>
+                                                    <span class="time-ago">방금 전</span>
+                                                </div>
+                                            </div>
+                                            <div class="request-actions-detailed">
+                                                <button class="btn-approve" data-request-id="3" data-room-id="room-2">승인</button>
+                                                <button class="btn-reject" data-request-id="3" data-room-id="room-2">거절</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 요청이 없는 방 예시 -->
+                                <div class="room-section" data-room-id="room-3">
+                                    <div class="room-header">
+                                        <div>
+                                            <h3 class="room-title">제주도 올레길 트레킹</h3>
+                                            <div class="room-meta">여행 날짜: 25/06/15 | 현재 인원: 2/6명</div>
+                                        </div>
+                                        <div class="waiting-count no-requests">요청 없음</div>
+                                    </div>
+                                    
+                                    <div class="requests-container">
+                                        <div class="empty-section">
+                                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                <circle cx="12" cy="12" r="10"></circle>
+                                                <path d="M12 6v6l4 2"></path>
+                                            </svg>
+                                            <h4>아직 입장 요청이 없습니다</h4>
+                                            <p>새로운 참가 요청이 오면 여기에 표시됩니다.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 확인 모달 -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="confirmTitle">확인</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage">작업을 진행하시겠습니까?</p>
+                <div id="confirmDetails" class="confirm-details"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel">취소</button>
+                <button class="btn-confirm" id="confirmAction">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 알림 토스트 (동적 생성) -->
+    <div id="toast-container"></div>
+
+    <script src="/js/mypage/join-requests.js"></script>
+</body>
+</html>

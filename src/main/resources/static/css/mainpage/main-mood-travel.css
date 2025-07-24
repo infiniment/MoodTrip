@@ -1,0 +1,123 @@
+
+/*감정기반 페이지*/
+
+.mood-do-not-fail {
+   background: linear-gradient(to right, #005792, #001A2C);
+}
+
+* {
+    box-sizing: border-box;
+    font-family: 'NotoSansKR', Sans-serif;
+    margin: 0;
+    padding: 0;
+    line-height: 1rem;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.mood-do-not-fail .container {
+    display: flex;
+    align-items: center;
+    gap: 100px; /* flex 아이템 사이 간격 */
+    padding: 100px 20px;
+}
+
+.container {
+    width: 100%;
+    max-width: 1580px; /* 원하는 최대 크기 */
+    margin: 0 auto;
+}
+
+ .mood-do-not-fail .container .mood-question {
+   
+    width: 1000px;
+    margin-left: 60x;
+   
+}
+
+.text-white {
+    color: #fff;
+}
+
+.title-Mood-bold {
+    font-weight: 900;
+    font-size: 50px;
+    line-height: 60px;
+     white-space: nowrap; /* 줄바꿈 방지 */
+      
+
+}
+
+.text-Q {
+    margin-bottom: 56px;
+}
+.mood-do-not-fail.container .mood-gif img {
+    width: 500px;
+}
+
+
+.container::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.weather-more-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(to right, #005792, #001A2C);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 8px 18px;      /* 상하 8px, 좌우 18px */
+  font-size: 1em;         /* 글자 크기 */
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(0, 87, 146, 0.10);
+  transition: box-shadow 0.18s, background 0.18s;
+}
+.weather-more-btn:hover {
+  box-shadow: 0 8px 24px rgba(0, 23, 46, 0.14);
+  background: linear-gradient(to right, #006bb7, #00213a);
+}
+.weather-more-icon svg path {
+  stroke: #fff; /* 아이콘도 흰색으로 */
+}
+
+/*감정 검색 페이지 버튼*/
+.mood-matching-btn {
+  display: inline-block;
+  width: 220px;
+  padding: 20px 32px;
+  border-radius: 16px;
+  background: linear-gradient(90deg, #FFD600 60%, #FFB300 100%);
+  color: #1A237E;
+  font-family: 'Pretendard', 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+  font-weight: 800;
+  font-size: 24px;
+  letter-spacing: 0.02em;
+  line-height: 32px;
+  text-align: center;
+  text-decoration: none;
+  box-shadow: 0px 12px 32px -8px rgba(46, 107, 170, .13);
+  transition: background 0.3s, color 0.3s, transform 0.2s, box-shadow 0.3s;
+  margin-top: 40px;
+  margin-left: auto;
+  margin-right: 0;
+  display: block;         /* 오른쪽 정렬을 위해 block */
+}
+
+.mood-question {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;  /* 버튼을 오른쪽으로 */
+}
+
+.mood-matching-btn:hover,
+.mood-matching-btn:focus {
+  background: linear-gradient(90deg, #FFEA00 60%, #FFC107 100%);
+  color: #0D1333;
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0px 20px 40px -8px rgba(46, 107, 170, .18);
+}

@@ -1,0 +1,510 @@
+* {
+    box-sizing: border-box;
+    border: 0 solid #f2f3f7;
+}
+
+.wrap {
+    min-width: 1200px;
+}
+
+.page {
+    width: 100%;
+}
+
+.page-inner {
+    display: flex;
+    width: 1200px;
+    padding: 0px 16px;
+    margin: 40px auto;
+    min-height: 600px;
+}
+
+.user-settings-nav {
+    display: flex;
+    width: 300px;
+    flex-direction: column;
+}
+
+.account-settings {
+    font-size: 18px;
+    color: rgb(48, 52, 65);
+    font-weight: 500;
+}
+
+.horizontal-line {
+    margin: 20px 0px;
+    border: none;
+    flex-shrink: 0;
+    background-color: rgb(48, 52, 65);
+    height: 2px;
+}
+
+.alarm {
+    padding: 8px 20px;
+    font-size: 14px;
+    display: flex;
+    -webkit-box-pack: justify;
+    justify-content: space-between;
+    -webkit-box-align: center;
+    align-items: center;
+    color: rgb(48, 52, 65);
+    text-decoration: none;
+    font-weight: 600;
+    background: linear-gradient(135deg, rgba(0, 87, 146, 0.1) 0%, rgba(0, 26, 44, 0.05) 100%);
+    border-radius: 8px;
+    margin-bottom: 4px;
+}
+
+.my_matching, .my_profile, .my_tourist_attraction_wishlist, .change_password, .join_requests, .my_reviews {
+    padding: 8px 20px;
+    font-size: 14px;
+    display: flex;
+    -webkit-box-pack: justify;
+    justify-content: space-between;
+    -webkit-box-align: center;
+    align-items: center;
+    color: rgb(48, 52, 65);
+    text-decoration: none;
+    font-weight: 400;
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    margin-bottom: 4px;
+}
+
+.my_matching:hover, .my_profile:hover, .my_tourist_attraction_wishlist:hover, .change_password:hover, .join_requests:hover, .my_reviews:hover {
+    background: linear-gradient(135deg, rgba(0, 87, 146, 0.05) 0%, rgba(0, 26, 44, 0.02) 100%);
+    color: #005792;
+}
+
+.alarm.active {
+    background: linear-gradient(135deg, rgba(0, 87, 146, 0.1) 0%, rgba(0, 26, 44, 0.05) 100%);
+    color: #005792;
+    font-weight: 600;
+}
+
+
+.mypage_info {
+    flex: 1 1 0%;
+}
+
+.total-wrapper {
+    margin-left: 1.5rem;
+}
+
+/* 제목 */
+.alarm-title {
+    font-size: 24px;
+    color: #001A2C;
+    font-weight: 700;
+    margin: 0px;
+    display: flex;
+    -webkit-box-align: center;
+    align-items: center;
+    gap: 8px;
+    text-shadow: 0 2px 4px rgba(0, 26, 44, 0.1);
+    margin-bottom: 1.5rem;
+}
+
+/* 메인 알림 설정 컨테이너 */
+.alarm-settings-wrapper {
+    margin-top: 0;
+    padding: 2.5rem;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 87, 146, 0.1);
+    box-shadow: 0 20px 40px rgba(0, 26, 44, 0.1);
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* 섹션 래퍼들 */
+.companion-matching-service-wrapper,
+.events-coupons-notification-wrapper,
+.consent-receive-marketing-information-wrapper {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    align-items: center;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(248, 250, 252, 0.6) 100%);
+    border: 1px solid rgba(0, 87, 146, 0.08);
+    border-radius: 12px;
+    margin-bottom: 0;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 16px rgba(0, 26, 44, 0.04);
+}
+
+.companion-matching-service-wrapper:hover,
+.events-coupons-notification-wrapper:hover,
+.consent-receive-marketing-information-wrapper:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 26, 44, 0.08);
+    border-color: rgba(0, 87, 146, 0.15);
+}
+
+/* 메인 텍스트 */
+.companion-matching-service-text,
+.consent-receive-marketing-information {
+    font-size: 18px;
+    color: #001A2C;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+/* 헤더 텍스트 래퍼 */
+.alarm-switch-text-wrapper {
+    display: flex;
+    justify-content: space-around;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.alarm-switch-SMS, 
+.alarm-switch-email {
+    font-size: 14px;
+    color: #005792;
+    font-weight: 600;
+    text-align: center;
+    padding: 0.5rem;
+    background: linear-gradient(135deg, rgba(0, 87, 146, 0.05) 0%, rgba(0, 26, 44, 0.02) 100%);
+    border-radius: 8px;
+    flex: 1;
+}
+
+/* 세부 알림 항목들 */
+.room-entry-request-notification,
+.completion-matching-room-notification,
+.events-coupons-notification {
+    font-size: 15px;
+    color: #001A2C;
+    font-weight: 500;
+    padding-left: 1rem;
+}
+
+/* 스위치 컨테이너들 */
+.switching-entry-request-notification,
+.switching-completion-matching-notification,
+.switching-events-coupons-notification {
+    display: flex;
+    justify-content: space-around;
+    gap: 1rem;
+    align-items: center;
+}
+
+/* 커스텀 스위치 */
+.custom-switch {
+    position: relative;
+    display: inline-block;
+    text-align: left;
+    opacity: 1;
+    direction: ltr;
+    border-radius: 14px;
+    transition: all 0.3s ease;
+    touch-action: none;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    user-select: none;
+    cursor: pointer;
+}
+
+.custom-switch:hover {
+    transform: scale(1.05);
+}
+
+/* 스위치 배경 - OFF 상태 */
+.switch-bg {
+    height: 28px;
+    width: 48px;
+    margin: 0px;
+    position: relative;
+    background: linear-gradient(135deg, #cbd5e0 0%, #a0aec0 100%);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 스위치 배경 - ON 상태 */
+.custom-switch[data-checked="true"] .switch-bg {
+    background: linear-gradient(135deg, #005792 0%, #001A2C 100%);
+    box-shadow: 0 2px 8px rgba(0, 87, 146, 0.3);
+}
+
+/* 스위치 핸들 */
+.switch-handle {
+    height: 24px;
+    width: 24px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    display: inline-block;
+    cursor: pointer;
+    border-radius: 50%;
+    position: absolute;
+    top: 2px;
+    outline: 0px;
+    border: 0px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transform: translateX(2px);
+}
+
+/* 스위치 핸들 - ON 상태 */
+.custom-switch[data-checked="true"] .switch-handle {
+    transform: translateX(22px);
+    box-shadow: 0 2px 12px rgba(0, 87, 146, 0.2);
+}
+
+/* 숨겨진 체크박스 */
+.custom-switch input[type="checkbox"] {
+    border: 0px;
+    clip: rect(0px, 0px, 0px, 0px);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0px;
+    position: absolute;
+    width: 1px;
+    opacity: 0;
+}
+
+/* 마케팅 정보 수신 동의 섹션 간격 */
+.consent-receive-marketing-information-wrapper {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid rgba(0, 87, 146, 0.1);
+}
+
+/* 모달 관련 스타일들 */
+.modal-wrapper {
+    inset: 0px;
+    display: flex;
+    z-index: 1000;
+    position: fixed;
+    -webkit-box-align: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    justify-content: center;
+    background-color: rgba(0, 26, 44, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-tap-highlight-color: transparent;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.modal-wrapper.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.dialog-wrapper {
+    position: fixed;
+    inset: 0px;
+    width: 100%;
+    height: 100%;
+    overflow: hidden auto;
+    text-align: center;
+    outline: none;
+    display: flex;
+    -webkit-box-align: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    justify-content: center;
+}
+
+.modal-container-wrapper {
+    width: 100%;
+    position: relative;
+    flex-direction: column;
+    height: 100%;
+    max-height: 100%;
+    display: flex;
+    -webkit-box-align: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    justify-content: center;
+    vertical-align: middle;
+    max-width: 480px;
+}
+
+.modal-content-wrapper {
+    width: 100%;
+    position: relative;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    box-shadow: 0 25px 50px rgba(0, 26, 44, 0.15);
+    border: 1px solid rgba(0, 87, 146, 0.1);
+    display: flex;
+    flex-direction: column;
+    padding: 0px;
+    text-align: left;
+    max-height: calc(100% - 128px);
+    margin: 64px;
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+}
+
+.modal-wrapper.show .modal-content-wrapper {
+    transform: scale(1);
+}
+
+.exit-button-wrapper {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    z-index: 1;
+}
+
+.exit-button {
+    outline: none;
+    box-sizing: border-box;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+    display: inline-flex;
+    -webkit-box-align: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    user-select: none;
+    white-space: nowrap;
+    max-width: 100%;
+    height: 40px;
+    width: 40px;
+    font-size: 16px;
+    line-height: 16px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%);
+    border: 1px solid rgba(0, 87, 146, 0.1);
+    color: #001A2C;
+    box-shadow: 0 2px 8px rgba(0, 26, 44, 0.1);
+}
+
+.exit-button:hover {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.05) 100%);
+    border-color: rgba(239, 68, 68, 0.2);
+    color: #dc2626;
+    transform: scale(1.1);
+}
+
+.exit-button-span {
+    display: inline-block;
+    font-style: normal;
+    line-height: 0;
+    text-align: center;
+    text-transform: none;
+    vertical-align: -0.125em;
+    text-rendering: optimizelegibility;
+    -webkit-font-smoothing: antialiased;
+}
+
+.exit-svg svg {
+    width: 20px;
+    height: 20px;
+}
+
+.exit-svg {
+    display: inline-block;
+}
+
+.benefit-notification-total-wrapper {
+    font-size: 20px;
+    color: #001A2C;
+    font-weight: 700;
+    flex: 0 0 auto;
+    padding: 2rem 2.5rem 1rem;
+}
+
+.benefit-notification-wrapper {
+    text-align: center;
+}
+
+.benefit-notification {
+    margin-top: 0.75rem;
+    font-weight: 600;
+    font-size: 16px;
+    color: #005792;
+}
+
+.modal-body-wrapper {
+    flex: 1 1 auto;
+    margin: 0px 2.5rem;
+    overflow-y: auto;
+}
+
+.modal-body {
+    color: rgb(85, 89, 105);
+    padding-bottom: 2.5rem;
+    line-height: 1.6;
+    font-size: 14px;
+}
+
+.additional-info {
+    font-size: 12px;
+    color: rgb(154, 155, 167);
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(0, 87, 146, 0.1);
+}
+
+/* 반응형 */
+@media (max-width: 1200px) {
+    .wrap {
+        min-width: auto;
+    }
+    
+    .page-inner {
+        width: 100%;
+        flex-direction: column;
+        padding: 0px 20px;
+    }
+    
+    .user-settings-nav {
+        width: 100%;
+        margin-bottom: 2rem;
+    }
+    
+    .total-wrapper {
+        margin-left: 0;
+    }
+    
+    .alarm-settings-wrapper {
+        padding: 1.5rem;
+    }
+    
+    .companion-matching-service-wrapper,
+    .events-coupons-notification-wrapper,
+    .consent-receive-marketing-information-wrapper {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        text-align: center;
+        padding: 1rem;
+    }
+    
+    .alarm-switch-text-wrapper,
+    .switching-entry-request-notification,
+    .switching-completion-matching-notification,
+    .switching-events-coupons-notification {
+        justify-content: center;
+        gap: 2rem;
+    }
+    
+    .modal-content-wrapper {
+        margin: 20px;
+    }
+    
+    .benefit-notification-total-wrapper {
+        padding: 1.5rem 1.5rem 1rem;
+    }
+    
+    .modal-body-wrapper {
+        margin: 0px 1.5rem;
+    }
+    
+    .modal-body {
+        padding-bottom: 1.5rem;
+    }
+}

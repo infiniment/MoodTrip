@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>무드트립 : 동행자 매칭 시작 페이지</title>
+    <link rel="stylesheet" href="/css/creatingRoom/creatingRoom-start.css">
+    <script src="/js/creatingRoom/creatingRoom-start.js"></script>
+</head>
+<body>
+    <div class="bg-animation"></div>
+    <div class="floating-elements">
+        <div class="floating-circle circle-1"></div>
+        <div class="floating-circle circle-2"></div>
+        <div class="floating-circle circle-3"></div>
+    </div>
+
+    <section class="hero-section">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1 class="hero-title fade-in">
+                        <span id="typing-text" class="typing-text"></span><br>
+                        <span class="fade-in-delay-1">쉽고 빠르게 매칭해 드려요</span>
+                    </h1>
+                    <p class="hero-subtitle fade-in-delay-2">
+                        "혼자 여행은 끝!"<br>
+                        "무드 트립에서 함께 떠나요."
+                    </p>
+                    <div class="cta-buttons fade-in-delay-3">
+                        <a href="/templates/creatingRoom/creatingRoom-detail.html" class="btn btn-primary">방 만들러 가기</a>
+                        <a href="/templates/enteringRoom/enteringRoom.html" class="btn btn-secondary">방 찾으러 가기</a>
+                    </div>
+                </div>
+                <div class="hero-image fade-in-delay-2">
+                    <div class="image-container">
+                        <svg width="500" height="400" viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#FF6B6B"/>
+                                    <stop offset="100%" style="stop-color:#4ECDC4"/>
+                                </linearGradient>
+                                <linearGradient id="card" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#ffffff"/>
+                                    <stop offset="100%" style="stop-color:#f8f9fa"/>
+                                </linearGradient>
+                            </defs>
+                            
+                            <!-- 배경 -->
+                            <rect width="500" height="400" fill="url(#bg)" rx="20"/>
+                            
+                            <!-- 카드들 -->
+                            <rect x="50" y="50" width="120" height="150" fill="url(#card)" rx="15" opacity="0.95"/>
+                            <rect x="190" y="70" width="120" height="150" fill="url(#card)" rx="15" opacity="0.95"/>
+                            <rect x="330" y="60" width="120" height="150" fill="url(#card)" rx="15" opacity="0.95"/>
+                            
+                            <!-- 카드 내용 (프로필 이미지) -->
+                            <circle cx="110" cy="100" r="25" fill="#667eea"/>
+                            <circle cx="250" cy="120" r="25" fill="#f093fb"/>
+                            <circle cx="390" cy="110" r="25" fill="#4facfe"/>
+                            
+                            <!-- 카드 텍스트 라인 -->
+                            <rect x="70" y="140" width="80" height="8" fill="#e9ecef" rx="4"/>
+                            <rect x="70" y="155" width="60" height="6" fill="#e9ecef" rx="3"/>
+                            <rect x="70" y="170" width="70" height="6" fill="#e9ecef" rx="3"/>
+                            
+                            <rect x="210" y="160" width="80" height="8" fill="#e9ecef" rx="4"/>
+                            <rect x="210" y="175" width="60" height="6" fill="#e9ecef" rx="3"/>
+                            <rect x="210" y="190" width="70" height="6" fill="#e9ecef" rx="3"/>
+                            
+                            <rect x="350" y="150" width="80" height="8" fill="#e9ecef" rx="4"/>
+                            <rect x="350" y="165" width="60" height="6" fill="#e9ecef" rx="3"/>
+                            <rect x="350" y="180" width="70" height="6" fill="#e9ecef" rx="3"/>
+                            
+                            <!-- 연결 라인 -->
+                            <path d="M 170 125 Q 200 100 210 120" stroke="#FFD700" stroke-width="3" fill="none" opacity="0.8"/>
+                            <path d="M 310 135 Q 340 110 350 130" stroke="#FFD700" stroke-width="3" fill="none" opacity="0.8"/>
+                            
+                            <!-- 하단 버튼 -->
+                            <rect x="150" y="280" width="200" height="50" fill="#FF6B6B" rx="25"/>
+                            <text x="250" y="310" text-anchor="middle" fill="white" font-family="Arial" font-size="16" font-weight="bold">매칭 시작하기</text>
+                            
+                            <!-- 장식 요소 -->
+                            <circle cx="80" cy="300" r="8" fill="#FFD700" opacity="0.6"/>
+                            <circle cx="420" cy="320" r="12" fill="#4ECDC4" opacity="0.6"/>
+                            <circle cx="400" cy="80" r="6" fill="#FF6B6B" opacity="0.6"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            <div class="scroll-indicator">
+                <div>↓</div>
+                <small>스크롤하여 더보기</small>
+            </div>
+        </div>
+    </section>
+
+    <section class="companies-section">
+        <div class="container">
+            <h2 class="companies-title">100,000+ 기업이 믿고 사용 중인 국내 1위 동행자 매칭 플랫폼 무드트립</h2>
+            <div class="logo-carousel">
+                <div class="logo-track">
+                    <div class="logo-item">
+                        <svg width="80" height="30" viewBox="0 0 80 30">
+                            <rect width="80" height="30" fill="#FFE500" rx="5"/>
+                            <text x="40" y="20" text-anchor="middle" fill="#3C1E1E" font-weight="bold" font-size="12">Kakao</text>
+                        </svg>
+                    </div>
+                    <div class="logo-item">
+                        <svg width="80" height="30" viewBox="0 0 80 30">
+                            <rect width="80" height="30" fill="#4285F4" rx="5"/>
+                            <text x="40" y="20" text-anchor="middle" fill="white" font-weight="bold" font-size="12">Google</text>
+                        </svg>
+                    </div>
+                    <div class="logo-item">
+                        <svg width="80" height="30" viewBox="0 0 80 30">
+                            <rect width="80" height="30" fill="#E4405F" rx="5"/>
+                            <text x="40" y="20" text-anchor="middle" fill="white" font-weight="bold" font-size="10">Instagram</text>
+                        </svg>
+                    </div>
+                    <div class="logo-item">
+                        <svg width="80" height="30" viewBox="0 0 80 30">
+                            <rect width="80" height="30" fill="#03C75A" rx="5"/>
+                            <text x="40" y="20" text-anchor="middle" fill="white" font-weight="bold" font-size="12">NAVER</text>
+                        </svg>
+                    </div>
+                    <div class="logo-item">
+                        <svg width="80" height="30" viewBox="0 0 80 30">
+                            <rect width="80" height="30" fill="#0066CC" rx="5"/>
+                            <text x="40" y="20" text-anchor="middle" fill="white" font-weight="bold" font-size="12">Daum</text>
+                        </svg>
+                    </div>
+                    <!-- 반복을 위한 복사본 -->
+                    <div class="logo-item">
+                        <svg width="80" height="30" viewBox="0 0 80 30">
+                            <rect width="80" height="30" fill="#FFE500" rx="5"/>
+                            <text x="40" y="20" text-anchor="middle" fill="#3C1E1E" font-weight="bold" font-size="12">Kakao</text>
+                        </svg>
+                    </div>
+                    <div class="logo-item">
+                        <svg width="80" height="30" viewBox="0 0 80 30">
+                            <rect width="80" height="30" fill="#4285F4" rx="5"/>
+                            <text x="40" y="20" text-anchor="middle" fill="white" font-weight="bold" font-size="12">Google</text>
+                        </svg>
+                    </div>
+                    <div class="logo-item">
+                        <svg width="80" height="30" viewBox="0 0 80 30">
+                            <rect width="80" height="30" fill="#E4405F" rx="5"/>
+                            <text x="40" y="20" text-anchor="middle" fill="white" font-weight="bold" font-size="10">Instagram</text>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

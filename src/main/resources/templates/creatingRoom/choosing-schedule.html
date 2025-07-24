@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>무드트립 : 동행자 매칭 방 만들기 일정 선택</title>
+    <link rel="stylesheet" href="/css/creatingRoom/choosing-schedule.css">
+    <script src="/js/creatingRoom/choosing-schedule.js"></script>
+</head>
+<body class="room-create phase-4">
+    <div class="big-frame">
+        <div class="room-create-formview">
+            <div class="container">
+                <div class="submit-progress">
+                    <div class="room-status-box">
+                        <a class="back-to-before link-text" onclick="goToPreviousPage()" style="cursor: pointer;">
+                            <img class="back-to-before-img" src="/static/image/creatingRoom/back-to-before.svg">
+                            <p class="back-to-before-title body-1-medium">이전 화면</p>
+                        </a>
+                        <p class="menu-title subtitle-1-medium mb4">여행 일정 선택하기</p>
+                    </div>
+                    <div class="input-group-status">
+                        <p class="status-main-menu active body-2">방 상세 정보 입력</p>
+                        <div class="status-sub-menu">
+                            <p class="status-sub-menu-title completed">
+                                <span class="bottom-border"></span>
+                                <span class="sub-menu-marker">1</span>
+                                <img class="phase-complete-icon" src="/static/image/creatingRoom/checkbox-checked.svg">
+                                기본 정보
+                            </p>
+                            <p class="status-sub-menu-title completed">
+                                <span class="top-border"></span>
+                                <span class="bottom-border"></span>
+                                <span class="sub-menu-marker">2</span>
+                                <img class="phase-complete-icon" src="/static/image/creatingRoom/checkbox-checked.svg">
+                                감정 선택
+                            </p>
+                            <p class="status-sub-menu-title completed">
+                                <span class="top-border"></span>
+                                <span class="bottom-border"></span>
+                                <span class="sub-menu-marker">3</span>
+                                <img class="phase-complete-icon" src="/static/image/creatingRoom/checkbox-checked.svg">
+                                여행지 선택
+                            </p>
+                            <p class="status-sub-menu-title active">
+                                <span class="top-border"></span>
+                                <span class="sub-menu-marker">4</span>
+                                <img class="phase-complete-icon" src="/static/image/creatingRoom/checkbox-checked.svg">
+                                일정 선택
+                            </p>
+                        </div>
+                        <p class="status-main-menu status-menu-with-tooltip body-2">방 최종 등록</p>
+                    </div>
+                </div>
+                <form autocomplete="off" enctype="multipart/form-data" id="temporary_room_phase_4" method="POST" onsubmit="return validationPhase(this);" data-hs-cf-bound="true">
+                    <input name="csrfmiddlewaretoken" type="hidden" value="tLyscS3cOgu3CROlEEk0U8u43AL0s2XJkUqonCkA8AGVb6qzImREIKoGdO5DQoNU">
+                    
+                    <div class="room-create-form-section">
+                        <div class="form-section-header">
+                            <p class="form-section-title subtitle-1">일정 선택</p>
+                            <button class="room-form-guide-button header-button btn btn-8-16" type="button" onclick="openHelpModal()">
+                                <img class="room-form-guide-button-img" src="/static/image/creatingRoom/question.svg">
+                                도움말
+                            </button>
+                        </div>
+                        <div class="form-input-section">
+                            <div class="form-group-light mb48">
+                                <label class="form-group-title body-1-bold">날짜 선택
+                                    <span class="required">*</span>
+                                </label>
+                                <p class="body-2 text900 form-group-guide mb16">여행을 떠나실 대략적인 날짜를 선택해주세요. 자세한 날짜는 동행자와 채팅을 통해 정하시면 됩니다 !</p>
+                                
+                                <!-- 월 선택 드롭다운 -->
+                                <div class="month-selector mb32">
+                                    <select class="month-select" id="monthSelect">
+                                        <option value="">3개월 보기</option>
+                                        <option value="2025-07">2025년 7월</option>
+                                        <option value="2025-08">2025년 8월</option>
+                                        <option value="2025-09">2025년 9월</option>
+                                        <option value="2025-10">2025년 10월</option>
+                                        <option value="2025-11">2025년 11월</option>
+                                        <option value="2025-12">2025년 12월</option>
+                                    </select>
+                                </div>
+
+                                <!-- 달력 그리드 - 기본 3개월 표시 -->
+                                <div class="calendar-grid mb32" id="calendarGrid">
+                                    <!-- 동적으로 생성됨 -->
+                                </div>
+
+                                <!-- 단일 월 표시용 달력 (처음엔 숨김) -->
+                                <div class="single-calendar-container mb32" id="singleCalendarContainer" style="display: none;">
+                                    <!-- 동적으로 생성됨 -->
+                                </div>
+
+                                <!-- 선택된 날짜 범위 표시 -->
+                                <div class="form-group-light" id="selectedDateSection" style="display: none;">
+                                    <label class="form-group-title body-1-bold mb4">선택한 날짜 확인</label>
+                                    <p class="mb16 body-2 text900">선택한 날짜를 확인해주세요</p>
+                                    
+                                    <!-- 선택된 날짜 정보 표시 -->
+                                    <div class="selected-date-container" id="selectedDateContainer">
+                                        <div class="date-range-display">
+                                            <span class="calendar-icon">📅</span>
+                                            <span class="date-range-text" id="dateRangeText">날짜를 선택해주세요</span>
+                                        </div>
+                                        <div class="date-info-text">
+                                            <span id="dateInfoText">여행 시작일과 종료일을 선택해주세요.</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-section-footer" style="position: sticky; bottom: 0; background-color: white; z-index: 50">
+                                <button class="btn btn-client btn-11-24 btn-right" name="can_submit" type="submit" value="False" id="nextButton">다음</button>
+                                <div style="clear: both;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 도움말 모달 -->
+    <div id="helpModal" class="help-modal" style="display: none;">
+        <div class="help-modal-overlay" onclick="closeHelpModal()"></div>
+        <div class="help-modal-content">
+            <div class="help-modal-header">
+                <h3>일정 선택 도움말</h3>
+                <button class="help-modal-close" onclick="closeHelpModal()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M18 6L6 18M6 6L18 18" stroke="#666" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="help-modal-body">
+                <div class="help-section">
+                    <h4>📅 날짜 선택 방법</h4>
+                    <div class="help-step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <p><strong>시작일과 종료일 선택</strong></p>
+                            <p>달력에서 여행 시작일을 클릭하고, 이어서 종료일을 클릭하세요.</p>
+                        </div>
+                    </div>
+                    <div class="help-step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <p><strong>날짜 범위 추가</strong></p>
+                            <p>"추가" 버튼을 눌러 선택한 날짜를 확정하세요.</p>
+                        </div>
+                    </div>
+                    <div class="help-step">
+                        <span class="step-number">3</span>
+                        <div class="step-content">
+                            <p><strong>여러 구간 선택</strong></p>
+                            <p>평일만 또는 주말만 선택하고 싶다면 1-2단계를 반복하세요.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="help-section">
+                    <h4>💡 이런 경우에 활용하세요</h4>
+                    <div class="help-examples">
+                        <div class="example-item">
+                            <div class="example-icon">🏢</div>
+                            <div class="example-text">
+                                <strong>평일 여행</strong>
+                                <p>월-금요일만 선택해서 주말 제외</p>
+                            </div>
+                        </div>
+                        <div class="example-item">
+                            <div class="example-icon">🎉</div>
+                            <div class="example-text">
+                                <strong>주말 여행</strong>
+                                <p>토-일요일만 선택해서 연속 주말 여행</p>
+                            </div>
+                        </div>
+                        <div class="example-item">
+                            <div class="example-icon">📚</div>
+                            <div class="example-text">
+                                <strong>연휴 활용</strong>
+                                <p>공휴일 앞뒤로 분리해서 선택</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="help-section">
+                    <h4>🎯 색상 가이드</h4>
+                    <div class="color-guide">
+                        <div class="color-item">
+                            <div class="color-box current-selection"></div>
+                            <span>현재 선택 중인 날짜</span>
+                        </div>
+                        <div class="color-item">
+                            <div class="color-box added-selection"></div>
+                            <span>추가 완료된 날짜</span>
+                        </div>
+                        <div class="color-item">
+                            <div class="color-box disabled-date"></div>
+                            <span>선택 불가능한 날짜</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="help-section">
+                    <h4>⚠️ 주의사항</h4>
+                    <ul class="help-tips">
+                        <li>겹치는 날짜는 선택할 수 없습니다</li>
+                        <li>이미 추가된 날짜는 개별 삭제 가능합니다</li>
+                        <li>최소 1개 이상의 날짜 범위를 선택해야 합니다</li>
+                        <li>자세한 일정은 매칭 후 동행자와 조율 가능합니다</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="help-modal-footer">
+                <div class="help-footer-info">
+                    <p>💬 더 궁금한 점이 있으시면 고객센터로 문의해주세요</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>무드트립 : 방 상세보기</title>
+    <link rel="stylesheet" href="/css/enteringRoom/enteringRoom-detail.css">
+    <script src="/js/enteringRoom/enteringRoom-detail.js"></script>
+</head>
+<body>
+    <div class="detail-container">
+        
+        <div class="detail-header">
+            <button class="back-button" onclick="goBack()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="m15 18-6-6 6-6"/>
+                </svg>
+                뒤로가기
+            </button>
+            <div class="header-right">
+                <div class="status-badge" id="statusBadge">모집중</div>
+                <div class="register-date">등록 일자: <span id="registerDate">2025.07.25</span></div>
+            </div>
+        </div>
+
+        <div class="detail-content">
+            
+            <h1 class="room-title" id="roomTitle">경복궁 간장 게장 같이 먹으러 가요~!!</h1>
+
+            <div class="info-section">
+                <h3 class="section-title">📍 인원</h3>
+                <div class="info-cards">
+                    <div class="info-card">
+                        <div class="card-icon">👥</div>
+                        <div class="card-content">
+                            <span class="card-label">인원</span>
+                            <span class="card-value" id="peopleCount">4명</span>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <div class="card-icon">📅</div>
+                        <div class="card-content">
+                            <span class="card-label">날짜 기간 :</span>
+                            <span class="card-value" id="dateRange">7월</span>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <div class="card-icon">🗓️</div>
+                        <div class="card-content">
+                            <span class="card-label">여행 날짜 :</span>
+                            <span class="card-value" id="travelDate">2025.07.21 - 2025.07.31</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-info-list">
+                <div class="info-item">
+                    <span class="info-label">모집 마감일 :</span>
+                    <span class="info-value" id="deadline">2025년 7월 31일</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">예상 출발일 :</span>
+                    <span class="info-value" id="departureDate">모집 이후 채팅으로 협의</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">현재 인원 :</span>
+                    <span class="info-value" id="currentPeople">2 / 4명</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">지원 자격 :</span>
+                    <span class="info-value" id="regionRole">지역 자격은 따로 없고, 모두 다 환영합니다!</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">감정 태그 :</span>
+                    <div class="emotion-tags" id="emotionTags">
+                        <span class="emotion-tag">행복</span>
+                        <span class="emotion-tag">설렘</span>
+                        <span class="emotion-tag">뜨뜻함</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 이미지와 설명 섹션 -->
+            <div class="content-section">
+                <div class="image-container">
+                    <img id="roomImage" src="/static/image/enteringRoom/hansung.png" alt="방 이미지" class="room-image">
+                </div>
+                <div class="description-container">
+                    <div class="description-header">
+                        <h3>📝 여행 설명</h3>
+                    </div>
+                    <div class="description-content" id="roomDescription">
+                        안녕하세요! 저는 여행 여행에 방문한 할 수가지고 있습니다. 처음은 경복궁 아미지 재미 혹중 할게이게 합니다. 저는고 경복궁 아미지 재미 혹즁이 있의 지 개이디. 처음은 경복궁 아미지 재미 혹주이 있의 치게인게. 저는고 어장 혹륜을 때를 둘주지인습니다. 재기는 전쟁을 때을 둘주지고 있어서 새벽과 종하고 져은 지의여행을 친옵기가라리십니다. 지젼요. 지는다 계양 아미지 해미 혹주이 있의 차 개이 개이곳록 때을 된습니다.
+                        처음은 경복궁 아미지 재미 혹주이 있의 치게. 저는고 께양중 아미지 해미 혹주이 있의 지 개이에어. 간력 게직 즐여이머나 이려 게직 자는 해을 써벌게기 버여쁘십나.
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn-back" onclick="goBack()">이전</button>
+                <button class="btn-apply" onclick="applyToRoom()">신청하기</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="applicationModal" class="modal" style="display: none;">
+        <div class="modal-overlay" onclick="closeApplicationModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>방 입장 신청</h3>
+                <button class="modal-close" onclick="closeApplicationModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="room-info-preview">
+                    <h4 id="modalRoomTitle">방 제목</h4>
+                    <p id="modalRoomMeta">방 정보</p>
+                </div>
+                <div class="application-form">
+                    <label for="applicationMessage">신청 메시지</label>
+                    <textarea id="applicationMessage" placeholder="간단한 자기소개와 함께 여행에 대한 의지를 보여주세요!" rows="4"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cancel" onclick="closeApplicationModal()">취소</button>
+                <button class="btn btn-primary" onclick="submitApplication()">신청하기</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

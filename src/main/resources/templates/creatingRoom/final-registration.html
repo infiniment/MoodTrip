@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>무드트립 : 방 최종 등록</title>
+    <link rel="stylesheet" href="/css/creatingRoom/final-registration.css">
+    <script src="/js/creatingRoom/final-registration.js"></script>
+</head>
+<body class="room-create phase-final">
+    <div class="big-frame">
+        <div class="room-create-formview">
+            <div class="container">
+                <!-- 진행 상태 바 -->
+                <div class="submit-progress">
+                    <div class="room-status-box">
+                        <a class="back-to-before link-text" onclick="goToPreviousPage()" style="cursor: pointer;">
+                            <img class="back-to-before-img" src="/static/image/creatingRoom/back-to-before.svg" alt="뒤로가기">
+                            <p class="back-to-before-title body-1-medium">이전 화면</p>
+                        </a>
+                        <p class="menu-title subtitle-1-medium mb4">방 최종 등록</p>
+                    </div>
+                    <div class="input-group-status">
+                        <p class="status-main-menu completed body-2">방 상세 정보 입력</p>
+                        <div class="status-sub-menu">
+                            <p class="status-sub-menu-title completed">
+                                <span class="bottom-border"></span>
+                                <span class="sub-menu-marker">1</span>
+                                <img class="phase-complete-icon" src="/static/image/creatingRoom/checkbox-checked.svg" alt="완료">
+                                기본 정보
+                            </p>
+                            <p class="status-sub-menu-title completed">
+                                <span class="top-border"></span>
+                                <span class="bottom-border"></span>
+                                <span class="sub-menu-marker">2</span>
+                                <img class="phase-complete-icon" src="/static/image/creatingRoom/checkbox-checked.svg" alt="완료">
+                                감정 선택
+                            </p>
+                            <p class="status-sub-menu-title completed">
+                                <span class="top-border"></span>
+                                <span class="bottom-border"></span>
+                                <span class="sub-menu-marker">3</span>
+                                <img class="phase-complete-icon" src="/static/image/creatingRoom/checkbox-checked.svg" alt="완료">
+                                여행지 선택
+                            </p>
+                            <p class="status-sub-menu-title completed">
+                                <span class="top-border"></span>
+                                <span class="sub-menu-marker">4</span>
+                                <img class="phase-complete-icon" src="/static/image/creatingRoom/checkbox-checked.svg" alt="완료">
+                                일정 선택
+                            </p>
+                        </div>
+                        <p class="status-main-menu active body-2">방 최종 등록</p>
+                    </div>
+                </div>
+                
+                <!-- 메인 폼 -->
+                <div class="room-create-form-section">
+                    <div class="form-section-header">
+                        <p class="form-section-title subtitle-1">방 최종 등록</p>
+                        <button class="room-form-guide-button header-button btn btn-8-16" type="button" onclick="openHelpModal()">
+                            <img class="room-form-guide-button-img" src="/static/image/creatingRoom/question.svg" alt="도움말">
+                            도움말
+                        </button>
+                    </div>
+                    
+                    <div class="form-input-section">
+                        <!-- 총 인원 -->
+                        <div class="summary-section">
+                            <h3 class="summary-title">총 인원</h3>
+                            <div class="people-info" id="peopleInfo">
+                                <div class="people-icon-container">
+                                    <div class="people-icon" id="peopleIcon">
+                                        <img src="/static/image/creatingRoom/twopeople.svg" alt="인원" width="60" height="60">
+                                    </div>
+                                    <div class="people-text" id="peopleText">2명</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 방 이름 -->
+                        <div class="summary-section">
+                            <h3 class="summary-title">방 이름</h3>
+                            <div class="room-name-display" id="roomNameDisplay">
+                                <input type="text" class="room-name-input" id="roomNameInput" placeholder="방 이름을 입력해주세요" maxlength="30">
+                                <div class="input-guide">
+                                    <span class="char-count">
+                                        <span id="currentLength">0</span>/30자
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 방 소개 -->
+                        <div class="summary-section">
+                            <h3 class="summary-title">방 소개</h3>
+                            <div class="room-intro-display" id="roomIntroDisplay">
+                                <textarea class="room-intro-textarea" id="roomIntroTextarea" placeholder="방 소개를 입력해주세요" rows="4" maxlength="200"></textarea>
+                                <div class="input-guide">
+                                    <span class="char-count">
+                                        <span id="introCurrentLength">0</span>/200자
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 선택된 태그 -->
+                        <div class="summary-section">
+                            <h3 class="summary-title">선택된 태그</h3>
+                            <div class="selected-emotions-container">
+                                <div class="selected-emotions-list" id="selectedEmotionsList">
+                                    <!-- 감정 태그들이 동적으로 표시됩니다 -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 선택된 관광지 -->
+                        <div class="summary-section">
+                            <h3 class="summary-title">선택된 관광지</h3>
+                            <div class="destination-card-display" id="destinationCardDisplay">
+                                <!-- 선택된 관광지 정보가 동적으로 표시됩니다 -->
+                            </div>
+                        </div>
+
+                        <!-- 선택된 날짜 -->
+                        <div class="summary-section">
+                            <h3 class="summary-title">선택된 날짜</h3>
+                            <div class="schedule-display" id="scheduleDisplay">
+                                <!-- 선택된 일정이 동적으로 표시됩니다 -->
+                            </div>
+                        </div>
+
+                        <!-- 등록 버튼 영역 -->
+                        <div class="form-section-footer">
+                            <div class="button-group">
+                                <button class="btn btn-white-border btn-11-24" type="button" onclick="editRoom()">수정하기</button>
+                                <button class="btn btn-client btn-11-24" type="button" onclick="submitRoom()" id="submitButton">
+                                    <span class="submit-text">등록하기</span>
+                                    <span class="loading-spinner" style="display: none;">등록 중...</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 최종 등록 도움말 모달 -->
+    <div id="helpModal" class="help-modal" style="display: none;">
+        <div class="help-modal-overlay" onclick="closeHelpModal()"></div>
+        <div class="help-modal-content">
+            <div class="help-modal-header">
+                <h3>방 최종 등록 가이드</h3>
+                <button class="help-modal-close" onclick="closeHelpModal()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M18 6L6 18M6 6L18 18" stroke="#666" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="help-modal-body">
+                <div class="help-section">
+                    <h4>🎉 축하합니다!</h4>
+                    <div class="congrats-message">
+                        <p>모든 정보 입력이 완료되었습니다! 마지막으로 입력하신 내용을 확인해보세요.</p>
+                    </div>
+                </div>
+
+                <div class="help-section">
+                    <h4>✅ 최종 확인 사항</h4>
+                    <div class="checklist">
+                        <div class="checklist-item">
+                            <span class="checklist-icon">👥</span>
+                            <span class="checklist-text">인원수가 적절한가요?</span>
+                        </div>
+                        <div class="checklist-item">
+                            <span class="checklist-icon">📝</span>
+                            <span class="checklist-text">방 이름과 소개가 매력적인가요?</span>
+                        </div>
+                        <div class="checklist-item">
+                            <span class="checklist-icon">💭</span>
+                            <span class="checklist-text">선택한 감정 태그가 여행 목적과 맞나요?</span>
+                        </div>
+                        <div class="checklist-item">
+                            <span class="checklist-icon">🗺️</span>
+                            <span class="checklist-text">여행지가 올바르게 선택되었나요?</span>
+                        </div>
+                        <div class="checklist-item">
+                            <span class="checklist-icon">📅</span>
+                            <span class="checklist-text">일정이 원하는 대로 설정되었나요?</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="help-section">
+                    <h4>🔧 수정이 필요하다면?</h4>
+                    <div class="edit-tips">
+                        <div class="edit-tip">
+                            <strong>빠른 수정</strong>
+                            <p>방 이름과 소개는 이 페이지에서 바로 수정할 수 있어요!</p>
+                        </div>
+                        <div class="edit-tip">
+                            <strong>다른 정보 수정</strong>
+                            <p>"수정하기" 버튼을 눌러 이전 단계로 돌아가서 수정하세요.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="help-section">
+                    <h4>🚀 등록 후에는?</h4>
+                    <div class="after-registration">
+                        <div class="step-item">
+                            <span class="step-number">1</span>
+                            <div class="step-content">
+                                <strong>동행자 매칭</strong>
+                                <p>비슷한 관심사를 가진 동행자들이 방에 참여할 거예요</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <span class="step-number">2</span>
+                            <div class="step-content">
+                                <strong>채팅으로 소통</strong>
+                                <p>동행자들과 채팅으로 세부 일정을 조율하세요</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <span class="step-number">3</span>
+                            <div class="step-content">
+                                <strong>즐거운 여행!</strong>
+                                <p>새로운 친구들과 함께 특별한 추억을 만드세요</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="help-modal-footer">
+                <div class="help-footer-info">
+                    <p>🌟 준비가 완료되었다면 "등록하기" 버튼을 눌러주세요!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 등록 완료 모달 -->
+    <div id="successModal" class="success-modal" style="display: none;">
+        <div class="success-modal-overlay"></div>
+        <div class="success-modal-content">
+            <div class="success-icon">🎉</div>
+            <h3>방 등록이 완료되었습니다!</h3>
+            <p>동행자들이 곧 참여할 예정입니다.</p>
+            <div class="success-buttons">
+                <button class="btn btn-client btn-11-24" onclick="goToMyRooms()">내 방 보기</button>
+                <button class="btn btn-white-border btn-11-24" onclick="createNewRoom()">새 방 만들기</button>
+            </div>
+        </div>
+    </div>
+    <div id="editSelectionModal" class="edit-selection-modal" style="display: none;">
+    <div class="edit-modal-overlay" onclick="closeEditSelectionModal()"></div>
+    <div class="edit-modal-content">
+        <div class="edit-modal-header">
+            <h3>어느 단계를 수정하시겠습니까?</h3>
+            <button class="edit-modal-close" onclick="closeEditSelectionModal()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M18 6L6 18M6 6L18 18" stroke="#666" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+        </div>
+        
+        <div class="edit-modal-body">
+            <div class="edit-option-grid">
+                <!-- 기본 정보 수정 -->
+                <div class="edit-option-card" onclick="goToEditStep(1)">
+                    <div class="edit-option-icon">
+                        <img src="/static/image/creatingRoom/twopeople.svg" alt="기본정보" width="40" height="40">
+                    </div>
+                    <div class="edit-option-content">
+                        <h4>기본 정보</h4>
+                        <p>인원수, 방 이름, 방 소개</p>
+                        <div class="edit-option-status">
+                            <span class="current-value">현재: <span id="editPeoplePreview">2명</span></span>
+                        </div>
+                    </div>
+                    <div class="edit-option-arrow">→</div>
+                </div>
+
+                <!-- 감정 선택 수정 -->
+                <div class="edit-option-card" onclick="goToEditStep(2)">
+                    <div class="edit-option-icon">
+                        <span class="emotion-emoji">😊</span>
+                    </div>
+                    <div class="edit-option-content">
+                        <h4>감정 선택</h4>
+                        <p>여행 감정 태그</p>
+                        <div class="edit-option-status">
+                            <span class="current-value">현재: <span id="editEmotionsPreview">3개 선택됨</span></span>
+                        </div>
+                    </div>
+                    <div class="edit-option-arrow">→</div>
+                </div>
+
+                <!-- 여행지 선택 수정 -->
+                <div class="edit-option-card" onclick="goToEditStep(3)">
+                    <div class="edit-option-icon">
+                        <span class="destination-emoji">🗺️</span>
+                    </div>
+                    <div class="edit-option-content">
+                        <h4>여행지 선택</h4>
+                        <p>관광지 및 목적지</p>
+                        <div class="edit-option-status">
+                            <span class="current-value">현재: <span id="editDestinationPreview">제주도</span></span>
+                        </div>
+                    </div>
+                    <div class="edit-option-arrow">→</div>
+                </div>
+
+                <!-- 일정 선택 수정 -->
+                <div class="edit-option-card" onclick="goToEditStep(4)">
+                    <div class="edit-option-icon">
+                        <span class="schedule-emoji">📅</span>
+                    </div>
+                    <div class="edit-option-content">
+                        <h4>일정 선택</h4>
+                        <p>여행 날짜 및 기간</p>
+                        <div class="edit-option-status">
+                            <span class="current-value">현재: <span id="editSchedulePreview">3박 4일</span></span>
+                        </div>
+                    </div>
+                    <div class="edit-option-arrow">→</div>
+                </div>
+            </div>
+
+            <div class="edit-modal-notice">
+                <div class="notice-icon">💡</div>
+                <div class="notice-text">
+                    <strong>안내사항</strong><br>
+                    수정 페이지로 이동하면 현재 입력한 내용은 임시 저장됩니다.
+                </div>
+            </div>
+        </div>
+        
+        <div class="edit-modal-footer">
+            <button class="btn btn-white-border btn-11-24" onclick="closeEditSelectionModal()">취소</button>
+        </div>
+    </div>
+</div>
+</body>
+</html>
