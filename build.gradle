@@ -35,6 +35,10 @@ dependencies {
 	// WebSocket(채팅 기능용)
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
+	// STOMP
+	implementation 'org.webjars:sockjs-client:1.5.1'
+	implementation 'org.webjars:stomp-websocket:2.3.3'
+
 	// Thymeleaf
 	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
 
