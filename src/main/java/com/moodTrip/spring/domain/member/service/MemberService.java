@@ -54,7 +54,6 @@ public class MemberService {
                 .memberAuth("U")                        // 기본 권한 값 예시
                 .memberName(request.getUserId()) // 우선 아이디로만 설정
                 .memberPhone("010-0000-0000")           // 필수면 기본값 또는 폼 추가 필요
-                .createdAt(LocalDateTime.now())
                 .isWithdraw(false)
                 .build();
         try {
