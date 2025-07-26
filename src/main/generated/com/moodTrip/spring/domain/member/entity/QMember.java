@@ -19,11 +19,31 @@ public class QMember extends EntityPathBase<Member> {
 
     public static final QMember member = new QMember("member1");
 
+    public final DateTimePath<java.time.LocalDateTime> createdAt = createDateTime("createdAt", java.time.LocalDateTime.class);
+
     public final StringPath email = createString("email");
 
-    public final NumberPath<Long> id = createNumber("id", Long.class);
+    public final BooleanPath isWithdraw = createBoolean("isWithdraw");
 
-    public final StringPath name = createString("name");
+    public final StringPath memberAuth = createString("memberAuth");
+
+    public final StringPath memberId = createString("memberId");
+
+    public final StringPath memberName = createString("memberName");
+
+    public final StringPath memberPhone = createString("memberPhone");
+
+    public final NumberPath<Long> memberPk = createNumber("memberPk", Long.class);
+
+    public final StringPath memberPw = createString("memberPw");
+
+    public final NumberPath<Long> rptCnt = createNumber("rptCnt", Long.class);
+
+    public final NumberPath<Long> rptRcvdCnt = createNumber("rptRcvdCnt", Long.class);
+
+    public final StringPath socialType = createString("socialType");
+
+    public final DateTimePath<java.time.LocalDateTime> updatedAt = createDateTime("updatedAt", java.time.LocalDateTime.class);
 
     public QMember(String variable) {
         super(Member.class, forVariable(variable));
