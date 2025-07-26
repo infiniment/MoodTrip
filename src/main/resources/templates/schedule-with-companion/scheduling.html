@@ -6,6 +6,8 @@
     <title>무드트립 - 스케줄 짜기</title>
     <link rel="stylesheet" href="/css/schedule-with-companion/scheduling.css">
     <script src="/js/schedule-with-companion/scheduling.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -231,210 +233,38 @@
             </div>
         </div>
     </div>
-    <!-- 메신저 팝업 트리거 버튼 -->
-    <button class="messenger-trigger" onclick="openMessenger()">
-        <img src="/static/image/schedule-with-companion/label-logo.jpg" alt="무드트립">
-    </button>
-    <!-- 메신저 앱 모달 -->
-    <div class="modal-overlay" id="messengerModal" onclick="closeMessenger(event)">
-        <div class="messenger-app" onclick="event.stopPropagation()">
-            <!-- HOME 탭 -->
-            <div class="messenger-tab-content active" id="homeTab">
-                <div class="messenger-header">
-                    <div class="messenger-profile">
-                        <div class="profile-avatar">
-                            <img src="/static/image/schedule-with-companion/label-logo.jpg" alt="무드트립">
-                        </div>
-                        <div class="profile-info">
-                            <h3>무드트립(MoodTrip)</h3>
-                            <div class="status">See business hours ></div>
-                        </div>
-                    </div>
-                    <button class="close-btn" onclick="closeMessenger()">×</button>
+    <!-- 메신저 위젯 -->
+    <div class="messenger-widget" id="messengerWidget">
+        <div class="messenger-header">
+            <div class="messenger-profile">
+                <div class="profile-avatar">
+                    <img src="/static/image/schedule-with-companion/label-logo.jpg" alt="무드트립">
                 </div>
-                <div class="messenger-content">
-                    <div class="welcome-section">
-                        <div class="welcome-avatar">
-                            <img src="/static/image/schedule-with-companion/label-logo.jpg" alt="무드트립">
-                        </div>
-                        <div class="welcome-info">
-                            <h3>무드트립(MoodTrip)</h3>
-                            <div class="welcome-status">See Business Hours ></div>
-                        </div>
-                    </div>
-                    <div class="company-message-card">
-                        <div class="message-avatar">
-                            <img src="/static/image/schedule-with-companion/label-logo.jpg" alt="무드트립">
-                        </div>
-                        <div class="message-info">
-                            <div class="message-header">
-                                <strong>무드트립(MoodTrip)</strong>
-                                <span class="message-time">17 minutes ago</span>
-                            </div>
-                            <div class="message-text">나의 감정을 여행과 함께 떠나는 이곳은 무드트립! 궁금한 사항 물어봐주세요!</div>
-                        </div>
-                    </div>
-                    <div class="service-options">
-                        <div class="service-card" onclick="handleServiceClick('pricing')">
-                            <div class="service-icon">🏝️</div>
-                            <div class="service-text">
-                                <strong>무드트립에 대해 궁금하신가요?</strong>
-                                <small>아래 버튼 눌러 궁금하신 점을 확인해보세요 😊</small>
-                            </div>
-                        </div>
-                        <div class="service-card" onclick="handleServiceClick('schedule')">
-                            <div class="service-icon">⚪</div>
-                            <div class="service-text">
-                                <strong>메시지 상담은 평일 10:00~18:00...</strong>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="manager-message">
-                        <div class="manager-header">
-                            <div class="manager-avatar">
-                                <img src="/static/image/schedule-with-companion/label-logo.jpg" alt="무드트립">
-                            </div>
-                            <div class="manager-info">
-                                <strong>무드트립 매니저 김상우</strong>
-                                <small>06-23</small>
-                            </div>
-                        </div>
-                        <p>가벼운 질문들이 있으신가요? 저에게 물어봐주세요!</p>
-                    </div>
-                    <div class="footer-notice">
-                        •   30분 내 답변을 받으실 수 있습니다. 
-                    </div>
-                </div>
-                <div class="messenger-footer">
-                    <button class="contact-btn" onclick="startChatMode()">문의하기 ↗</button>
-                    <div class="quick-actions">
-                        <button class="quick-action" onclick="makeCall()" title="전화">📞</button>
-                        <button class="quick-action" onclick="closeMessenger()" title="닫기">❌</button>
-                    </div>
+                <div class="profile-info">
+                    <h3>채팅방 - 동행자들과 소통하기</h3>
+                    <small id="chatRoomUsers">현재 접속자: 김상우, 노수민</small>
                 </div>
             </div>
-            <!-- MESSAGES 탭 -->
-            <div class="messenger-tab-content" id="messagesTab">
-                <div class="messages-header">
-                    <h2>Messages</h2>
-                    <button class="close-btn" onclick="closeMessenger()">×</button>
-                </div>
+            <button class="close-btn" onclick="toggleMessenger()">×</button>
+        </div>
 
-                <div class="unread-section">
-                    <div class="unread-header">
-                        <span>1 unrelated messages</span>
-                        <button class="read-all-btn">Read All</button>
-                    </div>
-                </div>
-                <div class="message-list">
-                    <div class="message-item">
-                        <div class="message-avatar">
-                            <img src="/static/image/schedule-with-companion/label-logo.jpg" alt="정북궁">
-                        </div>
-                        <div class="message-info">
-                            <div class="message-title">경복궁 야간 개장 갔다가 간장 게장 먹으러가요!!</div>
-                            <div class="message-preview">1 new messages</div>
-                        </div>
-                        <div class="message-meta">
-                            <span class="message-time">now</span>
-                        </div>
-                    </div>
-                    <div class="message-item">
-                        <div class="message-avatar">
-                            <img src="/static/image/schedule-with-companion/label-logo.jpg" alt="전주">
-                        </div>
-                        <div class="message-info">
-                            <div class="message-title">전주 한옥마을</div>
-                            <div class="message-preview">2 new messages</div>
-                        </div>
-                        <div class="message-meta">
-                            <span class="message-time">3 days ago</span>
-                        </div>
-                    </div>
-                    <div class="message-item">
-                        <div class="message-avatar">
-                            <img src="/static/image/schedule-with-companion/label-logo.jpg" alt="정북궁2">
-                        </div>
-                        <div class="message-info">
-                            <div class="message-title">고양시로 놀러 가는 고양</div>
-                            <div class="message-preview">1 new messages</div>
-                        </div>
-                        <div class="message-meta">
-                            <span class="message-time">1 days ago</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- SETTINGS 탭 -->
-            <div class="messenger-tab-content" id="settingsTab">
-                <div class="settings-header">
-                    <h2>Settings</h2>
-                    <button class="close-btn" onclick="closeMessenger()">×</button>
-                </div>
-                <div class="settings-content">
-                    <div class="profile-section">
-                        <div class="settings-avatar">
-                            <img src="/static/image/schedule-with-companion/label-logo.jpg" alt="무드트립">
-                        </div>
-                        <div class="profile-details">
-                            <div class="profile-name">Name</div>
-                            <div class="profile-contact">Contact information</div>
-                            <button class="edit-info-btn">📝 Edit information</button>
-                        </div>
-                    </div>
-                    <div class="settings-section">
-                        <div class="section-title">Language</div>
-                        <div class="setting-item">
-                            <div class="setting-icon">🌐</div>
-                            <div class="setting-label">Language</div>
-                            <div class="setting-value">
-                                English
-                                <span class="arrow">></span>
-                            </div>
-                        </div>
-                        <div class="setting-item">
-                            <div class="setting-icon">🔄</div>
-                            <div class="setting-label">Show message translation</div>
-                            <div class="toggle-switch active"></div>
-                        </div>
-                        <div class="setting-item">
-                            <div class="setting-icon">🔔</div>
-                            <div class="setting-label">Alert sound</div>
-                            <div class="toggle-switch active"></div>
-                        </div>
-                    </div>
-                    <div class="settings-section">
-                        <div class="section-title">Advertisement Settings</div>
-                        <div class="setting-item">
-                            <div class="setting-icon">📱</div>
-                            <div class="setting-label">Disable text notifications</div>
-                            <div class="toggle-switch"></div>
-                        </div>
-                        <div class="setting-item">
-                            <div class="setting-icon">📧</div>
-                            <div class="setting-label">Disable email notifications</div>
-                            <div class="toggle-switch"></div>
-                        </div>
-                    </div>
-                    <div class="version-info">v15.1.1</div>
-                </div>
-            </div>
-            <!-- 하단 네비게이션 -->
-            <div class="messenger-nav">
-                <button class="nav-item active" onclick="switchMessengerTab('home')">
-                    <div class="nav-icon">🏠</div>
-                    <span>Home</span>
-                </button>
-                <button class="nav-item" onclick="switchMessengerTab('messages')">
-                    <div class="nav-icon">💬</div>
-                    <span>Messages</span>
-                </button>
-                <button class="nav-item" onclick="switchMessengerTab('settings')">
-                    <div class="nav-icon">⚙️</div>
-                    <span>Settings</span>
-                </button>
-            </div>
+        <div class="messenger-content chat-room" id="chatMessages">
+            <!-- 메시지가 JS에서 append -->
+        </div>
+
+        <div class="chat-input-area">
+            <input
+                    type="text"
+                    id="chatInput"
+                    class="chat-input"
+                    placeholder="메시지를 입력하세요...">
+            <button class="send-btn" onclick="sendMessage()">전송</button>
         </div>
     </div>
+
+    <!-- 작은 원형 버튼 (열기용) -->
+    <button class="messenger-floating-btn" id="messengerFloatingBtn" onclick="toggleMessenger()">
+        <img src="/static/image/schedule-with-companion/label-logo.jpg" alt="무드트립">
+    </button>
 </body>
 </html>
