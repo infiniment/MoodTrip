@@ -5,12 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>무드트립 - 감정으로 떠나는 특별한 여행</title>
 
-  <!-- Google Fonts -->
+  <!-- Google Fonts 링크입니다. -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@100;200;300;400;500;600;700;800;900&family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
   <!-- CSS 파일들 - Thymeleaf 방식으로 변경 -->
-  <link rel="stylesheet" th:href="@{/css/fix/header.css}">
+  <link rel=" stylesheet" th:href="@{/css/fix/header.css}">
   <link rel="stylesheet" th:href="@{/css/fix/footer.css}">
 
   <link rel="stylesheet" th:href="@{/css/mainpage/mainpage.css}">
@@ -20,7 +21,7 @@
 <!-- 헤더 포함 -->
 <th:block th:replace="~{fix/header :: header}"></th:block>
 
-<!-- 메인 히어로 섹션 -->
+<!-- 메인 히어로 섹션 첫번째 섹션에 뒤에 도형들 떠다니는 shape들-->
 <section class="hero-section">
   <div class="hero-background">
     <div class="floating-shapes">
@@ -31,6 +32,7 @@
     </div>
   </div>
 
+  <!-- 좌측에 첫번째 섹션 container -->
   <div class="hero-container">
     <div class="hero-content">
       <div class="hero-badge">
@@ -50,7 +52,7 @@
       </p>
 
       <div class="hero-actions">
-        <!-- Thymeleaf 링크로 변경 -->
+        <!-- Thymeleaf 링크로 변경 감정 검색 페이지로 이동 -->
         <a th:href="@{/emotions}" class="btn-primary-large">
           <span class="btn-icon">🎯</span>
           감정 기반 여행 찾기
@@ -63,7 +65,7 @@
       </div>
     </div>
 
-    <!-- 새로운 감정 기반 비주얼 -->
+    <!-- 가운데에 감정별 여행 추천 -->
     <div class="hero-visual">
       <div class="emotion-cloud-container">
         <!-- 중앙 메인 텍스트 -->
@@ -74,7 +76,7 @@
           </div>
         </div>
 
-        <!-- 감정 이모지들 - 백엔드 연동 전까지는 하드코딩 -->
+        <!-- 감정 이모지들 -->
         <div class="floating-emotions">
           <div class="emotion-item" data-emotion="행복" style="--delay: 0s; --x: 30%; --y: 10%;">
             <span class="emotion-emoji">😊</span>
@@ -140,7 +142,7 @@
       </p>
     </div>
 
-    <!-- 서비스 기능 소개 (3개로 수정) -->
+    <!-- 동행 매칭 기능 소개  -->
     <div class="features-grid">
       <div class="feature-item">
         <div class="feature-icon">🏠</div>
@@ -160,7 +162,7 @@
     </div>
 
     <div class="cta-section">
-      <!-- Thymeleaf 링크로 변경 -->
+      <!-- Thymeleaf 링크로 동행매칭 시작 페이지로 이동 -->
       <a th:href="@{/companion-rooms/create}" class="btn-primary-xl">
         <span class="btn-icon">🚀</span>
         동행매칭 서비스 시작하기
