@@ -1,4 +1,4 @@
-package com.moodTrip.spring.domain.companion.controller;
+package com.moodTrip.spring.domain.schedule.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
