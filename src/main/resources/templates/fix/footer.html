@@ -1,76 +1,82 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="/css/fix/header.css">
-  <link rel="stylesheet" href="/css/creatingRoom/creatingRoom-detail.css">
-  <link rel="stylesheet" href="/css/fix/footer.css">
-  <script src="/js/creatingRoom/creatingRoom-detail.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- CSS 링크를 Thymeleaf 방식으로 변경 -->
+    <link rel="stylesheet" th:href="@{/css/fix/footer.css}">
 </head>
 <body>
-  <footer class="footer">
+
+<!-- 푸터 Fragment 정의 -->
+<footer class="footer" th:fragment="footer">
     <div class="footer-service-menu-list">
-   
+        <!-- 서비스 메뉴 리스트 (필요시 추가) -->
     </div>
+
     <div class="container" style="border: none;">
-      <div class="footer-main">
-        <div class="footer-menu-list footer-contact">
-          <p class="footer-menu-title flex-box">
-            <img src="/static/image/fix/footer-service.jpg" alt="고객 문의">
-            고객 문의
-          </p>
-          <a class="footer-cs-tel" href="tel:02-6925-4849">010-xxxx-xxxx</a>
-          <div class="footer-cs-info">
-            <div class="footer-cs-item">10:00-18:00</div>
-            <div class="footer-cs-subitem">주말·공휴일 제외</div>
-            <br>
-            <a class="footer-cs-item email" href="mailto:help@wishket.com">xxx@naver.com</a>
-          </div>
+        <div class="footer-main">
+            <!-- 고객 문의 섹션 -->
+            <div class="footer-menu-list footer-contact">
+                <p class="footer-menu-title flex-box">
+                    <img th:src="@{/image/fix/footer-service.jpg}" alt="고객 문의">
+                    고객 문의
+                </p>
+                <a class="footer-cs-tel" href="tel:010-0000-0000">010-xxxx-xxxx</a>
+                <div class="footer-cs-info">
+                    <div class="footer-cs-item">10:00-18:00</div>
+                    <div class="footer-cs-subitem">주말·공휴일 제외</div>
+                    <br>
+                    <a class="footer-cs-item email" href="mailto:help@moodtrip.com">xxx@naver.com</a>
+                </div>
+            </div>
+
+            <!-- 무드트립 섹션 -->
+            <div class="footer-menu-list">
+                <p class="footer-menu-title">무드트립</p>
+                <a class="footer-menu-item" th:href="@{/company-intro}">무드트립 소개</a>
+                <a class="footer-menu-item" th:href="@{/trust-safety}">신뢰와 안전</a>
+            </div>
+
+            <!-- 이용방법 섹션 -->
+            <div class="footer-menu-list">
+                <p class="footer-menu-title">이용방법</p>
+                <a class="footer-menu-item" th:href="@{/customer-support/guide}">클라이언트 이용방법</a>
+                <a class="footer-menu-item" th:href="@{/weather-travel/guide}">날씨 여행 이용방법</a>
+                <a class="footer-menu-item" th:href="@{/companion-matching/guide}">동행 매칭 이용방법</a>
+            </div>
         </div>
-        <div class="footer-menu-list">
-          <p class="footer-menu-title">무드트립</p>
-          <a class="footer-menu-item" href="/company-intro/">무드트립 소개</a>
-          <a class="footer-menu-item" href="/trust-safety/">신뢰와 안전</a>
-        </div>
-        <div class="footer-menu-list">
-          <p class="footer-menu-title">이용방법</p>
-          <a class="footer-menu-item" href="/customer-support/client/use-guide">클라이언트 이용방법</a>
-          <a class="footer-menu-item" href="/customer-support/partner/use-guide">날씨 여행 이용방법</a>
-          <a class="footer-menu-item" href="/customer-support/partner/grade/">동행 매칭 이용방법</a>
-        </div>
-      </div>
     </div>
 
-
+    <!-- 하단 정보 영역 -->
     <div class="footer-info-right">
-<div class="footer-service-policy">
-        <a class="footer-service-policy-item" href="https://auth.wishket.com/terms/service">이용약관</a>
-        <div class="divider"></div>
-        <a class="footer-service-policy-item" href="https://auth.wishket.com/terms/privacy">개인정보 처리방침</a>
-      </div>
-      
- <div class="footer-company-info">
-        <div class="footer-company-info-list">
-          <div class="footer-company-info-item">㈜무드트립</div>
-          <div class="divider"></div>
-          <div class="footer-company-info-item">대표이사 : XXX</div>
-          <div class="divider"></div>
-          <div class="footer-company-info-item">서울특별시 강남구 테헤란로 211 한국고등교육재단빌딩 3층 ㈜위시켓</div>
+        <!-- 서비스 정책 -->
+        <div class="footer-service-policy">
+            <a class="footer-service-policy-item" th:href="@{/terms/service}">이용약관</a>
+            <div class="divider"></div>
+            <a class="footer-service-policy-item" th:href="@{/terms/privacy}">개인정보 처리방침</a>
         </div>
-        <div class="footer-company-info-list">
-          <div class="footer-company-info-item">사업자등록번호 : 209-81-57303</div>
-          <div class="divider"></div>
-          <div class="footer-company-info-item">통신판매업신고 : 제2025-서울성북-02337 호</div>
-          <div class="divider"></div>
-          <div class="footer-company-info-item">직업정보제공사업 신고번호 : XXXXXXXXXXX</div>
+
+        <!-- 회사 정보 -->
+        <div class="footer-company-info">
+            <div class="footer-company-info-list">
+                <div class="footer-company-info-item">㈜무드트립</div>
+                <div class="divider"></div>
+                <div class="footer-company-info-item">대표이사 : XXX</div>
+                <div class="divider"></div>
+                <div class="footer-company-info-item">서울특별시 강남구 테헤란로 211 한국고등교육재단빌딩 3층 ㈜위시켓</div>
+            </div>
+            <div class="footer-company-info-list">
+                <div class="footer-company-info-item">사업자등록번호 : 209-81-57303</div>
+                <div class="divider"></div>
+                <div class="footer-company-info-item">통신판매업신고 : 제2025-서울성북-02337 호</div>
+                <div class="divider"></div>
+                <div class="footer-company-info-item">직업정보제공사업 신고번호 : XXXXXXXXXXX</div>
+            </div>
+            <div class="footer-company-info-copyright">© 2024 MoodTrip Corp.</div>
         </div>
-        <div class="footer-company-info-copyright">© 2024 MoodTrip Corp.</div>
-      </div>
+    </div>
+</footer>
 
-
-
- </div>
-  </footer>
 </body>
 </html>
