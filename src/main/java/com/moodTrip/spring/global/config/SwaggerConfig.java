@@ -6,6 +6,8 @@ import io.swagger.v3.oas.models.servers.Server;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration // 스프링 실행 시 설정 파일 읽어들이기 위한 애노테이션
 public class SwaggerConfig {
@@ -33,5 +35,20 @@ public class SwaggerConfig {
                 .title("MoodTrip API")
                 .description("감정 기반 여행 추천 및 동행자 매칭 서비스 API 명세서")
                 .version("1.0.0");
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/signup", "/css/**", "/js/**", "/image/**",
+                                // Swagger 관련 경로 추가
+                                "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**"
+                        ).permitAll()
+                        .anyRequest().permitAll()
+                );
+        return http.build();
     }
 }
