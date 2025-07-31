@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', function() {
             saveNicknameBtn.disabled = true;
 
             // ✅ 백엔드 API 호출
-            fetch('/api/v1/members/me/nickname', {
+            fetch('/api/v1/profiles/nickname', {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json'
