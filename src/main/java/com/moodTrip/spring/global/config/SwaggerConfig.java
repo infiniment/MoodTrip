@@ -37,18 +37,6 @@ public class SwaggerConfig {
                 .version("1.0.0");
     }
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/signup", "/css/**", "/js/**", "/image/**",
-                                // Swagger 관련 경로 추가
-                                "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**"
-                        ).permitAll()
-                        .anyRequest().permitAll()
-                );
-        return http.build();
-    }
+
+
 }

@@ -3,9 +3,10 @@ package com.moodTrip.spring.domain.member.service;
 import com.moodTrip.spring.domain.member.dto.request.LoginRequest;
 import com.moodTrip.spring.domain.member.entity.Member;
 import com.moodTrip.spring.domain.member.repository.MemberRepository;
-import com.moodTrip.spring.global.common.util.JwtUtil;
+import com.moodTrip.spring.global.security.jwt.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -15,6 +16,7 @@ import java.util.Optional;
 public class LoginService {
     private final MemberRepository memberRepository;
     private final JwtUtil jwtUtil;
+    private final PasswordEncoder passwordEncoder;
 
     public String login(LoginRequest loginRequest) {
         log.info("로그인 시도: memberId={}", loginRequest.getMemberId());
@@ -24,7 +26,7 @@ public class LoginService {
             return null;
         }
         Member member = optionalMember.get();
-        if (!member.getMemberPw().equals(loginRequest.getMemberPw())) {
+        if (!passwordEncoder.matches(loginRequest.getMemberPw(), member.getMemberPw())) {
             log.warn("로그인 실패: 비밀번호 불일치 memberId={}", loginRequest.getMemberId());
             return null;
         }

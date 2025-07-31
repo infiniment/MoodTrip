@@ -33,7 +33,7 @@ public class Member extends BaseEntity { // BaseEntity 상속
     @Column(name = "member_auth", nullable = false, length = 1)
     private String memberAuth;
 
-    @Column(name = "email", nullable = false, length = 100)
+    @Column(name = "email", nullable = true, length = 100)
     private String email;
 
     @Column(name = "is_withdraw", nullable = false)
@@ -45,8 +45,13 @@ public class Member extends BaseEntity { // BaseEntity 상속
     @Column(name = "rpt_rcvd_cnt")
     private Long rptRcvdCnt;
 
-    @Column(name = "social_type", length = 30)
-    private String socialType;
+    @Column(name = "provider", length = 20)
+    private String provider; // KAKAO, GOOGLE 등. 폼 회원이면 null
+
+    @Column(name = "provider_id", length = 100)
+    private String providerId; // 소셜 플랫폼 내 고유 ID. 폼 회원이면 null
+
+
 
     // 주의!
     // createdAt, updatedAt은 BaseEntity에서 상속받으므로 선언 필요 없음!

@@ -2,6 +2,7 @@ package com.moodTrip.spring.domain.member.controller;
 
 
 import com.moodTrip.spring.domain.member.dto.request.MemberRequest;
+import com.moodTrip.spring.domain.member.entity.Member;
 import com.moodTrip.spring.domain.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "회원가입", description = "회원 관리 관련 API")
 @Controller
@@ -19,6 +21,9 @@ public class SignUpController {
 
 
     private final MemberService memberService;
+
+
+
 
     @Operation(summary = "회원가입 폼", description = "회원가입 화면을 반환한다.")
     @GetMapping("/api/signup")
@@ -44,5 +49,16 @@ public class SignUpController {
         }
     }
 
+    @GetMapping("/signup/success")
+    public String signupSuccess() {
+        return "signup/success"; // templates/signup/success.html이 렌더링됨
+    }
+//회원 가입 에러
+    @GetMapping("/signup")
+    public String signupForm(@RequestParam(value = "error", required = false) String error, Model model) {
+        if (error != null) model.addAttribute("errorMessage", error);
+        model.addAttribute("memberRequest", new MemberRequest());
+        return "signup/signup"; // templates/signup/signup.html
+    }
 
 }
