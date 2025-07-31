@@ -38,7 +38,7 @@ public class ProfileViewController {
         return Member.builder()
                 .memberPk(1L)
                 .memberId("testuser123")
-                .memberName("테스트유저")
+                .nickname("테스트유저")
                 .email("test@moodtrip.com")
                 .memberPhone("010-1234-5678")
                 .memberAuth("U")

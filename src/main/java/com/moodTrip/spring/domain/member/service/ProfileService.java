@@ -42,10 +42,10 @@ public class ProfileService {
     // 더미 프로필 생성 메서드 추가
     private ProfileResponse createDummyProfile(Member member) {
         return ProfileResponse.builder()
-                .nickname(member.getMemberName())
+                .nickname(member.getNickname())
                 .email(member.getEmail())
                 .memberPhone(member.getMemberPhone())
-                .profileBio("안녕하세요! 여행을 좋아하는 " + member.getMemberName() + "입니다. 함께 즐거운 여행 떠나요! 🌍✈️")
+                .profileBio("안녕하세요! 여행을 좋아하는 " + member.getNickname() + "입니다. 함께 즐거운 여행 떠나요! 🌍✈️")
                 .profileImage(null)
                 .createdAt(java.time.LocalDateTime.now())
                 .build();
@@ -66,9 +66,9 @@ public class ProfileService {
         Member memberToUpdate = profile.getMember();
         memberToUpdate.setEmail(request.getEmail());
         memberToUpdate.setMemberPhone(request.getMemberPhone());
+        memberToUpdate.setEmail(request.getNickname());
 
         // 3. Profile 정보 수정
-        profile.setNickname(request.getNickname());
         profile.setProfileBio(request.getProfileBio());
         profile.setProfileImage(request.getProfileImage());
 
@@ -85,6 +85,23 @@ public class ProfileService {
         log.info("닉네임 수정 요청 - 회원ID: {}, 새닉네임: {}",
                 member.getMemberId(), request.getNickname());
 
+        // ✅ 유효성 검사 추가 (백엔드 보안)
+        String newNickname = request.getNickname();
+        if (newNickname == null || newNickname.trim().isEmpty()) {
+            throw new RuntimeException("닉네임은 필수 입력 항목입니다.");
+        }
+
+        newNickname = newNickname.trim();
+
+        if (newNickname.length() > 30) {
+            throw new RuntimeException("닉네임은 30자 이내로 입력해주세요.");
+        }
+
+        // 한글, 영문, 숫자만 허용
+        if (!newNickname.matches("^[가-힣a-zA-Z0-9]+$")) {
+            throw new RuntimeException("닉네임은 한글, 영문, 숫자만 사용 가능합니다.");
+        }
+
         // 해당 회원의 프로필 찾기
         Profile profile = profileRepository.findByMember(member)
                 .orElseThrow(() -> {
@@ -92,11 +109,15 @@ public class ProfileService {
                     return new RuntimeException("프로필을 찾을 수 없습니다.");
                 });
 
-        // 닉네임만 수정하기
-        profile.setNickname(request.getNickname());
+        // ✅ Member 엔티티의 memberName을 닉네임으로 직접 수정
+        Member memberToUpdate = profile.getMember();
+        memberToUpdate.setNickname(newNickname);  // 🔥 핵심 변경점!
+
+        // ✅ Profile의 nickname 필드도 제거했다면 이 줄은 삭제
+        // profile.setNickname(request.getNickname()); // 삭제
 
         log.info("닉네임 수정 성공 - 회원ID: {}, 새닉네임: {}",
-                member.getMemberId(), request.getNickname());
+                member.getMemberId(), newNickname);
 
         return ProfileResponse.from(profile);
     }

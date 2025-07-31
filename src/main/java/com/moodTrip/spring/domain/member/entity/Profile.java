@@ -23,9 +23,6 @@ public class Profile extends BaseEntity {
     @JoinColumn(name = "member_pk")
     private Member member;
 
-    @Column(name = "nickname")
-    private String nickname;
-
     @Column(name = "profile_image")
     private String profileImage;
 

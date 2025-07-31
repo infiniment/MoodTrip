@@ -32,13 +32,13 @@ public class QMember extends EntityPathBase<Member> {
 
     public final StringPath memberId = createString("memberId");
 
-    public final StringPath memberName = createString("memberName");
-
     public final StringPath memberPhone = createString("memberPhone");
 
     public final NumberPath<Long> memberPk = createNumber("memberPk", Long.class);
 
     public final StringPath memberPw = createString("memberPw");
+
+    public final StringPath nickname = createString("nickname");
 
     public final StringPath provider = createString("provider");
 

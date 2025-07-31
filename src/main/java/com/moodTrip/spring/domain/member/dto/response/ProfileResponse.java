@@ -55,7 +55,7 @@ public class ProfileResponse {
     // profile 엔티티를 profileResponse로 변환하는 정적 메서드
     public static ProfileResponse from(Profile profile) {
         return ProfileResponse.builder()
-                .nickname(profile.getNickname())
+                .nickname(profile.getMember().getNickname())
                 .profileBio(profile.getProfileBio())
                 .profileImage(profile.getProfileImage())
                 .email(profile.getMember().getEmail())

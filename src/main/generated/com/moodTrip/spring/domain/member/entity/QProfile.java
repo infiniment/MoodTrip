@@ -29,8 +29,6 @@ public class QProfile extends EntityPathBase<Profile> {
 
     public final QMember member;
 
-    public final StringPath nickname = createString("nickname");
-
     public final StringPath profileBio = createString("profileBio");
 
     public final NumberPath<Long> profileId = createNumber("profileId", Long.class);
