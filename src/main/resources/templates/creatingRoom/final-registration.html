@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>무드트립 : 방 최종 등록</title>
-    <link rel="stylesheet" href="/static/css/creatingRoom/final-registration.css">
-    <script src="/static/js/creatingRoom/final-registration.js"></script>
+    <link rel="stylesheet" th:href="@{/css/creatingRoom/final-registration.css}">
+    <script th:src="@{/js/creatingRoom/final-registration.js}"></script>
 </head>
 <body class="room-create phase-final">
     <div class="big-frame">
@@ -15,7 +15,7 @@
                 <div class="submit-progress">
                     <div class="room-status-box">
                         <a class="back-to-before link-text" onclick="goToPreviousPage()" style="cursor: pointer;">
-                            <img class="back-to-before-img" src="/static/image/creatingRoom/back-to-before.svg" alt="뒤로가기">
+                            <img class="back-to-before-img" th:src="@{/image/creatingRoom/back-to-before.svg}" alt="뒤로가기">
                             <p class="back-to-before-title body-1-medium">이전 화면</p>
                         </a>
                         <p class="menu-title subtitle-1-medium mb4">방 최종 등록</p>
@@ -26,27 +26,27 @@
                             <p class="status-sub-menu-title completed">
                                 <span class="bottom-border"></span>
                                 <span class="sub-menu-marker">1</span>
-                                <img class="phase-complete-icon" src="/static/image/creatingRoom/checkbox-checked.svg" alt="완료">
+                                <img class="phase-complete-icon" th:src="@{/image/creatingRoom/checkbox-checked.svg}" alt="완료">
                                 기본 정보
                             </p>
                             <p class="status-sub-menu-title completed">
                                 <span class="top-border"></span>
                                 <span class="bottom-border"></span>
                                 <span class="sub-menu-marker">2</span>
-                                <img class="phase-complete-icon" src="/static/image/creatingRoom/checkbox-checked.svg" alt="완료">
+                                <img class="phase-complete-icon" th:src="@{/image/creatingRoom/checkbox-checked.svg}" alt="완료">
                                 감정 선택
                             </p>
                             <p class="status-sub-menu-title completed">
                                 <span class="top-border"></span>
                                 <span class="bottom-border"></span>
                                 <span class="sub-menu-marker">3</span>
-                                <img class="phase-complete-icon" src="/static/image/creatingRoom/checkbox-checked.svg" alt="완료">
+                                <img class="phase-complete-icon" th:src="@{/image/creatingRoom/checkbox-checked.svg}" alt="완료">
                                 여행지 선택
                             </p>
                             <p class="status-sub-menu-title completed">
                                 <span class="top-border"></span>
                                 <span class="sub-menu-marker">4</span>
-                                <img class="phase-complete-icon" src="/static/image/creatingRoom/checkbox-checked.svg" alt="완료">
+                                <img class="phase-complete-icon" th:src="@{/image/creatingRoom/checkbox-checked.svg}" alt="완료">
                                 일정 선택
                             </p>
                         </div>
@@ -59,7 +59,7 @@
                     <div class="form-section-header">
                         <p class="form-section-title subtitle-1">방 최종 등록</p>
                         <button class="room-form-guide-button header-button btn btn-8-16" type="button" onclick="openHelpModal()">
-                            <img class="room-form-guide-button-img" src="/static/image/creatingRoom/question.svg" alt="도움말">
+                            <img class="room-form-guide-button-img" th:src="@{/image/creatingRoom/question.svg}" alt="도움말">
                             도움말
                         </button>
                     </div>
@@ -71,7 +71,7 @@
                             <div class="people-info" id="peopleInfo">
                                 <div class="people-icon-container">
                                     <div class="people-icon" id="peopleIcon">
-                                        <img src="/static/image/creatingRoom/twopeople.svg" alt="인원" width="60" height="60">
+                                        <img th:src="@{/image/creatingRoom/twopeople.svg}" alt="인원" width="60" height="60">
                                     </div>
                                     <div class="people-text" id="peopleText">2명</div>
                                 </div>
@@ -273,7 +273,7 @@
                 <!-- 기본 정보 수정 -->
                 <div class="edit-option-card" onclick="goToEditStep(1)">
                     <div class="edit-option-icon">
-                        <img src="/static/image/creatingRoom/twopeople.svg" alt="기본정보" width="40" height="40">
+                        <img th:src="@{/image/creatingRoom/twopeople.svg}" alt="기본정보" width="40" height="40">
                     </div>
                     <div class="edit-option-content">
                         <h4>기본 정보</h4>
