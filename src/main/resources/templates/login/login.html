@@ -167,6 +167,9 @@
             <button
                     class="box-border flex cursor-pointer right-items-center right-justify-center border text-base leading-[26px] gap-x-1.5 px-[15px] right-bg-w-white border-w-gray-200 hover:border-primary-500 h-[50px] w-full text-rounded-xl text-w-gray-600"
                     type="button"
+                    onclick="
+        document.cookie = 'flowType=login; path=/;';
+        location.href = '/oauth2/authorization/kakao';"
             >
               <img th:src="@{/image/login/kakaotalk_sharing_btn_small.png}" alt="카카오 로고" width="20" height="20" style="margin-right:8px;" />
               <span class="textbox typo-body1 w-full">카카오로 로그인</span>
@@ -187,6 +190,7 @@
     </div>
   </div>
 </div>
+
 <!-- 모달 HTML (body 태그 맨 아래에 추가) -->
 <!--<div id="inputErrorModal" style="
     display: none;
@@ -258,5 +262,6 @@
   }
 </style>
 -->
+
 </body>
 </html>

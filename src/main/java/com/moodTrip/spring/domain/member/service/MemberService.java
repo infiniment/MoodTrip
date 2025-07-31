@@ -6,9 +6,14 @@ import com.moodTrip.spring.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -48,7 +53,7 @@ public class MemberService {
         // 엔티티 객체로 변환
         Member member = Member.builder()
                 .memberId(request.getUserId())
-                .memberPw(request.getPassword())
+                .memberPw(encodedPassword)
                 .email(request.getEmail())
                 .memberName(request.getUserId())// 추가
                 .memberAuth("U")                        // 기본 권한 값 예시
@@ -65,5 +70,22 @@ public class MemberService {
         }
     }
 
+    //소셜로그인 서비스 로직
+    public void save(Member member) {
+        memberRepository.save(member);
+    }
+
+    //소셜아이디ㅣ 유효성 검사
+    public boolean existsByProviderAndProviderId(String provider, String providerId) {
+        return memberRepository.existsByProviderAndProviderId(provider, providerId);
+    }
+
+
+    // provider와 providerId로 회원찾기(소셜 로그인)
+    public Member findByProviderAndProviderId(String provider, String providerId) {
+        return memberRepository.findByProviderAndProviderId(provider, providerId)
+                .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다"));
+    }
 
 }
+

@@ -1,4 +1,4 @@
-package com.moodTrip.spring.global.common.util;
+package com.moodTrip.spring.global.security.jwt;
 
 
 import io.jsonwebtoken.*;
@@ -11,6 +11,8 @@ import jakarta.annotation.PostConstruct;
 import java.security.Key;
 import java.util.Date;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Component
@@ -33,22 +35,21 @@ public class JwtUtil {
     // JWT 생성
     public String generateToken(String memberId, Long memberPk) {
 
-        Claims claims = Jwts.claims()
-                .add("memberId", memberId)
-                .add("memberPk", memberPk)
-                .build();
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("memberId", memberId);
+        claims.put("memberPk", memberPk);
 
         Date now = new Date();
         Date expiry = new Date(now.getTime() + accessTokenValidityMs);
 
-        // import io.jsonwebtoken.Jwts;
         return Jwts.builder()
-                .claims(claims)          // 혹은 .setClaims()
-                .issuedAt(now)
-                .expiration(expiry)
-                .signWith(key, SignatureAlgorithm.HS256) // 두 번째 파라미터는 반드시 SignatureAlgorithm.HS256!
+                .setClaims(claims)
+                .setIssuedAt(now)
+                .setExpiration(expiry)
+                .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
+
 
     // 토큰에서 회원ID 추출
     public String getMemberId(String token) {
@@ -83,4 +84,6 @@ public class JwtUtil {
                 .parseSignedClaims(token)
                 .getPayload();
     }
+
+
 }
