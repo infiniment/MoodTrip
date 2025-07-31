@@ -1,214 +1,261 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>무드 트립</title>
-    <link rel="stylesheet" href="/css/mypage/my-profile.css">
+    <link rel="stylesheet" th:href="@{/css/fix/header.css}">
+    <link rel="stylesheet" th:href="@{/css/fix/footer.css}">
+    <link rel="stylesheet" th:href="@{/css/fix/header-after.css}">
+    <link rel="stylesheet" th:href="@{/css/mypage/my-profile.css}">
 </head>
 <body>
-    <div>
-        <div class="wrap"> <!--여기가 min-width : 1200px 부분-->
-            <div class="page"> <!-- 여기가 W-full 부분-->
-                <div class="page-inner"> <!--css-1jnf2ee eglsog60-->
-                    <aside class="user-settings-nav">
-                        <div class="account-settings">계정 설정</div>
-                        <hr orientation="horizontal" class="horizontal-line">
-                        <a class="my_profile active" href="/templates/mypage/my-profile.html">내 정보</a>
-                        <a class="my_matching active" href="/templates/mypage/my-matching.html">매칭 정보</a>
-                        <a class="join_requests active" href="/templates/mypage/join-requests.html">
-                            방 입장 요청 관리
-                            <span class="notification-badge" id="join-requests-badge" style="display: none;">0</span>
-                        </a>
-                        <a class="my_reviews active" href="/templates/mypage/my-reviews.html">내가 쓴 후기</a>
-                        <a class="my_tourist_attraction_wishlist active" href="/templates/mypage/my-tourist-attraction-wishlist.html">관광지 찜 목록</a>
-                        <a class="change_password active" href="/templates/mypage/change-password.html">비밀번호 변경 정보</a>
-                        <a class="alarm active" href="/templates/mypage/alarm.html">알림 설정</a>     
-                    </aside>
-                    <main class="mypage_info"> <!--css-1rr4qq7 eglsog61-->
-                        <div class="total-wrapper">
-                            <h1 class="info-title">내 정보</h1>
-                            <section class="flex main-wrapper">
-                                <div class="flex main-info-wrapper">
-                                    <section class="change-profile-section">
-                                        <div role="article" shape="0" size="120" class="profile-image-part">
-                                            <img alt="프로필 사진" loading="lazy" shape="0" src="/static/image/mypage/test-profile-img.jpg" class="profile-image">
-                                        </div>
-                                        <div class="change-profile-btn-main-wrapper">
-                                            <div class="profile-btn-wrapper" style="border: none; overflow: auto; padding: 4px;">
-                                                <button role="button" class="profile-btn">
-                                                    <span class="profile-btn-text">
-                                                        <label for="file-input" class="file-input-label">
-                                                            프로필 변경
-                                                            <input accept="image/gif, image/jpeg, image/png" id="file-input" type="file" style="display: none;">
-                                                        </label>
-                                                    </span>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </section>
-                                    <section class="change-info-section">
-                                        <div class="info-section-wrapper"> <!--info-text-label클래스는 info-section-wrapper의 모든 label이 공통으로 사용 -->
-                                            <label for="username" class="info-text-label">
-                                                <span class="name-text">닉네임</span>
-                                                <div class="modify-nickname-wrapper">
-                                                    <span class="modify-nickname">수정</span>
-                                                </div>
-                                                <!-- 수정 누르면 아래 div가 떠야됨 js로 수정 -->
-                                                <div class="complete-nickname-wrapper" hidden>
-                                                    <span class="save-nickname">저장</span>
-                                                    <span class="modify-nickname-cancel">취소</span>
-                                                </div>
-                                            </label>
-                                            <div class="name-input-wrapper">
-                                                <div class="name-input-section">
-                                                    <!--만약 이름 수정 텍스트를 누르면 input에서 disabled가 사라지고 텍스트를 입력할 수 있어야함 + 유효성 검사 필요 동일한 닉네임이 DB에 있는지(이건 아마 spring에서 할 듯) -->
-                                                    <input id="username" disabled type="text" maxlength="17" class="name-input" value="테스트이름1"> 
-                                                </div>
-                                            </div>
-                                            <ul class="caution-info-wrapper">
-                                                <li class="caution-info">*닉네임은 최초 설정 또는 변경 후 30일이 지나야 바꿀 수 있습니다. (최근 변경 일시: 2025-06-22 00:30:44)</li> <!--최근 변경한 시간은 수정 완료 버튼을 누르면 update되어야 함-->
-                                                <li class="caution-info">* 한글/영문/숫자만 사용할 수 있습니다.</li>
-                                            </ul>
-                                        </div>
-                                        <div class="info-section-wrapper">
-                                            <div class="flex email-info-label-wrapper">
-                                                <label class="info-text-label">
-                                                    <span class="email-text">이메일</span>
-                                                </label>
-                                            </div>
-                                            <div class="email-info-wrapper">
-                                                <div class="email-info-section">
-                                                    <div class="email-info-placeholder-wrapper">
-                                                        <input disabled type="text" class="email-info" value="test@email.com">
-                                                        <div class="suffix-wrapper email-check-icon-wrapper">
-                                                            <span color="#303441" role="img" rotate="0" class="email-check-icon">
-                                                                <svg aria-hidden="true" fill="currentColor" focusable="false" height="24" preserv="xMidYMid meet" viewBox="0 0 24 24" width="24" class="email-svg-icon">
-                                                                    <path clip-rule="evenodd" d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22ZM16.301 10.2319C16.6329 9.86186 16.6019 9.29285 16.2319 8.96099C15.8619 8.62913 15.2929 8.66008 14.961 9.03012L11.1606 13.2677L8.94642 11.0535C8.59494 10.7021 8.0251 10.7021 7.67362 11.0535C7.32215 11.405 7.32215 11.9749 7.67363 12.3263L10.5598 15.2125C10.7345 15.3873 10.9735 15.4825 11.2206 15.4757C11.4677 15.469 11.7011 15.361 11.8662 15.177L16.301 10.2319Z" fill-rule="evenodd"></path>
-                                                                </svg>
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="info-section-wrapper">
-                                            <label class="info-text-label">
-                                                <span class="linked-account-text">연동된 계정</span>
-                                            </label>
-                                            <ul class="linked-account-type">
-                                                <!--이미지 수정해야됨 kmong으로 되어있음-->
-                                                <li aria-selected="true" style="background-color:#FEE500;border:none" class="kakao-logo-icon"><img src="/static/image/mypage/kakao-logo_v2.png" alt="카카오 계정 연동 상태" style="width:24px;height:24px; max-width: none;"></li>
-                                                <li aria-selected="false" style="background-color:#f2f3f7;border:none" class="google-logo-disabled-icon"><img src="/static/image/mypage/google-logo-disabled.png" alt="구글 계정 미연동 상태" style="width:24px;height:24px; max-width: none;"></li>
-                                            </ul>
-                                        </div>
-                                        <div class="info-section-wrapper">
-                                            <div class="flex phone-authentication-label-wrapper">
-                                                <label class="info-text-label">
-                                                    <span class="phone-authentication">휴대폰 본인인증</span>
-                                                </label>
-                                            </div>
-                                            <div class="phone-authentication-wrapper"> <!--css-1pgbaw2 e9w6c7n0-->
-                                                <div class="phone-authentication-info-wrapper">
-                                                    <div class="phone-authentication-input-wrapper">
-                                                        <input disabled type="text" class="phone-authentication" value="010****9831">
-                                                    </div>
-                                                </div>
-                                                <!-- js로 인증 안돼있을 시 아래 p로 변경되어야 함 -->
-                                                <p class="not-authentication" variant="body2" color="red500" hidden>원활한 서비스 이용을 위하여 인증을 완료해 주세요.</p>
-                                                <button role="button" class="phone-recertification">
-                                                    <!--재인증을 누르면 핸드폰 인증 api가 켜져야됨-->
-                                                    <span class="phone-recertification-text">재인증</span>
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div class="info-section-wrapper self-introduction-wrapper">
-                                            <label class="info-text-label">
-                                                <span class="self-introduction-text">자기소개</span>
-                                                
-                                                <div class="cursor-pointer edit-self-introduction-wrapper">
-                                                    <span class="edit-self-introduction">수정</span>
-                                                </div>
-                                                <!-- 수정 누르면 아래 div가 떠야됨 js로 수정 -->
-                                                <div class="complete-self-introduction-wrapper" hidden>
-                                                    <span class="save-nickname">저장</span>
-                                                    <span class="modify-nickname-cancel">취소</span>
-                                                </div>
-                                                
-                                            </label>
-                                            <div class="self-introduction-box">
-                                                <!--js로 변경되게 수정해야됨, textarea크기고 키워야됨-->
-                                                <textarea id="selfIntroduction" class="self-introduction-textarea" disabled>안녕하세요 저는 여행을 좋아하고, 신나는 액티비티를 즐겨 합니다. 저의 성향은 밝고 사교적인 사람과 친해지는 것을 좋아합니다.</textarea>
-                                            </div>
-                                        </div>
-                                        <div class="withdraw-btn-wrapper">
-                                            <button class="withdraw-btn">탈퇴하기</button>
-                                        </div>
-                                    </section>
-                                </div>
-                            </section>
+<!-- 로그인 상태에 따른 조건부 헤더 렌더링 -->
+<div th:if="${isLoggedIn}">
+    <!-- 로그인된 사용자용 헤더 -->
+    <th:block th:replace="~{fix/header-after-login :: header}"></th:block>
+</div>
+<div th:unless="${isLoggedIn}">
+    <!-- 로그인 안된 사용자용 헤더 -->
+    <th:block th:replace="~{fix/header :: header}"></th:block>
+</div>
+
+<div>
+    <div class="wrap">
+        <div class="page">
+            <div class="page-inner">
+                <aside class="user-settings-nav">
+                    <div class="account-settings">계정 설정</div>
+                    <hr orientation="horizontal" class="horizontal-line">
+                    <a class="my_profile active" th:href="@{/mypage/my-profile}">내 정보</a>
+                    <a class="my_matching" th:href="@{/mypage/my-matching}">매칭 정보</a>
+                    <a class="join_requests" th:href="@{/mypage/join-requests}">
+                        방 입장 요청 관리
+                        <span class="notification-badge" id="join-requests-badge" style="display: none;">0</span>
+                    </a>
+                    <a class="my_reviews" th:href="@{/mypage/my-reviews}">내가 쓴 후기</a>
+                    <a class="my_tourist_attraction_wishlist" th:href="@{/mypage/my-tourist-attraction-wishlist}">관광지 찜 목록</a>
+                    <a class="change_password" th:href="@{/mypage/change-password}">비밀번호 변경 정보</a>
+                    <a class="alarm" th:href="@{/mypage/alarm}">알림 설정</a>
+                </aside>
+
+                <main class="mypage_info">
+                    <div class="total-wrapper">
+                        <h1 class="info-title">내 정보</h1>
+
+                        <!-- 에러 메시지 표시 영역 -->
+                        <div th:if="${error}" class="error-message" style="background: #fee; color: #c33; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
+                            <p th:text="${error}"></p>
                         </div>
-                    </main>
-                </div>
+
+                        <section class="flex main-wrapper">
+                            <div class="flex main-info-wrapper">
+                                <!-- 프로필 이미지 섹션 -->
+                                <section class="change-profile-section">
+                                    <div role="article" shape="0" size="120" class="profile-image-part">
+                                        <!-- 🔥 완전히 안전한 Thymeleaf 표현식 -->
+                                        <img alt="프로필 사진" loading="lazy" shape="0"
+                                             th:src="${profile != null and profile.profileImage != null ? profile.profileImage : '/static/image/mypage/test-profile-img.jpg'}"
+                                             class="profile-image">
+                                    </div>
+                                    <div class="change-profile-btn-main-wrapper">
+                                        <div class="profile-btn-wrapper" style="border: none; overflow: auto; padding: 4px;">
+                                            <button role="button" class="profile-btn">
+                                                <span class="profile-btn-text">
+                                                    <label for="file-input" class="file-input-label">
+                                                        프로필 변경
+                                                        <input accept="image/gif, image/jpeg, image/png" id="file-input" type="file" style="display: none;">
+                                                    </label>
+                                                </span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <!-- 정보 수정 섹션 -->
+                                <section class="change-info-section">
+                                    <!-- 닉네임 섹션 -->
+                                    <div class="info-section-wrapper">
+                                        <label for="username" class="info-text-label">
+                                            <span class="name-text">닉네임</span>
+                                            <div class="modify-nickname-wrapper">
+                                                <span class="modify-nickname">수정</span>
+                                            </div>
+                                            <div class="complete-nickname-wrapper" hidden>
+                                                <span class="save-nickname">저장</span>
+                                                <span class="modify-nickname-cancel">취소</span>
+                                            </div>
+                                        </label>
+                                        <div class="name-input-wrapper">
+                                            <div class="name-input-section">
+                                                <!-- 🔥 완전히 안전한 표현식 -->
+                                                <input id="username" disabled type="text" maxlength="17"
+                                                       class="name-input" th:value="${profile != null ? profile.nickname : '닉네임'}">
+                                            </div>
+                                        </div>
+                                        <ul class="caution-info-wrapper">
+                                            <li class="caution-info">*닉네임은 최초 설정 또는 변경 후 30일이 지나야 바꿀 수 있습니다.
+                                                (최근 변경 일시: <span th:text="${profile != null and profile.createdAt != null ? #temporals.format(profile.createdAt, 'yyyy-MM-dd HH:mm:ss') : '정보 없음'}">2025-06-22 00:30:44</span>)
+                                            </li>
+                                            <li class="caution-info">* 한글/영문/숫자만 사용할 수 있습니다.</li>
+                                        </ul>
+                                    </div>
+
+                                    <!-- 이메일 섹션 -->
+                                    <div class="info-section-wrapper">
+                                        <div class="flex email-info-label-wrapper">
+                                            <label class="info-text-label">
+                                                <span class="email-text">이메일</span>
+                                            </label>
+                                        </div>
+                                        <div class="email-info-wrapper">
+                                            <div class="email-info-section">
+                                                <div class="email-info-placeholder-wrapper">
+                                                    <!-- 🔥 완전히 안전한 표현식 -->
+                                                    <input disabled type="text" class="email-info" th:value="${profile != null ? profile.email : 'email@example.com'}">
+                                                    <div class="suffix-wrapper email-check-icon-wrapper">
+                                                        <span color="#303441" role="img" rotate="0" class="email-check-icon">
+                                                            <svg aria-hidden="true" fill="currentColor" focusable="false" height="24" preserv="xMidYMid meet" viewBox="0 0 24 24" width="24" class="email-svg-icon">
+                                                                <path clip-rule="evenodd" d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22ZM16.301 10.2319C16.6329 9.86186 16.6019 9.29285 16.2319 8.96099C15.8619 8.62913 15.2929 8.66008 14.961 9.03012L11.1606 13.2677L8.94642 11.0535C8.59494 10.7021 8.0251 10.7021 7.67362 11.0535C7.32215 11.405 7.32215 11.9749 7.67363 12.3263L10.5598 15.2125C10.7345 15.3873 10.9735 15.4825 11.2206 15.4757C11.4677 15.469 11.7011 15.361 11.8662 15.177L16.301 10.2319Z" fill-rule="evenodd"></path>
+                                                            </svg>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 연동된 계정 섹션 -->
+                                    <div class="info-section-wrapper">
+                                        <label class="info-text-label">
+                                            <span class="linked-account-text">연동된 계정</span>
+                                        </label>
+                                        <ul class="linked-account-type">
+                                            <li aria-selected="true" style="background-color:#FEE500;border:none" class="kakao-logo-icon">
+                                                <img th:src="@{/static/image/mypage/kakao-logo_v2.png}" alt="카카오 계정 연동 상태" style="width:24px;height:24px; max-width: none;">
+                                            </li>
+                                            <li aria-selected="false" style="background-color:#f2f3f7;border:none" class="google-logo-disabled-icon">
+                                                <img th:src="@{/static/image/mypage/google-logo-disabled.png}" alt="구글 계정 미연동 상태" style="width:24px;height:24px; max-width: none;">
+                                            </li>
+                                        </ul>
+                                    </div>
+
+                                    <!-- 휴대폰 인증 섹션 -->
+                                    <div class="info-section-wrapper">
+                                        <div class="flex phone-authentication-label-wrapper">
+                                            <label class="info-text-label">
+                                                <span class="phone-authentication">휴대폰 본인인증</span>
+                                            </label>
+                                        </div>
+                                        <div class="phone-authentication-wrapper">
+                                            <div class="phone-authentication-info-wrapper">
+                                                <div class="phone-authentication-input-wrapper">
+                                                    <!-- 🔥 완전히 안전한 표현식 -->
+                                                    <input disabled type="text" class="phone-authentication" th:value="${profile != null ? profile.memberPhone : '010-****-****'}">
+                                                </div>
+                                            </div>
+                                            <p class="not-authentication" variant="body2" color="red500" hidden>원활한 서비스 이용을 위하여 인증을 완료해 주세요.</p>
+                                            <button role="button" class="phone-recertification">
+                                                <span class="phone-recertification-text">재인증</span>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- 자기소개 섹션 -->
+                                    <div class="info-section-wrapper self-introduction-wrapper">
+                                        <label class="info-text-label">
+                                            <span class="self-introduction-text">자기소개</span>
+                                            <div class="cursor-pointer edit-self-introduction-wrapper">
+                                                <span class="edit-self-introduction">수정</span>
+                                            </div>
+                                            <div class="complete-self-introduction-wrapper" hidden>
+                                                <span class="save-nickname">저장</span>
+                                                <span class="modify-nickname-cancel">취소</span>
+                                            </div>
+                                        </label>
+                                        <div class="self-introduction-box">
+                                            <!-- 🔥 완전히 안전한 표현식 -->
+                                            <textarea id="selfIntroduction" class="self-introduction-textarea" disabled
+                                                      th:text="${profile != null ? profile.profileBio : '자기소개를 입력해주세요.'}">자기소개 내용</textarea>
+                                        </div>
+                                    </div>
+
+                                    <!-- 탈퇴 버튼 -->
+                                    <div class="withdraw-btn-wrapper">
+                                        <button class="withdraw-btn">탈퇴하기</button>
+                                    </div>
+                                </section>
+                            </div>
+                        </section>
+                    </div>
+                </main>
             </div>
         </div>
     </div>
-    <!-- 탈퇴 확인 모달 -->
-    <div class="modal-overlay" id="withdrawModal">
-        <div class="modal-container">
-            <div class="modal-header">
-                <h2 class="modal-title">
-                    <svg class="warning-icon" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99zM11 16h2v2h-2v-2zm0-6h2v4h-2v-4z"/>
+</div>
+
+<!-- 탈퇴 확인 모달 -->
+<div class="modal-overlay" id="withdrawModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h2 class="modal-title">
+                <svg class="warning-icon" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99zM11 16h2v2h-2v-2zm0-6h2v4h-2v-4z"/>
+                </svg>
+                회원 탈퇴
+            </h2>
+        </div>
+
+        <div class="modal-content">
+            <div class="warning-message">
+                <p class="main-warning">정말로 탈퇴하시겠습니까?</p>
+                <p class="sub-warning">탈퇴를 진행하면 다음과 같은 데이터가 모두 삭제됩니다.</p>
+            </div>
+
+            <ul class="deletion-list">
+                <li class="deletion-item">
+                    <svg class="delete-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
                     </svg>
-                    회원 탈퇴
-                </h2>
-            </div>
-            
-            <div class="modal-content">
-                <div class="warning-message">
-                    <p class="main-warning">정말로 탈퇴하시겠습니까?</p>
-                    <p class="sub-warning">탈퇴를 진행하면 다음과 같은 데이터가 모두 삭제됩니다.</p>
-                </div>
-                
-                <ul class="deletion-list">
-                    <li class="deletion-item">
-                        <svg class="delete-icon" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-                        </svg>
-                        모든 개인정보 및 프로필 정보
-                    </li>
-                    <li class="deletion-item">
-                        <svg class="delete-icon" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-                        </svg>
-                        매칭 기록 및 관련 정보
-                    </li>
-                    <li class="deletion-item">
-                        <svg class="delete-icon" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-                        </svg>
-                        관광지 찜 목록
-                    </li>
-                    <li class="deletion-item">
-                        <svg class="delete-icon" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-                        </svg>
-                        알림 설정 및 기타 데이터
-                    </li>
-                </ul>
-                
-                <div class="final-warning">
-                    <strong>⚠️ 삭제된 데이터는 복구할 수 없습니다.</strong>
-                </div>
-            </div>
-            
-            <div class="modal-footer">
-                <button class="cancel-btn" id="cancelWithdraw">취소</button>
-                <button class="confirm-btn" id="confirmWithdraw">탈퇴하기</button>
+                    모든 개인정보 및 프로필 정보
+                </li>
+                <li class="deletion-item">
+                    <svg class="delete-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                    매칭 기록 및 관련 정보
+                </li>
+                <li class="deletion-item">
+                    <svg class="delete-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                    관광지 찜 목록
+                </li>
+                <li class="deletion-item">
+                    <svg class="delete-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                    알림 설정 및 기타 데이터
+                </li>
+            </ul>
+
+            <div class="final-warning">
+                <strong>⚠️ 삭제된 데이터는 복구할 수 없습니다.</strong>
             </div>
         </div>
+
+        <div class="modal-footer">
+            <button class="cancel-btn" id="cancelWithdraw">취소</button>
+            <button class="confirm-btn" id="confirmWithdraw">탈퇴하기</button>
+        </div>
     </div>
-    <script src="/js/mypage/my-profile..js"></script>
+</div>
+
+<th:block th:replace="~{fix/footer :: footer}"></th:block>
+
+<!-- JavaScript 파일들 -->
+<script th:src="@{/js/fix/header.js}"></script>
+<script th:src="@{/js/fix/header-after.js}"></script>
+<script th:src="@{/js/mypage/my-profile.js}"></script>
 </body>
 </html>

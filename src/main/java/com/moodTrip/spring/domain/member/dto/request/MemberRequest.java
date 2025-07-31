@@ -17,6 +17,4 @@ public class MemberRequest {
     private boolean marketing;        // 마케팅 수신 동의
     private boolean marketingInfo;    // 세부 마케팅 수신 동의(옵션)
 
-
-
 }

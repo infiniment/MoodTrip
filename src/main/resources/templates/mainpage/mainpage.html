@@ -13,13 +13,20 @@
   <!-- CSS 파일들 - Thymeleaf 방식으로 변경 -->
   <link rel=" stylesheet" th:href="@{/css/fix/header.css}">
   <link rel="stylesheet" th:href="@{/css/fix/footer.css}">
-
+  <link rel="stylesheet" th:href="@{/css/fix/header-after.css}">
   <link rel="stylesheet" th:href="@{/css/mainpage/mainpage.css}">
 </head>
 <body>
 
-<!-- 헤더 포함 -->
-<th:block th:replace="~{fix/header :: header}"></th:block>
+<!-- 로그인 상태에 따른 조건부 헤더 렌더링 -->
+<div th:if="${isLoggedIn}">
+  <!-- 로그인된 사용자용 헤더 -->
+  <th:block th:replace="~{fix/header-after-login :: header}"></th:block>
+</div>
+<div th:unless="${isLoggedIn}">
+  <!-- 로그인 안된 사용자용 헤더 -->
+  <th:block th:replace="~{fix/header :: header}"></th:block>
+</div>
 
 <!-- 메인 히어로 섹션 첫번째 섹션에 뒤에 도형들 떠다니는 shape들-->
 <section class="hero-section">
@@ -475,6 +482,7 @@
 
 <script th:src="@{/js/mainpage/mainpage.js}"></script>
 <script th:src="@{/js/fix/header.js}"></script>
+<script th:src="@{/js/fix/header-after.js}"></script>
 
 </body>
 </html>
