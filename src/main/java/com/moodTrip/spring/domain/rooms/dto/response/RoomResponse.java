@@ -1,0 +1,49 @@
+package com.moodTrip.spring.domain.rooms.dto.response;
+
+import com.moodTrip.spring.domain.rooms.entity.Room;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.*;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Schema(description = "방 조회 응답 DTO")
+public class RoomResponse {
+
+    @Schema(description = "방 ID", example = "1")
+    private Long roomId;
+
+    @Schema(description = "방 이름", example = "서울 근교 힐링 방")
+    private String roomName;
+
+    @Schema(description = "방 설명", example = "함께 힐링 여행 떠날 동행자를 구합니다")
+    private String roomDescription;
+
+    @Schema(description = "최대 인원 수", example = "4")
+    private int maxParticipants;
+
+    @Schema(description = "현재 인원 수", example = "2")
+    private int currentParticipants;
+
+    @Schema(description = "여행 시작일 (yyyy-MM-dd)", example = "2025-08-01")
+    private String travelStartDate;
+
+    @Schema(description = "여행 종료일 (yyyy-MM-dd)", example = "2025-08-03")
+    private String travelEndDate;
+
+    @Schema(description = "삭제 여부", example = "false")
+    private Boolean isDeleted;
+
+    public static RoomResponse from(Room room) {
+        return new RoomResponse(
+                room.getRoomId(),
+                room.getRoomName(),
+                room.getRoomDescription(),
+                room.getRoomMaxCount(),
+                room.getRoomCurrentCount(),
+                room.getTravelStartDate() != null ? room.getTravelStartDate().toString() : null,
+                room.getTravelEndDate() != null ? room.getTravelEndDate().toString() : null,
+                room.getIsDeleteRoom()
+        );
+    }
+}
