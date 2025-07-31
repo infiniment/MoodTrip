@@ -8,13 +8,16 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeDestinationSearch();
     initializeNextButton();
     initializeBackButton();
+
+    // 나중에 관광지 상세 페이지에서 방만들기 버튼을 눌렀을 때 해당 관광지에 대한 정보 localstorage로 받았을 때 처리
+    preselectDestinationIfNeeded();
 });
 
 // 이전 페이지에서 선택된 감정들 불러오기
 function loadPreviousEmotions() {
     try {
         // 로컬 스토리지에서 먼저 시도
-        let emotions = localStorage.getItem('selected_emotions_step2');
+        let emotions = localStorage.getItem('selected_emotions');
         if (emotions) {
             previousEmotions = JSON.parse(emotions);
             console.log('이전 단계에서 선택된 감정들:', previousEmotions);
@@ -22,7 +25,7 @@ function loadPreviousEmotions() {
         }
         
         // 세션 스토리지에서 백업 데이터 시도
-        emotions = sessionStorage.getItem('selected_emotions_step2');
+        emotions = sessionStorage.getItem('selected_emotions');
         if (emotions) {
             previousEmotions = JSON.parse(emotions);
             console.log('이전 단계에서 선택된 감정들 (세션):', previousEmotions);
@@ -35,7 +38,7 @@ function loadPreviousEmotions() {
     }
 }
 
-// 여행지 선택 초기화
+// 관광지 선택 초기화(나중에 관광지 테이블에서 데이터를 가져오면 그 관광지의 아이디가 넘어가게 해야됨)
 function initializeDestinationSelection() {
     const destinationRadios = document.querySelectorAll('.destination-radio');
     
@@ -46,7 +49,7 @@ function initializeDestinationSelection() {
                 const destinationCard = this.closest('.destination-card');
                 const destinationInfo = destinationCard.querySelector('.destination-info');
                 
-                // 선택된 여행지 정보 저장
+                // 선택된 관광지 정보 저장
                 selectedDestination = {
                     name: destinationName,
                     category: destinationInfo.querySelector('.destination-category').textContent,
@@ -70,7 +73,7 @@ function initializeDestinationSelection() {
                     // 라디오 버튼 해제
                     radio.checked = false;
                     
-                    // 선택된 여행지 초기화
+                    // 선택된 관광지 초기화
                     selectedDestination = null;
                     
                     // UI 업데이트
@@ -81,7 +84,7 @@ function initializeDestinationSelection() {
     });
 }
 
-// 여행지 검색 기능
+// 관광지 검색 기능
 function initializeDestinationSearch() {
     const searchInput = document.getElementById('destinationInput');
     const filterSelect = document.getElementById('regionFilter');
@@ -103,7 +106,7 @@ function initializeDestinationSearch() {
     }
 }
 
-// 여행지 필터링
+// 관광지 필터링
 function filterDestinations(searchTerm) {
     const destinationCards = document.querySelectorAll('.destination-card');
     
@@ -147,7 +150,7 @@ function applyFilter(filterType) {
     }
 }
 
-// 선택된 여행지 표시 업데이트
+// 선택된 관광지 표시 업데이트
 function updateSelectedDestinationDisplay() {
     const container = document.getElementById('selectedDestinationContainer');
     const infoContainer = document.getElementById('selectedDestinationInfo');
@@ -159,7 +162,7 @@ function updateSelectedDestinationDisplay() {
     
     if (!infoContainer) return;
     
-    // 선택된 여행지 정보 HTML 생성
+    // 선택된 관광지 정보 HTML 생성
     infoContainer.innerHTML = `
         <div class="destination-image">
             <img src="${selectedDestination.image}" alt="${selectedDestination.name}">
@@ -183,7 +186,7 @@ function initializeNextButton() {
             
             // 유효성 검사
             if (!selectedDestination) {
-                alert('여행지를 선택해주세요.');
+                alert('관광지를 선택해주세요.');
                 return;
             }
             
@@ -201,16 +204,16 @@ function initializeBackButton() {
 
 // 뒤로 가기 함수 - 확인 메시지 없이 바로 이동
 function goToPreviousPage() {
-    // 현재 선택된 여행지 임시 저장 (조용히 저장)
+    // 현재 선택된 관광지 임시 저장 (조용히 저장)
     if (selectedDestination) {
         localStorage.setItem('temp_selected_destination', JSON.stringify(selectedDestination));
     }
     
     // 바로 이전 페이지로 이동 (확인 메시지 없음)
-    window.location.href = '/templates/creatingRoom/choosing-emotion.html';
+    window.location.href = '/companion-rooms/emotion';
 }
 
-// 다음 페이지로 전달할 여행지 데이터 저장
+// 다음 페이지로 전달할 관광지 데이터 저장
 function saveDestinationForNextPage() {
     const combinedData = {
         emotions: previousEmotions,
@@ -219,11 +222,11 @@ function saveDestinationForNextPage() {
     };
     
     // 로컬 스토리지에 저장
-    localStorage.setItem('selected_destination_step3', JSON.stringify(selectedDestination));
+    localStorage.setItem('selected_destination', JSON.stringify(selectedDestination));
     localStorage.setItem('room_creation_data', JSON.stringify(combinedData));
     
     // 세션 스토리지에도 백업 저장
-    sessionStorage.setItem('selected_destination_step3', JSON.stringify(selectedDestination));
+    sessionStorage.setItem('selected_destination', JSON.stringify(selectedDestination));
     sessionStorage.setItem('room_creation_data', JSON.stringify(combinedData));
     
     console.log('다음 페이지로 전달할 데이터 저장 완료:', combinedData);
@@ -231,13 +234,13 @@ function saveDestinationForNextPage() {
 
 // 다음 페이지로 이동
 function goToNextPage() {
-    window.location.href = "/templates/creatingRoom/choosing-schedule.html";
+    window.location.href = '/companion-rooms/schedule';
 }
 
 // 폼 유효성 검사
 function validationPhase(form) {
     if (!selectedDestination) {
-        alert('여행지를 선택해주세요.');
+        alert('관광지를 선택해주세요.');
         return false;
     }
     
@@ -257,7 +260,7 @@ function prepareFormSubmission() {
     const existingInputs = form.querySelectorAll('input[name="selected_destination"], input[name="previous_emotions"]');
     existingInputs.forEach(input => input.remove());
     
-    // 선택된 여행지를 hidden input으로 추가
+    // 선택된 관광지를 hidden input으로 추가
     if (selectedDestination) {
         const hiddenInput = document.createElement('input');
         hiddenInput.type = 'hidden';
@@ -332,14 +335,32 @@ function filterByMood(mood) {
 
 // 데이터 정리
 function clearAllData() {
-    localStorage.removeItem('selected_emotions_step2');
-    localStorage.removeItem('selected_destination_step3');
+    localStorage.removeItem('selected_emotions');
+    localStorage.removeItem('selected_destination');
     localStorage.removeItem('room_creation_data');
     localStorage.removeItem('temp_selected_destination');
     
-    sessionStorage.removeItem('selected_emotions_step2');
-    sessionStorage.removeItem('selected_destination_step3');
+    sessionStorage.removeItem('selected_emotions');
+    sessionStorage.removeItem('selected_destination');
     sessionStorage.removeItem('room_creation_data');
+}
+
+function preselectDestinationIfNeeded() {
+    const preselectedName = localStorage.getItem('preselected_destination_name');
+    if (!preselectedName) return;
+
+    const radios = document.querySelectorAll('.destination-radio');
+    for (const radio of radios) {
+        if (radio.value === preselectedName) {
+            radio.checked = true;
+            radio.dispatchEvent(new Event('change')); // 선택 UI 업데이트
+            console.log('사전 선택된 관광지 자동 적용:', preselectedName);
+            break;
+        }
+    }
+
+    // 자동 선택 후에는 다시 저장하지 않도록 삭제
+    localStorage.removeItem('preselected_destination_name');
 }
 
 // 페이지 떠날 때 자동 저장 (사용자가 모르게)

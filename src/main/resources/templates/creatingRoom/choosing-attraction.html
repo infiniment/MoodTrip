@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>무드트립 : 동행자 매칭 방 만들기 여행지 선택</title>
-    <link rel="stylesheet" href="/css/creatingRoom/choosing-tour.css">
-    <script src = "/js/creatingRoom/choosing-tour.js"></script>
+    <title>무드트립 : 동행자 매칭 방 만들기 관광지 선택</title>
+    <link rel="stylesheet" th:href="@{/css/creatingRoom/choosing-attraction.css}">
+    <script th:src = "@{/js/creatingRoom/choosing-attraction.js}"></script>
 </head>
 <body class="room-create phase-3">
     <div class="big-frame">
@@ -13,10 +13,10 @@
                 <div class="submit-progress">
                     <div class="room-status-box">
                         <a class="back-to-before link-text" onclick="goToPreviousPage()" style="cursor: pointer;">
-                            <img class="back-to-before-img" src="/static/image/creatingRoom/back-to-before.svg">
+                            <img class="back-to-before-img" th:src="@{/image/creatingRoom/back-to-before.svg}">
                             <p class="back-to-before-title body-1-medium">뒤로 가기</p>
                         </a>
-                        <p class="menu-title subtitle-1-medium mb4">여행지 선택하기</p>
+                        <p class="menu-title subtitle-1-medium mb4">관광지 선택하기</p>
                     </div>
                     <div class="input-group-status">
                         <p class="status-main-menu active body-2">방 상세 정보 입력</p>
@@ -24,27 +24,27 @@
                             <p class="status-sub-menu-title completed">
                                 <span class="bottom-border"></span>
                                 <span class="sub-menu-marker">1</span>
-                                <img class="phase-complete-icon" src="/static/image/creatingRoom/checkbox-checked.svg">
+                                <img class="phase-complete-icon" th:src="@{/image/creatingRoom/checkbox-checked.svg}">
                                 기본 정보
                             </p>
                             <p class="status-sub-menu-title completed">
                                 <span class="top-border"></span>
                                 <span class="bottom-border"></span>
                                 <span class="sub-menu-marker">2</span>
-                                <img class="phase-complete-icon" src="/static/image/creatingRoom/checkbox-checked.svg">
+                                <img class="phase-complete-icon" th:src="@{/image/creatingRoom/checkbox-checked.svg}">
                                 감정 선택
                             </p>
                             <p class="status-sub-menu-title active">
                                 <span class="top-border"></span>
                                 <span class="bottom-border"></span>
                                 <span class="sub-menu-marker">3</span>
-                                <img class="phase-complete-icon" src="/static/image/creatingRoom/checkbox-checked.svg">
-                                여행지 선택
+                                <img class="phase-complete-icon" th:src="@{/image/creatingRoom/checkbox-checked.svg}">
+                                관광지 선택
                             </p>
                             <p class="status-sub-menu-title">
                                 <span class="top-border"></span>
                                 <span class="sub-menu-marker">4</span>
-                                <img class="phase-complete-icon" src="/static/image/creatingRoom/checkbox-checked.svg">
+                                <img class="phase-complete-icon" th:src="@{/image/creatingRoom/checkbox-checked.svg}">
                                 일정 선택
                             </p>
                         </div>
@@ -56,15 +56,15 @@
                     
                     <div class="room-create-form-section">
                         <div class="form-section-header">
-                            <p class="form-section-title subtitle-1">여행지 선택</p>
+                            <p class="form-section-title subtitle-1">관광지 선택</p>
                             <button class="room-form-guide-button header-button btn btn-8-16" type="button" onclick="openHelpModal()">
-                                <img class="room-form-guide-button-img" src="/static/image/creatingRoom/question.svg">
+                                <img class="room-form-guide-button-img" th:src="@{/image/creatingRoom/question.svg}">
                                 도움말
                             </button>
                         </div>
                         <div class="form-input-section">
                             <div class="form-group-light mb48">
-                                <label class="form-group-title body-1-bold">가고 싶은 여행지 선택
+                                <label class="form-group-title body-1-bold">가고 싶은 관광지 선택
                                     <span class="required">*</span>
                                 </label>
                                 <div class="form-content">
@@ -73,17 +73,17 @@
                                         <div class="roomName-search-typing-box">
                                             <div class="roomName-search-input-group">
                                                 <i class="search_icon">
-                                                    <img class="text-icon" src="/static/image/creatingRoom/search.svg">
+                                                    <img class="text-icon" th:src="@{/image/creatingRoom/search.svg}">
                                                 </i>
                                                 <div class="roomName-search-selected"></div>
-                                                <input class="roomName-search-typing-input theme-client body-2" id="destinationInput" placeholder="가고싶은 여행지를 선택해주세요 ex ) 고양시" type="text">
+                                                <input class="roomName-search-typing-input theme-client body-2" id="destinationInput" placeholder="가고싶은 관광지를 선택해주세요 ex ) 고양시" type="text">
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div class="form-group-light">
-                                    <label class="form-group-title body-1-bold mb4">여행지 검색 결과</label>
+                                    <label class="form-group-title body-1-bold mb4">관광지 검색 결과</label>
                                     <p class="mb16 body-2 text900">4개 검색어 추천</p>
                                     
                                     <div class="destination-filter mb16">
@@ -93,13 +93,13 @@
                                         </select>
                                     </div>
 
-                                    <!-- 여행지 검색 결과 그리드 -->
+                                    <!-- 관광지 검색 결과 그리드 -->
                                     <div class="destination-results-grid mb32" id="destinationResults">
                                         <div class="destination-card" data-destination="고양 종합 운동장">
                                             <input type="radio" id="dest-goyang" name="destination" value="고양 종합 운동장" class="destination-radio">
                                             <label for="dest-goyang" class="destination-label">
                                                 <div class="destination-image">
-                                                    <img src="/static/image/creatingRoom/stadium.png" alt="고양 종합 운동장">
+                                                    <img th:src="@{/image/creatingRoom/stadium.png}" alt="고양 종합 운동장">
                                                 </div>
                                                 <div class="destination-info">
                                                     <div class="destination-category">경기도 고양시 일산서구</div>
@@ -115,7 +115,7 @@
                                             <input type="radio" id="dest-kintex" name="destination" value="킨텍스" class="destination-radio">
                                             <label for="dest-kintex" class="destination-label">
                                                 <div class="destination-image">
-                                                    <img src="/static/image/creatingRoom/kintex.png" alt="킨텍스">
+                                                    <img th:src="@{/image/creatingRoom/kintex.png}" alt="킨텍스">
                                                 </div>
                                                 <div class="destination-info">
                                                     <div class="destination-category">경기도 고양시 일산서구</div>
@@ -131,7 +131,7 @@
                                             <input type="radio" id="dest-motor" name="destination" value="고양 현대 모토 스튜디오" class="destination-radio">
                                             <label for="dest-motor" class="destination-label">
                                                 <div class="destination-image">
-                                                    <img src="/static/image/creatingRoom/car.png" alt="고양 현대 모토 스튜디오">
+                                                    <img th:src="@{/image/creatingRoom/car.png}" alt="고양 현대 모토 스튜디오">
                                                 </div>
                                                 <div class="destination-info">
                                                     <div class="destination-category">경기도 고양시 일산서구</div>
@@ -146,7 +146,7 @@
                                             <input type="radio" id="dest-hansung" name="destination" value="한성대학교" class="destination-radio">
                                             <label for="dest-hansung" class="destination-label">
                                                 <div class="destination-image">
-                                                    <img src="/static/image/creatingRoom/hansung.png" alt="한성대학교">
+                                                    <img th:src="@{/image/creatingRoom/hansung.png}" alt="한성대학교">
                                                 </div>
                                                 <div class="destination-info">
                                                     <div class="destination-category">서울특별시 성북구</div>
@@ -160,11 +160,11 @@
                                     </div>
                                 </div>
 
-                                <!-- 선택된 여행지 표시 -->
+                                <!-- 선택된 관광지 표시 -->
                                 <div class="selected-destination-container" id="selectedDestinationContainer" style="display: none;">
-                                    <h4 class="selected-destination-title">선택된 여행지</h4>
+                                    <h4 class="selected-destination-title">선택된 관광지</h4>
                                     <div class="selected-destination-info" id="selectedDestinationInfo">
-                                        <!-- 선택된 여행지 정보가 여기에 표시됩니다 -->
+                                        <!-- 선택된 관광지 정보가 여기에 표시됩니다 -->
                                     </div>
                                 </div>
                             </div>
@@ -180,12 +180,12 @@
         </div>
     </div>
 
-    <!-- 여행지 선택 도움말 모달 -->
+    <!-- 관광지 선택 도움말 모달 -->
     <div id="helpModal" class="help-modal" style="display: none;">
         <div class="help-modal-overlay" onclick="closeHelpModal()"></div>
         <div class="help-modal-content">
             <div class="help-modal-header">
-                <h3>여행지 선택 도움말</h3>
+                <h3>관광지 선택 도움말</h3>
                 <button class="help-modal-close" onclick="closeHelpModal()">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                         <path d="M18 6L6 18M6 6L18 18" stroke="#666" stroke-width="2" stroke-linecap="round"/>
@@ -195,15 +195,15 @@
             
             <div class="help-modal-body">
                 <div class="help-section">
-                    <h4>📍 여행지 선택이란?</h4>
+                    <h4>📍 관광지 선택이란?</h4>
                     <div class="destination-explanation">
-                        <p>선택한 <strong>감정에 맞는 여행지</strong>를 찾아 동행자들과 함께 의미 있는 시간을 보낼 장소를 정하는 단계입니다.</p>
-                        <p>감정과 여행지가 조화를 이룰 때 더욱 특별한 여행 경험을 만들 수 있어요!</p>
+                        <p>선택한 <strong>감정에 맞는 관광지</strong>를 찾아 동행자들과 함께 의미 있는 시간을 보낼 장소를 정하는 단계입니다.</p>
+                        <p>감정과 관광지가 조화를 이룰 때 더욱 특별한 여행 경험을 만들 수 있어요!</p>
                     </div>
                 </div>
 
                 <div class="help-section">
-                    <h4>🗺️ 감정별 추천 여행지</h4>
+                    <h4>🗺️ 감정별 추천 관광지</h4>
                     <div class="destination-categories">
                         <div class="destination-category-card positive-places">
                             <h5>😊 긍정 에너지 충전지</h5>
@@ -224,7 +224,7 @@
                                 <span class="place-tag healing">온천 & 스파</span>
                                 <span class="place-tag healing">조용한 카페</span>
                             </div>
-                            <p class="destination-description">마음의 평화를 찾고 지친 마음을 달래는 여행지로 떠나보세요!</p>
+                            <p class="destination-description">마음의 평화를 찾고 지친 마음을 달래는 관광지로 떠나보세요!</p>
                         </div>
 
                         <div class="destination-category-card cultural-places">
@@ -286,7 +286,7 @@
                 </div>
 
                 <div class="help-section">
-                    <h4>✨ 여행지 선택 꿀팁</h4>
+                    <h4>✨ 관광지 선택 꿀팁</h4>
                     <div class="selection-strategies">
                         <div class="strategy-card">
                             <h5>💡 감정 매칭</h5>
@@ -380,10 +380,36 @@
             
             <div class="help-modal-footer">
                 <div class="help-footer-info">
-                    <p>🎯 감정에 딱 맞는 여행지로 특별한 만남을 시작해보세요!</p>
+                    <p>🎯 감정에 딱 맞는 관광지로 특별한 만남을 시작해보세요!</p>
                 </div>
             </div>
         </div>
     </div>
 </body>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // localStorage에서 감정 정보 불러오기
+        let emotionsFromLocal = localStorage.getItem('selected_emotions_step2');
+        let emotionsFromSession = sessionStorage.getItem('selected_emotions_step2');
+
+        // JSON 파싱
+        try {
+            if (emotionsFromLocal) {
+                const parsedLocal = JSON.parse(emotionsFromLocal);
+                console.log('[localStorage] 선택된 감정 목록:', parsedLocal);
+            } else {
+                console.log('[localStorage] 선택된 감정 없음');
+            }
+
+            if (emotionsFromSession) {
+                const parsedSession = JSON.parse(emotionsFromSession);
+                console.log('[sessionStorage] 선택된 감정 목록:', parsedSession);
+            } else {
+                console.log('[sessionStorage] 선택된 감정 없음');
+            }
+        } catch (e) {
+            console.error('감정 데이터 파싱 오류:', e);
+        }
+    });
+</script>
 </html>

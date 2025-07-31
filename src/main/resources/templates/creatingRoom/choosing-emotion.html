@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>무드트립 : 동행자 매칭 방 만들기 감정 선택</title>
-    <link rel="stylesheet" href="/css/creatingRoom/choosing-emotion.css">
-    <script src="/js/creatingRoom/choosing-emotion.js"></script>
+    <link rel="stylesheet" th:href="@{/css/creatingRoom/choosing-emotion.css}">
+    <script th:src="@{/js/creatingRoom/choosing-emotion.js}"></script>
 </head>
 <body class="room-create phase-1">
     <div class="big-frame">
@@ -13,7 +13,7 @@
                 <div class="submit-progress">
                     <div class="room-status-box">
                         <a class="back-to-before link-text" onclick="exitWithSubmit('temporary_room_phase_1', 'False')" style="cursor: pointer;">
-                            <img class="back-to-before-img" src="/static/image/creatingRoom/back-to-before.svg">
+                            <img class="back-to-before-img" th:src="@{/image/creatingRoom/back-to-before.svg}">
                             <p class="back-to-before-title body-1-medium">뒤로 가기</p>
                         </a>
                         <p class="menu-title subtitle-1-medium mb4">감정 선택하기</p>
@@ -24,27 +24,27 @@
                             <p class="status-sub-menu-title completed">
                                 <span class="bottom-border"></span>
                                 <span class="sub-menu-marker">1</span>
-                                <img class="phase-complete-icon" src="/static/image/creatingRoom/checkbox-checked.svg">
+                                <img class="phase-complete-icon" th:src="@{/image/creatingRoom/checkbox-checked.svg}">
                                 기본 정보
                             </p>
                             <p class="status-sub-menu-title active">
                                 <span class="top-border"></span>
                                 <span class="bottom-border"></span>
                                 <span class="sub-menu-marker">2</span>
-                                <img class="phase-complete-icon" src="/static/image/creatingRoom/checkbox-checked.svg">
+                                <img class="phase-complete-icon" th:src="@{/image/creatingRoom/checkbox-checked.svg}">
                                 감정 선택
                             </p>
                             <p class="status-sub-menu-title">
                                 <span class="top-border"></span>
                                 <span class="bottom-border"></span>
                                 <span class="sub-menu-marker">3</span>
-                                <img class="phase-complete-icon" src="/static/image/creatingRoom/checkbox-checked.svg">
+                                <img class="phase-complete-icon" th:src="@{/image/creatingRoom/checkbox-checked.svg}">
                                 여행지 선택
                             </p>
                             <p class="status-sub-menu-title">
                                 <span class="top-border"></span>
                                 <span class="sub-menu-marker">4</span>
-                                <img class="phase-complete-icon" src="/static/image/creatingRoom/checkbox-checked.svg">
+                                <img class="phase-complete-icon" th:src="@{/image/creatingRoom/checkbox-checked.svg}">
                                 일정 선택
                             </p>
                         </div>
@@ -58,7 +58,7 @@
                         <div class="form-section-header">
                             <p class="form-section-title subtitle-1">감정 선택</p>
                             <button class="room-form-guide-button header-button btn btn-8-16" type="button" onclick="openHelpModal()">
-                                <img class="room-form-guide-button-img" src="/static/image/creatingRoom/question.svg">
+                                <img class="room-form-guide-button-img" th:src="@{/image/creatingRoom/question.svg}">
                                 도움말
                             </button>
                         </div>
@@ -150,26 +150,6 @@
                                     </div>
                                     <div class="emotion-tags-grid" id="emotionTagsGrid">
                                         <!-- 선택된 카테고리의 감정 태그들이 여기에 동적으로 생성됩니다 -->
-                                    </div>
-                                </div>
-
-                                <!-- 커스텀 감정 입력 -->
-                                <div class="form-group-light">
-                                    <label class="form-group-title body-1-bold mb4">커스텀 감정 태그 추가</label>
-                                    <p class="mb16 body-2 text900">위에 원하시는 태그가 없다면 직접 입력하여 새로운 감정 태그를 추가해보세요!</p>
-                                    <div class="form-content">
-                                        <div class="roomName-search-form theme-client mb8">
-                                            <input name="roomName_name" type="hidden">
-                                            <div class="roomName-search-typing-box">
-                                                <div class="roomName-search-input-group">
-                                                    <i class="search_icon">
-                                                        <img class="text-icon" src="/static/image/creatingRoom/search.svg">
-                                                    </i>
-                                                    <div class="roomName-search-selected"></div>
-                                                    <input class="roomName-search-typing-input theme-client body-2" id="customEmotionInput" placeholder="새로운 감정 태그를 입력해주세요. ex) 기모찌" type="text">
-                                                </div>
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
 

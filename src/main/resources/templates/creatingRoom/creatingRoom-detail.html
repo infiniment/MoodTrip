@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>무드트립 : 동행자 매칭 방 만들기 상세 페이지</title>
-    <link rel="stylesheet" href="/css/creatingRoom/creatingRoom-detail.css">
-    <script src="/js/creatingRoom/creatingRoom-detail.js"></script>
+    <link rel="stylesheet" th:href="@{/css/creatingRoom/creatingRoom-detail.css}">
+    <script th:src="@{/js/creatingRoom/creatingRoom-detail.js}"></script>
 </head>
 <body class="room-create phase-1">
     <div class="big-frame">
@@ -13,7 +13,7 @@
                 <div class="submit-progress">
                     <div class="room-status-box">
                         <a class="back-to-before link-text" onclick="exitWithSubmit('temporary_room_phase_1', 'False')" style="cursor: pointer;">
-                            <img class="back-to-before-img" src="/static/image/creatingRoom/back-to-before.svg">
+                            <img class="back-to-before-img" th:src="@{/image/creatingRoom/back-to-before.svg}">
                             <p class="back-to-before-title body-1-medium">뒤로 가기</p>
                         </a>
                         <p class="menu-title subtitle-1-medium mb4">방 정보 입력하기</p>
@@ -24,27 +24,27 @@
                             <p class="status-sub-menu-title active">
                                 <span class="bottom-border"></span>
                                 <span class="sub-menu-marker">1</span>
-                                <img class="phase-complete-icon" src="/static/image/creatingRoom/checkbox-checked.svg">
+                                <img class="phase-complete-icon" th:src="@{/image/creatingRoom/checkbox-checked.svg}">
                                 기본 정보
                             </p>
                             <p class="status-sub-menu-title">
                                 <span class="top-border"></span>
                                 <span class="bottom-border"></span>
                                 <span class="sub-menu-marker">2</span>
-                                <img class="phase-complete-icon" src="/static/image/creatingRoom/checkbox-checked.svg">
+                                <img class="phase-complete-icon" th:src="@{/image/creatingRoom/checkbox-checked.svg}">
                                 감정 선택
                             </p>
                             <p class="status-sub-menu-title">
                                 <span class="top-border"></span>
                                 <span class="bottom-border"></span>
                                 <span class="sub-menu-marker">3</span>
-                                <img class="phase-complete-icon" src="/static/image/creatingRoom/checkbox-checked.svg">
+                                <img class="phase-complete-icon" th:src="@{/image/creatingRoom/checkbox-checked.svg}">
                                 여행지 선택
                             </p>
                             <p class="status-sub-menu-title">
                                 <span class="top-border"></span>
                                 <span class="sub-menu-marker">4</span>
-                                <img class="phase-complete-icon" src="/static/image/creatingRoom/checkbox-checked.svg">
+                                <img class="phase-complete-icon" th:src="@{/image/creatingRoom/checkbox-checked.svg}">
                                 일정 선택
                             </p>
                         </div>
@@ -57,7 +57,7 @@
                         <div class="form-section-header">
                             <p class="form-section-title subtitle-1">기본 정보</p>
                             <button class="room-form-guide-button header-button btn btn-8-16" type="button" onclick="openHelpModal()">
-                                <img class="room-form-guide-button-img" src="/static/image/creatingRoom/question.svg">
+                                <img class="room-form-guide-button-img" th:src="@{/image/creatingRoom/question.svg}">
                                 도움말
                             </button>
                         </div>
@@ -69,28 +69,28 @@
                                 <div class="select-category mb32">
                                     <div class="category-card" data-target="twopeople">
                                         <div class="check-mark">
-                                            <img src="/static/image/creatingRoom/checkbox.svg" alt="체크박스" width="16" height="16">
+                                            <img th:src="@{/image/creatingRoom/checkbox.svg}" alt="체크박스" width="16" height="16">
                                         </div>
                                         <div class="category-icon">
-                                            <img src="/static/image/creatingRoom/twopeople.svg" alt="2명 아이콘" width="60" height="60">
+                                            <img th:src="@{/image/creatingRoom/twopeople.svg}" alt="2명 아이콘" width="60" height="60">
                                         </div>
                                         <div class="category-title body-2-medium text900">2명</div>
                                     </div>
                                     <div class="category-card" data-target="fourpeople">
                                         <div class="check-mark">
-                                            <img src="/static/image/creatingRoom/checkbox.svg" alt="체크박스" width="16" height="16">
+                                            <img th:src="@{/image/creatingRoom/checkbox.svg}" alt="체크박스" width="16" height="16">
                                         </div>
                                         <div class="category-icon">
-                                            <img src="/static/image/creatingRoom/fourpeople.svg" alt="4명 아이콘" width="60" height="60">
+                                            <img th:src="@{/image/creatingRoom/fourpeople.svg}" alt="4명 아이콘" width="60" height="60">
                                         </div>
                                         <div class="category-title body-2-medium text900">4명</div>
                                     </div>
                                     <div class="category-card" data-target="etc">
                                         <div class="check-mark">
-                                            <img src="/static/image/creatingRoom/checkbox.svg" alt="체크박스" width="16" height="16">
+                                            <img th:src="@{/image/creatingRoom/checkbox.svg}" alt="체크박스" width="16" height="16">
                                         </div>
                                         <div class="category-icon">
-                                            <img src="/static/image/creatingRoom/etc.svg" alt="기타 아이콘" width="60" height="60">
+                                            <img th:src="@{/image/creatingRoom/etc.svg}" alt="기타 아이콘" width="60" height="60">
                                         </div>
                                         <div class="category-title body-2-medium text900">기타</div>
                                     </div>
@@ -98,16 +98,22 @@
 
                                 <input type="hidden" name="selected_people" value="">
 
+                                <!-- 기타 선택 시 직접 입력 -->
+                                <div id="customPeopleInputWrapper" class="mt16" style="display: none;">
+                                    <label for="customPeopleInput" class="body-2 text900">인원 수 직접 입력</label>
+                                    <input id="customPeopleInput" type="number" min="2" max="99" placeholder="예: 5" class="custom-people-input theme-client body-2" novalidate />
+                                </div>
+
                                 <div class="form-group-light">
                                     <label class="form-group-title body-1-bold mb4">방 이름</label>
                                     <p class="mb16 body-2 text900">사용하고 싶은 방 이름을 입력해주세요.</p>
                                     <div class="form-content">
                                         <div class="roomName-search-form theme-client mb8">
-                                            <input name="roomName_name" type="hidden">
+                                            <input name="room_name" type="hidden">
                                             <div class="roomName-search-typing-box">
                                                 <div class="roomName-search-input-group">
                                                     <i class="search_icon">
-                                                        <img class="text-icon" src="/static/image/creatingRoom/search.svg">
+                                                        <img class="text-icon" th:src="@{/image/creatingRoom/search.svg}">
                                                     </i>
                                                     <div class="roomName-search-selected"></div>
                                                     <input class="roomName-search-typing-input theme-client body-2" placeholder="방 이름을 입력해주세요 ex)고양시로 가는 고양" type="text">
@@ -121,11 +127,11 @@
                                     <p class="mb16 body-2 text900">당신의 방을 소개해주세요.</p>
                                     <div class="form-content2">
                                         <div class="roomName-search-form2 theme-client mb8">
-                                            <input name="roomName_name2" type="hidden">
+                                            <input name="room_description" type="hidden">
                                             <div class="roomName-search-typing-box2">
                                                 <div class="roomName-search-input-group2">
                                                     <i class="search_icon">
-                                                        <img class="text-icon" src="/static/image/creatingRoom/search.svg">
+                                                        <img class="text-icon" th:src="@{/image/creatingRoom/search.svg}">
                                                     </i>
                                                     <div class="roomName-search-selected"></div>
                                                     <input class="roomName-search-typing-input2 theme-client body-2" placeholder="간단하게 동행자들에게 하고 싶은 말을 적어주세요       ex) 안녕하세요!!! 우리 함께 고양으로 가는고양!!야옹야옹" type="text">
