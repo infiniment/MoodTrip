@@ -150,8 +150,8 @@ function loadPreviousData() {
         }
         
         // 개별 데이터 불러오기
-        const emotions = localStorage.getItem('selected_emotions_step2');
-        const destination = localStorage.getItem('selected_destination_step3');
+        const emotions = localStorage.getItem('selected_emotions');
+        const destination = localStorage.getItem('selected_destination');
         
         if (emotions) previousData.emotions = JSON.parse(emotions);
         if (destination) previousData.destination = JSON.parse(destination);
@@ -623,7 +623,7 @@ function goToPreviousPage() {
     }
     
     // 이전 페이지로 이동
-    window.location.href = "/templates/creatingRoom/choosing-tour.html";
+    window.location.href = "/companion-rooms/attraction";
 }
 
 // 다음 페이지로 전달할 일정 데이터 저장
@@ -633,7 +633,7 @@ function saveScheduleForNextPage() {
         totalDays: calculateTotalDays(),
         rangeCount: selectedDateRanges.length
     };
-    
+
     const combinedData = {
         ...previousData,
         schedule: scheduleData,
@@ -641,11 +641,11 @@ function saveScheduleForNextPage() {
     };
     
     // 로컬 스토리지에 저장
-    localStorage.setItem('selected_schedule_step4', JSON.stringify(scheduleData));
+    localStorage.setItem('travel_date_ranges', JSON.stringify(scheduleData));
     localStorage.setItem('room_creation_data', JSON.stringify(combinedData));
     
     // 세션 스토리지에도 백업 저장
-    sessionStorage.setItem('selected_schedule_step4', JSON.stringify(scheduleData));
+    sessionStorage.setItem('travel_date_ranges', JSON.stringify(scheduleData));
     sessionStorage.setItem('room_creation_data', JSON.stringify(combinedData));
     
     console.log('최종 방 생성 데이터 저장 완료:', combinedData);
@@ -654,7 +654,7 @@ function saveScheduleForNextPage() {
 // 다음 페이지로 이동 (최종 완료 페이지)
 function goToNextPage() {
     // 실제 완료 페이지 URL로 변경해주세요
-    window.location.href = "/templates/creatingRoom/final-registration.html";
+    window.location.href = "/companion-rooms/final";
     
     // 또는 최종 등록 처리
     // submitRoomCreation();
@@ -706,12 +706,12 @@ function prepareFormSubmission() {
 // 다른 페이지에서 저장된 일정 데이터 불러오기
 function getSelectedScheduleFromPreviousPage() {
     try {
-        let schedule = localStorage.getItem('selected_schedule_step4');
+        let schedule = localStorage.getItem('travel_date_ranges');
         if (schedule) {
             return JSON.parse(schedule);
         }
         
-        schedule = sessionStorage.getItem('selected_schedule_step4');
+        schedule = sessionStorage.getItem('travel_date_ranges');
         if (schedule) {
             return JSON.parse(schedule);
         }
@@ -786,15 +786,15 @@ function submitRoomCreation() {
 
 // 모든 저장된 데이터 정리
 function clearAllData() {
-    localStorage.removeItem('selected_emotions_step2');
-    localStorage.removeItem('selected_destination_step3');
-    localStorage.removeItem('selected_schedule_step4');
+    localStorage.removeItem('selected_emotions');
+    localStorage.removeItem('selected_destination');
+    localStorage.removeItem('travel_date_ranges');
     localStorage.removeItem('room_creation_data');
     localStorage.removeItem('temp_selected_schedule');
     
-    sessionStorage.removeItem('selected_emotions_step2');
-    sessionStorage.removeItem('selected_destination_step3');
-    sessionStorage.removeItem('selected_schedule_step4');
+    sessionStorage.removeItem('selected_emotions');
+    sessionStorage.removeItem('selected_destination');
+    sessionStorage.removeItem('travel_date_ranges');
     sessionStorage.removeItem('room_creation_data');
 }
 

@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>무드트립 : 동행자 매칭 방 만들기 관광지 선택</title>
+    <link rel="stylesheet" th:href="@{/css/creatingRoom/choosing-attraction.css}">
+    <script th:src = "@{/js/creatingRoom/choosing-attraction.js}"></script>
+</head>
+<body class="room-create phase-3">
+    <div class="big-frame">
+        <div class="room-create-formview">
+            <div class="container">
+                <div class="submit-progress">
+                    <div class="room-status-box">
+                        <a class="back-to-before link-text" onclick="goToPreviousPage()" style="cursor: pointer;">
+                            <img class="back-to-before-img" th:src="@{/image/creatingRoom/back-to-before.svg}">
+                            <p class="back-to-before-title body-1-medium">뒤로 가기</p>
+                        </a>
+                        <p class="menu-title subtitle-1-medium mb4">관광지 선택하기</p>
+                    </div>
+                    <div class="input-group-status">
+                        <p class="status-main-menu active body-2">방 상세 정보 입력</p>
+                        <div class="status-sub-menu">
+                            <p class="status-sub-menu-title completed">
+                                <span class="bottom-border"></span>
+                                <span class="sub-menu-marker">1</span>
+                                <img class="phase-complete-icon" th:src="@{/image/creatingRoom/checkbox-checked.svg}">
+                                기본 정보
+                            </p>
+                            <p class="status-sub-menu-title completed">
+                                <span class="top-border"></span>
+                                <span class="bottom-border"></span>
+                                <span class="sub-menu-marker">2</span>
+                                <img class="phase-complete-icon" th:src="@{/image/creatingRoom/checkbox-checked.svg}">
+                                감정 선택
+                            </p>
+                            <p class="status-sub-menu-title active">
+                                <span class="top-border"></span>
+                                <span class="bottom-border"></span>
+                                <span class="sub-menu-marker">3</span>
+                                <img class="phase-complete-icon" th:src="@{/image/creatingRoom/checkbox-checked.svg}">
+                                관광지 선택
+                            </p>
+                            <p class="status-sub-menu-title">
+                                <span class="top-border"></span>
+                                <span class="sub-menu-marker">4</span>
+                                <img class="phase-complete-icon" th:src="@{/image/creatingRoom/checkbox-checked.svg}">
+                                일정 선택
+                            </p>
+                        </div>
+                        <p class="status-main-menu status-menu-with-tooltip body-2">방 최종 등록</p>
+                    </div>
+                </div>
+                <form autocomplete="off" enctype="multipart/form-data" id="temporary_room_phase_3" method="POST" onsubmit="return validationPhase(this);" data-hs-cf-bound="true">
+                    <input name="csrfmiddlewaretoken" type="hidden" value="tLyscS3cOgu3CROlEEk0U8u43AL0s2XJkUqonCkA8AGVb6qzImREIKoGdO5DQoNU">
+                    
+                    <div class="room-create-form-section">
+                        <div class="form-section-header">
+                            <p class="form-section-title subtitle-1">관광지 선택</p>
+                            <button class="room-form-guide-button header-button btn btn-8-16" type="button" onclick="openHelpModal()">
+                                <img class="room-form-guide-button-img" th:src="@{/image/creatingRoom/question.svg}">
+                                도움말
+                            </button>
+                        </div>
+                        <div class="form-input-section">
+                            <div class="form-group-light mb48">
+                                <label class="form-group-title body-1-bold">가고 싶은 관광지 선택
+                                    <span class="required">*</span>
+                                </label>
+                                <div class="form-content">
+                                    <div class="roomName-search-form theme-client mb8">
+                                        <input name="destination_name" type="hidden">
+                                        <div class="roomName-search-typing-box">
+                                            <div class="roomName-search-input-group">
+                                                <i class="search_icon">
+                                                    <img class="text-icon" th:src="@{/image/creatingRoom/search.svg}">
+                                                </i>
+                                                <div class="roomName-search-selected"></div>
+                                                <input class="roomName-search-typing-input theme-client body-2" id="destinationInput" placeholder="가고싶은 관광지를 선택해주세요 ex ) 고양시" type="text">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group-light">
+                                    <label class="form-group-title body-1-bold mb4">관광지 검색 결과</label>
+                                    <p class="mb16 body-2 text900">4개 검색어 추천</p>
+                                    
+                                    <div class="destination-filter mb16">
+                                        <select class="filter-select" id="regionFilter">
+                                            <option value="">추천순</option>
+                                            <option value="distance">거리순</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- 관광지 검색 결과 그리드 -->
+                                    <div class="destination-results-grid mb32" id="destinationResults">
+                                        <div class="destination-card" data-destination="고양 종합 운동장">
+                                            <input type="radio" id="dest-goyang" name="destination" value="고양 종합 운동장" class="destination-radio">
+                                            <label for="dest-goyang" class="destination-label">
+                                                <div class="destination-image">
+                                                    <img th:src="@{/image/creatingRoom/stadium.png}" alt="고양 종합 운동장">
+                                                </div>
+                                                <div class="destination-info">
+                                                    <div class="destination-category">경기도 고양시 일산서구</div>
+                                                    <div class="destination-name">고양 종합 운동장</div>
+                                                    <div class="destination-description">
+                                                        일산의 중심부에 위치한 운동장으로 각종 체육행사와 축구 시합 등이 개최되는 종합 운동 시설입니다. 주변에는 호수공원이 조성되어 있어 시민들의 쉼터 역할을 하고 있습니다.
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        </div>
+
+                                        <div class="destination-card" data-destination="킨텍스">
+                                            <input type="radio" id="dest-kintex" name="destination" value="킨텍스" class="destination-radio">
+                                            <label for="dest-kintex" class="destination-label">
+                                                <div class="destination-image">
+                                                    <img th:src="@{/image/creatingRoom/kintex.png}" alt="킨텍스">
+                                                </div>
+                                                <div class="destination-info">
+                                                    <div class="destination-category">경기도 고양시 일산서구</div>
+                                                    <div class="destination-name">킨텍스</div>
+                                                    <div class="destination-description">
+                                                        주차 할 곳이 상당히 많습니다! 차 가지고 오셔도 됩니다. 근데 지하철 GTX 타면 금방와요 gtx 요금이 쫌 비싸긴 한디.. 뭐.. 서울역까지 12분 걸려요.
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        </div>
+
+                                        <div class="destination-card" data-destination="고양 현대 모토 스튜디오">
+                                            <input type="radio" id="dest-motor" name="destination" value="고양 현대 모토 스튜디오" class="destination-radio">
+                                            <label for="dest-motor" class="destination-label">
+                                                <div class="destination-image">
+                                                    <img th:src="@{/image/creatingRoom/car.png}" alt="고양 현대 모토 스튜디오">
+                                                </div>
+                                                <div class="destination-info">
+                                                    <div class="destination-category">경기도 고양시 일산서구</div>
+                                                    <div class="destination-name">고양 현대 모토 스튜디오</div>
+                                                    <div class="destination-description">
+                                                        멋있는 차들이 엄청 많아요 놀러와요~~ 남자분들 여기에서 멋잇는 차 한대 뽑아서 와이프한테 자랑해봐요~
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        </div>
+                                        <div class="destination-card" data-destination="한성대학교">
+                                            <input type="radio" id="dest-hansung" name="destination" value="한성대학교" class="destination-radio">
+                                            <label for="dest-hansung" class="destination-label">
+                                                <div class="destination-image">
+                                                    <img th:src="@{/image/creatingRoom/hansung.png}" alt="한성대학교">
+                                                </div>
+                                                <div class="destination-info">
+                                                    <div class="destination-category">서울특별시 성북구</div>
+                                                    <div class="destination-name">한성대학교</div>
+                                                    <div class="destination-description">
+                                                        멋쟁이 김상우가 다니는 대학교에요 환영합니다^^
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 선택된 관광지 표시 -->
+                                <div class="selected-destination-container" id="selectedDestinationContainer" style="display: none;">
+                                    <h4 class="selected-destination-title">선택된 관광지</h4>
+                                    <div class="selected-destination-info" id="selectedDestinationInfo">
+                                        <!-- 선택된 관광지 정보가 여기에 표시됩니다 -->
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-section-footer" style="position: sticky; bottom: 0; background-color: white; z-index: 50">
+                                <button class="btn btn-client btn-11-24 btn-right" name="can_submit" type="submit" value="False" id="nextButton">다음</button>
+                                <div style="clear: both;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 관광지 선택 도움말 모달 -->
+    <div id="helpModal" class="help-modal" style="display: none;">
+        <div class="help-modal-overlay" onclick="closeHelpModal()"></div>
+        <div class="help-modal-content">
+            <div class="help-modal-header">
+                <h3>관광지 선택 도움말</h3>
+                <button class="help-modal-close" onclick="closeHelpModal()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M18 6L6 18M6 6L18 18" stroke="#666" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="help-modal-body">
+                <div class="help-section">
+                    <h4>📍 관광지 선택이란?</h4>
+                    <div class="destination-explanation">
+                        <p>선택한 <strong>감정에 맞는 관광지</strong>를 찾아 동행자들과 함께 의미 있는 시간을 보낼 장소를 정하는 단계입니다.</p>
+                        <p>감정과 관광지가 조화를 이룰 때 더욱 특별한 여행 경험을 만들 수 있어요!</p>
+                    </div>
+                </div>
+
+                <div class="help-section">
+                    <h4>🗺️ 감정별 추천 관광지</h4>
+                    <div class="destination-categories">
+                        <div class="destination-category-card positive-places">
+                            <h5>😊 긍정 에너지 충전지</h5>
+                            <div class="place-types">
+                                <span class="place-tag energy">테마파크</span>
+                                <span class="place-tag energy">축제장</span>
+                                <span class="place-tag energy">스포츠 경기장</span>
+                                <span class="place-tag energy">액티비티 센터</span>
+                            </div>
+                            <p class="destination-description">신나고 활동적인 장소에서 에너지를 발산하고 새로운 추억을 만들어보세요!</p>
+                        </div>
+
+                        <div class="destination-category-card healing-places">
+                            <h5>🌿 힐링 & 휴식공간</h5>
+                            <div class="place-types">
+                                <span class="place-tag healing">자연 공원</span>
+                                <span class="place-tag healing">호수 & 강변</span>
+                                <span class="place-tag healing">온천 & 스파</span>
+                                <span class="place-tag healing">조용한 카페</span>
+                            </div>
+                            <p class="destination-description">마음의 평화를 찾고 지친 마음을 달래는 관광지로 떠나보세요!</p>
+                        </div>
+
+                        <div class="destination-category-card cultural-places">
+                            <h5>🎨 문화 & 감성여행</h5>
+                            <div class="place-types">
+                                <span class="place-tag cultural">박물관 & 미술관</span>
+                                <span class="place-tag cultural">역사 유적지</span>
+                                <span class="place-tag cultural">공연장 & 극장</span>
+                                <span class="place-tag cultural">전통 마을</span>
+                            </div>
+                            <p class="destination-description">깊이 있는 대화와 사색의 시간을 가질 수 있는 문화적 공간들이에요!</p>
+                        </div>
+
+                        <div class="destination-category-card urban-places">
+                            <h5>🏙️ 도심 & 모던여행</h5>
+                            <div class="place-types">
+                                <span class="place-tag urban">쇼핑몰 & 백화점</span>
+                                <span class="place-tag urban">루프탑 카페</span>
+                                <span class="place-tag urban">전시 컨벤션</span>
+                                <span class="place-tag urban">트렌디한 거리</span>
+                            </div>
+                            <p class="destination-description">도시의 활기를 느끼며 트렌드를 공유하고 새로운 경험을 해보세요!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="help-section">
+                    <h4>🔍 효과적인 검색 방법</h4>
+                    <div class="search-tips">
+                        <div class="tip-item">
+                            <div class="tip-icon">📱</div>
+                            <div class="tip-content">
+                                <strong>키워드 조합</strong>
+                                <p>지역명 + 관심사로 검색해보세요. 예: "강남 카페", "부산 해변", "제주 액티비티"</p>
+                            </div>
+                        </div>
+                        <div class="tip-item">
+                            <div class="tip-icon">🎯</div>
+                            <div class="tip-content">
+                                <strong>구체적 장소명</strong>
+                                <p>특정 장소가 있다면 정확한 이름으로 검색하면 더 정확한 결과를 얻을 수 있어요</p>
+                            </div>
+                        </div>
+                        <div class="tip-item">
+                            <div class="tip-icon">🌍</div>
+                            <div class="tip-content">
+                                <strong>다양한 표현 시도</strong>
+                                <p>"서울 명동" 대신 "명동 쇼핑", "명동 거리" 등 다양하게 검색해보세요</p>
+                            </div>
+                        </div>
+                        <div class="tip-item">
+                            <div class="tip-icon">🚇</div>
+                            <div class="tip-content">
+                                <strong>접근성 고려</strong>
+                                <p>대중교통이나 자동차로 접근 가능한지 미리 확인해보세요</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="help-section">
+                    <h4>✨ 관광지 선택 꿀팁</h4>
+                    <div class="selection-strategies">
+                        <div class="strategy-card">
+                            <h5>💡 감정 매칭</h5>
+                            <div class="strategy-content">
+                                <p><strong>이전 단계에서 선택한 감정을 참고하세요!</strong></p>
+                                <div class="emotion-place-matches">
+                                    <div class="match-item">
+                                        <span class="emotion-tag">행복 + 즐거움</span>
+                                        <span class="arrow">→</span>
+                                        <span class="place-suggestion">놀이공원, 축제, 스포츠 관람</span>
+                                    </div>
+                                    <div class="match-item">
+                                        <span class="emotion-tag">편안함 + 차분함</span>
+                                        <span class="arrow">→</span>
+                                        <span class="place-suggestion">공원, 호수, 조용한 카페</span>
+                                    </div>
+                                    <div class="match-item">
+                                        <span class="emotion-tag">설렘 + 자신감</span>
+                                        <span class="arrow">→</span>
+                                        <span class="place-suggestion">새로운 체험, 모험 활동</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="strategy-card">
+                            <h5>👥 동행자 고려사항</h5>
+                            <div class="strategy-content">
+                                <ul class="consideration-list">
+                                    <li><span class="bullet">🕐</span> 모임 시간과 장소의 편의성</li>
+                                    <li><span class="bullet">💰</span> 예상 비용과 부담 정도</li>
+                                    <li><span class="bullet">🚶</span> 체력적 요구사항과 난이도</li>
+                                    <li><span class="bullet">📷</span> 사진 촬영과 추억 만들기 가능성</li>
+                                    <li><span class="bullet">☔</span> 날씨의 영향 정도</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="strategy-card">
+                            <h5>🎈 분위기별 추천</h5>
+                            <div class="mood-suggestions">
+                                <div class="mood-item">
+                                    <div class="mood-icon">☀️</div>
+                                    <div class="mood-info">
+                                        <strong>활기찬 분위기</strong>
+                                        <p>쇼핑몰, 시장, 번화가, 펍</p>
+                                    </div>
+                                </div>
+                                <div class="mood-item">
+                                    <div class="mood-icon">🌙</div>
+                                    <div class="mood-info">
+                                        <strong>조용한 분위기</strong>
+                                        <p>도서관, 갤러리, 조용한 카페</p>
+                                    </div>
+                                </div>
+                                <div class="mood-item">
+                                    <div class="mood-icon">🎪</div>
+                                    <div class="mood-info">
+                                        <strong>특별한 분위기</strong>
+                                        <p>테마파크, 전시회, 콘서트홀</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="help-section">
+                    <h4>💼 실용적인 준비사항</h4>
+                    <div class="practical-tips">
+                        <div class="prep-category">
+                            <h6>📋 사전 확인사항</h6>
+                            <div class="prep-items">
+                                <span class="prep-tag">영업시간</span>
+                                <span class="prep-tag">입장료</span>
+                                <span class="prep-tag">예약 필요 여부</span>
+                                <span class="prep-tag">주차 가능 여부</span>
+                            </div>
+                        </div>
+                        <div class="prep-category">
+                            <h6>🎒 준비물 체크</h6>
+                            <div class="prep-items">
+                                <span class="prep-tag">편한 신발</span>
+                                <span class="prep-tag">충전기</span>
+                                <span class="prep-tag">카메라</span>
+                                <span class="prep-tag">여분 옷</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="help-modal-footer">
+                <div class="help-footer-info">
+                    <p>🎯 감정에 딱 맞는 관광지로 특별한 만남을 시작해보세요!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // localStorage에서 감정 정보 불러오기
+        let emotionsFromLocal = localStorage.getItem('selected_emotions_step2');
+        let emotionsFromSession = sessionStorage.getItem('selected_emotions_step2');
+
+        // JSON 파싱
+        try {
+            if (emotionsFromLocal) {
+                const parsedLocal = JSON.parse(emotionsFromLocal);
+                console.log('[localStorage] 선택된 감정 목록:', parsedLocal);
+            } else {
+                console.log('[localStorage] 선택된 감정 없음');
+            }
+
+            if (emotionsFromSession) {
+                const parsedSession = JSON.parse(emotionsFromSession);
+                console.log('[sessionStorage] 선택된 감정 목록:', parsedSession);
+            } else {
+                console.log('[sessionStorage] 선택된 감정 없음');
+            }
+        } catch (e) {
+            console.error('감정 데이터 파싱 오류:', e);
+        }
+    });
+</script>
+</html>
