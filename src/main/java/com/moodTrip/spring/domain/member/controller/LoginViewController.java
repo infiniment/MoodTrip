@@ -2,8 +2,11 @@ package com.moodTrip.spring.domain.member.controller;
 
 import com.moodTrip.spring.domain.member.dto.request.LoginRequest;
 import com.moodTrip.spring.domain.member.service.LoginService;
+import com.moodTrip.spring.domain.member.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -19,6 +22,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 public class LoginViewController {
 
     private final LoginService loginService;
+    private final MemberService memberService;
+
 
     @Operation(summary = "로그인 폼", description = "로그인 화면을 반환")
     @GetMapping("/api/login")
@@ -29,7 +34,7 @@ public class LoginViewController {
 
     @Operation(summary = "로그인 처리", description = "회원 로그인 요청(폼 전송 방식)을 처리한다")
     @PostMapping("/login")
-    public String login(@ModelAttribute LoginRequest loginRequest, Model model) {
+    public String login(@ModelAttribute LoginRequest loginRequest, HttpServletResponse response , Model model) {
         log.info("로그인 요청: id={}, pw={}", loginRequest.getMemberId(), loginRequest.getMemberPw());
 
         String token = loginService.login(loginRequest);
@@ -41,14 +46,22 @@ public class LoginViewController {
             return "login/login"; // 로그인 폼 재출력
         }
 
-        // 로그인 성공 (세션/헤더/쿠키 저장 등은 선택적으로 구현)
-        // 예: 세션에 저장
-        // session.setAttribute("jwtToken", token);
+        // 쿠키 생성 (HttpOnly, Secure 옵션은 필요에 따라 설정)
+        Cookie jwtCookie = new Cookie("jwtToken", token);
+        jwtCookie.setHttpOnly(true);
+        jwtCookie.setPath("/");
+        jwtCookie.setMaxAge(24 * 60 * 60); // 1일 (단위: 초)
+        response.addCookie(jwtCookie);
+
 
         return "redirect:/"; // 성공 시 메인 페이지 등으로 이동
     }
 
-
+    //소셜 로그인 성공 시
+    @GetMapping("/mainpage/mainpage")
+    public String mainPage() {
+        return "mainpage/mainpage"; // templates/mainpage/mainpage.html 필요
+    }
 
 
 }
