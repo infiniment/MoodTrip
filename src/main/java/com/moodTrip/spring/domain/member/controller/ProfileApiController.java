@@ -81,7 +81,7 @@ public class ProfileApiController {
             @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터"),
             @ApiResponse(responseCode = "404", description = "프로필을 찾을 수 없음")
     })
-    @PatchMapping("/me/nickname")  // ✅ PATCH 방식 사용!
+    @PatchMapping("/nickname")  // ✅ PATCH 방식 사용!
     public ResponseEntity<ProfileResponse> updateNickname(
             @RequestBody NicknameUpdateRequest request
     ) {

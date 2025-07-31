@@ -4,22 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>무드 트립</title>
-    <link rel="stylesheet" th:href="@{/css/fix/header.css}">
-    <link rel="stylesheet" th:href="@{/css/fix/footer.css}">
-    <link rel="stylesheet" th:href="@{/css/fix/header-after.css}">
+    <!-- ✅ Thymeleaf 리소스 경로로 수정 -->
     <link rel="stylesheet" th:href="@{/css/mypage/my-profile.css}">
+    <script th:src="@{/js/mypage/my-profile.js}"></script>
 </head>
 <body>
-<!-- 로그인 상태에 따른 조건부 헤더 렌더링 -->
-<div th:if="${isLoggedIn}">
-    <!-- 로그인된 사용자용 헤더 -->
-    <th:block th:replace="~{fix/header-after-login :: header}"></th:block>
-</div>
-<div th:unless="${isLoggedIn}">
-    <!-- 로그인 안된 사용자용 헤더 -->
-    <th:block th:replace="~{fix/header :: header}"></th:block>
-</div>
-
 <div>
     <div class="wrap">
         <div class="page">
@@ -27,13 +16,13 @@
                 <aside class="user-settings-nav">
                     <div class="account-settings">계정 설정</div>
                     <hr orientation="horizontal" class="horizontal-line">
+                    <!-- ✅ Thymeleaf URL 문법으로 수정 -->
                     <a class="my_profile active" th:href="@{/mypage/my-profile}">내 정보</a>
                     <a class="my_matching" th:href="@{/mypage/my-matching}">매칭 정보</a>
                     <a class="join_requests" th:href="@{/mypage/join-requests}">
                         방 입장 요청 관리
                         <span class="notification-badge" id="join-requests-badge" style="display: none;">0</span>
                     </a>
-                    <a class="my_reviews" th:href="@{/mypage/my-reviews}">내가 쓴 후기</a>
                     <a class="my_tourist_attraction_wishlist" th:href="@{/mypage/my-tourist-attraction-wishlist}">관광지 찜 목록</a>
                     <a class="change_password" th:href="@{/mypage/change-password}">비밀번호 변경 정보</a>
                     <a class="alarm" th:href="@{/mypage/alarm}">알림 설정</a>
@@ -43,19 +32,21 @@
                     <div class="total-wrapper">
                         <h1 class="info-title">내 정보</h1>
 
-                        <!-- 에러 메시지 표시 영역 -->
+                        <!-- ✅ 에러/성공 메시지 표시 영역 추가 -->
                         <div th:if="${error}" class="error-message" style="background: #fee; color: #c33; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
                             <p th:text="${error}"></p>
+                        </div>
+                        <div th:if="${successMessage}" class="success-message" style="background: #efe; color: #060; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
+                            <p th:text="${successMessage}"></p>
                         </div>
 
                         <section class="flex main-wrapper">
                             <div class="flex main-info-wrapper">
-                                <!-- 프로필 이미지 섹션 -->
                                 <section class="change-profile-section">
                                     <div role="article" shape="0" size="120" class="profile-image-part">
-                                        <!-- 🔥 완전히 안전한 Thymeleaf 표현식 -->
+                                        <!-- ✅ Thymeleaf 조건부 이미지 경로 -->
                                         <img alt="프로필 사진" loading="lazy" shape="0"
-                                             th:src="${profile != null and profile.profileImage != null ? profile.profileImage : '/static/image/mypage/test-profile-img.jpg'}"
+                                             th:src="${profile != null and profile.profileImage != null ? profile.profileImage : '/image/mypage/test-profile-img.jpg'}"
                                              class="profile-image">
                                     </div>
                                     <div class="change-profile-btn-main-wrapper">
@@ -72,9 +63,8 @@
                                     </div>
                                 </section>
 
-                                <!-- 정보 수정 섹션 -->
                                 <section class="change-info-section">
-                                    <!-- 닉네임 섹션 -->
+                                    <!-- ✅ 닉네임 섹션 -->
                                     <div class="info-section-wrapper">
                                         <label for="username" class="info-text-label">
                                             <span class="name-text">닉네임</span>
@@ -88,20 +78,21 @@
                                         </label>
                                         <div class="name-input-wrapper">
                                             <div class="name-input-section">
-                                                <!-- 🔥 완전히 안전한 표현식 -->
-                                                <input id="username" disabled type="text" maxlength="17"
-                                                       class="name-input" th:value="${profile != null ? profile.nickname : '닉네임'}">
+                                                <!-- ✅ Thymeleaf로 동적 닉네임 표시 -->
+                                                <input id="username" disabled type="text" maxlength="17" class="name-input"
+                                                       th:value="${profile != null ? profile.nickname : '닉네임'}">
                                             </div>
                                         </div>
                                         <ul class="caution-info-wrapper">
-                                            <li class="caution-info">*닉네임은 최초 설정 또는 변경 후 30일이 지나야 바꿀 수 있습니다.
+                                            <li class="caution-info">
+                                                *닉네임은 최초 설정 또는 변경 후 30일이 지나야 바꿀 수 있습니다.
                                                 (최근 변경 일시: <span th:text="${profile != null and profile.createdAt != null ? #temporals.format(profile.createdAt, 'yyyy-MM-dd HH:mm:ss') : '정보 없음'}">2025-06-22 00:30:44</span>)
                                             </li>
                                             <li class="caution-info">* 한글/영문/숫자만 사용할 수 있습니다.</li>
                                         </ul>
                                     </div>
 
-                                    <!-- 이메일 섹션 -->
+                                    <!-- ✅ 이메일 섹션 -->
                                     <div class="info-section-wrapper">
                                         <div class="flex email-info-label-wrapper">
                                             <label class="info-text-label">
@@ -111,8 +102,9 @@
                                         <div class="email-info-wrapper">
                                             <div class="email-info-section">
                                                 <div class="email-info-placeholder-wrapper">
-                                                    <!-- 🔥 완전히 안전한 표현식 -->
-                                                    <input disabled type="text" class="email-info" th:value="${profile != null ? profile.email : 'email@example.com'}">
+                                                    <!-- ✅ Thymeleaf로 동적 이메일 표시 -->
+                                                    <input disabled type="text" class="email-info"
+                                                           th:value="${profile != null ? profile.email : 'test@email.com'}">
                                                     <div class="suffix-wrapper email-check-icon-wrapper">
                                                         <span color="#303441" role="img" rotate="0" class="email-check-icon">
                                                             <svg aria-hidden="true" fill="currentColor" focusable="false" height="24" preserv="xMidYMid meet" viewBox="0 0 24 24" width="24" class="email-svg-icon">
@@ -125,22 +117,22 @@
                                         </div>
                                     </div>
 
-                                    <!-- 연동된 계정 섹션 -->
+                                    <!-- ✅ 연동된 계정 섹션 -->
                                     <div class="info-section-wrapper">
                                         <label class="info-text-label">
                                             <span class="linked-account-text">연동된 계정</span>
                                         </label>
                                         <ul class="linked-account-type">
                                             <li aria-selected="true" style="background-color:#FEE500;border:none" class="kakao-logo-icon">
-                                                <img th:src="@{/static/image/mypage/kakao-logo_v2.png}" alt="카카오 계정 연동 상태" style="width:24px;height:24px; max-width: none;">
+                                                <img th:src="@{/image/mypage/kakao-logo_v2.png}" alt="카카오 계정 연동 상태" style="width:24px;height:24px; max-width: none;">
                                             </li>
                                             <li aria-selected="false" style="background-color:#f2f3f7;border:none" class="google-logo-disabled-icon">
-                                                <img th:src="@{/static/image/mypage/google-logo-disabled.png}" alt="구글 계정 미연동 상태" style="width:24px;height:24px; max-width: none;">
+                                                <img th:src="@{/image/mypage/google-logo-disabled.png}" alt="구글 계정 미연동 상태" style="width:24px;height:24px; max-width: none;">
                                             </li>
                                         </ul>
                                     </div>
 
-                                    <!-- 휴대폰 인증 섹션 -->
+                                    <!-- ✅ 휴대폰 인증 섹션 -->
                                     <div class="info-section-wrapper">
                                         <div class="flex phone-authentication-label-wrapper">
                                             <label class="info-text-label">
@@ -150,8 +142,9 @@
                                         <div class="phone-authentication-wrapper">
                                             <div class="phone-authentication-info-wrapper">
                                                 <div class="phone-authentication-input-wrapper">
-                                                    <!-- 🔥 완전히 안전한 표현식 -->
-                                                    <input disabled type="text" class="phone-authentication" th:value="${profile != null ? profile.memberPhone : '010-****-****'}">
+                                                    <!-- ✅ Thymeleaf로 동적 전화번호 표시 -->
+                                                    <input disabled type="text" class="phone-authentication"
+                                                           th:value="${profile != null ? profile.memberPhone : '010****9831'}">
                                                 </div>
                                             </div>
                                             <p class="not-authentication" variant="body2" color="red500" hidden>원활한 서비스 이용을 위하여 인증을 완료해 주세요.</p>
@@ -161,7 +154,7 @@
                                         </div>
                                     </div>
 
-                                    <!-- 자기소개 섹션 -->
+                                    <!-- ✅ 자기소개 섹션 -->
                                     <div class="info-section-wrapper self-introduction-wrapper">
                                         <label class="info-text-label">
                                             <span class="self-introduction-text">자기소개</span>
@@ -174,13 +167,13 @@
                                             </div>
                                         </label>
                                         <div class="self-introduction-box">
-                                            <!-- 🔥 완전히 안전한 표현식 -->
+                                            <!-- ✅ Thymeleaf로 동적 자기소개 표시 -->
                                             <textarea id="selfIntroduction" class="self-introduction-textarea" disabled
-                                                      th:text="${profile != null ? profile.profileBio : '자기소개를 입력해주세요.'}">자기소개 내용</textarea>
+                                                      th:text="${profile != null ? profile.profileBio : '자기소개를 입력해주세요.'}">안녕하세요 저는 여행을 좋아하고, 신나는 액티비티를 즐겨 합니다.</textarea>
                                         </div>
                                     </div>
 
-                                    <!-- 탈퇴 버튼 -->
+                                    <!-- ✅ 탈퇴 버튼 -->
                                     <div class="withdraw-btn-wrapper">
                                         <button class="withdraw-btn">탈퇴하기</button>
                                     </div>
@@ -194,7 +187,7 @@
     </div>
 </div>
 
-<!-- 탈퇴 확인 모달 -->
+<!-- ✅ 탈퇴 확인 모달 -->
 <div class="modal-overlay" id="withdrawModal">
     <div class="modal-container">
         <div class="modal-header">
@@ -250,12 +243,5 @@
         </div>
     </div>
 </div>
-
-<th:block th:replace="~{fix/footer :: footer}"></th:block>
-
-<!-- JavaScript 파일들 -->
-<script th:src="@{/js/fix/header.js}"></script>
-<script th:src="@{/js/fix/header-after.js}"></script>
-<script th:src="@{/js/mypage/my-profile.js}"></script>
 </body>
 </html>
