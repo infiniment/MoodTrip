@@ -27,6 +27,8 @@ public class QEmotionRoom extends EntityPathBase<EmotionRoom> {
     //inherited
     public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;
 
+    public final com.moodTrip.spring.domain.emotion.entity.QEmotion emotion;
+
     public final NumberPath<Long> emotionRoomId = createNumber("emotionRoomId", Long.class);
 
     public final QRoom room;
@@ -52,6 +54,7 @@ public class QEmotionRoom extends EntityPathBase<EmotionRoom> {
 
     public QEmotionRoom(Class<? extends EmotionRoom> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
+        this.emotion = inits.isInitialized("emotion") ? new com.moodTrip.spring.domain.emotion.entity.QEmotion(forProperty("emotion"), inits.get("emotion")) : null;
         this.room = inits.isInitialized("room") ? new QRoom(forProperty("room")) : null;
     }
 

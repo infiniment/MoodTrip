@@ -236,3 +236,41 @@ document.getElementById('signupForm').addEventListener('submit', function(event)
             alert('서버 오류가 발생했습니다.');
         });
 });
+
+document.addEventListener("DOMContentLoaded", function() {
+    const form = document.querySelector("form");
+    const termsCheckbox = document.querySelector("input[name='terms']");
+    const errorDiv = document.getElementById("terms-error");
+
+    form.addEventListener("submit", function(event) {
+        // 에러 메시지 초기화
+        errorDiv.style.display = "none";
+        errorDiv.textContent = "";
+
+        if (!termsCheckbox.checked) {
+            errorDiv.textContent = "이용약관에 동의해야 회원가입이 가능합니다.";
+            errorDiv.style.display = "block";
+            event.preventDefault(); // 폼 제출 막음
+        }
+    });
+});
+
+
+document.addEventListener("DOMContentLoaded", function() {
+    const pw = document.querySelector("input[name='password']");
+    const pwConfirm = document.querySelector("input[name='passwordConfirm']");
+    const errorDiv = document.getElementById("password-error");
+
+    function checkPasswordMatch() {
+        if (pw.value !== pwConfirm.value) {
+            errorDiv.textContent = "비밀번호와 비밀번호 확인이 일치하지 않습니다.";
+            errorDiv.style.display = "block";
+        } else {
+            errorDiv.textContent = "";
+            errorDiv.style.display = "none";
+        }
+    }
+
+    pw.addEventListener("input", checkPasswordMatch);
+    pwConfirm.addEventListener("input", checkPasswordMatch);
+});
