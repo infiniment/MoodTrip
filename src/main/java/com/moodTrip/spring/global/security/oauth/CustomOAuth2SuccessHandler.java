@@ -79,7 +79,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
                         .memberId(memberId)
                         .memberPw(memberPw)
                         .email(email)
-                        .memberName(memberName)
+                        .nickname(memberName)
                         .memberPhone(memberPhone)
                         .memberAuth("U")
                         .isWithdraw(false)
