@@ -15,18 +15,19 @@ document.addEventListener('DOMContentLoaded', function () {
   function openDropdown() {
     dropdown.style.maxHeight = getDropdownHeight() + 'px';
     dropdown.style.overflow = 'visible';
-dropdown.style.background = 'linear-gradient(to right, rgba(0,87,146,0.03), rgba(0,26,44,0.03))';  dropdown.classList.add('active'); // <-- 추가
-    }
+    dropdown.style.background = 'linear-gradient(to right, rgba(0,87,146,0.03), rgba(0,26,44,0.03))';
+    dropdown.classList.add('active');
+  }
 
   function closeDropdown() {
     dropdown.style.maxHeight = '0px';
     dropdown.style.overflow = 'hidden';
-     dropdown.classList.remove('active'); // <-- 추가
+    dropdown.classList.remove('active');
   }
 
   leftNav.addEventListener('mouseenter', function () {
     clearTimeout(closeTimeout);
-    openTimeout = setTimeout(openDropdown, 180); // 180ms 딜레이 후 열림
+    openTimeout = setTimeout(openDropdown, 180);
   });
 
   leftNav.addEventListener('mouseleave', function () {
@@ -45,10 +46,7 @@ dropdown.style.background = 'linear-gradient(to right, rgba(0,87,146,0.03), rgba
   });
 });
 
-
-
-
-//감정 버튼
+// 감정 선택기 기능
 document.addEventListener('DOMContentLoaded', function () {
   const emotionCategories = [
     { name: '평온 & 힐링', emotions: ['평온', '안정', '휴식', '치유', '명상', '고요', '위안', '여유'] },
@@ -69,27 +67,24 @@ document.addEventListener('DOMContentLoaded', function () {
   ];
 
   const selectedEmotions = new Set();
-  let activeCategory = null; // 선택된 카테고리 name
+  let activeCategory = null;
 
-  const RECENT_KEY = 'recentEmotions';
+  // 최근 검색어 관리 (localStorage 대신 메모리 사용)
+  let recentEmotions = [];
   const MAX_RECENT = 5;
 
-  function getRecentEmotions() {
-    const stored = localStorage.getItem(RECENT_KEY);
-    return stored ? JSON.parse(stored) : [];
-  }
   function saveRecentEmotion(emotion) {
-    let recent = getRecentEmotions();
-    recent = recent.filter(e => e !== emotion);
-    recent.unshift(emotion);
-    if (recent.length > MAX_RECENT) recent = recent.slice(0, MAX_RECENT);
-    localStorage.setItem(RECENT_KEY, JSON.stringify(recent));
+    recentEmotions = recentEmotions.filter(e => e !== emotion);
+    recentEmotions.unshift(emotion);
+    if (recentEmotions.length > MAX_RECENT) {
+      recentEmotions = recentEmotions.slice(0, MAX_RECENT);
+    }
   }
+
   function deleteRecentEmotion(emotion) {
-    let recent = getRecentEmotions();
-    recent = recent.filter(e => e !== emotion);
-    localStorage.setItem(RECENT_KEY, JSON.stringify(recent));
+    recentEmotions = recentEmotions.filter(e => e !== emotion);
   }
+
   function createRecentSection(onClick) {
     const section = document.createElement('div');
     section.id = 'recent-emotion-section';
@@ -99,14 +94,18 @@ document.addEventListener('DOMContentLoaded', function () {
     section.style.gap = '8px';
     section.style.alignItems = 'center';
 
+    if (recentEmotions.length === 0) {
+      section.style.display = 'none';
+      return section;
+    }
+
     const label = document.createElement('span');
     label.textContent = '최근 검색어:';
     label.style.fontSize = '13px';
     label.style.color = '#757575';
     section.appendChild(label);
 
-    const recent = getRecentEmotions();
-    recent.forEach(emotion => {
+    recentEmotions.forEach(emotion => {
       const btnWrap = document.createElement('span');
       btnWrap.style.display = 'inline-flex';
       btnWrap.style.alignItems = 'center';
@@ -165,8 +164,8 @@ document.addEventListener('DOMContentLoaded', function () {
     container.style.padding = '18px 16px 16px 16px';
     container.style.display = 'flex';
     container.style.flexDirection = 'column';
-    container.style.width = '260px'; // 처음에는 좁게
-    container.style.height = '480px'; // 높이 고정 (카테고리+감정 나올 때 기준)
+    container.style.width = '260px';
+    container.style.height = '480px';
     container.style.boxShadow = '0 4px 24px rgba(0,0,0,0.15)';
     container.style.zIndex = '3000';
     container.style.maxHeight = '80vh';
@@ -190,7 +189,7 @@ document.addEventListener('DOMContentLoaded', function () {
     mainRow.style.flexDirection = 'row';
     mainRow.style.gap = '0px';
     mainRow.style.alignItems = 'flex-start';
-    mainRow.style.height = '420px'; // 고정 높이 (catList.height와 맞춤)
+    mainRow.style.height = '420px';
 
     // 카테고리 리스트 (좌측)
     const catList = document.createElement('div');
@@ -207,14 +206,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 감정 버튼 영역 (우측)
     const emotionPanel = document.createElement('div');
-    emotionPanel.style.display = 'flex'; // 항상 flex로 공간 차지
+    emotionPanel.style.display = 'flex';
     emotionPanel.style.flexDirection = 'column';
     emotionPanel.style.flexGrow = '1';
     emotionPanel.style.justifyContent = 'flex-start';
     emotionPanel.style.marginLeft = '24px';
     emotionPanel.style.transition = 'opacity 0.2s';
     emotionPanel.style.height = '100%';
-    emotionPanel.style.visibility = 'hidden'; // 처음엔 숨김, 공간은 차지
+    emotionPanel.style.visibility = 'hidden';
 
     // 카테고리 버튼 스타일 함수
     function styleCatBtn(btn, active) {
@@ -223,15 +222,15 @@ document.addEventListener('DOMContentLoaded', function () {
       btn.style.letterSpacing = '0.5px';
       btn.style.color = active ? '#fff' : '#005792';
       btn.style.background = active
-        ? 'linear-gradient(90deg, #005792 60%, #2e5eaa 100%)'
-        : 'transparent';
+          ? 'linear-gradient(90deg, #005792 60%, #2e5eaa 100%)'
+          : 'transparent';
       btn.style.border = 'none';
       btn.style.borderRadius = '10px';
       btn.style.padding = '12px 20px';
       btn.style.margin = '0 8px';
       btn.style.boxShadow = active
-        ? '0 2px 10px 0 rgba(0, 87, 146, 0.09)'
-        : 'none';
+          ? '0 2px 10px 0 rgba(0, 87, 146, 0.09)'
+          : 'none';
       btn.style.cursor = 'pointer';
       btn.style.transition = 'background 0.2s, color 0.2s, box-shadow 0.2s';
     }
@@ -275,7 +274,7 @@ document.addEventListener('DOMContentLoaded', function () {
       const grid = document.createElement('div');
       grid.style.display = 'grid';
       grid.style.gridTemplateColumns = 'repeat(2, max-content)';
-      grid.style.gap = '18px 4px'; // 세로 18px, 가로 4px
+      grid.style.gap = '18px 4px';
       grid.style.marginBottom = '8px';
       grid.style.marginTop = '8px';
 
@@ -283,7 +282,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.textContent = emotion;
-        btn.style.width = '120px'; // 가로 간격 좁게
+        btn.style.width = '120px';
         btn.style.height = '44px';
         btn.style.padding = '0';
         btn.style.margin = '0';
@@ -346,7 +345,6 @@ document.addEventListener('DOMContentLoaded', function () {
       });
       emotionPanel.appendChild(grid);
 
-      // emotionPanel 보이기, 컨테이너 넓히기
       emotionPanel.style.visibility = 'visible';
       setTimeout(() => {
         container.style.width = '540px';
@@ -354,24 +352,19 @@ document.addEventListener('DOMContentLoaded', function () {
       }, 10);
     }
 
-    // 전체 selector(카테고리+emotionPanel)에서 마우스가 벗어날 때만 닫힘
     container.addEventListener('mouseleave', () => {
       activeCategory = null;
       updateCatBtnStyles();
-      emotionPanel.style.visibility = 'hidden'; // 공간은 유지, 내용만 숨김
+      emotionPanel.style.visibility = 'hidden';
       container.style.width = '260px';
     });
 
-container.style.msOverflowStyle = 'none'; // IE, Edge
-container.style.scrollbarWidth = 'none';  // Firefox
-
-// Webkit 브라우저용
-const style = document.createElement('style');
-style.textContent = `
-  #emotion-selector::-webkit-scrollbar { display: none; }
-`;
-document.head.appendChild(style);
-
+    // 스크롤바 숨기기
+    container.style.msOverflowStyle = 'none';
+    container.style.scrollbarWidth = 'none';
+    const style = document.createElement('style');
+    style.textContent = `#emotion-selector::-webkit-scrollbar { display: none; }`;
+    document.head.appendChild(style);
 
     mainRow.appendChild(catList);
     mainRow.appendChild(emotionPanel);
@@ -397,44 +390,45 @@ document.head.appendChild(style);
     return container;
   }
 
+  // 검색 input이 존재할 때만 감정 선택기 초기화
   const input = document.querySelector('.search-input');
-  const emotionSelector = createEmotionSelector();
-  document.body.appendChild(emotionSelector);
-  emotionSelector.style.display = 'none';
+  if (input) {
+    const emotionSelector = createEmotionSelector();
+    document.body.appendChild(emotionSelector);
+    emotionSelector.style.display = 'none';
 
-  input.addEventListener('focus', () => {
-    const rect = input.getBoundingClientRect();
-    emotionSelector.style.top = rect.bottom + window.scrollY + 4 + 'px';
-    emotionSelector.style.left = rect.left + window.scrollX + 'px';
-    emotionSelector.style.display = 'flex';
-    const newRecent = createRecentSection(function(emotion) {
-      selectedEmotions.clear();
-      selectedEmotions.add(emotion);
+    input.addEventListener('focus', () => {
+      const rect = input.getBoundingClientRect();
+      emotionSelector.style.top = rect.bottom + window.scrollY + 4 + 'px';
+      emotionSelector.style.left = rect.left + window.scrollX + 'px';
+      emotionSelector.style.display = 'flex';
+      const newRecent = createRecentSection(function(emotion) {
+        selectedEmotions.clear();
+        selectedEmotions.add(emotion);
+        emotionSelector.updateAllEmotionBtnStyles();
+        input.value = Array.from(selectedEmotions).join(', ');
+      });
+      emotionSelector.replaceChild(newRecent, emotionSelector.firstChild);
       emotionSelector.updateAllEmotionBtnStyles();
-      input.value = Array.from(selectedEmotions).join(', ');
-      //emotionSelector.style.display = 'none';
     });
-    emotionSelector.replaceChild(newRecent, emotionSelector.firstChild);
-    emotionSelector.updateAllEmotionBtnStyles();
-  });
 
-  // 외부 클릭 시 닫기 (캡처링 단계, 내부 클릭은 절대 닫히지 않음)
-  document.addEventListener('mousedown', function(e) {
-    if (
-      emotionSelector.style.display !== 'none' &&
-      !e.target.closest('#emotion-selector') &&
-      e.target !== input
-    ) {
-      emotionSelector.style.display = 'none';
-    }
-  }, true);
+    // 외부 클릭 시 닫기
+    document.addEventListener('mousedown', function(e) {
+      if (
+          emotionSelector.style.display !== 'none' &&
+          !e.target.closest('#emotion-selector') &&
+          e.target !== input
+      ) {
+        emotionSelector.style.display = 'none';
+      }
+    }, true);
 
- input.addEventListener('blur', (e) => {
-  setTimeout(() => {
-    // 현재 포커스된 엘리먼트가 emotionSelector 내부면 닫지 않음
-    if (!emotionSelector.contains(document.activeElement)) {
-      emotionSelector.style.display = 'none';
-    }
-  }, 200);
-});
+    input.addEventListener('blur', (e) => {
+      setTimeout(() => {
+        if (!emotionSelector.contains(document.activeElement)) {
+          emotionSelector.style.display = 'none';
+        }
+      }, 200);
+    });
+  }
 });

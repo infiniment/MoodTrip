@@ -35,8 +35,6 @@ dependencies {
 	//통합 로그인  pom.xml
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 
-
-
 	// WebSocket(채팅 기능용)
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 

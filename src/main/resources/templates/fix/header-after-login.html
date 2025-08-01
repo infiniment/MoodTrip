@@ -1,113 +1,102 @@
-
 <!DOCTYPE html>
-
-<html lang="en">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/css/fix/header.css">
-    <link rel="stylesheet" href="/css/fix/header-after.css">
-    <script src = "/js/fix/header-after.js"></script>
-    <script src = "/js/fix/header.js"></script>
+    <link rel="stylesheet" th:href="@{/css/fix/header.css}">
+    <link rel="stylesheet" th:href="@{/css/fix/header-after.css}">
+    <script th:src="@{/js/fix/header-after.js}"></script>
+    <script th:src="@{/js/fix/header.js}"></script>
 </head>
 <link href="https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/static/woff2/SUIT.css" rel="stylesheet">
 
 <body>
 
-<header class="header">
-  
-  <div class="header-nav">
-    <div class="container">
-      <a href="/">
-        <div class="nav-logo-wrapper">
-          <div class="nav-logo"></div>
-        </div>
-      </a>
-      <div class="left-nav">
-        <a href="/project/add/">
-          <div class="left-nav-menu main-header text-header" >동행 매칭</div>
-          
-        </a>
-        <a href="/project/#clear">
-          <div class="left-nav-menu pr-12 main-header text-header">
-             공지 사항 
-            <div class="img-container">
-              
+<header class="header" th:fragment="header">
+    <div class="header-nav">
+        <div class="container">
+            <!-- 로고 -->
+            <a th:href="@{/}">
+                <div class="nav-logo-wrapper">
+                    <div class="nav-logo"></div>
+                </div>
+            </a>
+
+            <div class="left-nav">
+                <!-- 네비게이션 메뉴들 (동일) -->
+                <a th:href="@{/companion-rooms}">
+                    <div class="left-nav-menu main-header text-header">동행 매칭</div>
+                </a>
+                <a th:href="@{/notifications}">
+                    <div class="left-nav-menu pr-12 main-header text-header">
+                        공지 사항
+                        <div class="img-container"></div>
+                    </div>
+                </a>
+                <a th:href="@{/emotions}">
+                    <div class="left-nav-menu main-header text-header">감정 여행</div>
+                </a>
+
+                <!-- 검색바 -->
+                <div class="left-nav-menu pr-12 main-header text-header search-bar-wrapper" style="margin-left: 100px;">
+                    <form class="search-bar" th:action="@{/emotions}" method="get">
+                        <input
+                                type="text"
+                                name="q"
+                                placeholder="감정을 입력하세요"
+                                class="search-input"
+                        />
+                        <button type="submit" class="search-btn" aria-label="검색">
+                            <img th:src="@{/image/default-common/search.png}" alt="검색" class="search-icon">
+                        </button>
+                    </form>
+                </div>
             </div>
-          </div>
-        </a>
-        <a href="/partners/#clear">
-          <div class="left-nav-menu main-header text-header">감정 여행</div>
-        </a>
 
-<div class="left-nav-menu pr-12 main-header text-header search-bar-wrapper" style="margin-left: 100px;">
-  <form class="search-bar" action="/search" method="get">
-    <input
-      type="text"
-      name="q"
-      placeholder="감정을 입력하세요"
-      class="search-input"
-    />
-    <button type="submit" class="search-btn" aria-label="검색">
-      <img src="/static/image/default-common/search.png" alt="검색" class="search-icon">
-    </button>
-  </form>
-</div>
+            <!-- 로그인된 사용자 프로필 메뉴 -->
+            <div class="right-nav">
+                <div class="profile-menu-wrapper">
+                    <div class="profile-thumb" id="profileThumb">
+                        <!-- 프로필 이미지 -->
+                        <img th:src="@{/image/default-common/profile-default.png}" alt="프로필" id="profileImg" />
+                    </div>
+                    <div class="profile-dropdown" id="profileDropdown">
+                        <div class="profile-info">
+                            <!-- 실제 사용자 정보로 변경 예정 -->
+                            <div class="profile-nickname" id="profileNickname">닉네임</div>
+                            <div class="profile-email" id="profileEmail">user@email.com</div>
+                        </div>
+                        <!-- 프로필 관리 링크 -->
+                        <button class="profile-btn" id="profileManageBtn" onclick="location.href='/profiles/me'">프로필 관리</button>
+                        <!-- 로그아웃 버튼 -->
+                        <button class="logout-btn" id="logoutBtn" onclick="logout()">로그아웃</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
+        <!-- 드롭다운 메뉴 (동일) -->
+        <div class="dropdown-nav-container" style="top: 65px;">
+            <div class="dropdown-nav">
+                <div class="dropdown-menu-container" style="margin-left: 130px;">
+                    <div class="dropdown-menu-list" style="width: 109px;">
+                        <a class="dropdown-menu-item" th:href="@{/companion-rooms/create}">방 만들기</a>
+                        <a class="dropdown-menu-item" th:href="@{/companion-rooms}">방 입장하기</a>
+                        <a class="dropdown-menu-item" th:href="@{/scheduling}">스케줄 짜기</a>
+                    </div>
 
-        
-      </div>
-     <div class="right-nav">
-  <div class="profile-menu-wrapper">
-    <div class="profile-thumb" id="profileThumb">
-      <!-- 프로필 이미지, 없으면 기본 아이콘 -->
-      <img src="/static/image/default-common/profile-default.png" alt="프로필" id="profileImg" />
+                    <div class="dropdown-menu-list" style="width: 113px;">
+                        <a class="dropdown-menu-item" th:href="@{/faqs}">자주 찾는 질문</a>
+                    </div>
+
+                    <div class="dropdown-menu-list" style="width: 145px;">
+
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="profile-dropdown" id="profileDropdown">
-      <div class="profile-info">
-        <div class="profile-nickname" id="profileNickname">닉네임</div>
-        <div class="profile-email" id="profileEmail">user@email.com</div>
-      </div>
-      <button class="profile-btn" id="profileManageBtn">프로필 관리</button>
-      <button class="logout-btn" id="logoutBtn">로그아웃</button>
-    </div>
-  </div>
-</div>
-
-    </div>
-
-
-<!-- 드롭다운 -->
-<div class="dropdown-nav-container" style="top: 65px;">
-  <div class="dropdown-nav">
-  <div class="dropdown-menu-container" style="margin-left: 130px;">
-      <!-- 동행 매칭 -->
-      <div class="dropdown-menu-list" style="width: 109px;">
-        <a class="dropdown-menu-item" href="/project/add/">방 만들기</a>
-        <a class="dropdown-menu-item" href="/project/list/">방 입창하기</a>
-        <a class="dropdown-menu-item" href="/project/my/">스케줄 짜기</a>
-      </div>
-    
-      <!-- 공지 사항 -->
-      <div class="dropdown-menu-list" style="width: 113px;">
-        <a class="dropdown-menu-item" href="/project/add/">자주 찾는 질문</a>
-      </div>
-      <!-- 감정 여행 -->
-      <div class="dropdown-menu-list" style="width: 145px;">
-      
-      </div>
-      
-    </div>
-  </div>
-</div>
-
-
-
-  </div>
-
- 
 </header>
 
 </body>
-
 </html>
