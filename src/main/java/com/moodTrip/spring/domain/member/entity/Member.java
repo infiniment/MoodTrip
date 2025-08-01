@@ -27,8 +27,8 @@ public class Member extends BaseEntity { // BaseEntity 상속
     @Column(name = "member_phone", nullable = false, length = 20)
     private String memberPhone;
 
-    @Column(name = "member_name", nullable = false, length = 30)
-    private String memberName;
+    @Column(name = "nickname", nullable = false, length = 30)
+    private String nickname;
 
     @Column(name = "member_auth", nullable = false, length = 1)
     private String memberAuth;
