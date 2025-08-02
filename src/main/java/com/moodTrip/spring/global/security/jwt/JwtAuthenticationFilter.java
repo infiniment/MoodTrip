@@ -29,21 +29,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
+        try {
+            String jwt = resolveToken(request);
+            if (StringUtils.hasText(jwt) && jwtUtil.validateToken(jwt)) {
+                String memberId = jwtUtil.getMemberId(jwt);
+                UserDetails userDetails = userDetailsService.loadUserByUsername(memberId);
 
-        String jwt = resolveToken(request);
-
-        if (StringUtils.hasText(jwt) && jwtUtil.validateToken(jwt)) {
-            String memberId = jwtUtil.getMemberId(jwt);
-            UserDetails userDetails = userDetailsService.loadUserByUsername(memberId);
-
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
+        } catch (Exception ex) {
+            // 로그로 남기고, 인증 없이 넘어간다 (필터는 중단하지 않음)
+            System.out.println("JWT 인증/유저로드 실패: " + ex.getMessage());
         }
-
         filterChain.doFilter(request, response);
     }
+
 
     private String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
