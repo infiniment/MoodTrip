@@ -1,5 +1,6 @@
 package com.moodTrip.spring.domain.rooms.entity;
 
+import com.moodTrip.spring.domain.emotion.entity.Emotion;
 import com.moodTrip.spring.global.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -20,7 +21,10 @@ public class EmotionRoom extends BaseEntity {
     @JoinColumn(name = "room_id")
     private Room room;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "tag_id")
-//    private Emotion emotion;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tag_id")
+    private Emotion emotion;
+
+
+
 }

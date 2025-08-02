@@ -32,6 +32,12 @@ public class LoginViewController {
         return "login/login";
     }
 
+    @GetMapping("/login")
+    public String loginPage(Model model) {
+        model.addAttribute("loginRequest", new LoginRequest());
+        return "login/login"; // 실제 로그인 폼 템플릿 경로 (Thymeleaf 등)
+    }
+
     @Operation(summary = "로그인 처리", description = "회원 로그인 요청(폼 전송 방식)을 처리한다")
     @PostMapping("/login")
     public String login(@ModelAttribute LoginRequest loginRequest, HttpServletResponse response , Model model) {
@@ -48,13 +54,14 @@ public class LoginViewController {
 
         // 쿠키 생성 (HttpOnly, Secure 옵션은 필요에 따라 설정)
         Cookie jwtCookie = new Cookie("jwtToken", token);
-        jwtCookie.setHttpOnly(true);
         jwtCookie.setPath("/");
+        jwtCookie.setHttpOnly(true);
+
         jwtCookie.setMaxAge(24 * 60 * 60); // 1일 (단위: 초)
         response.addCookie(jwtCookie);
 
 
-        return "redirect:/"; // 성공 시 메인 페이지 등으로 이동
+        return "redirect:/mainpage/mainpage";
     }
 
     //소셜 로그인 성공 시
