@@ -68,7 +68,7 @@ public class RoomRequest {
     public static class EmotionDto {
 
         @Schema(description = "감정 ID", example = "1")
-        private Long id;
+        private Long tagId;
 
         @Schema(description = "감정 텍스트", example = "평온")
         private String text;

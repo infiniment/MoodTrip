@@ -54,3 +54,7 @@ Thumbs.db
 ### Backup & Temp files ###
 *.bak
 *.tmp
+
+# QueryDSL Q 클래스
+**/build/
+**/generated/
