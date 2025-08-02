@@ -105,10 +105,11 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
                 log.info(" 소셜 JWT 토큰 발급 : {}", token);
                 jwtCookie.setHttpOnly(true);
                 jwtCookie.setPath("/");
+                jwtCookie.setHttpOnly(true);
                 jwtCookie.setMaxAge(24 * 60 * 60);
                 response.addCookie(jwtCookie);
-
                 response.sendRedirect("/mainpage/mainpage");
+
             } else {
                 response.sendRedirect("/signup?error=등록되지+않은+계정입니다.+회원가입이+필요합니다");
             }

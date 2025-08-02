@@ -1,16 +1,12 @@
-//input 
 document.addEventListener("DOMContentLoaded", function () {
+    // ---------- 라벨 플로팅/포커스 ----------
     const inputContainers = document.querySelectorAll('[data-testid="design-system--text-field-container"]');
-
     inputContainers.forEach(container => {
         const input = container.querySelector('input');
         const label = container.querySelector('[data-testid="design-system--lable-text"]');
         const wrapper = container.querySelector('[data-testid="design-system--lable-input"]');
-
-        // 초기 클래스 세팅
-        wrapper.classList.add('input-container-fix');
-        input.classList.add('input-textbox-padding');
-
+        if (wrapper) wrapper.classList.add('input-container-fix');
+        if (input) input.classList.add('input-textbox-padding');
         const toggleLabel = () => {
             if (input.value.trim() !== '' || document.activeElement === input) {
                 label.classList.add('label-float');
@@ -18,39 +14,35 @@ document.addEventListener("DOMContentLoaded", function () {
                 label.classList.remove('label-float');
             }
         };
-        toggleLabel(); // 초기 상태
-
-        input.addEventListener('focus', () => {
-            container.classList.add('input-hover-focus');
-            toggleLabel();
-        });
-
-        input.addEventListener('blur', () => {
-            container.classList.remove('input-hover-focus');
-            toggleLabel();
-        });
-
+        toggleLabel();
+        input.addEventListener('focus', () => { container.classList.add('input-hover-focus'); toggleLabel(); });
+        input.addEventListener('blur', () => { container.classList.remove('input-hover-focus'); toggleLabel(); });
         input.addEventListener('input', toggleLabel);
     });
-});
 
+    // ---------- 전화번호 자동 하이픈 ----------
+    const phoneInput = document.querySelector('input[name="phone"], input[name$="phone"]');
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 3) e.target.value = value;
+            else if (value.length <= 7) e.target.value = value.slice(0,3) + '-' + value.slice(3);
+            else e.target.value = value.slice(0,3) + '-' + value.slice(3,7) + '-' + value.slice(7,11);
+        });
+    }
 
-//경고 메시지
-document.addEventListener("DOMContentLoaded", function () {
-    // ✅ name 속성이 'terms', 'marketing', 'marketingInfo'로 끝나는 input을 찾도록 수정
-    const agreeAll = document.querySelector('input[name="agree_all"]'); // 이건 그대로 유지
+    // ---------- 이용약관, 전체동의, 경고 메시지 ----------
+    const agreeAll = document.querySelector('input[name="agreeAll"], input[name="agree_all"]');
     const checkboxes = [
-        ...document.querySelectorAll('input[name$="terms"], input[name$="marketing"], input[name$="marketingInfo"]')
+        ...document.querySelectorAll(
+            'input[name$="terms"], input[name$="marketing"], input[name$="marketingInfo"], input[name="terms"], input[name="marketing"], input[name="marketingInfo"], input[name="marketing_info"]'
+        )
     ];
-    const termsLabel = document.querySelector('input[name$="terms"]').closest("label");
-
-    // ✅ 경고 메시지
+    const termsLabel = document.querySelector('input[name$="terms"], input[name="terms"]')?.closest("label");
     const warningMessage = document.createElement("div");
     warningMessage.textContent = "무드트립 서비스 이용을 위해서 반드시 동의를 해주셔야 합니다.";
     warningMessage.className = "text-w-red-500 typo-body1 mt-1 ml-6 terms-warning";
     warningMessage.style.color = "#e52929";
-
-    // ✅ 체크 상태에 따라 가짜 체크 UI에 클래스 추가
     function updateCheckboxUI(input) {
         const fakeCheckbox = input.parentElement.querySelector('[role="checkbox-button"]');
         if (!fakeCheckbox) return;
@@ -62,215 +54,151 @@ document.addEventListener("DOMContentLoaded", function () {
             fakeCheckbox.innerHTML = '';
         }
     }
-
     function updateAllCheckState(checked) {
-        checkboxes.forEach(chk => {
-            chk.checked = checked;
-            updateCheckboxUI(chk);
-        });
-
+        checkboxes.forEach(chk => { chk.checked = checked; updateCheckboxUI(chk); });
         if (agreeAll) updateCheckboxUI(agreeAll);
-
         const existing = document.querySelector('.terms-warning');
-        if (!checked) {
-            if (!existing) {
-                termsLabel.insertAdjacentElement("afterend", warningMessage);
-            }
+        if (!checked && termsLabel) {
+            if (!existing) termsLabel.insertAdjacentElement("afterend", warningMessage);
         } else {
             if (existing) existing.remove();
         }
     }
-
     if (agreeAll) {
-        agreeAll.addEventListener("change", function () {
-            updateAllCheckState(this.checked);
-        });
+        agreeAll.addEventListener("change", function() { updateAllCheckState(this.checked); });
     }
-
     checkboxes.forEach(chk => {
         chk.addEventListener("change", function () {
             updateCheckboxUI(chk);
-            const allChecked = checkboxes.every(c => c.checked);
             if (agreeAll) {
-                agreeAll.checked = allChecked;
+                agreeAll.checked = checkboxes.every(c => c.checked);
                 updateCheckboxUI(agreeAll);
             }
-
             const existing = document.querySelector('.terms-warning');
-            if (this.name.endsWith("terms") && !this.checked) {
-                if (!existing) {
-                    termsLabel.insertAdjacentElement("afterend", warningMessage);
-                }
-            } else if (this.name.endsWith("terms") && this.checked) {
+            if ((this.name.endsWith("terms") || this.name==="terms") && !this.checked && termsLabel) {
+                if (!existing) termsLabel.insertAdjacentElement("afterend", warningMessage);
+            } else if ((this.name.endsWith("terms") || this.name==="terms") && this.checked) {
                 if (existing) existing.remove();
             }
         });
     });
-
-    // ✅ 초기 상태 반영
     updateAllCheckState(agreeAll ? agreeAll.checked : false);
-});
 
-
-/*js 수정*/
-document.addEventListener('DOMContentLoaded', function () {
-    const form = document.querySelector('form[data-testid="signup-form-contents"]');
-
-    const errorMessages = {
-        email: '이메일을 입력해 주세요.',
-        username: '아이디를 입력해 주세요.',
-        password: '비밀번호를 입력해 주세요.',
-        password_confirm: '비밀번호를 한 번 더 입력해 주세요.'
-    };
-
-    form.addEventListener('submit', function (e) {
-        let hasError = false;
-
-        // ✅ 기존 에러 메시지 제거
-        form.querySelectorAll('.input-error-message').forEach(el => el.remove());
-
-        // ✅ 각 input 검사 (Thymeleaf는 name이 "memberRequest.email"처럼 렌더링되므로 name$= 사용)
-        [
-            { key: 'email', selector: 'input[name$="email"]' },
-            { key: 'username', selector: 'input[name$="username"]' },
-            { key: 'password', selector: 'input[name$="password"]' },
-            { key: 'password_confirm', selector: 'input[name$="passwordConfirm"]' }
-        ].forEach(({ key, selector }) => {
-            const input = form.querySelector(selector);
-            if (input && !input.value.trim()) {
-                hasError = true;
-
-                // 에러 메시지 생성
-                const errorSpan = document.createElement('span');
-                errorSpan.className = 'input-error-message textbox typo-body2 text-w-red-500';
-                errorSpan.textContent = errorMessages[key];
-
-                // input의 부모 div(.flex-col) 하단에 삽입
-                const parentDiv = input.closest('.flex-col');
-                const supportText = parentDiv.querySelector('[data-testid="design-system--support-text-container"]');
-                if (supportText) {
-                    supportText.insertAdjacentElement('beforebegin', errorSpan);
-                } else {
-                    parentDiv.appendChild(errorSpan);
+    // ---------- 폼 유효성 검사 ----------
+    const form = document.querySelector('form[data-testid="signup-form-contents"]') || document.querySelector('form');
+    if(form) {
+        const errorMessages = {
+            email: '이메일을 입력해 주세요.',
+            userId: '아이디를 입력해 주세요.',
+            nickname: '닉네임을 입력해 주세요.',
+            phone: '전화번호를 입력해 주세요.',
+            password: '비밀번호를 입력해 주세요.',
+            passwordConfirm: '비밀번호를 한 번 더 입력해 주세요.'
+        };
+        function validateEmail(email) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); }
+        function validateNickname(nick) { return nick.length >= 2 && nick.length <= 10;}
+        function validatePhone(val) { return /^010-\d{4}-\d{4}$/.test(val);}
+        function validatePassword(password) { return password.length >= 8 && password.length <= 32;}
+        function validatePasswordConfirm(password, passwordConfirm) { return password === passwordConfirm;}
+        form.addEventListener('submit', function(e) {
+            let hasError = false;
+            form.querySelectorAll('.input-error-message').forEach(el => el.remove());
+            [
+                { name: 'email', selector: 'input[name$="email"], input[name="email"]', validate: validateEmail, message: '올바른 이메일 형식으로 입력해 주세요.' },
+                { name: 'userId', selector: 'input[name$="userId"], input[name="userId"], input[name="username"]' },
+                { name: 'nickname', selector: 'input[name$="nickname"], input[name="nickname"]', validate: validateNickname, message: '닉네임은 2자 이상 10자 이하로 입력해 주세요.' },
+                { name: 'phone', selector: 'input[name$="phone"], input[name="phone"]', validate: validatePhone, message: '010-1234-5678 형식으로 입력해 주세요.' },
+                { name: 'password', selector: 'input[name$="password"], input[name="password"]', validate: validatePassword, message: '비밀번호는 8자 이상 32자 이하로 입력해 주세요.' },
+                { name: 'passwordConfirm', selector: 'input[name$="passwordConfirm"], input[name="passwordConfirm"]' }
+            ].forEach(({ name, selector, validate, message }) => {
+                const input = form.querySelector(selector);
+                let errorMessage = '';
+                if(input && !input.value.trim()) {
+                    hasError = true;
+                    errorMessage = errorMessages[name];
+                } else if(input && validate && !validate(input.value)) {
+                    hasError = true;
+                    errorMessage = message;
                 }
+                if(name === 'passwordConfirm' && !errorMessage) {
+                    const pw = form.querySelector('input[name$="password"], input[name="password"]');
+                    if(!validatePasswordConfirm(pw.value, input.value)) {
+                        hasError = true;
+                        errorMessage = '비밀번호가 일치하지 않습니다.';
+                    }
+                }
+                if(errorMessage) {
+                    const errorSpan = document.createElement('span');
+                    errorSpan.className = 'input-error-message textbox typo-body2 text-w-red-500';
+                    errorSpan.textContent = errorMessage;
+                    const parentDiv = input.closest('.flex-col') || input.parentElement;
+                    const supportText = parentDiv.querySelector('[data-testid="design-system--support-text-container"]');
+                    if(supportText) supportText.insertAdjacentElement('beforebegin', errorSpan);
+                    else parentDiv.appendChild(errorSpan);
+                }
+            });
+            // 필수 약관 체크
+            const termsCheckbox = form.querySelector('input[name$="terms"], input[name="terms"]');
+            const termsErrorDiv = document.getElementById("terms-error");
+            if(termsErrorDiv) {
+                termsErrorDiv.style.display = "none";
+                termsErrorDiv.textContent = "";
             }
-        });
-
-        if (hasError) {
-            e.preventDefault();
-        }
-    });
-});
-
-//마우스 올릴 시
-function initHoverEffect() {
-    // Input 영역 hover 시 테두리/라벨 색상 변경
-    const inputContainers = document.querySelectorAll('[data-testid="design-system--text-field-container"]');
-    inputContainers.forEach(container => {
-        const label = container.querySelector('[data-testid="design-system--lable-text"]');
-
-        // 마우스 오버 시
-        container.addEventListener('mouseenter', () => {
-            container.classList.add('input-hover-focus');
-            if (label) label.classList.add('label-float-hover');
-        });
-        // 마우스 아웃 시
-        container.addEventListener('mouseleave', () => {
-            container.classList.remove('input-hover-focus');
-            if (label) label.classList.remove('label-float-hover');
-        });
-    });
-
-    // 버튼 hover 시 테두리/텍스트 색상 변경
-    const customButtons = document.querySelectorAll(
-        '.box-border.flex.cursor-pointer.right-items-center.right-justify-center.border'
-    );
-    customButtons.forEach(btn => {
-        btn.addEventListener('mouseenter', () => {
-            btn.classList.add('button-hover-focus');
-        });
-        btn.addEventListener('mouseleave', () => {
-            btn.classList.remove('button-hover-focus');
-        });
-    });
-}
-
-if (document.readyState !== 'loading') {
-    initHoverEffect();
-} else {
-    document.addEventListener('DOMContentLoaded', initHoverEffect);
-}
-
-// signup.html 또는 별도 JS 파일 내 폼 제출 이벤트 핸들링 부분
-document.getElementById('signupForm').addEventListener('submit', function(event){
-    event.preventDefault();
-
-    const data = {
-        username: document.querySelector('[name="username"]').value,
-        email: document.querySelector('[name="email"]').value,
-        password: document.querySelector('[name="password"]').value,
-        passwordConfirm: document.querySelector('[name="passwordConfirm"]').value,
-        terms: document.querySelector('[name="terms"]').checked,          // << 여기 주의 !!
-        marketing: document.querySelector('[name="marketing"]').checked,
-        marketingInfo: document.querySelector('[name="marketingInfo"]').checked
-    };
-
-    console.log('전송 데이터:', data);  // 여기서 terms 값이 true/false인지 꼭 확인
-
-    fetch('/api/member/signup', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(data)
-    })
-        .then(res => res.json())
-        .then(response => {
-            if(response.message){
-                alert(response.message);
-                window.location.href = '/login'; // 성공 후 이동
-            } else if(response.error) {
-                alert('오류 발생: ' + response.error);
+            if(termsCheckbox && !termsCheckbox.checked) {
+                if(termsErrorDiv) {
+                    termsErrorDiv.textContent = "이용약관에 동의해야 회원가입이 가능합니다.";
+                    termsErrorDiv.style.display = "block";
+                }
+                hasError = true;
             }
-        })
-        .catch(error => {
-            console.error('회원가입 중 오류:', error);
-            alert('서버 오류가 발생했습니다.');
+            if (hasError) e.preventDefault();
         });
-});
-
-document.addEventListener("DOMContentLoaded", function() {
-    const form = document.querySelector("form");
-    const termsCheckbox = document.querySelector("input[name='terms']");
-    const errorDiv = document.getElementById("terms-error");
-
-    form.addEventListener("submit", function(event) {
-        // 에러 메시지 초기화
-        errorDiv.style.display = "none";
-        errorDiv.textContent = "";
-
-        if (!termsCheckbox.checked) {
-            errorDiv.textContent = "이용약관에 동의해야 회원가입이 가능합니다.";
-            errorDiv.style.display = "block";
-            event.preventDefault(); // 폼 제출 막음
-        }
-    });
-});
-
-
-document.addEventListener("DOMContentLoaded", function() {
-    const pw = document.querySelector("input[name='password']");
-    const pwConfirm = document.querySelector("input[name='passwordConfirm']");
-    const errorDiv = document.getElementById("password-error");
-
-    function checkPasswordMatch() {
-        if (pw.value !== pwConfirm.value) {
-            errorDiv.textContent = "비밀번호와 비밀번호 확인이 일치하지 않습니다.";
-            errorDiv.style.display = "block";
-        } else {
-            errorDiv.textContent = "";
-            errorDiv.style.display = "none";
-        }
     }
 
-    pw.addEventListener("input", checkPasswordMatch);
-    pwConfirm.addEventListener("input", checkPasswordMatch);
+    // ---------- 실시간 비밀번호 일치 체크 ----------
+    const pw = document.querySelector('input[name$="password"], input[name="password"]');
+    const pwConfirm = document.querySelector('input[name$="passwordConfirm"], input[name="passwordConfirm"]');
+    const pwdErrorDiv = document.getElementById("password-error");
+    function checkPasswordMatch() {
+        if (pw && pwConfirm && pwdErrorDiv) {
+            if (pw.value !== pwConfirm.value) {
+                pwdErrorDiv.textContent = "비밀번호와 비밀번호 확인이 일치하지 않습니다.";
+                pwdErrorDiv.style.display = "block";
+            } else {
+                pwdErrorDiv.textContent = "";
+                pwdErrorDiv.style.display = "none";
+            }
+        }
+    }
+    if (pw && pwConfirm && pwdErrorDiv) {
+        pw.addEventListener("input", checkPasswordMatch);
+        pwConfirm.addEventListener("input", checkPasswordMatch);
+    }
+
+    // ---------- Hover 효과 ----------
+    function initHoverEffect() {
+        inputContainers.forEach(container => {
+            const label = container.querySelector('[data-testid="design-system--lable-text"]');
+            container.addEventListener('mouseenter', () => {
+                container.classList.add('input-hover-focus');
+                if (label) label.classList.add('label-float-hover');
+            });
+            container.addEventListener('mouseleave', () => {
+                container.classList.remove('input-hover-focus');
+                if (label) label.classList.remove('label-float-hover');
+            });
+        });
+        const customButtons = document.querySelectorAll(
+            '.box-border.flex.cursor-pointer.right-items-center.right-justify-center.border'
+        );
+        customButtons.forEach(btn => {
+            btn.addEventListener('mouseenter', () => { btn.classList.add('button-hover-focus'); });
+            btn.addEventListener('mouseleave', () => { btn.classList.remove('button-hover-focus'); });
+        });
+    }
+    initHoverEffect();
+});
+document.getElementById('signupForm').addEventListener('submit', function(event){
+    event.preventDefault();
+    // fetch('/api/member/signup', ...)
 });

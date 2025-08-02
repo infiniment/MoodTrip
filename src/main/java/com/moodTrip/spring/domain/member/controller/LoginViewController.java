@@ -54,13 +54,14 @@ public class LoginViewController {
 
         // 쿠키 생성 (HttpOnly, Secure 옵션은 필요에 따라 설정)
         Cookie jwtCookie = new Cookie("jwtToken", token);
-        jwtCookie.setHttpOnly(true);
         jwtCookie.setPath("/");
+        jwtCookie.setHttpOnly(true);
+
         jwtCookie.setMaxAge(24 * 60 * 60); // 1일 (단위: 초)
         response.addCookie(jwtCookie);
 
 
-        return "redirect:/"; // 성공 시 메인 페이지 등으로 이동
+        return "redirect:/mainpage/mainpage";
     }
 
     //소셜 로그인 성공 시
