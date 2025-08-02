@@ -35,7 +35,12 @@ public enum ErrorStatus implements BaseErrorCode {
     // Room 생성 관련
     ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "ROOM_001", "존재하지 않는 방입니다."),
     INVALID_TRAVEL_DATE(HttpStatus.BAD_REQUEST, "ROOM_002", "여행 날짜가 유효하지 않습니다."),
-    INVALID_MAX_PARTICIPANT(HttpStatus.BAD_REQUEST, "ROOM_003", "현재 인원보다 적은 최대 인원은 설정할 수 없습니다.");
+    INVALID_MAX_PARTICIPANT(HttpStatus.BAD_REQUEST, "ROOM_003", "현재 인원보다 적은 최대 인원은 설정할 수 없습니다."),
+
+
+    // RoomMember 관련
+    ROOM_MEMBER_ALREADY_EXISTS(HttpStatus.CONFLICT, "ROOM_MEMBER_001", "이미 해당 방에 참여한 회원입니다."),
+    ROOM_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "ROOM_MEMBER_002", "방 참여 정보를 찾을 수 없습니다.");
 
 
     private final HttpStatus httpStatus;

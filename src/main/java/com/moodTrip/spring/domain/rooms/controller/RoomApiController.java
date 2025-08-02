@@ -1,5 +1,6 @@
 package com.moodTrip.spring.domain.rooms.controller;
 
+import com.moodTrip.spring.domain.member.entity.Member;
 import com.moodTrip.spring.domain.rooms.dto.request.RoomRequest;
 import com.moodTrip.spring.domain.rooms.dto.request.UpdateRoomRequest;
 import com.moodTrip.spring.domain.rooms.dto.response.RoomResponse;
@@ -10,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,15 +20,17 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/companion-rooms")
 @Tag(name = "companion-rooms API", description = "동행 방 생성, 조회, 수정, 삭제 관련 API")
-public class RoomApiController {
+public class RoomApiController { // CRUD 담당 Controller
     private final RoomService roomService;
 
 
     @Operation(summary = "방 생성", description = "새로운 동행 방을 생성합니다.")
     @ApiResponse(responseCode = "201", description = "방 생성 성공")
     @PostMapping
-    public ResponseEntity<RoomResponse> createRoom(@RequestBody final RoomRequest request) {
-        RoomResponse response = roomService.createRoom(request);
+    public ResponseEntity<RoomResponse> createRoom(@RequestBody final RoomRequest request,
+                                                   @AuthenticationPrincipal final Member member) {
+        Long memberPk = member.getMemberPk();
+        RoomResponse response = roomService.createRoom(request, memberPk);
         return ResponseEntity.status(201).body(response);
     }
 

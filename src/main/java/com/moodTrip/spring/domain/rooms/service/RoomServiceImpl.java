@@ -1,12 +1,17 @@
 package com.moodTrip.spring.domain.rooms.service;
 
+import com.moodTrip.spring.domain.member.entity.Member;
+import com.moodTrip.spring.domain.member.repository.MemberRepository;
 import com.moodTrip.spring.domain.rooms.dto.request.RoomRequest;
 import com.moodTrip.spring.domain.rooms.dto.request.RoomRequest.ScheduleDto.DateRangeDto;
 import com.moodTrip.spring.domain.rooms.dto.request.UpdateRoomRequest;
+import com.moodTrip.spring.domain.rooms.dto.response.RoomMemberResponse;
 import com.moodTrip.spring.domain.rooms.dto.response.RoomResponse;
 import com.moodTrip.spring.domain.rooms.entity.EmotionRoom;
 import com.moodTrip.spring.domain.rooms.entity.Room;
+import com.moodTrip.spring.domain.rooms.entity.RoomMember;
 import com.moodTrip.spring.domain.rooms.repository.EmotionRoomRepository;
+import com.moodTrip.spring.domain.rooms.repository.RoomMemberRepository;
 import com.moodTrip.spring.domain.rooms.repository.RoomRepository;
 import com.moodTrip.spring.global.common.exception.CustomException;
 import jakarta.transaction.Transactional;
@@ -15,6 +20,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,11 +36,16 @@ public class RoomServiceImpl implements RoomService {
     private final RoomRepository roomRepository;
     private final EmotionRoomRepository emotionRoomRepository;
     // private final EmotionRepository emotionRepository; // 추후 활성화
+    private final RoomMemberRepository roomMemberRepository;
+    private final MemberRepository memberRepository;
 
     // 방 생성 로직
     @Override
     @Transactional
-    public RoomResponse createRoom(RoomRequest request) {
+    public RoomResponse createRoom(RoomRequest request, Long memberPk) {
+        // 방 생성 회원 조회
+        Member creator = memberRepository.findByMemberPk(memberPk)
+                .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
         // 날짜 범위 계산
         List<DateRangeDto> ranges = request.getSchedule().getDateRanges();
         LocalDate travelStartDate = ranges.stream()
@@ -53,10 +65,22 @@ public class RoomServiceImpl implements RoomService {
                 .roomCurrentCount(1)
                 .travelStartDate(travelStartDate)
                 .travelEndDate(travelEndDate)
+                .creator(creator)
                 .isDeleteRoom(false)
                 .build();
 
         Room savedRoom = roomRepository.save(room);
+
+        // RoomMember로 리더 등록
+        RoomMember leader = RoomMember.builder()
+                .member(creator)
+                .room(savedRoom)
+                .role("LEADER")
+                .joinedAt(LocalDateTime.now())
+                .isActive(true)
+                .build();
+
+        roomMemberRepository.save(leader);
 
         return RoomResponse.from(savedRoom);
     }
@@ -125,6 +149,47 @@ public class RoomServiceImpl implements RoomService {
 
         Room updated = roomRepository.save(room);
         return RoomResponse.from(updated);
+    }
+
+    @Override
+    public void joinRoom(Member member, Room room, String role) {
+        // 방에 참여 중인지 확인
+        if(roomMemberRepository.findByMemberAndRoom(member, room).isPresent()) {
+            throw new CustomException(ROOM_MEMBER_ALREADY_EXISTS);
+        }
+
+        RoomMember roomMember = RoomMember.builder()
+                .member(member)
+                .room(room)
+                .role(role)
+                .joinedAt(LocalDateTime.now())
+                .isActive(true)
+                .build();
+
+        roomMemberRepository.save(roomMember);
+    }
+
+
+    @Override
+    public void leaveRoom(Member member, Room room) {
+        RoomMember roomMember = roomMemberRepository.findByMemberAndRoom(member, room)
+                .orElseThrow(() -> new CustomException(ROOM_MEMBER_NOT_FOUND));
+
+        roomMember.setIsActive(false);
+        roomMemberRepository.save(roomMember);
+    }
+
+    @Override
+    public boolean isMemberInRoom(Member member, Room room) {
+        return roomMemberRepository.findByMemberAndRoom(member, room).isPresent();
+    }
+
+    @Override
+    public List<RoomMemberResponse> getActiveMembers(Room room) {
+        return roomMemberRepository.findByRoomAndIsActiveTrue(room)
+                .stream()
+                .map(RoomMemberResponse::from)
+                .collect(Collectors.toList());
     }
 
 
