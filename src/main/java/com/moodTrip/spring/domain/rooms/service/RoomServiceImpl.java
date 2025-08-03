@@ -186,11 +186,11 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     public List<RoomMemberResponse> getActiveMembers(Room room) {
-        return roomMemberRepository.findByRoomAndIsActiveTrue(room)
-                .stream()
+        List<RoomMember> roomMembers = roomMemberRepository.findByRoomAndIsActiveTrue(room);
+
+        return roomMembers.stream()
                 .map(RoomMemberResponse::from)
                 .collect(Collectors.toList());
     }
-
 
 }

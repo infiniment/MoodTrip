@@ -6,6 +6,7 @@ import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Getter
@@ -99,13 +100,19 @@ public class RoomRequest {
         @Schema(description = "여행 날짜 범위 DTO")
         public static class DateRangeDto {
 
+//            @Schema(description = "시작 날짜 (ISO 8601)", example = "2025-08-01T09:00:00.000Z")
+//            @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
+//            private LocalDateTime startDate;
+//
+//            @Schema(description = "종료 날짜 (ISO 8601)", example = "2025-08-03T18:00:00.000Z")
+//            @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
+//            private LocalDateTime endDate;
+
             @Schema(description = "시작 날짜 (ISO 8601)", example = "2025-08-01T09:00:00.000Z")
-            @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-            private LocalDateTime startDate;
+            private OffsetDateTime startDate;
 
             @Schema(description = "종료 날짜 (ISO 8601)", example = "2025-08-03T18:00:00.000Z")
-            @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-            private LocalDateTime endDate;
+            private OffsetDateTime endDate;
 
             @Schema(description = "시작 날짜(문자열)", example = "2025-08-01")
             private String startDateFormatted;
