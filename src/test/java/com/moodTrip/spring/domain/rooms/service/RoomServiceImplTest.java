@@ -1,26 +1,25 @@
 package com.moodTrip.spring.domain.rooms.service;
 
+import com.moodTrip.spring.domain.member.entity.Member;
+import com.moodTrip.spring.domain.member.repository.MemberRepository;
 import com.moodTrip.spring.domain.rooms.dto.request.RoomRequest;
-import com.moodTrip.spring.domain.rooms.dto.request.RoomRequest.ScheduleDto;
 import com.moodTrip.spring.domain.rooms.dto.request.UpdateRoomRequest;
 import com.moodTrip.spring.domain.rooms.dto.response.RoomResponse;
 import com.moodTrip.spring.domain.rooms.entity.Room;
 import com.moodTrip.spring.domain.rooms.repository.RoomRepository;
 import com.moodTrip.spring.global.common.exception.CustomException;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
-import static com.moodTrip.spring.domain.rooms.dto.request.RoomRequest.ScheduleDto.*;
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 class RoomServiceImplTest {
@@ -30,43 +29,89 @@ class RoomServiceImplTest {
     @Autowired
     private RoomRepository roomRepository;
 
+    @Autowired
+    private MemberRepository memberRepository;
+
     private RoomRequest baseRoomRequest;
     private RoomRequest baseRoomRequest2;
 
+    private Member mockMember;
+
+    private Member createTestMember(String idSuffix) {
+        return memberRepository.save(Member.builder()
+                .memberId("testUser" + idSuffix)
+                .memberPw("pass" + idSuffix)
+                .memberPhone("010-0000-000" + idSuffix)
+                .nickname("테스터" + idSuffix)
+                .memberAuth("U")
+                .isWithdraw(false)
+                .email("test" + idSuffix + "@example.com")
+                .rptCnt(0L)
+                .rptRcvdCnt(0L)
+                .build());
+    }
+
     @BeforeEach
     void setUp() {
+        mockMember = createTestMember("01");
+
+        // DB에 저장하고, 저장된 PK를 반영
+        memberRepository.save(mockMember);
+
         baseRoomRequest = RoomRequest.builder()
                 .roomName("기본 방 제목")
                 .roomDescription("기본 방 설명")
                 .maxParticipants(5)
+                .destination(RoomRequest.DestinationDto.builder()
+                        .category("강원도")
+                        .name("속초 해수욕장")
+                        .build())
+                .emotions(List.of(
+                        RoomRequest.EmotionDto.builder()
+                                .tagId(1L)
+                                .text("평온")
+                                .build()))
                 .schedule(RoomRequest.ScheduleDto.builder()
                         .dateRanges(List.of(
                                 RoomRequest.ScheduleDto.DateRangeDto.builder()
-                                        .startDate(LocalDateTime.of(2025, 8, 1, 0, 0))
-                                        .endDate(LocalDateTime.of(2025, 8, 3, 0, 0))
+                                        .startDate(OffsetDateTime.of(2025, 8, 1, 0, 0, 0, 0, ZoneOffset.UTC))
+                                        .endDate(OffsetDateTime.of(2025, 8, 3, 0, 0, 0, 0, ZoneOffset.UTC))
+                                        .startDateFormatted("2025-08-01")
+                                        .endDateFormatted("2025-08-03")
                                         .build()
                         ))
                         .rangeCount(1)
                         .totalDays(3)
-                        .build()
-                )
+                        .build())
+                .version("v1")
                 .build();
 
         baseRoomRequest2 = RoomRequest.builder()
                 .roomName("기본 방 제목2")
                 .roomDescription("기본 방 설명2")
                 .maxParticipants(3)
+                .destination(RoomRequest.DestinationDto.builder()
+                        .category("서울")
+                        .name("경복궁")
+                        .build())
+                .emotions(List.of(
+                        RoomRequest.EmotionDto.builder()
+                                .tagId(2L)
+                                .text("즐거움")
+                                .build()))
                 .schedule(RoomRequest.ScheduleDto.builder()
                         .dateRanges(List.of(
                                 RoomRequest.ScheduleDto.DateRangeDto.builder()
-                                        .startDate(LocalDateTime.of(2025, 8, 2, 0, 0))
-                                        .endDate(LocalDateTime.of(2025, 8, 6, 0, 0))
+                                        .startDate(OffsetDateTime.of(2025, 8, 1, 0, 0, 0, 0, ZoneOffset.UTC))
+                                        .endDate(OffsetDateTime.of(2025, 8, 3, 0, 0, 0, 0, ZoneOffset.UTC))
+                                        .startDateFormatted("2025-08-02")
+                                        .endDateFormatted("2025-08-06")
                                         .build()
                         ))
                         .rangeCount(1)
-                        .totalDays(3)
-                        .build()
-                )
+                        .totalDays(5)
+                        .build())
+                .version("v1")
                 .build();
     }
 
@@ -75,8 +120,7 @@ class RoomServiceImplTest {
     void createRoom() {
         // given
         // when
-        RoomResponse roomResponse = roomService.createRoom(baseRoomRequest);
-
+        RoomResponse roomResponse = roomService.createRoom(baseRoomRequest, mockMember.getMemberPk());
         // then
         assertThat(roomResponse).isNotNull();
         assertThat(roomResponse.getRoomName()).isEqualTo("기본 방 제목");
@@ -89,8 +133,7 @@ class RoomServiceImplTest {
     @DisplayName("방 단건 조회 테스트 : 존재하는 roomId로 조회")
     void getRoomById_success() {
         // given
-
-        RoomResponse created = roomService.createRoom(baseRoomRequest);
+        RoomResponse created = roomService.createRoom(baseRoomRequest, mockMember.getMemberPk());
 
         // when
         RoomResponse response = roomService.getRoomById(created.getRoomId());
@@ -118,8 +161,8 @@ class RoomServiceImplTest {
     @DisplayName("방 전체 조회 테스트 : 저장한 방 리스트 확인")
     void getAllRooms() {
         // given
-        roomService.createRoom(baseRoomRequest);
-        roomService.createRoom(baseRoomRequest2);
+        roomService.createRoom(baseRoomRequest, mockMember.getMemberPk());
+        roomService.createRoom(baseRoomRequest2, mockMember.getMemberPk());
 
         // when
         List<RoomResponse> rooms = roomService.getAllRooms();
@@ -135,7 +178,7 @@ class RoomServiceImplTest {
     @DisplayName("방 삭제 테스트 : soft delete로 isDeleteRoom = true 설정")
     void deleteRoomById() {
         // given
-        RoomResponse created = roomService.createRoom(baseRoomRequest);
+        RoomResponse created = roomService.createRoom(baseRoomRequest, mockMember.getMemberPk());
 
         // when
         roomService.deleteRoomById(created.getRoomId());
@@ -151,7 +194,7 @@ class RoomServiceImplTest {
     @DisplayName("방 수정 테스트 : 기존 방 정보 수정")
     void updateRoom() {
         // given
-        RoomResponse created = roomService.createRoom(baseRoomRequest);
+        RoomResponse created = roomService.createRoom(baseRoomRequest, mockMember.getMemberPk());
 
         UpdateRoomRequest updateRequest = UpdateRoomRequest.builder()
                 .roomName("수정된 제목")
