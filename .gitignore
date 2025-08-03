@@ -55,6 +55,6 @@ Thumbs.db
 *.bak
 *.tmp
 
-#QueryDSL Q 클래스
+# QueryDSL Q 클래스
 **/build/
 **/generated/

@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>무드 트립</title>
-  <link rel="stylesheet" href="/static/css/signup/signup.css"/>
-  <script src="/static/js/signup/signup.js"></script>
+  <link rel="stylesheet" th:href="@{/css/signup/signup.css}" href="/static/css/signup/signup.css"/>
+  <script th:src="@{/js/signup/signup.js}" src="/static/js/signup/signup.js"></script>
 </head>
 <body>
 <div class="py-6 desktop:min-h-screen desktop:bg-w-gray-10 desktop:py-[120px]">
@@ -30,6 +30,7 @@
                   decoding="async"
                   data-nimg="1"
                   class="welcome-image"
+                  th:src="@{/image/mainpage/logo-label.png}"
                   src="/static/image/mainpage/logo-label.png"
                   style="color: transparent;"
           />
@@ -42,7 +43,7 @@
           <h2 class="form-title">회원가입</h2>
           <p class="form-subtitle">무드트립과 함께 특별한 여행을 시작하세요</p>
         </div>
-        <form data-testid="signup-form-contents" class="w-full">
+        <form th:object="${memberRequest}" method="post" data-testid="signup-form-contents" id="signupForm" class="w-full">
           <div class="input-section">
             <!-- 이메일 -->
             <div class="input-group">
@@ -57,7 +58,7 @@
                             class="input-field"
                             data-testid="design-system--input"
                             variant="lable"
-                            name="email"
+                            th:field="*{email}"
                             type="email"
                             required
                     />
@@ -65,9 +66,7 @@
                 </div>
               </label>
               <div class="input-helper" data-testid="design-system--support-text-container">
-                  <span class="helper-text">
-                    비즈니스용 이메일 사용을 권장합니다.
-                  </span>
+                <span class="helper-text">비즈니스용 이메일 사용을 권장합니다.</span>
               </div>
             </div>
             <!-- 아이디 -->
@@ -83,7 +82,7 @@
                             class="input-field"
                             data-testid="design-system--input"
                             variant="lable"
-                            name="username"
+                            th:field="*{userId}"
                             type="text"
                             required
                     />
@@ -104,7 +103,7 @@
                             class="input-field"
                             data-testid="design-system--input"
                             variant="lable"
-                            name="nickname"
+                            th:field="*{nickname}"
                             type="text"
                             required
                     />
@@ -112,9 +111,7 @@
                 </div>
               </label>
               <div class="input-helper" data-testid="design-system--support-text-container">
-                  <span class="helper-text">
-                    2자 이상 10자 이하로 입력해 주세요.
-                  </span>
+                <span class="helper-text">2자 이상 10자 이하로 입력해 주세요.</span>
               </div>
             </div>
             <!-- 전화번호 -->
@@ -130,7 +127,7 @@
                             class="input-field"
                             data-testid="design-system--input"
                             variant="lable"
-                            name="phone"
+                            th:field="*{memberPhone}"
                             type="tel"
                             required
                     />
@@ -138,9 +135,7 @@
                 </div>
               </label>
               <div class="input-helper" data-testid="design-system--support-text-container">
-                  <span class="helper-text">
-                    010-1234-5678 형식으로 입력해 주세요.
-                  </span>
+                <span class="helper-text">010-1234-5678 형식으로 입력해 주세요.</span>
               </div>
             </div>
             <!-- 비밀번호 -->
@@ -156,7 +151,7 @@
                             class="input-field"
                             data-testid="design-system--input"
                             variant="lable"
-                            name="password"
+                            th:field="*{password}"
                             type="password"
                             minlength="8"
                             maxlength="32"
@@ -166,9 +161,7 @@
                 </div>
               </label>
               <div class="input-helper" data-testid="design-system--support-text-container">
-                  <span class="helper-text">
-                    8자 이상 32자 이하로 입력해 주세요.
-                  </span>
+                <span class="helper-text">8자 이상 32자 이하로 입력해 주세요.</span>
               </div>
             </div>
             <!-- 비밀번호 확인 -->
@@ -184,7 +177,7 @@
                             class="input-field"
                             data-testid="design-system--input"
                             variant="lable"
-                            name="password_confirm"
+                            th:field="*{passwordConfirm}"
                             type="password"
                             minlength="8"
                             maxlength="32"
@@ -202,33 +195,33 @@
             </div>
             <div class="checkbox-group">
               <label class="checkbox-item checkbox-all">
-                <input class="checkbox-input" type="checkbox" name="agree_all"/>
+                <input class="checkbox-input" type="checkbox" name="agreeAll"/>
                 <div class="checkbox-custom" role="checkbox-button"></div>
                 <span class="checkbox-text checkbox-text-bold">
-                    전체 동의하기
-                  </span>
+    전체 동의하기
+  </span>
               </label>
               <div class="checkbox-divider"></div>
               <label class="checkbox-item">
-                <input class="checkbox-input" type="checkbox" name="terms" required/>
+                <input class="checkbox-input" type="checkbox" th:field="*{terms}" required/>
                 <div class="checkbox-custom" role="checkbox-button"></div>
                 <span class="checkbox-text">
-                    이용약관 및 개인정보 처리방침 동의 <span class="required-text">(필수)</span>
-                  </span>
+                  이용약관 및 개인정보 처리방침 동의 <span class="required-text">(필수)</span>
+                </span>
               </label>
               <label class="checkbox-item">
-                <input class="checkbox-input" type="checkbox" name="marketing"/>
+                <input class="checkbox-input" type="checkbox" th:field="*{marketing}"/>
                 <div class="checkbox-custom" role="checkbox-button"></div>
                 <span class="checkbox-text">
-                    개인정보 마케팅 활용 동의 <span class="optional-text">(선택)</span>
-                  </span>
+                  개인정보 마케팅 활용 동의 <span class="optional-text">(선택)</span>
+                </span>
               </label>
               <label class="checkbox-item">
-                <input class="checkbox-input" type="checkbox" name="marketing_info"/>
+                <input class="checkbox-input" type="checkbox" th:field="*{marketingInfo}"/>
                 <div class="checkbox-custom" role="checkbox-button"></div>
                 <span class="checkbox-text">
-                    마케팅 정보 수신 동의 <span class="optional-text">(선택)</span>
-                  </span>
+                  마케팅 정보 수신 동의 <span class="optional-text">(선택)</span>
+                </span>
               </label>
               <div class="marketing-info">
                 맞춤 추천, 뉴스레터 등 유용한 혜택을 제공받을 수 있습니다.
@@ -247,43 +240,43 @@
           <div class="divider-line"></div>
         </div>
         <div class="social-login-section">
-          <button class="social-button google-button" type="button">
-            <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    data-testid="social-form-button-icon--google"
-                    class="social-icon"
-            >
-              <g clip-path="url(#clip0_2735_3764)">
-                <path fill-rule="evenodd" clip-rule="evenodd" d="M16 8.18185C16 7.61474 15.9483 7.06897 15.8513 6.54541H8.16327V9.63963H12.5569C12.3674 10.6396 11.7923 11.4876 10.9279 12.0547V14.0619H13.5656C15.1093 12.669 16 10.6183 16 8.18185Z" fill="#3E82F1"></path>
-                <path fill-rule="evenodd" clip-rule="evenodd" d="M8.1632 16C10.3673 16 12.2149 15.2836 13.5655 14.0622L10.9278 12.0542C10.1968 12.5342 9.26162 12.8178 8.1632 12.8178C6.03711 12.8178 4.23755 11.4107 3.59537 9.52002H0.86792V11.5929C2.21124 14.2071 4.97225 16 8.1632 16Z" fill="#32A753"></path>
-                <path fill-rule="evenodd" clip-rule="evenodd" d="M3.59548 9.51999C3.43222 9.03999 3.3397 8.5271 3.3397 7.99999C3.3397 7.47288 3.43222 6.95999 3.59548 6.47999V4.4071H0.868032C0.315648 5.4871 0 6.70933 0 7.99999C0 9.29066 0.315648 10.5129 0.868032 11.5929L3.59548 9.51999Z" fill="#F9BB00"></path>
-                <path fill-rule="evenodd" clip-rule="evenodd" d="M8.1632 3.18186C9.36139 3.18186 10.438 3.58541 11.2834 4.3783L13.6254 2.08408C12.2113 0.792523 10.3637 -0.000366211 8.1632 -0.000366211C4.97225 -0.000366211 2.21124 1.79252 0.86792 4.40763L3.59537 6.47963C4.23755 4.58897 6.03711 3.18186 8.1632 3.18186Z" fill="#E74235"></path>
-              </g>
-              <defs>
-                <clipPath id="clip0_2735_3764">
-                  <rect width="16" height="16" fill="white"></rect>
-                </clipPath>
-              </defs>
-            </svg>
-            <span class="social-text">구글로 회원가입</span>
-          </button>
-          <button class="social-button kakao-button" type="button">
-            <img src="/static/image/login/kakaotalk_sharing_btn_small.png" alt="카카오 로고" width="20" height="20" class="social-icon" />
+          <a href="/oauth2/authorization/google" style="display:block;">
+            <button class="social-button google-button" type="button"
+                    onclick="document.cookie='flowType=signup; path=/;'; location.href='/oauth2/authorization/google';">
+              <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      data-testid="social-form-button-icon--google"
+                      class="text-w-gray-900"
+              >
+                <g clip-path="url(#clip0_2735_3764)">
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M16 8.18185C16 7.61474 15.9483 7.06897 15.8513 6.54541H8.16327V9.63963H12.5569C12.3674 10.6396 11.7923 11.4876 10.9279 12.0547V14.0619H13.5656C15.1093 12.669 16 10.6183 16 8.18185Z" fill="#3E82F1"></path>
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M8.1632 16C10.3673 16 12.2149 15.2836 13.5655 14.0622L10.9278 12.0542C10.1968 12.5342 9.26162 12.8178 8.1632 12.8178C6.03711 12.8178 4.23755 11.4107 3.59537 9.52002H0.86792V11.5929C2.21124 14.2071 4.97225 16 8.1632 16Z" fill="#32A753"></path>
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M3.59548 9.51999C3.43222 9.03999 3.3397 8.5271 3.3397 7.99999C3.3397 7.47288 3.43222 6.95999 3.59548 6.47999V4.4071H0.868032C0.315648 5.4871 0 6.70933 0 7.99999C0 9.29066 0.315648 10.5129 0.868032 11.5929L3.59548 9.51999Z" fill="#F9BB00"></path>
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M8.1632 3.18186C9.36139 3.18186 10.438 3.58541 11.2834 4.3783L13.6254 2.08408C12.2113 0.792523 10.3637 -0.000366211 8.1632 -0.000366211C4.97225 -0.000366211 2.21124 1.79252 0.86792 4.40763L3.59537 6.47963C4.23755 4.58897 6.03711 3.18186 8.1632 3.18186Z" fill="#E74235"></path>
+                </g>
+                <defs>
+                  <clipPath id="clip0_2735_3764">
+                    <rect width="16" height="16" fill="white"></rect>
+                  </clipPath>
+                </defs>
+              </svg>
+              <span class="social-text">구글로 회원가입</span>
+            </button>
+          </a>
+          <button class="social-button kakao-button" type="button"
+                  onclick="document.cookie='flowType=signup; path=/;'; location.href='/oauth2/authorization/kakao';">
+            <img th:src="@{/image/login/kakaotalk_sharing_btn_small.png}" src="/static/image/login/kakaotalk_sharing_btn_small.png" alt="카카오 로고" width="20" height="20" class="social-icon" />
             <span class="social-text">카카오로 회원가입</span>
           </button>
         </div>
         <div class="login-link-section">
-            <span class="login-text">
-              이미 무드트립 통합회원이신가요?
-            </span>
+          <span class="login-text">이미 무드트립 통합회원이신가요?</span>
           <a class="login-link" data-testid="login-link" href="/login">
-              <span class="login-link-text">
-                로그인
-              </span>
+            <span class="login-link-text">로그인</span>
           </a>
         </div>
       </div>

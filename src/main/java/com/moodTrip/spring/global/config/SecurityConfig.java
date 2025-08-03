@@ -1,12 +1,14 @@
 package com.moodTrip.spring.global.config;
 
 import com.moodTrip.spring.domain.member.service.MemberService;
+import com.moodTrip.spring.global.security.jwt.JwtAuthenticationFilter;
 import com.moodTrip.spring.global.security.jwt.JwtUtil;
 import com.moodTrip.spring.global.security.oauth.CustomOAuth2SuccessHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -37,7 +39,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            ClientRegistrationRepository clientRegistrationRepository,
-                                           MemberService memberService, JwtUtil jwtUtil  // ★ Bean 주입
+                                           MemberService memberService, JwtUtil jwtUtil,UserDetailsService userDetailsService
     ) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
@@ -64,6 +66,11 @@ public class SecurityConfig {
                                 .successHandler(customOAuth2SuccessHandler(memberService, jwtUtil)) // ★ jwtUtil 인자 추가!
 
                 );
+
+        http.addFilterBefore(
+                new JwtAuthenticationFilter(jwtUtil, userDetailsService),
+                org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class
+        );
         return http.build();
     }
 
@@ -100,8 +107,6 @@ public class SecurityConfig {
                         .build();
             }
         };
-
     }
-
 
 }

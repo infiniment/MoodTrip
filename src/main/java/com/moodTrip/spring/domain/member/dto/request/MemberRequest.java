@@ -13,6 +13,7 @@ public class MemberRequest {
     private String memberPhone;       // 엔티티 memberPhone 추가 시 DTO에도 추가
     private String nickname;        // 엔티티 nickname 추가 시 DTO에도 추가
 
+
     private boolean terms;            // 회원 약관 동의
     private boolean marketing;        // 마케팅 수신 동의
     private boolean marketingInfo;    // 세부 마케팅 수신 동의(옵션)
