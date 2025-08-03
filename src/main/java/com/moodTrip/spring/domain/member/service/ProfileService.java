@@ -1,7 +1,7 @@
 package com.moodTrip.spring.domain.member.service;
 
-import com.moodTrip.spring.domain.member.dto.request.NicknameUpdateRequest;
-import com.moodTrip.spring.domain.member.dto.request.ProfileUpdateRequest;
+import com.moodTrip.spring.domain.member.dto.request.IntroduceUpdateRequest;
+import com.moodTrip.spring.domain.member.dto.request.ProfileImageUpdateRequest;
 import com.moodTrip.spring.domain.member.dto.response.ProfileResponse;
 import com.moodTrip.spring.domain.member.entity.Member;
 import com.moodTrip.spring.domain.member.entity.Profile;
@@ -51,74 +51,95 @@ public class ProfileService {
                 .build();
     }
 
+    /**
+     * 자기소개 수정 메서드
+     * - Profile이 없으면 새로 생성
+     * - Profile이 있으면 profileBio만 수정
+     */
     @Transactional
-    public ProfileResponse updateMyProfile(Member member, ProfileUpdateRequest request) {
-        log.info("프로필 수정 요청 - 회원ID: {}", member.getMemberId());
+    public ProfileResponse updateIntroduce(Member member, IntroduceUpdateRequest request) {
+        log.info("자기소개 수정 요청 - 회원ID: {}, 새로운 자기소개 길이: {}글자",
+                member.getMemberId(),
+                request.getProfileBio() != null ? request.getProfileBio().length() : 0);
 
-        // 1. Profile 조회
+        // ✅ 1단계: 유효성 검사
+        String newIntroduce = request.getProfileBio();
+        if (newIntroduce != null && newIntroduce.length() > 500) {
+            throw new RuntimeException("자기소개는 500자 이내로 작성해주세요.");
+        }
+
+        // ✅ 2단계: 기존 Profile 조회
+        Optional<Profile> existingProfile = profileRepository.findByMember(member);
+
+        Profile profile;
+
+        if (existingProfile.isPresent()) {
+            // ✅ 3-1단계: Profile이 있으면 자기소개만 수정
+            log.info("기존 Profile 수정 - 회원ID: {}", member.getMemberId());
+            profile = existingProfile.get();
+            profile.setProfileBio(newIntroduce);
+        } else {
+            // ✅ 3-2단계: Profile이 없으면 새로 생성
+            log.info("새 Profile 생성 - 회원ID: {}", member.getMemberId());
+            profile = Profile.builder()
+                    .member(member)              // Member와 연결
+                    .profileBio(newIntroduce)    // 자기소개 설정
+                    .profileImage(null)          // 프로필 이미지는 일단 null
+                    .build();
+
+            // 새로 생성한 Profile 저장
+            profileRepository.save(profile);
+        }
+
+        log.info("자기소개 수정 성공 - 회원ID: {}, Profile ID: {}",
+                member.getMemberId(), profile.getProfileId());
+
+        // ✅ 4단계: 수정된 Profile 정보를 ProfileResponse로 변환해서 반환
+        return ProfileResponse.from(profile);
+    }
+
+    /**
+     * 🔥 새로 추가: 프로필 사진 변경
+     * - 기존 updateMyProfile()과 달리 프로필 사진만 수정
+     * - 유효성 검사 포함
+     */
+    @Transactional  // 데이터베이스 트랜잭션 처리
+    public ProfileResponse updateProfileImage(Member member, ProfileImageUpdateRequest request) {
+        log.info("프로필 사진 변경 요청 - 회원ID: {}, 새이미지URL: {}",
+                member.getMemberId(), request.getProfileImage());
+
+        // 1️⃣ 유효성 검사
+        String newImageUrl = request.getProfileImage();
+        if (newImageUrl == null || newImageUrl.trim().isEmpty()) {
+            throw new RuntimeException("프로필 이미지 URL은 필수 입력 항목입니다.");
+        }
+
+        newImageUrl = newImageUrl.trim();
+
+        // URL 형식 간단 검증 (실제로는 더 정교한 검증 필요)
+        if (!newImageUrl.startsWith("http://") &&
+                !newImageUrl.startsWith("https://") &&
+                !newImageUrl.startsWith("/uploads/")) {
+            throw new RuntimeException("올바른 이미지 URL 형식이 아닙니다.");
+        }
+
+
+        // 2️⃣ Profile 조회
         Profile profile = profileRepository.findByMember(member)
                 .orElseThrow(() -> {
-                    log.error("프로필 수정 실패 - 회원ID: {}, 프로필이 존재하지 않음", member.getMemberId());
+                    log.error("프로필 사진 변경 실패 - 회원ID: {}, 프로필이 존재하지 않음", member.getMemberId());
                     return new RuntimeException("프로필을 찾을 수 없습니다.");
                 });
 
-        // 2. Member 정보 수정
-        Member memberToUpdate = profile.getMember();
-        memberToUpdate.setEmail(request.getEmail());
-        memberToUpdate.setMemberPhone(request.getMemberPhone());
-        memberToUpdate.setEmail(request.getNickname());
+        // 3️⃣ 프로필 사진만 수정 (다른 필드는 건드리지 않음)
+        String oldImageUrl = profile.getProfileImage();
+        profile.setProfileImage(newImageUrl);
 
-        // 3. Profile 정보 수정
-        profile.setProfileBio(request.getProfileBio());
-        profile.setProfileImage(request.getProfileImage());
 
-        log.info("프로필 수정 성공 - 회원ID: {}, 닉네임: {}",
-                member.getMemberId(), request.getNickname());
+        log.info("프로필 사진 변경 성공 - 회원ID: {}, 기존URL: {}, 신규URL: {}",
+                member.getMemberId(), oldImageUrl, newImageUrl);
 
         return ProfileResponse.from(profile);
     }
 
-    @Transactional
-    public ProfileResponse updateNickname(Member member, NicknameUpdateRequest request) {
-
-        // 로그 남기기
-        log.info("닉네임 수정 요청 - 회원ID: {}, 새닉네임: {}",
-                member.getMemberId(), request.getNickname());
-
-        // ✅ 유효성 검사 추가 (백엔드 보안)
-        String newNickname = request.getNickname();
-        if (newNickname == null || newNickname.trim().isEmpty()) {
-            throw new RuntimeException("닉네임은 필수 입력 항목입니다.");
-        }
-
-        newNickname = newNickname.trim();
-
-        if (newNickname.length() > 30) {
-            throw new RuntimeException("닉네임은 30자 이내로 입력해주세요.");
-        }
-
-        // 한글, 영문, 숫자만 허용
-        if (!newNickname.matches("^[가-힣a-zA-Z0-9]+$")) {
-            throw new RuntimeException("닉네임은 한글, 영문, 숫자만 사용 가능합니다.");
-        }
-
-        // 해당 회원의 프로필 찾기
-        Profile profile = profileRepository.findByMember(member)
-                .orElseThrow(() -> {
-                    log.error("프로필을 찾을 수 없음 - 회원ID: {}", member.getMemberId());
-                    return new RuntimeException("프로필을 찾을 수 없습니다.");
-                });
-
-        // ✅ Member 엔티티의 memberName을 닉네임으로 직접 수정
-        Member memberToUpdate = profile.getMember();
-        memberToUpdate.setNickname(newNickname);  // 🔥 핵심 변경점!
-
-        // ✅ Profile의 nickname 필드도 제거했다면 이 줄은 삭제
-        // profile.setNickname(request.getNickname()); // 삭제
-
-        log.info("닉네임 수정 성공 - 회원ID: {}, 새닉네임: {}",
-                member.getMemberId(), newNickname);
-
-        return ProfileResponse.from(profile);
-    }
 }

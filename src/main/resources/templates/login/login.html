@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>무드 트립</title>
-  <link rel="stylesheet" th:href="@{/css/login/login.css}">
-  <script th:src="@{/js/login/login.js}"></script>
+  <link rel="stylesheet" href="/static/css/login/login.css">
+  <script src="/static/js/login/login.js"></script>
 </head>
 <body>
 <div class="box-border py-6 desktop:min-h-screen desktop:bg-w-gray-10 desktop:py-[120px]">
@@ -23,7 +23,7 @@
                 decoding="async"
                 data-nimg="1"
                 class="flex-none"
-                th:src="@{/image/mainpage/logo-label.png}"
+                src="/static/image/mainpage/logo-label.png"
                 style="color: transparent;"
         />
       </div>
@@ -34,34 +34,28 @@
             로그인
           </span>
         <div class="box-border flex w-full flex-col right-items-center right-justify-center">
-          <!-- 타임리프 폼 바인딩(t:action, t:object) -->
-          <form th:action="@{/login}" th:object="${loginRequest}" method="post" class="w-full" data-hs-cf-bound="true">
-            <!-- 서버 인증 등 에러 메시지 타임리프 출력 -->
-            <div th:if="${error}" class="textbox typo-body2 text-w-red-500 error-message" th:text="${error}" style="text-align: center; margin-bottom:10px;"></div>
+          <form data-testid="login-form-contents" class="w-full" data-hs-cf-bound="true">
             <div class="box-border flex flex-col gap-input pb-input">
               <div class="flex min-w-fit-input select-none flex-col gap-input-2 textbox">
                 <label role="input-box" class="input-text">
                   <div class="box-border group flex w-full right-items-center gap-input-chk overflow-hidden text-rounded-xl border px-input-loginBtn py-[11px] border-w-red-500 right-bg-w-white" data-testid="design-system--text-field-container">
                     <div class="box-border relative flex h-[42px] w-full flex-col gap-0.5 py-px-input" data-testid="design-system--lable-input">
                       <div class="absolute textbox typo-body1 transition-transform id-pw-textbox translate-y-2 origin-top-left" data-testid="design-system--lable-text">
-                        아이디
+                        아이디 또는 이메일
                       </div>
                       <input
                               role="text-input"
                               class="w-full textbox text-w-gray-600 outline-none typo-body1 placeholder:textbox placeholder:text-w-gray-300 placeholder:typo-body1 disabled:bg-w-gray-10 pt-[14px]"
                               data-testid="design-system--input"
                               variant="lable"
-                              th:field="*{memberId}"
-
-                              autocomplete="username"
-                              required
+                              name="emailOrId"
                       />
                     </div>
                   </div>
                 </label>
                 <div class="box-border flex flex-col gap-input-2 px-[17px]" data-testid="design-system--support-text-container">
                     <span id="emailError" class="textbox typo-body2 text-w-red-500" style="display: none;">
-                      아이디를 입력해 주세요.
+                      아이디 또는 이메일을 입력해 주세요.
                     </span>
                 </div>
               </div>
@@ -80,12 +74,9 @@
                                 variant="lable"
                                 maxlength="32"
                                 type="password"
-                                th:field="*{memberPw}"
-                                autocomplete="current-password"
-                                required
+                                name="password"
                         />
-                        <button class="cursor-pointer" type="button" tabindex="-1">
-                          <!-- 아이콘 SVG는 그대로 -->
+                        <button class="cursor-pointer" type="button">
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" class="text-w-gray-400">
                             <path fill-rule="evenodd" clip-rule="evenodd" d="M15 8C13.731 4.7278 11.488 3.59448 9.883 3.20781L9.884 3.2067C9.876 3.20448 9.869 3.20448 9.861 3.20226C9.566 3.13226 9.289 3.08448 9.048 3.0567V3.05448C9.015 3.05115 8.986 3.04893 8.953 3.0467C8.842 3.03559 8.74 3.0267 8.646 3.02115C8.53 3.01337 8.441 3.01448 8.336 3.01004C8.307 3.00893 8.281 3.00893 8.252 3.00781C8.068 3.00226 7.901 2.99781 7.754 3.00115C7.678 3.00226 7.608 3.00448 7.537 3.0067C7.431 3.01226 7.346 3.01559 7.27 3.02226C6.533 3.07559 6.114 3.2067 6.114 3.2067V3.20892C4.509 3.59559 2.268 4.72891 1 8C2.269 11.2722 4.512 12.4066 6.117 12.7922L6.116 12.7933C6.124 12.7955 6.131 12.7955 6.139 12.7977C6.434 12.8677 6.711 12.9155 6.952 12.9433V12.9455C6.985 12.9489 7.014 12.9511 7.047 12.9533C7.158 12.9644 7.26 12.9733 7.354 12.9789C7.47 12.9866 7.559 12.9855 7.664 12.99C7.693 12.9911 7.719 12.9911 7.748 12.9922C7.932 12.9977 8.099 13.0022 8.246 12.9989C8.322 12.9977 8.392 12.9955 8.463 12.9933C8.569 12.9877 8.654 12.9844 8.73 12.9777C9.467 12.9244 9.886 12.7933 9.886 12.7933V12.7911C11.491 12.4044 13.732 11.2711 15 8Z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path>
                             <path fill-rule="evenodd" clip-rule="evenodd" d="M10 8C10 9.10462 9.10454 10 8.00039 10C6.89546 10 6 9.10462 6 8C6 6.89538 6.89546 6 8.00039 6C9.10454 6 10 6.89538 10 8Z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -104,8 +95,8 @@
             </div>
             <div class="box-border flex right-items-center justify-between chkBox-gap-loginBtn">
               <label data-testid="design-system-checkbox" class="group flex size-chkBox-fit">
-                <input class="absolute option-h-0 option-w-0 option-opacity-0" type="checkbox" name="remember">
-                <div class="group relative box-border cursor-pointer border option-size-4 option-m-px rounded group-hover:border-primary-500 border-w-gray-200 bg-white flex items-center" role="checkbox-button">
+                <input class="absolute h-0 w-0 opacity-0" type="checkbox" name="remember">
+                <div class="group relative box-border cursor-pointer border size-4 m-px rounded group-hover:border-primary-500 border-w-gray-200 bg-white flex items-center" role="checkbox-button">
                   <svg width="10" height="8" viewBox="0 0 10 8" fill="none" xmlns="http://www.w3.org/2000/svg"
                        class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-transparent"
                        style="visibility: hidden;">
@@ -114,16 +105,14 @@
                 </div>
                 <span class="textbox typo-body1 cursor-pointer text-w-gray-900 ml-2">로그인 상태 유지</span>
               </label>
-              <!--
- <a data-testid="find-password-link" class="no-underline" th:href="@{/find-password}">
-   <span class="textbox typo-body1 font-medium text-w-primary">
-     비밀번호 찾기
-   </span>
- </a>
- -->
+              <a data-testid="find-password-link" class="no-underline" href="/templates/find-password/find-password.html">
+                  <span class="textbox typo-body1 font-medium text-w-primary">
+                    비밀번호 찾기
+                  </span>
+              </a>
             </div>
-            <div class="box-border btn-login-pb-4" data-testid="login-button">
-              <button class="box-border flex cursor-pointer right-items-center right-justify-center h-[50px] text-base leading-[26px] gap-x-1.5 px-input-loginBtn text-w-white bg-primary-500 btn-login-border-0 hover:bg-primary-700 w-full text-rounded-xl loginBtn" type="submit">
+            <div class="box-border pb-4" data-testid="login-button">
+              <button class="box-border flex cursor-pointer right-items-center right-justify-center h-[50px] text-base leading-[26px] gap-x-1.5 px-input-loginBtn text-w-white bg-primary-500 border-0 hover:bg-primary-700 w-full text-rounded-xl loginBtn" type="submit">
                   <span class="textbox typo-body1">
                     로그인
                   </span>
@@ -140,7 +129,6 @@
                     class="box-border flex cursor-pointer right-items-center right-justify-center border text-base leading-[26px] gap-x-1.5 px-[15px] right-bg-w-white border-w-gray-200 hover:border-primary-500 h-[50px] w-full text-rounded-xl text-w-gray-600"
                     type="button"
             >
-              <!-- 구글 -->
               <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="16"
@@ -167,11 +155,8 @@
             <button
                     class="box-border flex cursor-pointer right-items-center right-justify-center border text-base leading-[26px] gap-x-1.5 px-[15px] right-bg-w-white border-w-gray-200 hover:border-primary-500 h-[50px] w-full text-rounded-xl text-w-gray-600"
                     type="button"
-                    onclick="
-        document.cookie = 'flowType=login; path=/;';
-        location.href = '/oauth2/authorization/kakao';"
             >
-              <img th:src="@{/image/login/kakaotalk_sharing_btn_small.png}" alt="카카오 로고" width="20" height="20" style="margin-right:8px;" />
+              <img src="/static/image/login/kakaotalk_sharing_btn_small.png" alt="구글 로고" width="20" height="20" style="margin-right:8px;" />
               <span class="textbox typo-body1 w-full">카카오로 로그인</span>
             </button>
           </div>
@@ -179,7 +164,7 @@
               <span class="textbox typo-body1 text-w-gray-600">
                 아직 무드트립 통합회원이 아니신가요?
               </span>
-            <a class="no-underline" data-testid="sign-up-link" th:href="@{/signup}">
+            <a class="no-underline" data-testid="sign-up-link" href="/templates/signup/signup.html">
                 <span class="textbox typo-body1 font-medium text-w-primary">
                   회원가입
                 </span>
@@ -190,9 +175,8 @@
     </div>
   </div>
 </div>
-
 <!-- 모달 HTML (body 태그 맨 아래에 추가) -->
-<!--<div id="inputErrorModal" style="
+<div id="inputErrorModal" style="
     display: none;
     position: fixed;
     left: 0;
@@ -249,6 +233,7 @@
     </button>
   </div>
 </div>
+<!-- Optional 애니메이션 (CSS 애니메이션) -->
 <style>
   @keyframes fadeIn {
     from {
@@ -261,7 +246,5 @@
     }
   }
 </style>
--->
-
 </body>
 </html>

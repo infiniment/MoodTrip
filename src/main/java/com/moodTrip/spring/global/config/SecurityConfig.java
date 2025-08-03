@@ -50,7 +50,7 @@ public class SecurityConfig {
                                 "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**",  "/api-docs/**",
                                 "/error"
                         ).permitAll()
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()
                 )
                 .formLogin(form -> form.disable())
                 //.formLogin(form -> form.loginPage("/api/login").loginProcessingUrl("/login").permitAll())
