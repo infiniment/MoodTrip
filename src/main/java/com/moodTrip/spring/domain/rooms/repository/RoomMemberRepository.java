@@ -4,12 +4,12 @@ import com.moodTrip.spring.domain.member.entity.Member;
 import com.moodTrip.spring.domain.rooms.entity.Room;
 import com.moodTrip.spring.domain.rooms.entity.RoomMember;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
 
-@Repository
 public interface RoomMemberRepository extends JpaRepository<RoomMember, Long> {
     // 회원이 어떤 방에 참여하고 있는지 조회
     List<RoomMember> findByMember(Member member);
@@ -24,7 +24,8 @@ public interface RoomMemberRepository extends JpaRepository<RoomMember, Long> {
     Optional<RoomMember> findByMember_MemberPkAndRoom_RoomId(Long memberPk, Long room);
 
     // 방의 활성화된 참여자만 조회
-    List<RoomMember> findByRoomAndIsActiveTrue(Room room);
+    @Query("SELECT rm FROM RoomMember rm JOIN FETCH rm.member WHERE rm.room = :room AND rm.isActive = true")
+    List<RoomMember> findByRoomAndIsActiveTrue(@Param("room")Room room);
 
     //방 ID 기준으로 전체 참여자 수 조회
     Long countByRoom(Room room);
