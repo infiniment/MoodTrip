@@ -15,6 +15,10 @@ public class MyUserDetails implements UserDetails {
         this.member = member;
     }
 
+    public Member getMember() {
+        return this.member;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         // 권한이 있을 경우 셋팅, 그렇지 않으면 Collections.emptyList() 등
