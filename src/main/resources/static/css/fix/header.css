@@ -11,7 +11,6 @@ header.header {
     -webkit-font-smoothing: antialiased;
 }
 
-
 header.header .header-nav {
     width: 100%;
     background-color: hsla(0, 0%, 100%, .8);
@@ -26,7 +25,6 @@ header.header .header-nav{
     border-bottom: 1px solid #eee;
 }
 
-
 header.header .container {
     width: 1080px;
 }
@@ -40,42 +38,54 @@ a {
     text-decoration: none;
     color: #212121;
 }
-header.header .header-nav .nav-logo-wrapper{
-    width: 77px;
-    padding: 20px 0;
-}
 
-
+/* MOOD TRIP 로고 스타일 - 수정된 부분 */
 header.header .header-nav .nav-logo-wrapper{
- float: left;
+    float: left;
     padding: 22px 12px;
     margin-right: 16px;
-    font-size: 18px;
-    line-height: 20px;
-    width: 100px;
-    text-indent: -9999em;
+    width: 130px;  /* 로고 확대 */
     box-sizing: border-box;
-    background-size: 80px 20px;
 }
-
 
 header.header .header-nav .nav-logo-wrapper .nav-logo{
+    display: flex;
+    align-items: center;
+    gap: 12px;
     width: 100%;
     height: 30px;
-    background-image: url(/static/image/mainpage/image.png);
-    background-size: contain;      /* 이미지가 div 크기에 맞게 조정됨 */
-    background-repeat: no-repeat;  /* 반복 없이 한 번만 표시 */
-    background-position: center;   /* div 중앙에 위치 */
 }
 
+.logo-squares {
+    display: flex;
+    flex-wrap: wrap;
+    width: 32px;
+    height: 24px;
+    gap: 3px;
+}
 
+.logo-square {
+    width: 13px;
+    height: 10px;
+    border-radius: 2px;
+}
 
+.logo-square.black { background-color: #000; }
+.logo-square.yellow { background-color: #FFD700; }
+.logo-square.red { background-color: #FF4444; }
+.logo-square.blue { background-color: #4444FF; }
+
+.logo-text {
+    font-size: 18px;
+    font-weight: bold;
+    color: #212121;
+    letter-spacing: 0.8px;
+    line-height: 1.1;
+}
 
 header.header .header-nav .left-nav{
     display: flex;
-
 }
-
 
 header.header .header-nav .left-nav{
     float: left;
@@ -86,8 +96,9 @@ header.header .base-nav-guest-renewal .left-nav .nav-divider, header.header .hea
     height: 14px;
     border-left: 1px solid #e0e0e0;
 }
+
 header.header .header-nav .right-nav{
- display: flex;
+    display: flex;
 }
 
 header.header .header-nav .right-nav{
@@ -97,7 +108,6 @@ header.header .header-nav .right-nav{
     height: 64px;
     position: relative;
 }
-
 
 div {
     unicode-bidi: isolate;
@@ -111,10 +121,8 @@ header.header .header-nav .left-nav .left-nav-menu{
 }
 
 .header-nav .left-nav .left-nav-menu.pr-12{
-padding-right: 12px;
+    padding-right: 12px;
 }
-
-
 
 .text-header {
     color: #212121;
@@ -131,7 +139,6 @@ header.header .header-nav .left-nav .left-nav-menu .img-container{
     align-items: center;
     margin-left: 4px;
 }
-
 
 header.header .base-nav-guest-renewal .left-nav .left-nav-menu .img-container img+img, header.header .header-nav .left-nav .left-nav-menu .img-container img+img, header.header .base-nav-landing-renewal .left-nav .left-nav-menu .img-container img+img, header.header .base-nav-client-renewal .left-nav .left-nav-menu .img-container img+img, header.header .base-nav-partner-renewal .left-nav .left-nav-menu .img-container img+img, header.header .base-nav-guest-renewal .left-nav .dropdown-container.left-nav-menu .img-container img+img {
     margin-left: 4px;
@@ -150,7 +157,6 @@ header.header .header-nav .right-nav .log-in-section{
     padding: 8px 16px;
     gap: 4px;
 }
-
 
 /* 가운데 줄(nav-divider) 제거 */
 .header .left-nav .nav-divider {
@@ -176,56 +182,52 @@ header.header .header-nav .right-nav .log-in-section{
     line-height: normal;
 }
 
-
-
 /*검색하는 라인 */
 .search-bar-wrapper {
-  width: 350px;
-   margin-left: auto;
+    width: 350px;
+    margin-left: auto;
 }
 .search-bar {
-  position: relative;
-  width: 100%;
-  display: flex;
-  align-items: center;
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
 }
 .search-input {
-  width: 100%;
-  height: 36px;
-  border: 1px solid #ccc;
-  border-radius: 18px;
-  font-size: 16px;
-  padding: 0 40px 0 12px; /* 오른쪽에 아이콘 공간 확보 */
-  box-sizing: border-box;
-  background: #fff;
-  outline: none;
+    width: 100%;
+    height: 36px;
+    border: 1px solid #ccc;
+    border-radius: 18px;
+    font-size: 16px;
+    padding: 0 40px 0 12px; /* 오른쪽에 아이콘 공간 확보 */
+    box-sizing: border-box;
+    background: #fff;
+    outline: none;
 }
 
 .search-btn {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 32px;   /* 버튼 높이 input보다 약간 작게 */
-  width: 32px;    /* 버튼 너비 이미지와 맞춤 */
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 32px;   /* 버튼 높이 input보다 약간 작게 */
+    width: 32px;    /* 버튼 너비 이미지와 맞춤 */
 }
 
 .search-icon {
-  width: 24px;    /* 아이콘 크기 */
-  height: 24px;
-  display: block;
+    width: 24px;    /* 아이콘 크기 */
+    height: 24px;
+    display: block;
 }
 
-
 /*드롭 확인하는 구간*/
-
 header.header .dropdown-nav-container {
     border-radius: 0px 0px 16px 16px;
     background: #fff;
@@ -234,22 +236,21 @@ header.header .dropdown-nav-container {
     max-height: 0px;
     overflow: hidden;
     transition:
-    max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.3s,
-    transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-     opacity: 0;
-    position: absolute;    
+            max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+            opacity 0.3s,
+            transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0;
+    position: absolute;
     transform: translateY(-24px); /* 위에서 살짝 내려오게 */
-    
 }
 
 body, .header, .dropdown-nav-container, .dropdown-menu-item {
-  font-family: 'SUIT', 'Noto Sans KR', sans-serif !important;
+    font-family: 'SUIT', 'Noto Sans KR', sans-serif !important;
 }
 
 header.header .dropdown-nav-container.active {
-  opacity: 1;
-  transform: translateY(0);
+    opacity: 1;
+    transform: translateY(0);
 }
 
 header.header .dropdown-nav-container .dropdown-nav {
@@ -273,44 +274,9 @@ header.header .dropdown-nav-container .dropdown-nav .dropdown-menu-container .dr
     row-gap: 12px;
     column-gap: 12px;
 }
-header.header .dropdown-nav-container .dropdown-nav .dropdown-menu-container .dropdown-menu-list .dropdown-menu-item {
-    display: flex !important
-;
-    gap: 4px;
-    align-items: flex-start;
-    font-size: 14px;
-    line-height: 24px;
-    color: #424242;
-}
-
-header.header .dropdown-nav-container .dropdown-nav .dropdown-menu-container .dropdown-menu-list {
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    gap: 12px;
-}
 
 header.header .dropdown-nav-container .dropdown-nav .dropdown-menu-container .dropdown-menu-list .dropdown-menu-item {
-    display: flex !important
-;
-    gap: 4px;
-    align-items: flex-start;
-    font-size: 14px;
-    line-height: 24px;
-    color: #424242;
-}
-
-header.header .dropdown-nav-container .dropdown-nav .dropdown-menu-container .dropdown-menu-list {
-    display: flex
-;
-    flex-direction: column;
-    position: relative;
-    gap: 12px;
-}
-
-header.header .dropdown-nav-container .dropdown-nav .dropdown-menu-container .dropdown-menu-list .dropdown-menu-item {
-    display: flex !important
-;
+    display: flex !important;
     gap: 4px;
     align-items: flex-start;
     font-size: 14px;
@@ -321,6 +287,7 @@ header.header .dropdown-nav-container .dropdown-nav .dropdown-menu-container .dr
 header.header .dropdown-nav-container .dropdown-banner.client {
     background-color: #f2fcff;
 }
+
 header.header .dropdown-nav-container .dropdown-banner {
     position: relative;
     padding: 20px 24px 44px 24px;
@@ -363,6 +330,7 @@ header.header .dropdown-nav-container .dropdown-banner img {
     right: 12px;
     bottom: 12px;
 }
+
 header.header .header-nav .right-nav .sign-up-button{
     margin-left: 12px;
     display: flex;
@@ -374,49 +342,31 @@ header.header .header-nav .right-nav .sign-up-button{
     cursor: pointer;
 }
 
-
 .body-2-medium {
     font-weight: 500;
 }
+
 .header-nav::before{
     display: table;
     content: "";
     clear: both;
 }
 
-/* 드롭하는 구간 */
-header.header .dropdown-nav-container .dropdown-nav {
-    display: flex;
-    width: 1080px;
-    margin: 0 auto;
-    padding: 20px 0 32px 0;
-}
-
-header.header .dropdown-nav-container .dropdown-nav .dropdown-menu-container {
-    display: flex;
-    width: 840px;
-    margin: 0 auto;
-}
 img {
     overflow-clip-margin: content-box;
     overflow: clip;
 }
+
 header.header .dropdown-nav-container .dropdown-nav .dropdown-menu-container .dropdown-menu-list .bubble-img {
     display: block;
     position: absolute;
     top: 64px;
 }
-header.header .dropdown-nav-container .dropdown-nav .dropdown-menu-container {
-    display: flex
-;
-    width: 840px;
-    margin: 0 auto;
-}
+
 header.header .dropdown-nav-container .dropdown-banner .dropdown-banner-link {
     color: #3ba3c7;
     font-weight: 500;
-    display: flex
-;
+    display: flex;
     align-items: center;
     gap: 2px;
 }
@@ -425,22 +375,9 @@ header.header .dropdown-nav-container .dropdown-banner .dropdown-banner-link {
     font-size: 13px;
     line-height: 20px;
 }
+
 .body-3 {
     font-size: 13px;
-}
-
-header.header .dropdown-nav-container .dropdown-banner img {
-    position: absolute;
-    right: 12px;
-    bottom: 12px;
-}
-
-
-.header-nav::before{
-    display: table;
-    content: "";
-    clear: both;
-
 }
 
 .container::before {
@@ -448,15 +385,16 @@ header.header .dropdown-nav-container .dropdown-banner img {
     display: table;
     clear: both;
 }
+
 .left-nav-menu-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  /* width는 인라인 style로 각 메뉴별로 다르게 지정 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* width는 인라인 style로 각 메뉴별로 다르게 지정 */
 }
 
 .dropdown-nav-container {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }

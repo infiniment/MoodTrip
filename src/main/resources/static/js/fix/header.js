@@ -2,41 +2,97 @@ document.addEventListener('DOMContentLoaded', function () {
   const header = document.querySelector('header.header');
   const leftNav = header.querySelector('.left-nav');
   const dropdown = header.querySelector('.dropdown-nav-container');
+  const menuItems = header.querySelectorAll('.left-nav-menu[data-menu]');
   let openTimeout, closeTimeout;
+  let activeMenu = null;
 
-  // 드롭다운 실제 높이 계산
+  // 드롭다운 실제 높이 계산 - 개선된 버전
   function getDropdownHeight() {
-    dropdown.style.maxHeight = 'none';
+    // 모든 드롭다운 메뉴를 임시로 보이게 설정
+    const allDropdowns = dropdown.querySelectorAll('.dropdown-menu-list');
+    allDropdowns.forEach(menu => {
+      menu.style.display = 'flex';
+    });
+
+    // 임시로 높이를 auto로 설정하여 실제 높이 측정
+    dropdown.style.maxHeight = 'auto';
+    dropdown.style.visibility = 'hidden';
+    dropdown.style.display = 'block';
+
     const height = dropdown.scrollHeight;
+
+    // 원래 상태로 복원
     dropdown.style.maxHeight = '0px';
+    dropdown.style.visibility = 'visible';
+    dropdown.style.display = '';
+
+    // 다시 활성 메뉴만 보이게 설정
+    showDropdownForMenu(activeMenu);
+
     return height;
   }
 
+  function showDropdownForMenu(menuType) {
+    // 모든 드롭다운 메뉴 숨기기
+    const allDropdowns = dropdown.querySelectorAll('.dropdown-menu-list');
+    allDropdowns.forEach(menu => {
+      menu.style.display = 'none';
+    });
+
+    // 해당 메뉴의 드롭다운만 보이기
+    const targetDropdown = dropdown.querySelector(`#${menuType}-dropdown`);
+    if (targetDropdown) {
+      targetDropdown.style.display = 'flex';
+      activeMenu = menuType;
+    }
+  }
+
   function openDropdown() {
-    dropdown.style.maxHeight = getDropdownHeight() + 'px';
-    dropdown.style.overflow = 'visible';
-    dropdown.style.background = 'linear-gradient(to right, rgba(0,87,146,0.03), rgba(0,26,44,0.03))';
-    dropdown.classList.add('active');
+    if (activeMenu) {
+      // 동적으로 높이 계산하여 드롭다운 열기
+      const height = getDropdownHeight();
+      dropdown.style.maxHeight = height + 'px';
+      dropdown.style.overflow = 'visible';
+
+      // 배경을 흰색으로 명확히 설정하고 그림자 추가
+      dropdown.style.background = '#fff';
+      dropdown.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.1)';
+      dropdown.classList.add('active');
+    }
   }
 
   function closeDropdown() {
     dropdown.style.maxHeight = '0px';
     dropdown.style.overflow = 'hidden';
     dropdown.classList.remove('active');
+    activeMenu = null;
   }
 
-  leftNav.addEventListener('mouseenter', function () {
-    clearTimeout(closeTimeout);
-    openTimeout = setTimeout(openDropdown, 180);
+  // 각 메뉴 항목에 호버 이벤트 추가
+  menuItems.forEach(menuItem => {
+    menuItem.addEventListener('mouseenter', function () {
+      clearTimeout(closeTimeout);
+      const menuType = this.getAttribute('data-menu');
+
+      if (menuType !== activeMenu) {
+        showDropdownForMenu(menuType);
+        clearTimeout(openTimeout);
+        openTimeout = setTimeout(openDropdown, 100);
+      }
+    });
   });
 
+  // 전체 leftNav에서 마우스가 나갈 때
   leftNav.addEventListener('mouseleave', function () {
     clearTimeout(openTimeout);
     closeTimeout = setTimeout(() => {
-      if (!dropdown.matches(':hover')) closeDropdown();
+      if (!dropdown.matches(':hover')) {
+        closeDropdown();
+      }
     }, 180);
   });
 
+  // 드롭다운에서 마우스 이벤트
   dropdown.addEventListener('mouseenter', function () {
     clearTimeout(closeTimeout);
   });
@@ -69,7 +125,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const selectedEmotions = new Set();
   let activeCategory = null;
 
-  // 최근 검색어 관리 (localStorage 대신 메모리 사용)
+  // 최근 검색어 관리 (메모리 사용)
   let recentEmotions = [];
   const MAX_RECENT = 5;
 

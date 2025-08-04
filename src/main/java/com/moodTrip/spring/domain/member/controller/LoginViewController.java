@@ -60,8 +60,8 @@ public class LoginViewController {
         jwtCookie.setMaxAge(24 * 60 * 60); // 1일 (단위: 초)
         response.addCookie(jwtCookie);
 
-
-        return "redirect:/mainpage/mainpage";
+        // 해당 부분 김상우가 수정 메인페이지로 redirect 시 Member 테이블 정보 가져오기 위함
+        return "redirect:/";
     }
 
     //소셜 로그인 성공 시
@@ -69,6 +69,5 @@ public class LoginViewController {
     public String mainPage() {
         return "mainpage/mainpage"; // templates/mainpage/mainpage.html 필요
     }
-
 
 }
