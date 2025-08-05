@@ -42,6 +42,12 @@ public class Room extends BaseEntity {
 //    @ManyToOne(fetch = FetchType.LAZY)
 //    @JoinColumn(name = "attraction_id")
 //    private Attraction attraction;
+    // 나중에 Attraction 완료되면 교체 예정
+    @Column(name = "destination_category")
+    private String destinationCategory;
+
+    @Column(name = "destination_name")
+    private String destinationName;
 //
 //    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
 //    private List<EmotionRoom> emotionRooms = new ArrayList<>();

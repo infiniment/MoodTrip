@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -193,4 +194,23 @@ public class RoomServiceImpl implements RoomService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public Room getRoomEntityById(Long roomId) {
+        return roomRepository.findById(roomId)
+                .orElseThrow(() -> new CustomException(ROOM_NOT_FOUND));
+    }
+
+    @Override
+    public RoomResponse toResponseDto(Room room) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        return RoomResponse.builder()
+                .roomId(room.getRoomId())
+                .roomName(room.getRoomName())
+                .roomDescription(room.getRoomDescription())
+                .maxParticipants(room.getRoomMaxCount())
+                .currentParticipants(room.getRoomCurrentCount())
+                .travelStartDate(room.getTravelStartDate().format(formatter))
+                .travelEndDate(room.getTravelEndDate().format(formatter))
+                .build();
+    }
 }

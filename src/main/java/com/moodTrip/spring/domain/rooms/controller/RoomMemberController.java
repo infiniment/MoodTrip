@@ -7,6 +7,7 @@ import com.moodTrip.spring.domain.rooms.repository.RoomRepository;
 import com.moodTrip.spring.domain.rooms.service.RoomService;
 import com.moodTrip.spring.global.common.exception.CustomException;
 import com.moodTrip.spring.global.security.jwt.MyUserDetails;
+import com.moodTrip.spring.global.websocket.OnlineUserTracker;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -27,6 +28,7 @@ import static com.moodTrip.spring.global.common.code.status.ErrorStatus.*;
 public class RoomMemberController {  // 참여 / 나가기 / 참여자 목록 담당 Controller
     private final RoomService roomService;
     private final RoomRepository roomRepository;
+    private final OnlineUserTracker onlineUserTracker;
 
     @Operation(summary = "방 참여", description = "로그인한 사용자가 해당 방에 참여합니다.")
     @ApiResponses({
@@ -77,6 +79,30 @@ public class RoomMemberController {  // 참여 / 나가기 / 참여자 목록 �
 
         List<RoomMemberResponse> members = roomService.getActiveMembers(room);
         return ResponseEntity.ok(members);
+    }
+
+    @Operation(summary = "방 온라인 참여자 목록 조회", description = "해당 방에 참여 중인 사용자 중 현재 접속 중인 멤버 목록을 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "조회 성공"),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 방")
+    })
+    @GetMapping("/{roomId}/online-members")
+    public ResponseEntity<List<RoomMemberResponse>> getOnlineRoomMembers(@PathVariable("roomId") Long roomId) {
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new CustomException(ROOM_NOT_FOUND));
+
+        // 1. 현재 방 참여자 전체 목록
+        List<RoomMemberResponse> allMembers = roomService.getActiveMembers(room);
+
+        // 2. 온라인 사용자 닉네임 목록
+        List<String> onlineNicknames = onlineUserTracker.getOnlineUsers(roomId);
+
+        // 3. 필터링 (닉네임 기준)
+        List<RoomMemberResponse> onlineMembers = allMembers.stream()
+                .filter(member -> onlineNicknames.contains(member.getNickname()))
+                .toList();
+
+        return ResponseEntity.ok(onlineMembers);
     }
 
 }
