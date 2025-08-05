@@ -53,7 +53,7 @@ public class SecurityConfig {
                                 "/login", "/api/login", "/signup", "/api/signup",
                                 "/css/**", "/js/**", "/image/**",
                                 "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/api-docs/**",
-                                "/error"
+                                "/error", "/api/v1/room-online/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

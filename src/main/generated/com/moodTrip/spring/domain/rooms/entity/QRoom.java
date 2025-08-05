@@ -29,6 +29,10 @@ public class QRoom extends EntityPathBase<Room> {
 
     public final com.moodTrip.spring.domain.member.entity.QMember creator;
 
+    public final StringPath destinationCategory = createString("destinationCategory");
+
+    public final StringPath destinationName = createString("destinationName");
+
     public final BooleanPath isDeleteRoom = createBoolean("isDeleteRoom");
 
     public final NumberPath<Integer> roomCurrentCount = createNumber("roomCurrentCount", Integer.class);
