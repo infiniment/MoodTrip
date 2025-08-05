@@ -1,7 +1,7 @@
 package com.moodTrip.spring.domain.support.dto.response;
 
-import com.moodTrip.spring.domain.support.entity.Faq;
 import lombok.Builder;
+import com.moodTrip.spring.domain.admin.entity.Faq;
 
 @Builder
 public record FaqResponse(
@@ -13,15 +13,15 @@ public record FaqResponse(
         int helpful,
         int notHelpful
 ) {
-    public static FaqResponse from(Faq faq) {
-        return FaqResponse.builder()
-                .id(faq.getId())
-                .category(faq.getCategory())
-                .title(faq.getTitle())
-                .content(faq.getContent())
-                .views(faq.getViews())
-                .helpful(faq.getHelpful())
-                .notHelpful(faq.getNotHelpful())
-                .build();
-    }
+//    public static FaqResponse from(Faq faq) {
+//        return FaqResponse.builder()
+//                .id(faq.getId())
+//                .category(faq.getCategory())
+//                .title(faq.getTitle())
+//                .content(faq.getContent())
+//                .views(faq.getViews())
+//                .helpful(faq.getHelpful())
+//                .notHelpful(faq.getNotHelpful())
+//                .build();
+//    }
 }

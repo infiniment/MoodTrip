@@ -85,6 +85,44 @@ function updatePageTitle(menuType) {
     }
 }
 
+
+function showFaqForm() {
+    document.getElementById('faq-list-view').style.display = 'none';
+    document.getElementById('faq-form-view').style.display = 'block';
+}
+
+function cancelFaqForm() {
+    document.getElementById('faq-form-view').style.display = 'none';
+    document.getElementById('faq-list-view').style.display = 'block';
+}
+
+function saveFaq() {
+    const question = document.getElementById('faq-question').value;
+    const category = document.getElementById('faq-category').value;
+
+    if (!question.trim()) {
+        alert("질문을 입력하세요.");
+        return;
+    }
+
+    // 단순 alert (실제 서버 연동은 추후 추가)
+    alert(`FAQ 저장 완료: [${category}] ${question}`);
+
+    cancelFaqForm();
+}
+
+function editFaq(button) {
+    alert("FAQ 수정 기능은 준비 중입니다.");
+}
+
+function deleteFaq(button) {
+    if (confirm("정말로 삭제하시겠습니까?")) {
+        const row = button.closest('tr');
+        row.remove();
+    }
+}
+
+
 // 2. 탭 네비게이션
 function setupTabNavigation() {
     document.querySelectorAll('.tab').forEach(tab => {
@@ -1176,7 +1214,7 @@ function executePublishNotice(noticeData) {
             return res.json(); // 서버에서 noticeId 반환
         })
         .then(noticeId => {
-            // ⭐ 여기가 중요! noticeId를 제대로 전달
+            // noticeId를 제대로 전달
             addNoticeToTable(noticeData.title, noticeData.category, noticeData.priority, noticeId);
             if (noticeData.pushNotification) console.log('푸시 알림 발송 요청');
             if (noticeData.emailNotification) console.log('이메일 알림 발송 요청');
@@ -1654,7 +1692,7 @@ function loadNoticeList() {
         .then(res => res.json())
         .then(notices => {
             const tbody = document.querySelector('#notice-list-view .data-table tbody');
-            tbody.innerHTML = ''; // 기존 내용 삭제
+            //tbody.innerHTML = ''; // 기존 내용 삭제
 
             notices.forEach(notice => {
                 const row = document.createElement('tr');

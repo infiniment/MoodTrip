@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>무드트립 - 공지사항 상세</title>
-    <link rel="stylesheet" href="/static/css/customer-center/announcement-detail.css">
+    <link rel="stylesheet" href="/css/customer-center/announcement-detail.css">
 </head>
 <body>
     <div class="announcement-detail-layout">
@@ -35,11 +35,14 @@
 
                         <!-- 공지사항 헤더 -->
                         <header class="announcement-header">
-                            <div class="announcement-badge important">중요</div>
-                            <h1 class="announcement-title">
-                                [중요] 무드트립을 사칭하며 개인정보를 요구하는 피싱 메시지에 주의하세요!
+                            <div class="announcement-badge"
+                                 th:if="${notice.isImportant}"
+                                 th:text="${notice.classification == '긴급공지'} ? '긴급' : '중요'"
+                                 th:class="${notice.classification == '긴급공지'} ? 'announcement-badge urgent' : 'announcement-badge important'">중요</div>
+                            <h1 class="announcement-title" th:text="${notice.title}">
+                                공지사항 제목
                             </h1>
-                            
+
                             <div class="announcement-meta">
                                 <div class="meta-left">
                                     <span class="meta-item">
@@ -47,42 +50,75 @@
                                             <circle cx="12" cy="12" r="3"></circle>
                                             <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"></path>
                                         </svg>
-                                        2025.04.17
+                                        <span th:text="${#temporals.format(notice.registeredDate, 'yyyy.MM.dd')}">2025.04.17</span>
                                     </span>
                                     <span class="meta-item">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                             <circle cx="12" cy="12" r="3"></circle>
                                         </svg>
-                                        조회 1,254
+                                        조회 <span th:text="${notice.viewCount != null ? notice.viewCount : 0}">0</span>
                                     </span>
-                                </div>
-                                
-                                <div class="meta-right">
-                                    <button class="share-button" id="share-button">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                            <circle cx="18" cy="5" r="3"></circle>
-                                            <circle cx="6" cy="12" r="3"></circle>
-                                            <circle cx="18" cy="19" r="3"></circle>
-                                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-                                        </svg>
-                                        공유
-                                    </button>
-                                    
-                                    <button class="print-button" onclick="window.print()">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                            <polyline points="6,9 6,2 18,2 18,9"></polyline>
-                                            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-                                            <polyline points="6,14 6,22 18,22 18,14"></polyline>
-                                        </svg>
-                                        인쇄
-                                    </button>
                                 </div>
                             </div>
                         </header>
+<!--                        -->
+<!--                        <header class="announcement-header">-->
+<!--                            <div class="announcement-badge important">중요</div>-->
+<!--                            <h1 class="announcement-title">-->
+<!--                                [중요] 무드트립을 사칭하며 개인정보를 요구하는 피싱 메시지에 주의하세요!-->
+<!--                            </h1>-->
+<!--                            -->
+<!--                            <div class="announcement-meta">-->
+<!--                                <div class="meta-left">-->
+<!--                                    <span class="meta-item">-->
+<!--                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">-->
+<!--                                            <circle cx="12" cy="12" r="3"></circle>-->
+<!--                                            <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"></path>-->
+<!--                                        </svg>-->
+<!--                                        2025.04.17-->
+<!--                                    </span>-->
+<!--                                    <span class="meta-item">-->
+<!--                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">-->
+<!--                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>-->
+<!--                                            <circle cx="12" cy="12" r="3"></circle>-->
+<!--                                        </svg>-->
+<!--                                        조회 1,254-->
+<!--                                    </span>-->
+<!--                                </div>-->
+<!--                                -->
+<!--                                <div class="meta-right">-->
+<!--                                    <button class="share-button" id="share-button">-->
+<!--                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">-->
+<!--                                            <circle cx="18" cy="5" r="3"></circle>-->
+<!--                                            <circle cx="6" cy="12" r="3"></circle>-->
+<!--                                            <circle cx="18" cy="19" r="3"></circle>-->
+<!--                                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>-->
+<!--                                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>-->
+<!--                                        </svg>-->
+<!--                                        공유-->
+<!--                                    </button>-->
+<!--                                    -->
+<!--                                    <button class="print-button" onclick="window.print()">-->
+<!--                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">-->
+<!--                                            <polyline points="6,9 6,2 18,2 18,9"></polyline>-->
+<!--                                            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>-->
+<!--                                            <polyline points="6,14 6,22 18,22 18,14"></polyline>-->
+<!--                                        </svg>-->
+<!--                                        인쇄-->
+<!--                                    </button>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                        </header>-->
 
                         <!-- 공지사항 내용 -->
+                        <article class="announcement-content">
+                            <div class="content-body" th:utext="${notice.content}">
+                                <!-- DB의 content 내용이 HTML 형식으로 저장되어 있다면 th:utext 사용 -->
+                            </div>
+                        </article>
+
+
                         <article class="announcement-content">
                             <div class="content-body">
                                 <div class="alert-section">
@@ -191,22 +227,42 @@
                                     </svg>
                                     도움이 되었나요?
                                 </button>
-                                
+
+                                <!-- 이전/다음 글 버튼 -->
                                 <div class="navigation-buttons">
-                                    <button class="nav-btn prev-btn">
+                                    <button class="nav-btn prev-btn"
+                                            th:if="${prevNotice != null}"
+                                            th:onclick="|location.href='@{/customer-center/announcement-detail(id=${prevNotice.id})}'|">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                             <polyline points="15,18 9,12 15,6"></polyline>
                                         </svg>
                                         이전 글
                                     </button>
-                                    
-                                    <button class="nav-btn next-btn">
+
+                                    <button class="nav-btn next-btn"
+                                            th:if="${nextNotice != null}"
+                                            th:onclick="|location.href='@{/customer-center/announcement-detail(id=${nextNotice.id})}'|">
                                         다음 글
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                             <polyline points="9,18 15,12 9,6"></polyline>
                                         </svg>
                                     </button>
                                 </div>
+<!--                                <div class="navigation-buttons">-->
+<!--                                    <button class="nav-btn prev-btn">-->
+<!--                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">-->
+<!--                                            <polyline points="15,18 9,12 15,6"></polyline>-->
+<!--                                        </svg>-->
+<!--                                        이전 글-->
+<!--                                    </button>-->
+<!--                                    -->
+<!--                                    <button class="nav-btn next-btn">-->
+<!--                                        다음 글-->
+<!--                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">-->
+<!--                                            <polyline points="9,18 15,12 9,6"></polyline>-->
+<!--                                        </svg>-->
+<!--                                    </button>-->
+<!--                                </div>-->
                             </div>
                         </footer>
 
@@ -245,6 +301,6 @@
         </div>
     </div>
 
-    <script src="/static/js/customer-center/announcement-detail.js"></script>
+    <script src="/js/customer-center/announcement-detail.js"></script>
 </body>
 </html>

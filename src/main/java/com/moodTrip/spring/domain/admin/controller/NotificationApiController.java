@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/admin/notifications")  // 경로를 admin으로 변경
+@RequestMapping("/api/v1/admin/notifications")
 public class NotificationApiController {
 
     private final NotificationService notificationService;
@@ -37,7 +37,7 @@ public class NotificationApiController {
     }
 
 
-    // 공지사항 조회 (수정용)
+    // 공지사항 조회
     @GetMapping("/{noticeId}")
     public ResponseEntity<NotificationResponse> getNotification(@PathVariable Long noticeId) {
         NotificationResponse notification = notificationService.findByIdForAdmin(noticeId);

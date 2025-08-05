@@ -11,11 +11,11 @@ import java.util.List;
 @RequestMapping("/api/v1/faqs")
 @RequiredArgsConstructor
 public class FaqApiController {
-
-    private final FaqService faqService;
-
-    @GetMapping
-    public List<FaqResponse> getFaqs() {
-        return faqService.getAllFaqs();
-    }
+//
+//    private final FaqService faqService;
+//
+//    @GetMapping
+//    public List<FaqResponse> getFaqs() {
+//        return faqService.getAllFaqs();
+//    }
 }
