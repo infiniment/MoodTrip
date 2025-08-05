@@ -1,6 +1,7 @@
 package com.moodTrip.spring.global.config;
 
 import com.moodTrip.spring.domain.member.service.MemberService;
+import com.moodTrip.spring.global.security.jwt.JwtAuthenticationEntryPoint;
 import com.moodTrip.spring.global.security.jwt.JwtAuthenticationFilter;
 import com.moodTrip.spring.global.security.jwt.JwtUtil;
 import com.moodTrip.spring.global.security.oauth.CustomOAuth2SuccessHandler;
@@ -16,6 +17,7 @@ import org.springframework.security.oauth2.client.web.DefaultOAuth2Authorization
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,7 +41,10 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            ClientRegistrationRepository clientRegistrationRepository,
-                                           MemberService memberService, JwtUtil jwtUtil,UserDetailsService userDetailsService
+                                           MemberService memberService,
+                                           JwtUtil jwtUtil,
+                                           UserDetailsService userDetailsService,
+                                           JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint  // ✅ 추가
     ) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
@@ -48,12 +53,18 @@ public class SecurityConfig {
                                 "/login",            // 로그인 폼 GET
                                 "/api/login",        // 커스텀 로그인 폼
                                 "/signup", "/api/signup","/password/**", "/password/find",
+                                "/login", "/api/login", "/signup", "/api/signup",
                                 "/css/**", "/js/**", "/image/**",
                                 "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**",  "/api-docs/**",
                                 "/css/**", "/js/**", "/images/**",
-                                "/error"
+                                "/error",
+                                "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/api-docs/**",
+                                "/error", "/api/v1/room-online/**"
                         ).permitAll()
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()
+                )
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(jwtAuthenticationEntryPoint)  // ✅ 설정
                 )
                 .formLogin(form -> form.disable())
                 //.formLogin(form -> form.loginPage("/api/login").loginProcessingUrl("/login").permitAll())
@@ -64,14 +75,14 @@ public class SecurityConfig {
                                         customAuthorizationRequestResolver(clientRegistrationRepository)
                                 )
                         )
-                                .successHandler(customOAuth2SuccessHandler(memberService, jwtUtil)) // ★ jwtUtil 인자 추가!
-
+                        .successHandler(customOAuth2SuccessHandler(memberService, jwtUtil))
                 );
 
         http.addFilterBefore(
                 new JwtAuthenticationFilter(jwtUtil, userDetailsService),
-                org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class
+                UsernamePasswordAuthenticationFilter.class
         );
+
         return http.build();
     }
 

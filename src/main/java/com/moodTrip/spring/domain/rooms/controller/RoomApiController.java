@@ -5,9 +5,11 @@ import com.moodTrip.spring.domain.rooms.dto.request.RoomRequest;
 import com.moodTrip.spring.domain.rooms.dto.request.UpdateRoomRequest;
 import com.moodTrip.spring.domain.rooms.dto.response.RoomResponse;
 import com.moodTrip.spring.domain.rooms.service.RoomService;
+import com.moodTrip.spring.global.security.jwt.MyUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +22,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/companion-rooms")
 @Tag(name = "companion-rooms API", description = "동행 방 생성, 조회, 수정, 삭제 관련 API")
+@SecurityRequirement(name = "BearerAuth")
 public class RoomApiController { // CRUD 담당 Controller
     private final RoomService roomService;
 
@@ -28,7 +31,8 @@ public class RoomApiController { // CRUD 담당 Controller
     @ApiResponse(responseCode = "201", description = "방 생성 성공")
     @PostMapping
     public ResponseEntity<RoomResponse> createRoom(@RequestBody final RoomRequest request,
-                                                   @AuthenticationPrincipal final Member member) {
+                                                   @AuthenticationPrincipal final MyUserDetails userDetails) {
+        Member member = userDetails.getMember();
         Long memberPk = member.getMemberPk();
         RoomResponse response = roomService.createRoom(request, memberPk);
         return ResponseEntity.status(201).body(response);
@@ -57,7 +61,7 @@ public class RoomApiController { // CRUD 담당 Controller
             @ApiResponse(responseCode = "404", description = "존재하지 않는 방")
     })
     @PatchMapping("/{roomId}")
-    public ResponseEntity<RoomResponse> updateRoom(@PathVariable Long roomId, @RequestBody UpdateRoomRequest request) {
+    public ResponseEntity<RoomResponse> updateRoom(@PathVariable("roomId") Long roomId, @RequestBody UpdateRoomRequest request) {
         return ResponseEntity.ok(roomService.updateRoom(roomId, request));
     }
 
@@ -67,7 +71,7 @@ public class RoomApiController { // CRUD 담당 Controller
             @ApiResponse(responseCode = "404", description = "존재하지 않는 방")
     })
     @DeleteMapping("/{roomId}")
-    public ResponseEntity<Void> deleteRoom(@PathVariable Long roomId) {
+    public ResponseEntity<Void> deleteRoom(@PathVariable("roomId") Long roomId) {
         roomService.deleteRoomById(roomId);
         return ResponseEntity.noContent().build(); // 204 반환(반환 타입 없는 경우 204)
     }

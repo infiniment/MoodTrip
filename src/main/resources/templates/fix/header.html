@@ -13,33 +13,38 @@
 <header class="header" th:fragment="header">
     <div class="header-nav">
         <div class="container">
-            <!-- 로고 - Thymeleaf 링크로 변경 -->
+            <!-- MOOD TRIP 로고 -->
             <a th:href="@{/}">
                 <div class="nav-logo-wrapper">
-                    <div class="nav-logo"></div>
+                    <div class="nav-logo">
+                        <div class="logo-squares">
+                            <div class="logo-square black"></div>
+                            <div class="logo-square yellow"></div>
+                            <div class="logo-square red"></div>
+                            <div class="logo-square blue"></div>
+                        </div>
+                        <div class="logo-text">MOOD<br>TRIP</div>
+                    </div>
                 </div>
             </a>
 
             <div class="left-nav">
-                <!-- 동행 매칭 - 실제 페이지 연결 -->
-                <a th:href="@{/companion-rooms}">
-                    <div class="left-nav-menu main-header text-header">동행 매칭</div>
+                <!-- 감정여행 -->
+                <a th:href="@{/emotions}" class="left-nav-menu" data-menu="emotions">
+                    <div class="main-header text-header">감정여행</div>
                 </a>
 
-                <!-- 공지사항 - 실제 페이지 연결 -->
-                <a th:href="@{/notifications}">
-                    <div class="left-nav-menu pr-12 main-header text-header">
-                        공지사항
-                        <div class="img-container"></div>
-                    </div>
+                <!-- 동행매칭 -->
+                <a th:href="@{/companion-rooms}" class="left-nav-menu" data-menu="companion">
+                    <div class="main-header text-header">동행매칭</div>
                 </a>
 
-                <!-- 감정 여행 - 실제 페이지 연결 -->
-                <a th:href="@{/emotions}">
-                    <div class="left-nav-menu main-header text-header">감정 여행</div>
+                <!-- 공지사항 -->
+                <a th:href="@{/notifications}" class="left-nav-menu" data-menu="notice">
+                    <div class="main-header text-header">공지사항</div>
                 </a>
 
-                <!-- 검색바 - Thymeleaf action으로 변경 -->
+                <!-- 검색바 -->
                 <div class="left-nav-menu pr-12 main-header text-header search-bar-wrapper" style="margin-left: 100px;">
                     <form class="search-bar" th:action="@{/emotions}" method="get">
                         <input
@@ -56,36 +61,37 @@
             </div>
 
             <div class="right-nav">
-                <!-- 로그인 링크 - 실제 페이지 연결 -->
+                <!-- 로그인 링크 -->
                 <a th:href="@{/login}">
                     <div class="log-in-section main-header text-header">로그인</div>
                 </a>
-                <!-- 회원가입 링크 - 실제 페이지 연결 -->
+                <!-- 회원가입 링크 -->
                 <a th:href="@{/signup}">
                     <div class="sign-up-button body-2-medium">회원가입</div>
                 </a>
             </div>
         </div>
 
-        <!-- 드롭다운 메뉴 - 링크들 수정 -->
+        <!-- 드롭다운 메뉴 -->
         <div class="dropdown-nav-container" style="top: 65px;">
             <div class="dropdown-nav">
                 <div class="dropdown-menu-container" style="margin-left: 130px;">
-                    <!-- 동행 매칭 드롭다운 -->
-                    <div class="dropdown-menu-list" style="width: 109px;">
+                    <!-- 감정여행 드롭다운 -->
+                    <div class="dropdown-menu-list" id="emotions-dropdown" style="width: 145px;">
+                        <a class="dropdown-menu-item" th:href="@{/emotions/tourist-spots}">감정 관광지 찾기</a>
+                        <a class="dropdown-menu-item" th:href="@{/emotions/weather-spots}">날씨별 관광지 찾기</a>
+                    </div>
+
+                    <!-- 동행매칭 드롭다운 -->
+                    <div class="dropdown-menu-list" id="companion-dropdown" style="width: 109px;">
                         <a class="dropdown-menu-item" th:href="@{/companion-rooms/create}">방 만들기</a>
-                        <a class="dropdown-menu-item" th:href="@{/companion-rooms}">방 입장하기</a>
+                        <a class="dropdown-menu-item" th:href="@{/companion-rooms/entering}">방 입장하기</a>
                         <a class="dropdown-menu-item" th:href="@{/scheduling}">스케줄 짜기</a>
                     </div>
 
                     <!-- 공지사항 드롭다운 -->
-                    <div class="dropdown-menu-list" style="width: 113px;">
-                        <a class="dropdown-menu-item" th:href="@{/faqs}">자주 찾는 질문</a>
-                    </div>
-
-                    <!-- 감정 여행 드롭다운 -->
-                    <div class="dropdown-menu-list" style="width: 145px;">
-                        <!-- 나중에 추가 -->
+                    <div class="dropdown-menu-list" id="notice-dropdown" style="width: 113px;">
+                        <a class="dropdown-menu-item" th:href="@{/faqs}">자주 묻는 질문</a>
                     </div>
                 </div>
             </div>

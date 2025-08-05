@@ -1,6 +1,7 @@
 package com.moodTrip.spring.domain.rooms.entity;
 
 import com.moodTrip.spring.domain.member.entity.Member;
+import com.moodTrip.spring.global.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,10 +13,10 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "room_members", uniqueConstraints = {
-        @UniqueConstraint(name = "unique_room_members", columnNames = {"member_pk", "room_id"})
+@Table(name = "room_member", uniqueConstraints = {
+        @UniqueConstraint(name = "unique_room_member", columnNames = {"member_pk", "room_id"})
 })
-public class RoomMember {
+public class RoomMember extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "member_room_id")

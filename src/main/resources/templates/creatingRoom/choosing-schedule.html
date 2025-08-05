@@ -5,7 +5,19 @@
     <title>무드트립 : 동행자 매칭 방 만들기 일정 선택</title>
     <link rel="stylesheet" th:href="@{/css/creatingRoom/choosing-schedule.css}">
     <script th:src="@{/js/creatingRoom/choosing-schedule.js}"></script>
+    <link rel=" stylesheet" th:href="@{/css/fix/header.css}">
+    <link rel="stylesheet" th:href="@{/css/fix/footer.css}">
+    <link rel="stylesheet" th:href="@{/css/fix/header-after.css}">
 </head>
+<!-- 로그인 상태에 따른 조건부 헤더 렌더링 -->
+<div th:if="${isLoggedIn}">
+    <!-- 로그인된 사용자용 헤더 -->
+    <th:block th:replace="~{fix/header-after-login :: header}"></th:block>
+</div>
+<div th:unless="${isLoggedIn}">
+    <!-- 로그인 안된 사용자용 헤더 -->
+    <th:block th:replace="~{fix/header :: header}"></th:block>
+</div>
 <body class="room-create phase-4">
     <div class="big-frame">
         <div class="room-create-formview">
@@ -223,5 +235,8 @@
             </div>
         </div>
     </div>
+    <th:block th:replace="~{fix/footer :: footer}"></th:block>
+    <script th:src="@{/js/fix/header.js}"></script>
+    <script th:src="@{/js/fix/header-after.js}"></script>
 </body>
 </html>

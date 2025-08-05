@@ -6,8 +6,19 @@
     <title>무드트립 : 동행자 매칭 시작 페이지</title>
     <link rel="stylesheet" th:href="@{/css/creatingRoom/creatingRoom-start.css}">
     <script th:src="@{/js/creatingRoom/creatingRoom-start.js}"></script>
+    <link rel=" stylesheet" th:href="@{/css/fix/header.css}">
+    <link rel="stylesheet" th:href="@{/css/fix/footer.css}">
+    <link rel="stylesheet" th:href="@{/css/fix/header-after.css}">
 </head>
-<body>
+<!-- 로그인 상태에 따른 조건부 헤더 렌더링 -->
+<div th:if="${isLoggedIn}">
+    <!-- 로그인된 사용자용 헤더 -->
+    <th:block th:replace="~{fix/header-after-login :: header}"></th:block>
+</div>
+<div th:unless="${isLoggedIn}">
+    <!-- 로그인 안된 사용자용 헤더 -->
+    <th:block th:replace="~{fix/header :: header}"></th:block>
+</div>
     <div class="bg-animation"></div>
     <div class="floating-elements">
         <div class="floating-circle circle-1"></div>
@@ -153,5 +164,8 @@
             </div>
         </div>
     </section>
+    <th:block th:replace="~{fix/footer :: footer}"></th:block>
+    <script th:src="@{/js/fix/header.js}"></script>
+    <script th:src="@{/js/fix/header-after.js}"></script>
 </body>
 </html>

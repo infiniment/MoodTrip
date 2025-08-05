@@ -233,6 +233,7 @@
 .file-input-label {
     cursor: pointer;
     font-weight: 600;
+    font-size: 10px;
 }
 
 /* 정보 수정 섹션 */

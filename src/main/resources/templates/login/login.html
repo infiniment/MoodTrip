@@ -6,7 +6,19 @@
   <title>무드 트립</title>
   <link rel="stylesheet" th:href="@{/css/login/login.css}">
   <script th:src="@{/js/login/login.js}"></script>
+  <link rel=" stylesheet" th:href="@{/css/fix/header.css}">
+  <link rel="stylesheet" th:href="@{/css/fix/footer.css}">
+  <link rel="stylesheet" th:href="@{/css/fix/header-after.css}">
 </head>
+<!-- 로그인 상태에 따른 조건부 헤더 렌더링 -->
+<div th:if="${isLoggedIn}">
+  <!-- 로그인된 사용자용 헤더 -->
+  <th:block th:replace="~{fix/header-after-login :: header}"></th:block>
+</div>
+<div th:unless="${isLoggedIn}">
+  <!-- 로그인 안된 사용자용 헤더 -->
+  <th:block th:replace="~{fix/header :: header}"></th:block>
+</div>
 <body>
 <div class="box-border py-6 desktop:min-h-screen desktop:bg-w-gray-10 desktop:py-[120px]">
   <div class="mx-auto grid w-full max-w-container auto-cols-1fr gap-x-5 px-5 desktop:gap-x-6 desktop:px-9 grid-areas-signUp-mobile tablet:grid-areas-signUp-tablet desktop:grid-areas-signUp-desktop">
@@ -114,11 +126,13 @@
                 </div>
                 <span class="textbox typo-body1 cursor-pointer text-w-gray-900 ml-2">로그인 상태 유지</span>
               </label>
-
-              <a data-testid="find-password-link" class="no-underline" th:href="@{/password/find}">
-    <span class="textbox typo-body1 font-medium text-w-primary">
-      비밀번호 찾기
-    </span> </a>
+              <!--
+ <a data-testid="find-password-link" class="no-underline" th:href="@{/find-password}">
+   <span class="textbox typo-body1 font-medium text-w-primary">
+     비밀번호 찾기
+   </span>
+ </a>
+ -->
             </div>
             <div class="box-border btn-login-pb-4" data-testid="login-button">
               <button class="box-border flex cursor-pointer right-items-center right-justify-center h-[50px] text-base leading-[26px] gap-x-1.5 px-input-loginBtn text-w-white bg-primary-500 btn-login-border-0 hover:bg-primary-700 w-full text-rounded-xl loginBtn" type="submit">
