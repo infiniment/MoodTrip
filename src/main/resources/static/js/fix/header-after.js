@@ -46,7 +46,7 @@ function loadUserProfile() {
         if (profileImgElement) {
           profileImgElement.src = userData.profileImage && userData.profileImage.trim() !== ''
               ? userData.profileImage
-              : '/image/fix/moodtrip.png'; // ✅ fallback 이미지
+              : '/static/image/fix/moodtrip.png'; // ✅ 정확한 경로로 수정
         }
 
         console.log('✅ 사용자 프로필 로드 완료');
@@ -136,16 +136,22 @@ function initButtonEvents() {
 }
 
 /**
- * 로그아웃 처리
+ * 🔥 개선된 로그아웃 처리 - JWT 토큰 삭제 포함!
  */
 function handleLogout() {
+  console.log('🚪 로그아웃 함수 호출됨!'); // 🔥 디버깅 로그 추가
+
   if (confirm('로그아웃 하시겠습니까?')) {
+    console.log('✅ 사용자가 로그아웃 확인함'); // 🔥 디버깅 로그 추가
+
     try {
       // 로딩 상태 표시
       const logoutBtn = document.getElementById('logoutBtn');
       const originalText = logoutBtn.textContent;
       logoutBtn.textContent = '로그아웃 중...';
       logoutBtn.disabled = true;
+
+      console.log('🌐 로그아웃 API 호출 시작...'); // 🔥 디버깅 로그 추가
 
       // 실제 로그아웃 API 호출
       fetch('/api/v1/members/logout', {
@@ -157,30 +163,162 @@ function handleLogout() {
         }
       })
           .then(response => {
+            console.log('📡 서버 응답 받음:', response.status, response.statusText); // 🔥 디버깅 로그
+
             if (response.ok) {
-              // 로그아웃 성공 시 메인페이지로 리다이렉트
-              console.log('✅ 로그아웃 성공');
-              window.location.href = '/';
+              console.log('✅ 서버 로그아웃 API 성공');
+
+              // 🔥 여기가 핵심! 실제 로그아웃 처리
+              performClientSideLogout();
+
             } else {
-              throw new Error('로그아웃 실패');
+              console.error('❌ 서버 응답 오류:', response.status);
+              throw new Error(`로그아웃 실패: ${response.status}`);
             }
           })
           .catch(error => {
-            console.error('❌ 로그아웃 오류:', error);
-            alert('로그아웃 중 오류가 발생했습니다. 다시 시도해주세요.');
+            console.error('❌ 로그아웃 API 오류:', error);
 
-            // 버튼 원래 상태로 복원
-            logoutBtn.textContent = originalText;
-            logoutBtn.disabled = false;
+            // 🔥 서버 오류가 나도 클라이언트에서는 로그아웃 처리
+            // (JWT는 클라이언트가 주도하므로)
+            console.log('⚠️ 서버 오류 발생, 클라이언트에서 강제 로그아웃 처리');
+            performClientSideLogout();
           });
     } catch (error) {
       console.error('❌ 로그아웃 처리 실패:', error);
+      // 에러가 나도 클라이언트 로그아웃은 수행
+      performClientSideLogout();
     }
+  } else {
+    console.log('❌ 사용자가 로그아웃 취소함'); // 🔥 디버깅 로그 추가
   }
+}
+
+/**
+ * 🔥 실제 클라이언트 로그아웃 처리 (JWT 쿠키 + 토큰 삭제)
+ *
+ * JwtAuthenticationFilter를 보니 토큰이 다음 위치에 저장됩니다:
+ * 1. Authorization 헤더 (Bearer 토큰)
+ * 2. jwtToken 쿠키
+ */
+function performClientSideLogout() {
+  console.log('🚪 클라이언트 로그아웃 처리 시작...');
+
+  try {
+    // 1️⃣ 🔥 강력한 jwtToken 쿠키 삭제 (여러 패턴으로 시도)
+    const cookieDeletePatterns = [
+      'jwtToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;',
+      'jwtToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=localhost;',
+      `jwtToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`,
+      'jwtToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.localhost;',
+      'jwtToken=; max-age=0; path=/;',
+      'jwtToken=; max-age=0; path=/; domain=localhost;',
+      `jwtToken=; max-age=0; path=/; domain=${window.location.hostname};`
+    ];
+
+    cookieDeletePatterns.forEach((pattern, index) => {
+      document.cookie = pattern;
+      console.log(`🍪 jwtToken 쿠키 삭제 시도 ${index + 1}: ${pattern}`);
+    });
+
+    // 2️⃣ 다른 쿠키들도 삭제
+    const otherCookies = ['JSESSIONID', 'flowType', 'token', 'accessToken', 'authToken'];
+    otherCookies.forEach(cookieName => {
+      // 여러 패턴으로 삭제 시도
+      document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+      document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=localhost;`;
+      document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`;
+      document.cookie = `${cookieName}=; max-age=0; path=/;`;
+      console.log(`🍪 ${cookieName} 쿠키 삭제 시도`);
+    });
+
+    // 3️⃣ 쿠키 삭제 확인
+    setTimeout(() => {
+      const remainingCookies = document.cookie;
+      console.log('🔍 남은 쿠키들:', remainingCookies);
+
+      if (remainingCookies.includes('jwtToken')) {
+        console.warn('⚠️ jwtToken 쿠키가 아직 남아있음!');
+        // 한 번 더 강력하게 시도
+        document.cookie = 'jwtToken=deleted; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        document.cookie = 'jwtToken=deleted; max-age=-1; path=/;';
+      } else {
+        console.log('✅ jwtToken 쿠키 삭제 성공!');
+      }
+    }, 100);
+
+    // 4️⃣ localStorage에서 토큰 삭제 (혹시 프론트에서 따로 저장했을 수도)
+    const storageKeys = ['token', 'accessToken', 'authToken', 'jwt', 'jwtToken'];
+    storageKeys.forEach(key => {
+      if (localStorage.getItem(key)) {
+        localStorage.removeItem(key);
+        console.log(`🗑️ localStorage에서 ${key} 삭제 완료`);
+      }
+    });
+
+    // 5️⃣ sessionStorage에서 토큰 삭제
+    storageKeys.forEach(key => {
+      if (sessionStorage.getItem(key)) {
+        sessionStorage.removeItem(key);
+        console.log(`🗑️ sessionStorage에서 ${key} 삭제 완료`);
+      }
+    });
+
+    // 6️⃣ Authorization 헤더용 토큰도 삭제 (전역 변수가 있다면)
+    if (window.authToken) {
+      window.authToken = null;
+      console.log('🔑 전역 authToken 초기화 완료');
+    }
+
+    // 7️⃣ 사용자 정보 초기화
+    if (window.currentUser) {
+      window.currentUser = null;
+      console.log('👤 전역 사용자 정보 초기화 완료');
+    }
+
+    // 8️⃣ 성공 메시지
+    console.log('✅ 클라이언트 로그아웃 처리 완료!');
+
+    // 9️⃣ 메인페이지로 리다이렉트
+    setTimeout(() => {
+      console.log('🏠 메인페이지로 이동중...');
+      window.location.href = '/';
+
+      // 혹시 안 바뀌면 강제 새로고침
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+
+    }, 500); // 0.5초 후 이동
+
+  } catch (error) {
+    console.error('💥 클라이언트 로그아웃 처리 중 오류:', error);
+
+    // 그래도 메인페이지로는 이동
+    alert('로그아웃 처리 중 일부 오류가 발생했지만, 로그아웃을 진행합니다.');
+    window.location.href = '/';
+  }
+}
+
+/**
+ * 🔥 추가 유틸리티: 현재 로그인 상태 확인
+ */
+function isLoggedIn() {
+  const tokenKeys = ['token', 'accessToken', 'authToken', 'jwt', 'jwtToken'];
+
+  // localStorage 또는 sessionStorage에 토큰이 있는지 확인
+  const hasToken = tokenKeys.some(key =>
+      localStorage.getItem(key) || sessionStorage.getItem(key)
+  );
+
+  console.log('🔍 현재 로그인 상태:', hasToken ? '로그인됨' : '로그아웃됨');
+  return hasToken;
 }
 
 // 전역 함수로 노출 (다른 스크립트에서 사용 가능)
 window.MoodTripHeader = {
   initProfileDropdown: initProfileDropdown,
-  handleLogout: handleLogout
+  handleLogout: handleLogout,
+  performClientSideLogout: performClientSideLogout, // 🔥 새로 추가
+  isLoggedIn: isLoggedIn // 🔥 새로 추가
 };

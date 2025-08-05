@@ -144,28 +144,6 @@
                                         </ul>
                                     </div>
 
-                                    <!-- ✅ 휴대폰 인증 섹션 -->
-                                    <div class="info-section-wrapper">
-                                        <div class="flex phone-authentication-label-wrapper">
-                                            <label class="info-text-label">
-                                                <span class="phone-authentication">휴대폰 본인인증</span>
-                                            </label>
-                                        </div>
-                                        <div class="phone-authentication-wrapper">
-                                            <div class="phone-authentication-info-wrapper">
-                                                <div class="phone-authentication-input-wrapper">
-                                                    <!-- ✅ Thymeleaf로 동적 전화번호 표시 -->
-                                                    <input disabled type="text" class="phone-authentication"
-                                                           th:value="${profile != null ? profile.memberPhone : '010****9831'}">
-                                                </div>
-                                            </div>
-                                            <p class="not-authentication" variant="body2" color="red500" hidden>원활한 서비스 이용을 위하여 인증을 완료해 주세요.</p>
-                                            <button role="button" class="phone-recertification">
-                                                <span class="phone-recertification-text">재인증</span>
-                                            </button>
-                                        </div>
-                                    </div>
-
                                     <!-- ✅ 자기소개 섹션 -->
                                     <div class="info-section-wrapper self-introduction-wrapper">
                                         <label class="info-text-label">

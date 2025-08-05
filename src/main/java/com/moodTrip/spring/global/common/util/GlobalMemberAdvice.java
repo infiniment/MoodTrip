@@ -10,7 +10,7 @@
     @ControllerAdvice
     @RequiredArgsConstructor
     public class GlobalMemberAdvice {
-
+        // header-after-login에서 사용되는 회원 정보
         private final SecurityUtil securityUtil;
 
         @ModelAttribute

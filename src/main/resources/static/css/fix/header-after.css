@@ -1,6 +1,7 @@
 /* 기본 설정 */
 header.header {
   min-width: 1080px;
+  background : white;
 }
 
 * {

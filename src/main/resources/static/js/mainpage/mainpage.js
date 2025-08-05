@@ -291,19 +291,6 @@ function initPerformanceOptimizations() {
 
     images.forEach(img => imageObserver.observe(img));
   }
-
-  // 프리로드 중요 리소스
-  const preloadLinks = [
-    '/templates/emotion-search/emotion-search.html',
-    '/templates/creatingRoom/creatingRoom-start.html'
-  ];
-
-  preloadLinks.forEach(href => {
-    const link = document.createElement('link');
-    link.rel = 'prefetch';
-    link.href = href;
-    document.head.appendChild(link);
-  });
 }
 
 // 8. 접근성 개선
