@@ -37,13 +37,13 @@ class EntityUnitTest {
                 .memberId("testuser123")
                 .memberPw("password123")
                 .memberPhone("010-1234-5678")
-                .memberName("테스트유저")
+                //.memberName("테스트유저")
                 .memberAuth("U")
                 .email("test@example.com")
                 .isWithdraw(false)
                 .rptCnt(0L)
                 .rptRcvdCnt(0L)
-                .socialType("NORMAL")
+                //.socialType("NORMAL")
                 .build();
 
         // Then

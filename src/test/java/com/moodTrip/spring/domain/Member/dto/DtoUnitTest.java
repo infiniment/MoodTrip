@@ -136,7 +136,7 @@ class DtoUnitTest {
         Member member = Member.builder()
                 .memberPk(1L)
                 .memberId("testuser")
-                .memberName("테스트유저")
+                .memberNickName("테스트유저")
                 .email("test@example.com")
                 .memberPhone("010-1234-5678")
                 .memberAuth("U")
@@ -172,7 +172,8 @@ class DtoUnitTest {
         Member member = Member.builder()
                 .memberPk(1L)
                 .memberId("testuser")
-                .memberName("테스트유저")
+
+                .nickname("테스트 유저")
                 .email(null) // null 이메일
                 .memberPhone(null) // null 전화번호
                 .memberAuth("U")
@@ -182,7 +183,7 @@ class DtoUnitTest {
         Profile profile = Profile.builder()
                 .profileId(1L)
                 .member(member)
-                .nickname(null) // null 닉네임
+                //.nickname(null) // null 닉네임
                 .profileBio(null) // null 자기소개
                 .profileImage(null) // null 이미지
                 .build();

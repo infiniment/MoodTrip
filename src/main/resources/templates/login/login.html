@@ -114,13 +114,11 @@
                 </div>
                 <span class="textbox typo-body1 cursor-pointer text-w-gray-900 ml-2">로그인 상태 유지</span>
               </label>
-              <!--
- <a data-testid="find-password-link" class="no-underline" th:href="@{/find-password}">
-   <span class="textbox typo-body1 font-medium text-w-primary">
-     비밀번호 찾기
-   </span>
- </a>
- -->
+
+              <a data-testid="find-password-link" class="no-underline" th:href="@{/password/find}">
+    <span class="textbox typo-body1 font-medium text-w-primary">
+      비밀번호 찾기
+    </span> </a>
             </div>
             <div class="box-border btn-login-pb-4" data-testid="login-button">
               <button class="box-border flex cursor-pointer right-items-center right-justify-center h-[50px] text-base leading-[26px] gap-x-1.5 px-input-loginBtn text-w-white bg-primary-500 btn-login-border-0 hover:bg-primary-700 w-full text-rounded-xl loginBtn" type="submit">
@@ -183,7 +181,7 @@
               <span class="textbox typo-body1 text-w-gray-600">
                 아직 무드트립 통합회원이 아니신가요?
               </span>
-            <a class="no-underline" data-testid="sign-up-link" th:href="@{/signup}">
+            <a class="no-underline" data-testid="sign-up-link" th:href="@{/api/signup}">
                 <span class="textbox typo-body1 font-medium text-w-primary">
                   회원가입
                 </span>
@@ -194,78 +192,6 @@
     </div>
   </div>
 </div>
-
-<!-- 모달 HTML (body 태그 맨 아래에 추가) -->
-<!--<div id="inputErrorModal" style="
-    display: none;
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.4);
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(2px);
-    transition: opacity 0.3s ease;
-  ">
-  <div id="inputErrorContent" style="
-      background: #ffffff;
-      padding: 2rem 3rem;
-      border-radius: 1rem;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-      text-align: center;
-      max-width: 400px;
-      width: 90%;
-      animation: fadeIn 0.3s ease;
-    ">
-    <div style="
-        font-size: 1.1rem;
-        font-weight: 500;
-        color: #333;
-        margin-bottom: 1rem;
-      ">
-      ⚠️ 입력값이 누락되었습니다
-    </div>
-    <div style="
-        color: #555;
-        font-size: 1rem;
-        margin-bottom: 2rem;
-      ">
-      올바른 아이디 또는 비밀번호를 <strong>입력해 주세요.</strong>
-    </div>
-    <button id="closeInputModal" style="
-        padding: 0.6rem 2rem;
-        border: none;
-        border-radius: 0.5rem;
-        color: #fff;
-        font-weight: 500;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: background 0.3s;
-        background: linear-gradient(to right, #005792, #001A2C);
-      "
-            onmouseover="this.style.background='linear-gradient(to right, #004271, #000e1a)'"
-            onmouseout="this.style.background='linear-gradient(to right, #005792, #001A2C)'">
-      닫기
-    </button>
-  </div>
-</div>
-<style>
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: scale(0.95);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-</style>
--->
 
 </body>
 </html>

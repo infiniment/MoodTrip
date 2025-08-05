@@ -79,12 +79,28 @@ public class MemberService {
         return memberRepository.existsByProviderAndProviderId(provider, providerId);
     }
 
+    // 이메일로 회원 조회
+    public Member findByEmail(String email) {
+        return memberRepository.findByEmail(email)
+                .orElse(null);
+    }
 
     // provider와 providerId로 회원찾기(소셜 로그인)
     public Member findByProviderAndProviderId(String provider, String providerId) {
         return memberRepository.findByProviderAndProviderId(provider, providerId)
                 .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다"));
     }
+
+    //새 비밀번호
+    public void updatePassword(Member member, String encodedPassword) {
+        member.setMemberPw(encodedPassword);
+        memberRepository.save(member);
+        log.info("회원({}) 비밀번호가 DB에 저장되었습니다", member.getEmail());
+    }
+
+
+
+
 
 }
 

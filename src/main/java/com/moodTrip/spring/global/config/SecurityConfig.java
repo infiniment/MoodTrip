@@ -47,9 +47,10 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/login",            // 로그인 폼 GET
                                 "/api/login",        // 커스텀 로그인 폼
-                                "/signup", "/api/signup",
+                                "/signup", "/api/signup","/password/**", "/password/find",
                                 "/css/**", "/js/**", "/image/**",
                                 "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**",  "/api-docs/**",
+                                "/css/**", "/js/**", "/images/**",
                                 "/error"
                         ).permitAll()
                         .anyRequest().authenticated()
