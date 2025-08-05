@@ -7,8 +7,21 @@
     <!-- ✅ Thymeleaf 리소스 경로로 수정 -->
     <link rel="stylesheet" th:href="@{/css/mypage/my-profile.css}">
     <script th:src="@{/js/mypage/my-profile..js}"></script>
+    <link rel=" stylesheet" th:href="@{/css/fix/header.css}">
+    <link rel="stylesheet" th:href="@{/css/fix/footer.css}">
+    <link rel="stylesheet" th:href="@{/css/fix/header-after.css}">
+
 </head>
 <body>
+<!-- 로그인 상태에 따른 조건부 헤더 렌더링 -->
+<div th:if="${isLoggedIn}">
+    <!-- 로그인된 사용자용 헤더 -->
+    <th:block th:replace="~{fix/header-after-login :: header}"></th:block>
+</div>
+<div th:unless="${isLoggedIn}">
+    <!-- 로그인 안된 사용자용 헤더 -->
+    <th:block th:replace="~{fix/header :: header}"></th:block>
+</div>
 <div>
     <div class="wrap">
         <div class="page">
@@ -55,7 +68,10 @@
                                                 <span class="profile-btn-text">
                                                     <label for="file-input" class="file-input-label">
                                                         프로필 변경
-                                                        <input accept="image/gif, image/jpeg, image/png" id="file-input" type="file" style="display: none;">
+                                                        <input accept="image/gif, image/jpeg, image/png"
+                                                               id="file-input"
+                                                               type="file"
+                                                               style="display: none;">
                                                     </label>
                                                 </span>
                                             </button>
@@ -84,10 +100,6 @@
                                             </div>
                                         </div>
                                         <ul class="caution-info-wrapper">
-                                            <li class="caution-info">
-                                                *닉네임은 최초 설정 또는 변경 후 30일이 지나야 바꿀 수 있습니다.
-                                                (최근 변경 일시: <span th:text="${profile != null and profile.createdAt != null ? #temporals.format(profile.createdAt, 'yyyy-MM-dd HH:mm:ss') : '정보 없음'}">2025-06-22 00:30:44</span>)
-                                            </li>
                                             <li class="caution-info">* 한글/영문/숫자만 사용할 수 있습니다.</li>
                                         </ul>
                                     </div>
@@ -130,28 +142,6 @@
                                                 <img th:src="@{/image/mypage/google-logo-disabled.png}" alt="구글 계정 미연동 상태" style="width:24px;height:24px; max-width: none;">
                                             </li>
                                         </ul>
-                                    </div>
-
-                                    <!-- ✅ 휴대폰 인증 섹션 -->
-                                    <div class="info-section-wrapper">
-                                        <div class="flex phone-authentication-label-wrapper">
-                                            <label class="info-text-label">
-                                                <span class="phone-authentication">휴대폰 본인인증</span>
-                                            </label>
-                                        </div>
-                                        <div class="phone-authentication-wrapper">
-                                            <div class="phone-authentication-info-wrapper">
-                                                <div class="phone-authentication-input-wrapper">
-                                                    <!-- ✅ Thymeleaf로 동적 전화번호 표시 -->
-                                                    <input disabled type="text" class="phone-authentication"
-                                                           th:value="${profile != null ? profile.memberPhone : '010****9831'}">
-                                                </div>
-                                            </div>
-                                            <p class="not-authentication" variant="body2" color="red500" hidden>원활한 서비스 이용을 위하여 인증을 완료해 주세요.</p>
-                                            <button role="button" class="phone-recertification">
-                                                <span class="phone-recertification-text">재인증</span>
-                                            </button>
-                                        </div>
                                     </div>
 
                                     <!-- ✅ 자기소개 섹션 -->
@@ -243,5 +233,10 @@
         </div>
     </div>
 </div>
+<!-- 푸터 포함 -->
+<th:block th:replace="~{fix/footer :: footer}"></th:block>
+
+<script th:src="@{/js/fix/header.js}"></script>
+<script th:src="@{/js/fix/header-after.js}"></script>
 </body>
 </html>

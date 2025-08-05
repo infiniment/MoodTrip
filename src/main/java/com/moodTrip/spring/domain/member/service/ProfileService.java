@@ -1,7 +1,7 @@
 package com.moodTrip.spring.domain.member.service;
 
-import com.moodTrip.spring.domain.member.dto.request.NicknameUpdateRequest;
-import com.moodTrip.spring.domain.member.dto.request.ProfileUpdateRequest;
+import com.moodTrip.spring.domain.member.dto.request.IntroduceUpdateRequest;
+import com.moodTrip.spring.domain.member.dto.request.ProfileImageUpdateRequest;
 import com.moodTrip.spring.domain.member.dto.response.ProfileResponse;
 import com.moodTrip.spring.domain.member.entity.Member;
 import com.moodTrip.spring.domain.member.entity.Profile;
@@ -20,105 +20,159 @@ import java.util.Optional;
 public class ProfileService {
 
     private final ProfileRepository profileRepository;
-
-    // 1. 프로필 조회
+    // 프로필 조회
     public ProfileResponse getMyProfile(Member member) {
         log.info("프로필 조회 요청 - 회원ID: {}", member.getMemberId());
 
         Optional<Profile> profileOptional = profileRepository.findByMember(member);
 
         if (profileOptional.isPresent()) {
+            // Profile이 존재하는 경우
             Profile profile = profileOptional.get();
-            log.info("프로필 조회 성공 - 회원ID: {}, 프로필ID: {}",
+            log.info("기존 프로필 조회 성공 - 회원ID: {}, 프로필ID: {}",
                     member.getMemberId(), profile.getProfileId());
             return ProfileResponse.from(profile);
         } else {
-            // 예외 던지기 대신 더미 데이터 반환으로 변경!
-            log.warn("프로필이 존재하지 않음 - 더미 데이터 반환 - 회원ID: {}", member.getMemberId());
-            return createDummyProfile(member);
+            // Profile이 없는 경우, Member 정보만으로 기본 응답 생성
+            log.info("프로필이 없음 - Member 정보로 기본 응답 생성 - 회원ID: {}", member.getMemberId());
+            return createBasicProfileResponse(member);
         }
     }
-
-    // 더미 프로필 생성 메서드 추가
-    private ProfileResponse createDummyProfile(Member member) {
+    private ProfileResponse createBasicProfileResponse(Member member) {
         return ProfileResponse.builder()
                 .nickname(member.getNickname())
                 .email(member.getEmail())
                 .memberPhone(member.getMemberPhone())
-                .profileBio("안녕하세요! 여행을 좋아하는 " + member.getNickname() + "입니다. 함께 즐거운 여행 떠나요! 🌍✈️")
+                .profileBio(null)
                 .profileImage(null)
-                .createdAt(java.time.LocalDateTime.now())
+                .createdAt(member.getCreatedAt())
                 .build();
     }
 
+    // 자기소개 수정 로직
     @Transactional
-    public ProfileResponse updateMyProfile(Member member, ProfileUpdateRequest request) {
-        log.info("프로필 수정 요청 - 회원ID: {}", member.getMemberId());
+    public ProfileResponse updateIntroduce(Member member, IntroduceUpdateRequest request) {
+        log.info("자기소개 수정 요청 - 회원ID: {}, 새로운 자기소개 길이: {}글자",
+                member.getMemberId(),
+                request.getProfileBio() != null ? request.getProfileBio().length() : 0);
 
-        // 1. Profile 조회
-        Profile profile = profileRepository.findByMember(member)
-                .orElseThrow(() -> {
-                    log.error("프로필 수정 실패 - 회원ID: {}, 프로필이 존재하지 않음", member.getMemberId());
-                    return new RuntimeException("프로필을 찾을 수 없습니다.");
-                });
+        // 유효성 검사
+        String newIntroduce = request.getProfileBio();
+        if (newIntroduce != null && newIntroduce.length() > 500) {
+            throw new RuntimeException("자기소개는 500자 이내로 작성해주세요.");
+        }
 
-        // 2. Member 정보 수정
-        Member memberToUpdate = profile.getMember();
-        memberToUpdate.setEmail(request.getEmail());
-        memberToUpdate.setMemberPhone(request.getMemberPhone());
-        memberToUpdate.setEmail(request.getNickname());
+        // 기존 Profile 조회
+        Optional<Profile> existingProfile = profileRepository.findByMember(member);
 
-        // 3. Profile 정보 수정
-        profile.setProfileBio(request.getProfileBio());
-        profile.setProfileImage(request.getProfileImage());
+        Profile profile;
 
-        log.info("프로필 수정 성공 - 회원ID: {}, 닉네임: {}",
-                member.getMemberId(), request.getNickname());
+        if (existingProfile.isPresent()) {
+            // Profile이 있으면 자기소개만 수정
+            log.info("기존 Profile 수정 - 회원ID: {}", member.getMemberId());
+            profile = existingProfile.get();
+            profile.setProfileBio(newIntroduce);
+        } else {
+            // Profile이 없으면 새로 생성
+            log.info("새 Profile 생성 - 회원ID: {} (신규 사용자)", member.getMemberId());
+            profile = Profile.builder()
+                    .member(member)
+                    .profileBio(newIntroduce)
+                    .profileImage(null)
+                    .build();
+
+            profileRepository.save(profile);
+        }
+
+        log.info("자기소개 수정 성공 - 회원ID: {}, Profile ID: {}",
+                member.getMemberId(), profile.getProfileId());
+
+        return ProfileResponse.from(profile);
+    }
+    // 프로필 사진 변경 로직
+    @Transactional
+    public ProfileResponse updateProfileImage(Member member, ProfileImageUpdateRequest request) {
+        log.info("프로필 사진 변경 요청 - 회원ID: {}, 새이미지URL: {}",
+                member.getMemberId(), request.getProfileImage());
+
+        // 유효성 검사
+        String newImageUrl = request.getProfileImage();
+        if (newImageUrl == null || newImageUrl.trim().isEmpty()) {
+            throw new RuntimeException("프로필 이미지 URL은 필수 입력 항목입니다.");
+        }
+
+        newImageUrl = newImageUrl.trim();
+
+        // URL 형식 검증
+        if (!isValidImageUrl(newImageUrl)) {
+            throw new RuntimeException("올바른 이미지 URL 형식이 아닙니다.");
+        }
+
+        // Profile 조회 또는 생성
+        Optional<Profile> existingProfile = profileRepository.findByMember(member);
+        Profile profile;
+
+        if (existingProfile.isPresent()) {
+            // 기존 Profile 수정
+            profile = existingProfile.get();
+            log.info("기존 Profile의 이미지 수정 - 회원ID: {}", member.getMemberId());
+        } else {
+            // Profile이 없으면 새로 생성 (프로필 이미지만 설정)
+            log.info("새 Profile 생성 (프로필 이미지) - 회원ID: {}", member.getMemberId());
+            profile = Profile.builder()
+                    .member(member)
+                    .profileBio(null)        // 자기소개는 나중에 설정
+                    .profileImage(newImageUrl)
+                    .build();
+
+            profileRepository.save(profile);
+            log.info("새 Profile 저장 완료 - 회원ID: {}, Profile ID: {}",
+                    member.getMemberId(), profile.getProfileId());
+
+            return ProfileResponse.from(profile);
+        }
+
+        // 기존 Profile의 이미지만 수정
+        String oldImageUrl = profile.getProfileImage();
+        profile.setProfileImage(newImageUrl);
+
+        log.info("프로필 사진 변경 성공 - 회원ID: {}, 기존URL: {}, 신규URL: {}",
+                member.getMemberId(), oldImageUrl, newImageUrl);
 
         return ProfileResponse.from(profile);
     }
 
+
+    // 이미지 URL 유효성 검사 메서드 분리
+    private boolean isValidImageUrl(String imageUrl) {
+        return imageUrl.startsWith("http://") ||
+                imageUrl.startsWith("https://") ||
+                imageUrl.startsWith("/uploads/") ||
+                imageUrl.startsWith("/static/image/");
+    }
+
+    /**
+     * 🔥 프로필 존재 여부 확인 (다른 서비스에서 사용할 수 있는 유틸리티)
+     */
+    public boolean hasProfile(Member member) {
+        return profileRepository.findByMember(member).isPresent();
+    }
+    // 프로필은 로그인 후 생기는 메서드가 존재하지 않음
+    // 해당 코드를 활용하여 member 테이블 생성 시 프로필 테이블 생성.
     @Transactional
-    public ProfileResponse updateNickname(Member member, NicknameUpdateRequest request) {
+    public Profile createDefaultProfile(Member member) {
+        log.info("기본 Profile 생성 - 회원ID: {}", member.getMemberId());
 
-        // 로그 남기기
-        log.info("닉네임 수정 요청 - 회원ID: {}, 새닉네임: {}",
-                member.getMemberId(), request.getNickname());
+        Profile profile = Profile.builder()
+                .member(member)
+                .profileBio(null)
+                .profileImage(null)
+                .build();
 
-        // ✅ 유효성 검사 추가 (백엔드 보안)
-        String newNickname = request.getNickname();
-        if (newNickname == null || newNickname.trim().isEmpty()) {
-            throw new RuntimeException("닉네임은 필수 입력 항목입니다.");
-        }
+        Profile savedProfile = profileRepository.save(profile);
+        log.info("기본 Profile 생성 완료 - 회원ID: {}, Profile ID: {}",
+                member.getMemberId(), savedProfile.getProfileId());
 
-        newNickname = newNickname.trim();
-
-        if (newNickname.length() > 30) {
-            throw new RuntimeException("닉네임은 30자 이내로 입력해주세요.");
-        }
-
-        // 한글, 영문, 숫자만 허용
-        if (!newNickname.matches("^[가-힣a-zA-Z0-9]+$")) {
-            throw new RuntimeException("닉네임은 한글, 영문, 숫자만 사용 가능합니다.");
-        }
-
-        // 해당 회원의 프로필 찾기
-        Profile profile = profileRepository.findByMember(member)
-                .orElseThrow(() -> {
-                    log.error("프로필을 찾을 수 없음 - 회원ID: {}", member.getMemberId());
-                    return new RuntimeException("프로필을 찾을 수 없습니다.");
-                });
-
-        // ✅ Member 엔티티의 memberName을 닉네임으로 직접 수정
-        Member memberToUpdate = profile.getMember();
-        memberToUpdate.setNickname(newNickname);  // 🔥 핵심 변경점!
-
-        // ✅ Profile의 nickname 필드도 제거했다면 이 줄은 삭제
-        // profile.setNickname(request.getNickname()); // 삭제
-
-        log.info("닉네임 수정 성공 - 회원ID: {}, 새닉네임: {}",
-                member.getMemberId(), newNickname);
-
-        return ProfileResponse.from(profile);
+        return savedProfile;
     }
 }

@@ -19,12 +19,11 @@
 <body>
 
 <!-- 로그인 상태에 따른 조건부 헤더 렌더링 -->
-<div th:if="${isLoggedIn}">
-  <!-- 로그인된 사용자용 헤더 -->
+<!-- Spring Security에서는 Thymeleaf에 #authentication 내장 객체를 지원 -->
+<div th:if="${#authorization.expression('isAuthenticated()')}">
   <th:block th:replace="~{fix/header-after-login :: header}"></th:block>
 </div>
-<div th:unless="${isLoggedIn}">
-  <!-- 로그인 안된 사용자용 헤더 -->
+<div th:unless="${#authorization.expression('isAuthenticated()')}">
   <th:block th:replace="~{fix/header :: header}"></th:block>
 </div>
 
@@ -170,7 +169,7 @@
 
     <div class="cta-section">
       <!-- Thymeleaf 링크로 동행매칭 시작 페이지로 이동 -->
-      <a th:href="@{/companion-rooms/create}" class="btn-primary-xl">
+      <a th:href="@{/companion-rooms/start}" class="btn-primary-xl">
         <span class="btn-icon">🚀</span>
         동행매칭 서비스 시작하기
         <span class="btn-arrow">→</span>
