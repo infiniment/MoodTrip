@@ -1,7 +1,8 @@
 package com.moodTrip.spring.domain.support.repository;
 
-import com.moodTrip.spring.domain.support.entity.Faq;
 import org.springframework.data.jpa.repository.JpaRepository;
+import com.moodTrip.spring.domain.admin.entity.Faq;
+
 
 public interface FaqRepository extends JpaRepository<Faq, Long> {
 }
