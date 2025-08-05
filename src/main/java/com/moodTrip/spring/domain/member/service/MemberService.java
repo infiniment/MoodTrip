@@ -103,7 +103,7 @@ public class MemberService {
         log.info("닉네임 수정 요청 - 회원ID: {}, 기존닉네임: {}, 새닉네임: {}",
                 member.getMemberId(), member.getNickname(), request.getNickname());
 
-        // ✅ 유효성 검사 추가 (백엔드 보안)
+        // 유효성 검사 추가
         String newNickname = request.getNickname();
         if (newNickname == null || newNickname.trim().isEmpty()) {
             throw new RuntimeException("닉네임은 필수 입력 항목입니다.");
@@ -141,18 +141,18 @@ public class MemberService {
         return ProfileResponse.from(profile);
     }
 
-    @Transactional  // ✅ 데이터 변경이므로 트랜잭션 필수!
+    @Transactional
     public WithdrawResponse withdrawMember(Member member) {
 
         log.info("회원 탈퇴 요청 - 회원ID: {}", member.getMemberId());
 
-        // 1️⃣ 이미 탈퇴한 회원인지 확인
+        // 이미 탈퇴한 회원인지 확인
         if (member.getIsWithdraw()) {
             log.error("이미 탈퇴한 회원 - 회원ID: {}", member.getMemberId());
             throw new RuntimeException("이미 탈퇴 처리된 회원입니다.");
         }
 
-        // 2️⃣ 탈퇴 처리 (논리적 삭제)
+        // 탈퇴 처리 (논리적 삭제)
         member.setIsWithdraw(true);  // 탈퇴 상태로 변경
 
         memberRepository.save(member);
@@ -162,7 +162,7 @@ public class MemberService {
         log.info("회원 탈퇴 완료 - 회원ID: {}, 처리시간: {}",
                 member.getMemberId(), withdrawnAt);
 
-        // 3️⃣ 응답 DTO 생성 (프론트엔드 메시지와 맞춤)
+        // 응답 DTO 생성
         return WithdrawResponse.builder()
                 .memberId(member.getMemberId())
                 .withdrawnAt(withdrawnAt)
