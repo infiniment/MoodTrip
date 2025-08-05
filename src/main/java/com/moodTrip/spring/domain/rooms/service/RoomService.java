@@ -22,4 +22,6 @@ public interface RoomService {
     void leaveRoom(Member member, Room room); // 방 나가기
     boolean isMemberInRoom(Member member, Room room); // 방 참여 여부 확인
     List<RoomMemberResponse> getActiveMembers(Room room); // 방의 활성 멤버 조회
+    Room getRoomEntityById(Long roomId);
+    RoomResponse toResponseDto(Room room);
 }
