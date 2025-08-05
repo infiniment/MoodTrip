@@ -2,6 +2,7 @@ package com.moodTrip.spring.domain.rooms.dto.response;
 
 import com.moodTrip.spring.domain.rooms.entity.RoomMember;
 import com.moodTrip.spring.global.common.exception.CustomException;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -14,20 +15,33 @@ import static com.moodTrip.spring.global.common.code.status.ErrorStatus.INTERNAL
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RoomMemberResponse { // 방 참여 응담 DTO
+public class RoomMemberResponse {
+
+    @Schema(description = "방 참여자 ID", example = "1")
     private Long memberRoomId;
+
+    @Schema(description = "방 ID", example = "1")
     private Long roomId;
+
+    @Schema(description = "사용자 PK", example = "3")
     private Long memberPk;
+
+    @Schema(description = "사용자 닉네임", example = "김상우")
     private String nickname;
+
+    @Schema(description = "역할", example = "MEMBER")
     private String role;
+
+    @Schema(description = "방 참여 여부", example = "true")
     private Boolean isActive;
+
+    @Schema(description = "방 참여 시각", example = "2025-08-04T06:41:15.711Z")
     private LocalDateTime joinedAt;
 
-    // DB에서 조회된 엔티티(RoomMember)를 API 응답 객체(DTO)로 변환하는 정적 메서드
     public static RoomMemberResponse from(RoomMember roomMember) {
 
         if (member == null) {
-            throw new CustomException(INTERNAL_SERVER_ERROR); // 또는 기본값 처리
+            throw new CustomException(INTERNAL_SERVER_ERROR);
         }
 
         return RoomMemberResponse.builder()
@@ -40,7 +54,4 @@ public class RoomMemberResponse { // 방 참여 응담 DTO
                 .joinedAt(roomMember.getJoinedAt())
                 .build();
     }
-
-
-
 }
