@@ -7,6 +7,7 @@ import lombok.*;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Schema(description = "방 조회 응답 DTO")
 public class RoomResponse {
 
@@ -18,6 +19,12 @@ public class RoomResponse {
 
     @Schema(description = "방 설명", example = "함께 힐링 여행 떠날 동행자를 구합니다")
     private String roomDescription;
+
+    @Schema(description = "여행 목적지 카테고리", example = "강원도")
+    private String destinationCategory;
+
+    @Schema(description = "여행 목적지 이름", example = "속초 해수욕장")
+    private String destinationName;
 
     @Schema(description = "최대 인원 수", example = "4")
     private int maxParticipants;
@@ -39,6 +46,8 @@ public class RoomResponse {
                 room.getRoomId(),
                 room.getRoomName(),
                 room.getRoomDescription(),
+                room.getDestinationCategory(),
+                room.getDestinationName(),
                 room.getRoomMaxCount(),
                 room.getRoomCurrentCount(),
                 room.getTravelStartDate() != null ? room.getTravelStartDate().toString() : null,

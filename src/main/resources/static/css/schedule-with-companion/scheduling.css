@@ -312,6 +312,9 @@ body {
     padding: 30px;
     box-shadow: 0 15px 35px rgba(0, 26, 44, 0.15);
     border: 1px solid rgba(0, 87, 146, 0.1);
+
+    max-height: 600px;
+    overflow-y: auto;
 }
 
 .schedule-item {
@@ -356,6 +359,50 @@ body {
     margin-right: 20px;
     font-weight: 700;
     box-shadow: 0 6px 15px rgba(0, 87, 146, 0.3);
+    min-width: 70px;
+    text-align: center;
+}
+
+.schedule-main {
+    flex: 1;
+}
+
+.schedule-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.schedule-title {
+    font-size: 15px;
+    font-weight: bold;
+    color: #1E3A5F;
+}
+
+.actions button {
+    margin-left: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.schedule-description {
+    font-size: 13px;
+    color: #333;
+    margin-top: 4px;
+}
+
+
+.time-box {
+    background: linear-gradient(135deg, #005792 0%, #001A2C 100%);
+    color: white;
+    padding: 10px 16px;
+    border-radius: 25px;
+    font-size: 13px;
+    font-weight: 700;
+    margin-right: 20px;
     min-width: 70px;
     text-align: center;
 }

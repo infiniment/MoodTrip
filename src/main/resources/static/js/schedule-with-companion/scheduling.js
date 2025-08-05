@@ -1,50 +1,59 @@
 // 메신저 관련 전역 변수
 let isMessengerOpen = false;
-let currentUser = generateRandomUser(); // 랜덤 사용자명 생성
-let connectedUsers = ['김상우', '노수민']; // 현재 접속자 목록
-let stompClient = null; // STOMP 클라이언트
-let chattingRoomId = 1; // 채팅방 ID (실제로는 동적으로 설정)
-
+let stompClient = null;
+let chattingRoomId = null;
+let currentUser = null;
+let roomId = null;
 // 날짜 및 일정 관련 전역 변수
 let selectedDate = null; // 선택된 날짜
 let schedules = {}; // 일정 데이터 저장소 (날짜별)
+let connectedUsers = [];
+let allSchedules = []; // 전체 일정 전역 저장
 
-// 달력 관련 기능
-document.addEventListener("DOMContentLoaded", function () {
+
+document.addEventListener('DOMContentLoaded', function () {
+    const chatDataElement = document.getElementById('chatData');
+    if (!chatDataElement) return;
+
+    // 초기 변수 세팅
+    chattingRoomId = parseInt(chatDataElement.dataset.roomId);
+    currentUser = chatDataElement.dataset.currentUser;
+    roomId = chattingRoomId;
+
+    console.log("✅ chattingRoomId:", chattingRoomId);
+    console.log("✅ currentUser:", currentUser);
+
+    updateUserInterface();
+    connectWebSocket();
+
+    // 달력 렌더링 관련
     const calendarGrid = document.getElementById("calendarGrid");
     const calendarHeader = document.querySelector(".calendar-header h3");
 
-    // 현재 날짜 가져오기
     let currentDate = new Date();
     let currentYear = currentDate.getFullYear();
-    let currentMonth = currentDate.getMonth(); // 0: 1월 ~ 11: 12월
+    let currentMonth = currentDate.getMonth();
 
     function renderCalendar(year, month) {
-        // 기존 날짜 div 초기화 (요일 헤더 제외)
         const allDays = calendarGrid.querySelectorAll(".calendar-day.date");
         allDays.forEach(day => day.remove());
 
-        // 달력 헤더 갱신
         calendarHeader.textContent = `${year}년 ${month + 1}월`;
 
-        // 해당 월의 1일과 마지막 날짜 계산
-        const firstDay = new Date(year, month, 1).getDay(); // 0:일 ~ 6:토
-        const lastDate = new Date(year, month + 1, 0).getDate(); // 말일
+        const firstDay = new Date(year, month, 1).getDay();
+        const lastDate = new Date(year, month + 1, 0).getDate();
 
-        // 앞쪽 빈칸 채우기
         for (let i = 0; i < firstDay; i++) {
             const emptyDiv = document.createElement("div");
             emptyDiv.className = "calendar-day date empty";
             calendarGrid.appendChild(emptyDiv);
         }
 
-        // 날짜 채우기
         for (let day = 1; day <= lastDate; day++) {
             const dayDiv = document.createElement("div");
             dayDiv.className = "calendar-day date";
             dayDiv.textContent = day;
 
-            // 오늘 날짜 강조
             if (
                 day === currentDate.getDate() &&
                 month === currentDate.getMonth() &&
@@ -54,7 +63,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 dayDiv.style.color = "#007BFF";
             }
 
-            // 클릭 이벤트 (일정 불러오기 등)
             dayDiv.addEventListener("click", () => {
                 handleDateClick(year, month, day);
             });
@@ -63,10 +71,24 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // 초기 렌더링
     renderCalendar(currentYear, currentMonth);
 
-    // 이전/다음 달 이동
+    fetch(`/api/schedules/${roomId}`)
+        .then(response => response.json())
+        .then(data => {
+            data.forEach(schedule => {
+                const date = schedule.travelStartDate.split('T')[0];
+                if (!schedules[date]) schedules[date] = [];
+                schedules[date].push(schedule);
+            });
+
+            console.log('✅ 전체 일정 데이터:', schedules);
+            updateScheduleListAll();
+        })
+        .catch(error => {
+            console.error("❌ 일정 데이터 로드 실패:", error);
+        });
+
     const [prevBtn, nextBtn] = document.querySelectorAll(".calendar-nav .nav-btn");
     prevBtn.addEventListener("click", () => {
         currentMonth--;
@@ -87,75 +109,134 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
-// 중요 : 방 만들기 후
-// // 서버에서 현재 로그인한 사용자 정보 받아오기
-// let currentUser = null;
+// document.addEventListener('DOMContentLoaded', function () {
+//     const chatDataElement = document.getElementById('chatData');
+//     if (!chatDataElement) return;
 //
-// // 페이지 로드시 현재 사용자 정보 조회
-// async function getCurrentUser() {
-//     try {
-//         const response = await fetch('/api/user/current');
-//         const userData = await response.json();
-//         currentUser = userData.username; // 또는 userData.nickname
-//         console.log('현재 로그인 사용자:', currentUser);
-//         return userData;
-//     } catch (error) {
-//         console.error('사용자 정보 조회 실패:', error);
-//         // 로그인 페이지로 리다이렉트
-//         window.location.href = '/login';
-//     }
+//     chattingRoomId = parseInt(chatDataElement.dataset.roomId); // 채팅방 id
+//     currentUser = chatDataElement.dataset.currentUser;
+//     roomId = chattingRoomId; // 🔁 필요한 경우 roomId 별도 저장
+//
+//     console.log("✅ chattingRoomId:", chattingRoomId);
+//     console.log("✅ currentUser:", currentUser);
+//
+//     updateUserInterface(); // UI 초기 렌더링
+//
+//     connectWebSocket(); // WebSocket 연결 시작
+//
+// });
+//
+// function highlightCalendarDate(dateString) {
+//     const [year, month, day] = dateString.split('-').map(Number);
+//
+//     const allDateElements = document.querySelectorAll('.calendar-day.date');
+//     allDateElements.forEach(elem => {
+//         if (elem.classList.contains('empty')) return;
+//         if (parseInt(elem.textContent) === day) {
+//             elem.classList.add('selected');
+//         } else {
+//             elem.classList.remove('selected');
+//         }
+//     });
 // }
 //
-// // DOM 로드 후 실행
-// document.addEventListener('DOMContentLoaded', async function() {
-//     await getCurrentUser(); // 사용자 정보 먼저 가져오기
-//     initializeMessenger();
-//     updateOnlineUsers();
-//     updateUserInterface();
-//     connectWebSocket();
+// // 달력 관련 기능
+// document.addEventListener("DOMContentLoaded", function () {
+//     const calendarGrid = document.getElementById("calendarGrid");
+//     const calendarHeader = document.querySelector(".calendar-header h3");
+//
+//     // 현재 날짜 가져오기
+//     let currentDate = new Date();
+//     let currentYear = currentDate.getFullYear();
+//     let currentMonth = currentDate.getMonth(); // 0: 1월 ~ 11: 12월
+//
+//     function renderCalendar(year, month) {
+//         // 기존 날짜 div 초기화 (요일 헤더 제외)
+//         const allDays = calendarGrid.querySelectorAll(".calendar-day.date");
+//         allDays.forEach(day => day.remove());
+//
+//         // 달력 헤더 갱신
+//         calendarHeader.textContent = `${year}년 ${month + 1}월`;
+//
+//         // 해당 월의 1일과 마지막 날짜 계산
+//         const firstDay = new Date(year, month, 1).getDay(); // 0:일 ~ 6:토
+//         const lastDate = new Date(year, month + 1, 0).getDate(); // 말일
+//
+//         // 앞쪽 빈칸 채우기
+//         for (let i = 0; i < firstDay; i++) {
+//             const emptyDiv = document.createElement("div");
+//             emptyDiv.className = "calendar-day date empty";
+//             calendarGrid.appendChild(emptyDiv);
+//         }
+//
+//         // 날짜 채우기
+//         for (let day = 1; day <= lastDate; day++) {
+//             const dayDiv = document.createElement("div");
+//             dayDiv.className = "calendar-day date";
+//             dayDiv.textContent = day;
+//
+//             // 오늘 날짜 강조
+//             if (
+//                 day === currentDate.getDate() &&
+//                 month === currentDate.getMonth() &&
+//                 year === currentDate.getFullYear()
+//             ) {
+//                 dayDiv.style.fontWeight = "bold";
+//                 dayDiv.style.color = "#007BFF";
+//             }
+//
+//             // 클릭 이벤트 (일정 불러오기 등)
+//             dayDiv.addEventListener("click", () => {
+//                 handleDateClick(year, month, day);
+//             });
+//
+//             calendarGrid.appendChild(dayDiv);
+//         }
+//     }
+//
+//     // 초기 렌더링
+//     renderCalendar(currentYear, currentMonth);
+//
+//     fetch(`/api/schedules/${roomId}`)
+//         .then(response => response.json())
+//         .then(data => {
+//             // 날짜별로 그룹화
+//             data.forEach(schedule => {
+//                 const date = schedule.travelStartDate.split('T')[0]; // 'YYYY-MM-DD'
+//                 if (!schedules[date]) schedules[date] = [];
+//                 schedules[date].push(schedule);
+//             });
+//
+//             console.log('✅ 전체 일정 데이터:', schedules);
+//
+//             updateScheduleListAll(); // 날짜별 일정 전체 출력
+//         })
+//         .catch(error => {
+//             console.error("❌ 일정 데이터 로드 실패:", error);
+//         });
+//
+//     // 이전/다음 달 이동
+//     const [prevBtn, nextBtn] = document.querySelectorAll(".calendar-nav .nav-btn");
+//     prevBtn.addEventListener("click", () => {
+//         currentMonth--;
+//         if (currentMonth < 0) {
+//             currentMonth = 11;
+//             currentYear--;
+//         }
+//         renderCalendar(currentYear, currentMonth);
+//     });
+//
+//     nextBtn.addEventListener("click", () => {
+//         currentMonth++;
+//         if (currentMonth > 11) {
+//             currentMonth = 0;
+//             currentYear++;
+//         }
+//         renderCalendar(currentYear, currentMonth);
+//     });
 // });
 
-// 테스트용 사용자 선택 (더 간단한 방법)
-function generateRandomUser() {
-    const users = ['김상우', '노수민', '김민규', '서유진'];
 
-    // 세션 스토리지에서 기존 사용자 확인
-    let sessionUser = sessionStorage.getItem('currentUser');
-
-    if (!sessionUser) {
-        // 첫 번째 창인지 확인 (localStorage 사용)
-        const usedUsers = JSON.parse(localStorage.getItem('usedUsers') || '[]');
-
-        // 사용되지 않은 사용자 찾기
-        const availableUsers = users.filter(user => !usedUsers.includes(user));
-
-        if (availableUsers.length > 0) {
-            sessionUser = availableUsers[0];
-        } else {
-            // 모든 사용자가 사용 중이면 랜덤 선택
-            sessionUser = users[Math.floor(Math.random() * users.length)];
-        }
-
-        // 사용자 목록에 추가
-        usedUsers.push(sessionUser);
-        localStorage.setItem('usedUsers', JSON.stringify(usedUsers));
-        sessionStorage.setItem('currentUser', sessionUser);
-    }
-
-    console.log('현재 사용자:', sessionUser);
-    return sessionUser;
-}
-
-// DOM이 로드된 후 실행
-document.addEventListener('DOMContentLoaded', function() {
-    // 현재 사용자 표시
-    console.log('현재 접속 사용자:', currentUser);
-
-    initializeMessenger();
-    updateOnlineUsers();
-    updateUserInterface();
-    connectWebSocket(); // WebSocket 연결 초기화
-});
 
 // 사용자 인터페이스 업데이트
 function updateUserInterface() {
@@ -401,27 +482,49 @@ function updateCurrentTime() {
 
 // WebSocket 연결 설정
 function connectWebSocket() {
-    // SockJS와 STOMP 클라이언트 연결
     const socket = new SockJS('/ws/chat');
     stompClient = Stomp.over(socket);
 
-    stompClient.connect({}, function(frame) {
+    stompClient.connect({}, function (frame) {
         console.log('WebSocket 연결 성공: ' + frame);
 
-        // 채팅방 구독
-        stompClient.subscribe(`/sub/chatroom/${chattingRoomId}`, function(message) {
+        // 채팅방 메시지 구독
+        stompClient.subscribe(`/sub/chatroom/${chattingRoomId}`, function (message) {
             const chatMessage = JSON.parse(message.body);
             addReceivedMessage(chatMessage);
         });
 
+        // 스케줄링 접속자 목록 구독
+        stompClient.subscribe(`/sub/scheduling/${roomId}`, function (message) {
+            console.log("[서버에서 수신함]", message.body);
+            const onlineUsers = JSON.parse(message.body);
+            updateSchedulingOnlineUsers(onlineUsers);
+        });
+
         // 입장 메시지 전송
         sendEnterMessage();
+        sendSchedulingEnterMessage();
 
-    }, function(error) {
+    }, function (error) {
         console.error('WebSocket 연결 실패:', error);
-        // 연결 실패 시 재연결 시도
-        setTimeout(connectWebSocket, 5000);
+        setTimeout(connectWebSocket, 5000); // 재연결 시도
     });
+}
+
+
+function updateSchedulingOnlineUsers(users) {
+    connectedUsers = users; // 실제 리스트 업데이트
+
+    const onlineUsersElement = document.getElementById('onlineUsers');
+    const onlineCountElement = document.getElementById('onlineCount');
+
+    if (onlineUsersElement) {
+        onlineUsersElement.textContent = users.join(', ');
+    }
+
+    if (onlineCountElement) {
+        onlineCountElement.textContent = `${users.length}명 온라인`;
+    }
 }
 
 // 입장 메시지 전송
@@ -438,6 +541,16 @@ function sendEnterMessage() {
     }
 }
 
+function sendSchedulingEnterMessage() {
+    if (stompClient && stompClient.connected) {
+        const schedulingEnterMsg = {
+            type: 'ENTER',
+            roomId: roomId,
+            sender: currentUser
+        };
+        stompClient.send("/pub/scheduling/enter", {}, JSON.stringify(schedulingEnterMsg));
+    }
+}
 // WebSocket 연결 해제
 function disconnectWebSocket() {
     if (stompClient && stompClient.connected) {
@@ -552,6 +665,14 @@ function clearModalInputs() {
     document.getElementById('scheduleTime').value = '';
     document.getElementById('scheduleTitle').value = '';
     document.getElementById('scheduleDescription').value = '';
+
+    const modal = document.getElementById('scheduleModal');
+    modal.dataset.editMode = 'false';
+    modal.dataset.editId = '';
+    modal.dataset.editDate = '';
+
+    modal.querySelector('.modal-header h2').textContent = '새 일정 추가';
+    modal.querySelector('.btn-confirm').textContent = '일정 추가';
 }
 
 // 모달에서 일정 추가하기
@@ -560,100 +681,152 @@ function addScheduleFromModal() {
     const title = document.getElementById('scheduleTitle').value;
     const description = document.getElementById('scheduleDescription').value;
 
-    // 입력값 검증
     if (!time || !title.trim()) {
         alert('시간과 일정 제목을 입력해주세요.');
         return;
     }
 
-    // 선택된 날짜가 없으면 오늘 날짜로 설정
     if (!selectedDate) {
         const today = new Date();
         selectedDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     }
 
-    // 일정 객체 생성
-    const newSchedule = {
-        id: Date.now(), // 임시 ID (실제로는 서버에서 생성)
-        time: time,
-        title: title.trim(),
-        description: description.trim(),
-        date: selectedDate
+    const modal = document.getElementById('scheduleModal');
+    const isEditMode = modal.dataset.editMode === 'true';
+
+    const scheduleData = {
+        roomId: roomId,
+        travelStartDate: `${selectedDate}T${time}`,
+        scheduleTitle: title.trim(),
+        scheduleDescription: description.trim()
     };
 
-    // 일정 데이터에 추가
-    if (!schedules[selectedDate]) {
-        schedules[selectedDate] = [];
+    if (isEditMode) {
+        const scheduleId = modal.dataset.editId;
+        updateScheduleToServer(scheduleId, scheduleData);
+    } else {
+        saveScheduleToServer(scheduleData);
     }
-    schedules[selectedDate].push(newSchedule);
 
-    // 일정 목록 업데이트
-    updateScheduleList(selectedDate);
-
-    // 서버에 일정 저장 (실제 구현 시)
-    saveScheduleToServer(newSchedule);
-
-    // 성공 메시지
-    showNotification('일정이 추가되었습니다.');
-
-    // 모달 닫기
+    // 모달 닫기 및 초기화
     closeScheduleModal();
 }
 
-// 선택된 날짜의 일정 목록 업데이트
-function updateScheduleList(dateString) {
-    const scheduleList = document.querySelector('.schedule-list');
-    const daySchedules = schedules[dateString] || [];
+// 전체 일정 조회
+function updateScheduleListAll() {
+    const listContainer = document.querySelector('.schedule-list');
+    listContainer.innerHTML = '';
 
-    // 날짜 포맷팅
-    const [year, month, day] = dateString.split('-');
-    const dateObj = new Date(year, month - 1, day);
-    const formattedDate = `${year}년 ${month}월 ${day}일 (${['일', '월', '화', '수', '목', '금', '토'][dateObj.getDay()]})`;
+    // 정렬된 날짜 기준 전체 일정 표시
+    const sortedDates = Object.keys(schedules).sort();
 
-    if (daySchedules.length === 0) {
-        scheduleList.innerHTML = `
-            <h3 style="margin-bottom: 20px; color: #333;">${formattedDate}</h3>
-            <div class="no-schedule">
-                <div class="no-schedule-icon">📅</div>
-                <p>등록된 일정이 없습니다.<br>새로운 일정을 추가해보세요!</p>
-            </div>
+    if (sortedDates.length === 0) {
+        listContainer.innerHTML = `
+            <h3 style="margin-bottom: 20px; color: #333;">등록된 일정이 없습니다</h3>
             <button class="add-btn" onclick="openScheduleModal()">새 일정 추가</button>
         `;
-    } else {
-        let scheduleHtml = `<h3 style="margin-bottom: 20px; color: #333;">${formattedDate}</h3>`;
+        return;
+    }
 
-        // 시간순으로 정렬
-        daySchedules.sort((a, b) => a.time.localeCompare(b.time));
+    sortedDates.forEach(date => {
+        const dateSection = document.createElement('div');
+        dateSection.classList.add('date-section');
 
-        daySchedules.forEach(schedule => {
-            scheduleHtml += `
-                <div class="schedule-item" data-schedule-id="${schedule.id}">
-                    <div class="schedule-time">${schedule.time}</div>
-                    <div class="schedule-content">
-                        <h4>${schedule.title}</h4>
-                        ${schedule.description ? `<p>${schedule.description}</p>` : ''}
-                    </div>
-                    <div class="schedule-actions">
-                        <button class="edit-btn" onclick="editSchedule(${schedule.id})">✏️</button>
-                        <button class="delete-btn" onclick="deleteSchedule(${schedule.id})">🗑️</button>
-                    </div>
-                </div>
-            `;
+        const dateHeader = document.createElement('h3');
+        dateHeader.textContent = formatDisplayDate(date);
+        dateSection.appendChild(dateHeader);
+
+        // ⬇️ 시간 기준으로 정렬 추가
+        const sortedSchedules = schedules[date].sort((a, b) => {
+            return new Date(a.travelStartDate) - new Date(b.travelStartDate);
         });
 
-        scheduleHtml += `<button class="add-btn" onclick="openScheduleModal()">새 일정 추가</button>`;
-        scheduleList.innerHTML = scheduleHtml;
-    }
+        sortedSchedules.forEach(schedule => {
+            const scheduleItem = document.createElement('div');
+            scheduleItem.classList.add('schedule-item');
+            scheduleItem.innerHTML = `
+                <div class="time-box">${formatTime(schedule.travelStartDate)}</div>
+                <div class="schedule-main">
+                    <div class="schedule-header">
+                        <strong class="schedule-title">${schedule.scheduleTitle}</strong>
+                        <div class="actions">
+                            <button class="edit-btn" onclick="editSchedule(${schedule.scheduleId})">✏️</button>
+                            <button class="delete-btn" onclick="deleteSchedule(${schedule.scheduleId})">🗑️</button>
+                        </div>
+                    </div>
+                    <p class="schedule-description">${schedule.scheduleDescription || ''}</p>
+                </div>
+            `;
+            dateSection.appendChild(scheduleItem);
+        });
+
+        listContainer.appendChild(dateSection);
+    });
+
+    // "새 일정 추가" 버튼은 맨 아래 고정
+    const addBtn = document.createElement('button');
+    addBtn.classList.add('add-btn');
+    addBtn.textContent = '새 일정 추가';
+    addBtn.onclick = openScheduleModal;
+    listContainer.appendChild(addBtn);
 }
+
+function fetchAndRenderAllSchedules() {
+    fetch(`/api/schedules/room/${roomId}`) // roomId는 전역에 선언되어 있어야 함
+        .then(response => response.json())
+        .then(data => {
+            // 기존 일정 초기화
+            schedules = {};
+
+            data.forEach(schedule => {
+                const date = schedule.travelStartDate.split('T')[0]; // yyyy-MM-dd 추출
+                if (!schedules[date]) schedules[date] = [];
+                schedules[date].push(schedule);
+            });
+
+            console.log('✅ 전체 일정 불러오기 성공:', schedules);
+            updateScheduleListAll(); // 렌더링 함수 호출
+        })
+        .catch(error => {
+            console.error("❌ 일정 데이터 로드 실패:", error);
+        });
+}
+
+function handleScheduleCreated(newSchedule) {
+    const date = newSchedule.travelStartDate.split('T')[0];
+
+    if (!schedules[date]) {
+        schedules[date] = [];
+    }
+
+    schedules[date].push(newSchedule);
+
+    updateScheduleListAll(); // 전체 리스트 다시 렌더링
+}
+
+function formatTime(isoString) {
+    const time = new Date(isoString);
+    return time.toTimeString().slice(0, 5); // "HH:MM"
+}
+
+function formatDisplayDate(yyyyMMdd) {
+    const date = new Date(yyyyMMdd);
+    return date.toLocaleDateString('ko-KR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        weekday: 'short'
+    }); // 예: 2025년 08월 08일 (금)
+}
+
 
 // 일정 수정
 function editSchedule(scheduleId) {
-    // 해당 일정 찾기
     let targetSchedule = null;
     let targetDate = null;
 
     for (const date in schedules) {
-        const schedule = schedules[date].find(s => s.id === scheduleId);
+        const schedule = schedules[date].find(s => s.scheduleId === scheduleId);
         if (schedule) {
             targetSchedule = schedule;
             targetDate = date;
@@ -666,18 +839,18 @@ function editSchedule(scheduleId) {
         return;
     }
 
-    // 모달에 기존 데이터 채우기
-    document.getElementById('scheduleTime').value = targetSchedule.time;
-    document.getElementById('scheduleTitle').value = targetSchedule.title;
-    document.getElementById('scheduleDescription').value = targetSchedule.description;
+    const localTime = new Date(targetSchedule.travelStartDate);
+    const hours = String(localTime.getHours()).padStart(2, '0');
+    const minutes = String(localTime.getMinutes()).padStart(2, '0');
+    document.getElementById('scheduleTime').value = `${hours}:${minutes}`;
+    document.getElementById('scheduleTitle').value = targetSchedule.scheduleTitle;
+    document.getElementById('scheduleDescription').value = targetSchedule.scheduleDescription;
 
-    // 수정 모드로 설정
     const modal = document.getElementById('scheduleModal');
     modal.dataset.editMode = 'true';
     modal.dataset.editId = scheduleId;
     modal.dataset.editDate = targetDate;
 
-    // 모달 제목 변경
     modal.querySelector('.modal-header h2').textContent = '일정 수정';
     modal.querySelector('.btn-confirm').textContent = '일정 수정';
 
@@ -686,51 +859,71 @@ function editSchedule(scheduleId) {
 
 // 일정 삭제
 function deleteSchedule(scheduleId) {
-    if (!confirm('정말로 이 일정을 삭제하시겠습니까?')) {
-        return;
-    }
+    if (!confirm('정말로 이 일정을 삭제하시겠습니까?')) return;
 
-    // 해당 일정 찾아서 삭제
     for (const date in schedules) {
-        const index = schedules[date].findIndex(s => s.id === scheduleId);
+        const index = schedules[date].findIndex(s => s.scheduleId === scheduleId);
         if (index !== -1) {
             schedules[date].splice(index, 1);
-            updateScheduleList(date);
+            if (schedules[date].length === 0) delete schedules[date]; // 해당 날짜도 삭제
 
-            // 서버에서도 삭제 (실제 구현 시)
-            deleteScheduleFromServer(scheduleId);
-
+            deleteScheduleFromServer(scheduleId); // 실제 서버 요청
+            updateScheduleListAll(); // 다시 렌더링
             showNotification('일정이 삭제되었습니다.');
             break;
         }
     }
 }
 
-// 서버에 일정 저장 (실제 구현 시 사용)
+// 서버에 일정 저장
 function saveScheduleToServer(schedule) {
-    // 실제 구현 예시
-    /*
-    fetch('/api/schedules', {
+    fetch(`/api/schedules/room/${roomId}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify(schedule)
     })
-    .then(response => response.json())
-    .then(data => {
-        console.log('일정 저장 성공:', data);
-    })
-    .catch(error => {
-        console.error('일정 저장 실패:', error);
-    });
-    */
+        .then(response => {
+            if (!response.ok) throw new Error("서버 응답 실패");
+            return response.json();
+        })
+        .then(data => {
+            console.log('일정 저장 성공:', data);
+            handleScheduleCreated(data);  // 서버에서 scheduleId 등을 채워서 응답했을 경우 반영
+        })
+        .catch(error => {
+            console.error('일정 저장 실패:', error);
+            alert('일정 저장 중 오류가 발생했습니다.');
+        });
+
 }
 
-// 서버에서 일정 삭제 (실제 구현 시 사용)
+function updateScheduleToServer(scheduleId, updatedSchedule) {
+    fetch(`/api/schedules/${scheduleId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedSchedule)
+    })
+        .then(response => {
+            if (!response.ok) throw new Error("서버 응답 실패");
+            return response.json();
+        })
+        .then(data => {
+            console.log('일정 수정 성공:', data);
+            fetchAndRenderAllSchedules(); // 전체 다시 불러오기
+            showNotification('일정이 수정되었습니다.');
+        })
+        .catch(error => {
+            console.error('일정 수정 실패:', error);
+            alert('일정 수정 중 오류가 발생했습니다.');
+        });
+}
+
+// 서버에서 일정 삭제
 function deleteScheduleFromServer(scheduleId) {
-    // 실제 구현 예시
-    /*
     fetch(`/api/schedules/${scheduleId}`, {
         method: 'DELETE'
     })
@@ -742,7 +935,6 @@ function deleteScheduleFromServer(scheduleId) {
     .catch(error => {
         console.error('일정 삭제 실패:', error);
     });
-    */
 }
 
 // 알림 메시지 표시
@@ -804,8 +996,6 @@ function handleDateClick(year, month, day) {
     // 선택된 날짜 설정
     selectedDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
-    // 해당 날짜의 일정 표시
-    updateScheduleList(selectedDate);
 }
 
 // 모달 외부 클릭시 닫기
@@ -825,4 +1015,5 @@ document.addEventListener('keydown', function(event) {
         }
     }
 });
+
 
