@@ -3,12 +3,17 @@ package com.moodTrip.spring.global.controller;
 import com.moodTrip.spring.domain.member.entity.Member;
 import com.moodTrip.spring.domain.member.entity.Profile;
 import com.moodTrip.spring.domain.member.repository.ProfileRepository;
+import com.moodTrip.spring.domain.rooms.dto.response.RoomResponse;
+import com.moodTrip.spring.domain.rooms.repository.RoomRepository;
+import com.moodTrip.spring.domain.rooms.service.RoomService;
 import com.moodTrip.spring.global.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+
+import java.util.List;
 
 /**
  * 🌟 메인 페이지 및 인증 관련 페이지를 담당하는 컨트롤러
@@ -24,6 +29,8 @@ public class MainPageController {
 
     private final SecurityUtil securityUtil;
     private final ProfileRepository profileRepository;
+    private final RoomService roomService;
+
 
     /**
      * 🏠 메인 페이지 렌더링
@@ -54,6 +61,12 @@ public class MainPageController {
             model.addAttribute("isLoggedIn", false);
             log.info("❌ 비로그인 사용자");
         }
+
+
+
+        List<RoomResponse> rooms = roomService.getAllRooms();
+        model.addAttribute("rooms", rooms);
+
 
         return "mainpage/mainpage";  // Thymeleaf 템플릿 위치
     }

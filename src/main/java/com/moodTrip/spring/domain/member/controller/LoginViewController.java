@@ -3,6 +3,8 @@ package com.moodTrip.spring.domain.member.controller;
 import com.moodTrip.spring.domain.member.dto.request.LoginRequest;
 import com.moodTrip.spring.domain.member.service.LoginService;
 import com.moodTrip.spring.domain.member.service.MemberService;
+import com.moodTrip.spring.domain.rooms.dto.response.RoomResponse;
+import com.moodTrip.spring.domain.rooms.service.RoomService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
@@ -15,6 +17,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import java.util.List;
+
 @Slf4j
 @Controller
 @RequiredArgsConstructor
@@ -23,7 +27,7 @@ public class LoginViewController {
 
     private final LoginService loginService;
     private final MemberService memberService;
-
+    private final RoomService roomService;
 
     @Operation(summary = "로그인 폼", description = "로그인 화면을 반환")
     @GetMapping("/api/login")
@@ -66,8 +70,16 @@ public class LoginViewController {
 
     //소셜 로그인 성공 시
     @GetMapping("/mainpage/mainpage")
-    public String mainPage() {
-        return "mainpage/mainpage"; // templates/mainpage/mainpage.html 필요
+    public String mainPage(Model model) {
+
+
+        log.info("==== [RoomController] /mainpage/mainpage 진입 ====");
+        List<RoomResponse> rooms = roomService.getAllRooms();
+        log.info("rooms 개수: {}", rooms.size());
+        model.addAttribute("rooms", rooms);
+        return "mainpage/mainpage"; // 뷰 파일명
+
+
     }
 
 }

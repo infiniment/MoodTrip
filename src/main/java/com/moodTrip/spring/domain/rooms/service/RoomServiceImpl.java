@@ -5,6 +5,7 @@ import com.moodTrip.spring.domain.member.repository.MemberRepository;
 import com.moodTrip.spring.domain.rooms.dto.request.RoomRequest;
 import com.moodTrip.spring.domain.rooms.dto.request.RoomRequest.ScheduleDto.DateRangeDto;
 import com.moodTrip.spring.domain.rooms.dto.request.UpdateRoomRequest;
+import com.moodTrip.spring.domain.rooms.dto.response.RoomCardDto;
 import com.moodTrip.spring.domain.rooms.dto.response.RoomMemberResponse;
 import com.moodTrip.spring.domain.rooms.dto.response.RoomResponse;
 import com.moodTrip.spring.domain.rooms.entity.EmotionRoom;
@@ -101,6 +102,9 @@ public class RoomServiceImpl implements RoomService {
                 .map(RoomResponse::from)
                 .collect(Collectors.toList());
     }
+
+
+
 
 
     // 방 감정 연관 저장 로직
@@ -211,6 +215,41 @@ public class RoomServiceImpl implements RoomService {
                 .currentParticipants(room.getRoomCurrentCount())
                 .travelStartDate(room.getTravelStartDate().format(formatter))
                 .travelEndDate(room.getTravelEndDate().format(formatter))
+                .build();
+    }
+
+
+
+    // 방 목록을 RoomCardDto로 변환해 반환
+    @Override
+    public List<RoomCardDto> getRoomCards() {
+        return roomRepository.findAll().stream()
+                .map(this::toRoomCardDto)
+                .collect(Collectors.toList());
+    }
+
+    // Room 엔터티 -> RoomCardDto 변환 메서드
+    private RoomCardDto toRoomCardDto(Room room) {
+        String status = (room.getRoomCurrentCount() >= room.getRoomMaxCount() * 0.5)
+                ? "마감임박"
+                : "모집중";
+        String image = null; // 이미지 컬럼이 있으면 할당. 없으면 null(템플릿서 기본 이미지로 처리)
+        List<String> tags = null; // EmotionRoom, 태그 연동시 할당
+
+        return RoomCardDto.builder()
+                .roomId(room.getRoomId())
+                .roomName(room.getRoomName())
+                .roomDescription(room.getRoomDescription())
+                .destinationCategory(room.getDestinationCategory())
+                .destinationName(room.getDestinationName())
+                .maxParticipants(room.getRoomMaxCount())
+                .currentParticipants(room.getRoomCurrentCount())
+                .travelStartDate(room.getTravelStartDate() != null ? room.getTravelStartDate().toString() : null)
+                .travelEndDate(room.getTravelEndDate() != null ? room.getTravelEndDate().toString() : null)
+                .image(image)
+                .tags(tags)
+                .status(status)
+                .createDate(room.getCreatedAt() != null ? room.getCreatedAt().toString() : null)
                 .build();
     }
 }

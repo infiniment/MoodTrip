@@ -176,191 +176,224 @@
       </a>
     </div>
 
-    <!-- 방 목록 섹션 -->
-    <div class="rooms-section">
-      <div class="rooms-header">
-        <h3 class="rooms-title">🔥 이런 방은 어떠세요?</h3>
-      </div>
 
-      <div class="rooms-grid" id="roomsGrid">
-        <!-- 방 카드 1 -->
-        <div class="room-card">
-          <div class="room-image">
-            <!-- Thymeleaf 이미지 경로로 변경 -->
-            <img th:src="@{/image/mainpage/sample1.png}" alt="한성대학교 캠퍼스">
-            <div class="room-status active">모집중</div>
-          </div>
-          <div class="room-content">
-            <h4 class="room-title">한성대학교 캠퍼스 투어!!!</h4>
-            <div class="room-tags">
-              <span class="tag-emotion"># 즐거움</span>
-              <span class="tag-location"># 서울</span>
-              <span class="tag-activity"># 캠퍼스</span>
-            </div>
-            <p class="room-description">한성대 학생이신 분들과 함께하는 캠퍼스 투어! 맛집도 함께 탐방해요</p>
-            <div class="room-info">
-              <div class="room-participants">
-                <span class="participants-count">2 / 8</span>
-                <span class="participants-label">참여현황</span>
-              </div>
-              <div class="room-period">25/07/1 - 25/07/25</div>
-            </div>
-            <div class="room-actions">
-              <button class="btn-details">상세보기</button>
-              <button class="btn-join">참여 신청</button>
-              <button class="btn-report">신고</button>
-            </div>
-          </div>
+    <!--방 조회-->
+
+    <div class="rooms-grid" id="roomsGrid">
+      <div class="room-card" th:each="room : ${rooms}">
+        <div class="room-image">
+          <img th:src="@{/image/mainpage/sample1.png}" alt="방 이미지">
+          <div class="room-status" th:text="${room.currentParticipants < room.maxParticipants ? '모집중' : '마감'}"></div>
         </div>
-
-        <!-- 방 카드 2 -->
-        <div class="room-card">
-          <div class="room-image">
-            <img th:src="@{/image/mainpage/sample2.png}" alt="고궁 종합 운동장">
-            <div class="room-status recruiting">모집중</div>
+        <div class="room-content">
+          <h4 class="room-title" th:text="${room.roomName}"></h4>
+          <div class="room-tags">
+            <span class="tag-location" th:text="${room.destinationName}"></span>
+            <span class="tag-activity" th:text="${room.destinationCategory}"></span>
           </div>
-          <div class="room-content">
-            <h4 class="room-title">고궁 종합 운동장</h4>
-            <div class="room-tags">
-              <span class="tag-emotion"># 활기</span>
-              <span class="tag-location"># 경기</span>
-              <span class="tag-activity"># 운동</span>
+          <p class="room-description" th:text="${room.roomDescription}"></p>
+          <div class="room-info">
+            <div class="room-participants">
+              <span class="participants-count" th:text="${room.currentParticipants + ' / ' + room.maxParticipants}"></span>
+              <span class="participants-label">참여현황</span>
             </div>
-            <p class="room-description">함께 운동하고 맛있는 치킨도 먹으며 즐거운 시간을 보내요!</p>
-            <div class="room-info">
-              <div class="room-participants">
-                <span class="participants-count">3 / 4</span>
-                <span class="participants-label">참여현황</span>
-              </div>
-              <div class="room-period">25/11/21 - 25/11/27</div>
-            </div>
-            <div class="room-actions">
-              <button class="btn-details">상세보기</button>
-              <button class="btn-join">참여 신청</button>
-              <button class="btn-report">신고</button>
-            </div>
+            <div class="room-period" th:text="${room.travelStartDate + ' - ' + room.travelEndDate}"></div>
           </div>
-        </div>
-
-        <!-- 방 카드 3 -->
-        <div class="room-card">
-          <div class="room-image">
-            <img th:src="@{/image/mainpage/sample3.png}" alt="고궁 킨텍스">
-            <div class="room-status recruiting">모집중</div>
-          </div>
-          <div class="room-content">
-            <h4 class="room-title">고궁 킨텍스</h4>
-            <div class="room-tags">
-              <span class="tag-emotion"># 신남</span>
-              <span class="tag-location"># 경기</span>
-              <span class="tag-activity"># 전시</span>
-            </div>
-            <p class="room-description">킨텍스 전시회와 축제를 함께 즐길 분들을 모집합니다!</p>
-            <div class="room-info">
-              <div class="room-participants">
-                <span class="participants-count">1 / 2</span>
-                <span class="participants-label">참여현황</span>
-              </div>
-              <div class="room-period">25/09/01 - 25/09/07</div>
-            </div>
-            <div class="room-actions">
-              <button class="btn-details">상세보기</button>
-              <button class="btn-join">참여 신청</button>
-              <button class="btn-report">신고</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- 방 카드 4 -->
-        <div class="room-card">
-          <div class="room-image">
-            <img th:src="@{/image/mainpage/sample1.png}" alt="부산 해운대">
-            <div class="room-status active">모집중</div>
-          </div>
-          <div class="room-content">
-            <h4 class="room-title">부산 해운대 바다 여행</h4>
-            <div class="room-tags">
-              <span class="tag-emotion"># 힐링</span>
-              <span class="tag-location"># 부산</span>
-              <span class="tag-activity"># 바다</span>
-            </div>
-            <p class="room-description">시원한 바다에서 힐링하며 부산 맛집도 함께 탐방해요</p>
-            <div class="room-info">
-              <div class="room-participants">
-                <span class="participants-count">4 / 6</span>
-                <span class="participants-label">참여현황</span>
-              </div>
-              <div class="room-period">25/08/15 - 25/08/20</div>
-            </div>
-            <div class="room-actions">
-              <button class="btn-details">상세보기</button>
-              <button class="btn-join">참여 신청</button>
-              <button class="btn-report">신고</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- 방 카드 5 -->
-        <div class="room-card">
-          <div class="room-image">
-            <img th:src="@{/image/mainpage/sample2.png}" alt="제주도">
-            <div class="room-status recruiting">모집중</div>
-          </div>
-          <div class="room-content">
-            <h4 class="room-title">제주도 3박 4일 완전 정복</h4>
-            <div class="room-tags">
-              <span class="tag-emotion"># 설레임</span>
-              <span class="tag-location"># 제주</span>
-              <span class="tag-activity"># 관광</span>
-            </div>
-            <p class="room-description">제주도의 숨은 명소들을 함께 탐방하며 추억을 만들어요</p>
-            <div class="room-info">
-              <div class="room-participants">
-                <span class="participants-count">2 / 5</span>
-                <span class="participants-label">참여현황</span>
-              </div>
-              <div class="room-period">25/10/01 - 25/10/04</div>
-            </div>
-            <div class="room-actions">
-              <button class="btn-details">상세보기</button>
-              <button class="btn-join">참여 신청</button>
-              <button class="btn-report">신고</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- 방 카드 6 -->
-        <div class="room-card">
-          <div class="room-image">
-            <img th:src="@{/image/mainpage/sample3.png}" alt="경주 역사 탐방">
-            <div class="room-status active">모집중</div>
-          </div>
-          <div class="room-content">
-            <h4 class="room-title">경주 역사 문화 탐방</h4>
-            <div class="room-tags">
-              <span class="tag-emotion"># 여유</span>
-              <span class="tag-location"># 경주</span>
-              <span class="tag-activity"># 역사</span>
-            </div>
-            <p class="room-description">천년 고도 경주의 역사와 문화를 천천히 둘러보는 여행</p>
-            <div class="room-info">
-              <div class="room-participants">
-                <span class="participants-count">3 / 6</span>
-                <span class="participants-label">참여현황</span>
-              </div>
-              <div class="room-period">25/09/20 - 25/09/22</div>
-            </div>
-            <div class="room-actions">
-              <button class="btn-details">상세보기</button>
-              <button class="btn-join">참여 신청</button>
-              <button class="btn-report">신고</button>
-            </div>
+          <div class="room-actions">
+            <button class="btn-details">상세보기</button>
+            <button class="btn-join">참여 신청</button>
+            <button class="btn-report">신고</button>
           </div>
         </div>
       </div>
     </div>
-  </div>
-</section>
+
+
+    <!--    &lt;!&ndash; 방 목록 섹션 &ndash;&gt;-->
+<!--    <div class="rooms-section">-->
+<!--      <div class="rooms-header">-->
+<!--        <h3 class="rooms-title">🔥 이런 방은 어떠세요?</h3>-->
+<!--      </div>-->
+
+<!--      <div class="rooms-grid" id="roomsGrid">-->
+<!--        &lt;!&ndash; 방 카드 1 &ndash;&gt;-->
+<!--        <div class="room-card">-->
+<!--          <div class="room-image">-->
+<!--            &lt;!&ndash; Thymeleaf 이미지 경로로 변경 &ndash;&gt;-->
+<!--            <img th:src="@{/image/mainpage/sample1.png}" alt="한성대학교 캠퍼스">-->
+<!--            <div class="room-status active">모집중</div>-->
+<!--          </div>-->
+<!--          <div class="room-content">-->
+<!--            <h4 class="room-title">한성대학교 캠퍼스 투어!!!</h4>-->
+<!--            <div class="room-tags">-->
+<!--              <span class="tag-emotion"># 즐거움</span>-->
+<!--              <span class="tag-location"># 서울</span>-->
+<!--              <span class="tag-activity"># 캠퍼스</span>-->
+<!--            </div>-->
+<!--            <p class="room-description">한성대 학생이신 분들과 함께하는 캠퍼스 투어! 맛집도 함께 탐방해요</p>-->
+<!--            <div class="room-info">-->
+<!--              <div class="room-participants">-->
+<!--                <span class="participants-count">2 / 8</span>-->
+<!--                <span class="participants-label">참여현황</span>-->
+<!--              </div>-->
+<!--              <div class="room-period">25/07/1 - 25/07/25</div>-->
+<!--            </div>-->
+<!--            <div class="room-actions">-->
+<!--              <button class="btn-details">상세보기</button>-->
+<!--              <button class="btn-join">참여 신청</button>-->
+<!--              <button class="btn-report">신고</button>-->
+<!--            </div>-->
+<!--          </div>-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; 방 카드 2 &ndash;&gt;-->
+<!--        <div class="room-card">-->
+<!--          <div class="room-image">-->
+<!--            <img th:src="@{/image/mainpage/sample2.png}" alt="고궁 종합 운동장">-->
+<!--            <div class="room-status recruiting">모집중</div>-->
+<!--          </div>-->
+<!--          <div class="room-content">-->
+<!--            <h4 class="room-title">고궁 종합 운동장</h4>-->
+<!--            <div class="room-tags">-->
+<!--              <span class="tag-emotion"># 활기</span>-->
+<!--              <span class="tag-location"># 경기</span>-->
+<!--              <span class="tag-activity"># 운동</span>-->
+<!--            </div>-->
+<!--            <p class="room-description">함께 운동하고 맛있는 치킨도 먹으며 즐거운 시간을 보내요!</p>-->
+<!--            <div class="room-info">-->
+<!--              <div class="room-participants">-->
+<!--                <span class="participants-count">3 / 4</span>-->
+<!--                <span class="participants-label">참여현황</span>-->
+<!--              </div>-->
+<!--              <div class="room-period">25/11/21 - 25/11/27</div>-->
+<!--            </div>-->
+<!--            <div class="room-actions">-->
+<!--              <button class="btn-details">상세보기</button>-->
+<!--              <button class="btn-join">참여 신청</button>-->
+<!--              <button class="btn-report">신고</button>-->
+<!--            </div>-->
+<!--          </div>-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; 방 카드 3 &ndash;&gt;-->
+<!--        <div class="room-card">-->
+<!--          <div class="room-image">-->
+<!--            <img th:src="@{/image/mainpage/sample3.png}" alt="고궁 킨텍스">-->
+<!--            <div class="room-status recruiting">모집중</div>-->
+<!--          </div>-->
+<!--          <div class="room-content">-->
+<!--            <h4 class="room-title">고궁 킨텍스</h4>-->
+<!--            <div class="room-tags">-->
+<!--              <span class="tag-emotion"># 신남</span>-->
+<!--              <span class="tag-location"># 경기</span>-->
+<!--              <span class="tag-activity"># 전시</span>-->
+<!--            </div>-->
+<!--            <p class="room-description">킨텍스 전시회와 축제를 함께 즐길 분들을 모집합니다!</p>-->
+<!--            <div class="room-info">-->
+<!--              <div class="room-participants">-->
+<!--                <span class="participants-count">1 / 2</span>-->
+<!--                <span class="participants-label">참여현황</span>-->
+<!--              </div>-->
+<!--              <div class="room-period">25/09/01 - 25/09/07</div>-->
+<!--            </div>-->
+<!--            <div class="room-actions">-->
+<!--              <button class="btn-details">상세보기</button>-->
+<!--              <button class="btn-join">참여 신청</button>-->
+<!--              <button class="btn-report">신고</button>-->
+<!--            </div>-->
+<!--          </div>-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; 방 카드 4 &ndash;&gt;-->
+<!--        <div class="room-card">-->
+<!--          <div class="room-image">-->
+<!--            <img th:src="@{/image/mainpage/sample1.png}" alt="부산 해운대">-->
+<!--            <div class="room-status active">모집중</div>-->
+<!--          </div>-->
+<!--          <div class="room-content">-->
+<!--            <h4 class="room-title">부산 해운대 바다 여행</h4>-->
+<!--            <div class="room-tags">-->
+<!--              <span class="tag-emotion"># 힐링</span>-->
+<!--              <span class="tag-location"># 부산</span>-->
+<!--              <span class="tag-activity"># 바다</span>-->
+<!--            </div>-->
+<!--            <p class="room-description">시원한 바다에서 힐링하며 부산 맛집도 함께 탐방해요</p>-->
+<!--            <div class="room-info">-->
+<!--              <div class="room-participants">-->
+<!--                <span class="participants-count">4 / 6</span>-->
+<!--                <span class="participants-label">참여현황</span>-->
+<!--              </div>-->
+<!--              <div class="room-period">25/08/15 - 25/08/20</div>-->
+<!--            </div>-->
+<!--            <div class="room-actions">-->
+<!--              <button class="btn-details">상세보기</button>-->
+<!--              <button class="btn-join">참여 신청</button>-->
+<!--              <button class="btn-report">신고</button>-->
+<!--            </div>-->
+<!--          </div>-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; 방 카드 5 &ndash;&gt;-->
+<!--        <div class="room-card">-->
+<!--          <div class="room-image">-->
+<!--            <img th:src="@{/image/mainpage/sample2.png}" alt="제주도">-->
+<!--            <div class="room-status recruiting">모집중</div>-->
+<!--          </div>-->
+<!--          <div class="room-content">-->
+<!--            <h4 class="room-title">제주도 3박 4일 완전 정복</h4>-->
+<!--            <div class="room-tags">-->
+<!--              <span class="tag-emotion"># 설레임</span>-->
+<!--              <span class="tag-location"># 제주</span>-->
+<!--              <span class="tag-activity"># 관광</span>-->
+<!--            </div>-->
+<!--            <p class="room-description">제주도의 숨은 명소들을 함께 탐방하며 추억을 만들어요</p>-->
+<!--            <div class="room-info">-->
+<!--              <div class="room-participants">-->
+<!--                <span class="participants-count">2 / 5</span>-->
+<!--                <span class="participants-label">참여현황</span>-->
+<!--              </div>-->
+<!--              <div class="room-period">25/10/01 - 25/10/04</div>-->
+<!--            </div>-->
+<!--            <div class="room-actions">-->
+<!--              <button class="btn-details">상세보기</button>-->
+<!--              <button class="btn-join">참여 신청</button>-->
+<!--              <button class="btn-report">신고</button>-->
+<!--            </div>-->
+<!--          </div>-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; 방 카드 6 &ndash;&gt;-->
+<!--        <div class="room-card">-->
+<!--          <div class="room-image">-->
+<!--            <img th:src="@{/image/mainpage/sample3.png}" alt="경주 역사 탐방">-->
+<!--            <div class="room-status active">모집중</div>-->
+<!--          </div>-->
+<!--          <div class="room-content">-->
+<!--            <h4 class="room-title">경주 역사 문화 탐방</h4>-->
+<!--            <div class="room-tags">-->
+<!--              <span class="tag-emotion"># 여유</span>-->
+<!--              <span class="tag-location"># 경주</span>-->
+<!--              <span class="tag-activity"># 역사</span>-->
+<!--            </div>-->
+<!--            <p class="room-description">천년 고도 경주의 역사와 문화를 천천히 둘러보는 여행</p>-->
+<!--            <div class="room-info">-->
+<!--              <div class="room-participants">-->
+<!--                <span class="participants-count">3 / 6</span>-->
+<!--                <span class="participants-label">참여현황</span>-->
+<!--              </div>-->
+<!--              <div class="room-period">25/09/20 - 25/09/22</div>-->
+<!--            </div>-->
+<!--            <div class="room-actions">-->
+<!--              <button class="btn-details">상세보기</button>-->
+<!--              <button class="btn-join">참여 신청</button>-->
+<!--              <button class="btn-report">신고</button>-->
+<!--            </div>-->
+<!--          </div>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--    </div>-->
+<!--  </div>-->
+<!--</section>-->
 
 <!-- 날씨별 여행 섹션 -->
 <section class="weather-travel">
