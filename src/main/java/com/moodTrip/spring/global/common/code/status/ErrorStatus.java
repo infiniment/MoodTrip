@@ -42,7 +42,6 @@ public enum ErrorStatus implements BaseErrorCode {
     ROOM_MEMBER_ALREADY_EXISTS(HttpStatus.CONFLICT, "ROOM_MEMBER_001", "이미 해당 방에 참여한 회원입니다."),
     ROOM_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "ROOM_MEMBER_002", "방 참여 정보를 찾을 수 없습니다.");
 
-
     private final HttpStatus httpStatus;
     private final String code;
     private final String message;

@@ -37,6 +37,7 @@ public class MemberService {
         // 중복 확인
         // 비번 암호화
         log.info("회원가입 요청 처리 시작 - {}", request.getUserId());
+        log.info("이메일 들어왔는지 확인 - {}", request.getEmail());
 
         // 엔티티 변환 및 저장
         if (!request.isTerms()) {
@@ -56,6 +57,7 @@ public class MemberService {
         if (memberRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("이미 등록된 이메일입니다.");
         }
+
         String encodedPassword = passwordEncoder.encode(request.getPassword());
 
         // 엔티티 객체로 변환
@@ -87,12 +89,28 @@ public class MemberService {
         return memberRepository.existsByProviderAndProviderId(provider, providerId);
     }
 
+    // 이메일로 회원 조회
+    public Member findByEmail(String email) {
+        return memberRepository.findByEmail(email)
+                .orElse(null);
+    }
 
     // provider와 providerId로 회원찾기(소셜 로그인)
     public Member findByProviderAndProviderId(String provider, String providerId) {
         return memberRepository.findByProviderAndProviderId(provider, providerId)
                 .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다"));
     }
+
+    //새 비밀번호
+    public void updatePassword(Member member, String encodedPassword) {
+        member.setMemberPw(encodedPassword);
+        memberRepository.save(member);
+        log.info("회원({}) 비밀번호가 DB에 저장되었습니다", member.getEmail());
+    }
+
+
+
+
 
 
     // 닉네임 수정 로직

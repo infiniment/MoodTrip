@@ -32,7 +32,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
+    public WebSecurityCustomizer webSecurityCustomizer() { // 프로필 변경 업로드 시 사용
         return (web) -> web.ignoring()
                 .requestMatchers("/uploads/**")
                 .requestMatchers("/css/**", "/js/**", "/image/**");
@@ -53,7 +53,7 @@ public class SecurityConfig {
                                            JwtUtil jwtUtil,
                                            UserDetailsService userDetailsService,
                                            JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint  // ✅ 추가
-    ) throws Exception {
+    ) throws Exception { // uploads 폴더 추가(프로필 변경에서 사용)
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
