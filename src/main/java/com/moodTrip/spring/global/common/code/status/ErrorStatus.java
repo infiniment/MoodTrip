@@ -26,7 +26,7 @@ public enum ErrorStatus implements BaseErrorCode {
     DUPLICATE_USER(HttpStatus.CONFLICT, "USER_002", "이미 존재하는 사용자입니다."),
 
     //기타 도메인 예시
-    CARD_NOT_FOUND(HttpStatus.NOT_FOUND, "CARD_001", "해당 카드를 찾을 수 없습니다."), LOGIN_FAIL(, , );
+    CARD_NOT_FOUND(HttpStatus.NOT_FOUND, "CARD_001", "해당 카드를 찾을 수 없습니다."), LOGIN_FAIL(HttpStatus.UNAUTHORIZED, "ERROR_401" , "로그인 실패");
 
     private final HttpStatus httpStatus;
     private final String code;
