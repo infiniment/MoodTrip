@@ -18,7 +18,7 @@ public class SchedulingWebSocketController {
     private final OnlineUserTracker userTracker;
     private final SimpMessagingTemplate messagingTemplate;
 
-    @MessageMapping("/scheduling/enter")
+    @MessageMapping("/schedule/enter")
     public void enter(ChatMessage message, SimpMessageHeaderAccessor accessor) {
         Long roomId = message.getRoomId();
         String nickname = message.getSender();
@@ -29,7 +29,7 @@ public class SchedulingWebSocketController {
 
         userTracker.addUser(roomId, nickname);
 
-        messagingTemplate.convertAndSend("/sub/scheduling/" + roomId, userTracker.getOnlineUsers(roomId));
+        messagingTemplate.convertAndSend("/sub/schedule/" + roomId, userTracker.getOnlineUsers(roomId));
     }
 
     @EventListener
@@ -42,7 +42,7 @@ public class SchedulingWebSocketController {
             userTracker.removeUser(roomId, nickname);
 
             messagingTemplate.convertAndSend(
-                    "/sub/scheduling/" + roomId,
+                    "/sub/schedule/" + roomId,
                     userTracker.getOnlineUsers(roomId)
             );
         }

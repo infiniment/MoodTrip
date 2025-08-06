@@ -279,6 +279,22 @@ body {
     margin-bottom: 25px;
 }
 
+/*.calendar-day {*/
+/*    aspect-ratio: 1;*/
+/*    display: flex;*/
+/*    align-items: center;*/
+/*    justify-content: center;*/
+/*    border-radius: 12px;*/
+/*    cursor: pointer;*/
+/*    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);*/
+/*    font-weight: 600;*/
+/*    color: #001A2C;*/
+/*    position: relative;*/
+/*    overflow: hidden;*/
+/*    border: 1px solid #e0e0e0; !* ✅ 기본 border 추가 *!*/
+/*}*/
+
+/* 기본 calendar-day 스타일 */
 .calendar-day {
     aspect-ratio: 1;
     display: flex;
@@ -291,20 +307,51 @@ body {
     color: #001A2C;
     position: relative;
     overflow: hidden;
+    border: 1px solid #e0e0e0;
 }
 
+/* 비활성 날짜 */
+.calendar-day.disabled {
+    background-color: #f0f0f0;
+    color: #aaa;
+    cursor: not-allowed;
+}
+
+
+
+/* hover */
+.calendar-day:hover:not(.disabled):not(.empty) {
+    background: linear-gradient(135deg, rgba(0, 87, 146, 0.15) 0%, rgba(0, 26, 44, 0.1) 100%);
+    transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(0, 87, 146, 0.2);
+}
+
+/* hover 효과 */
 .calendar-day:hover {
     background: linear-gradient(135deg, rgba(0, 87, 146, 0.15) 0%, rgba(0, 26, 44, 0.1) 100%);
-    transform: scale(1.1);
-    box-shadow: 0 6px 15px rgba(0, 87, 146, 0.2);
+    transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(0, 87, 146, 0.2);
 }
 
+
+.calendar-day.empty {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    pointer-events: none;
+    transform: none;
+    color: transparent;
+}
+
+/* 선택된 날짜 */
 .calendar-day.selected {
     background: linear-gradient(135deg, #005792 0%, #001A2C 100%);
     color: white;
-    transform: scale(1.15);
+    transform: scale(1.1);
     box-shadow: 0 10px 25px rgba(0, 87, 146, 0.4);
+    border: 1px solid #003B6D;
 }
+
 
 .schedule-list {
     background: linear-gradient(135deg, #ffffff 0%, #f8fafb 100%);
@@ -321,13 +368,14 @@ body {
     display: flex;
     align-items: center;
     padding: 20px;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     background: linear-gradient(135deg, rgba(0, 87, 146, 0.08) 0%, rgba(0, 26, 44, 0.05) 100%);
     border-radius: 15px;
     border-left: 5px solid #005792;
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    margin-top: 5px;
 }
 
 .schedule-item::before {
@@ -406,6 +454,27 @@ body {
     min-width: 70px;
     text-align: center;
 }
+
+/*.time-input-wrapper {*/
+/*    display: flex;*/
+/*    align-items: center;*/
+/*    border: 1px solid #dce9f5;*/
+/*    border-radius: 12px;*/
+/*    padding: 0 1rem;*/
+/*    height: 56px;*/
+/*    background-color: #f9fbfc;*/
+/*    box-sizing: border-box;*/
+/*    width: 100%;*/
+/*}*/
+
+/*.time-input-wrapper input[type="time"] {*/
+/*    all: unset;*/
+/*    width: 100%;*/
+/*    height: 100%;*/
+/*    font-size: 1rem;*/
+/*    padding: 0;*/
+/*    color: #001A2C;*/
+/*}*/
 
 .no-schedule {
     text-align: center;

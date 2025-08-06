@@ -51,9 +51,18 @@ public class ScheduleServiceImpl implements ScheduleService {
         Schedule schedule = scheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 일정이 존재하지 않습니다."));
 
-        schedule.setScheduleTitle(request.getScheduleTitle());
-        schedule.setScheduleDescription(request.getScheduleDescription());
-        schedule.setTravelStartDate(request.getTravelStartDate());
+        if (request.getScheduleTitle() != null) {
+            schedule.setScheduleTitle(request.getScheduleTitle());
+        }
+
+        if (request.getScheduleDescription() != null) {
+            schedule.setScheduleDescription(request.getScheduleDescription());
+        }
+
+        if (request.getTravelStartDate() != null) {
+            schedule.setTravelStartDate(request.getTravelStartDate());
+        }
+
         schedule.setUpdatedSchedule(LocalDateTime.now());
 
         return ScheduleResponse.from(scheduleRepository.save(schedule));
@@ -62,5 +71,12 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Override
     public void deleteSchedule(Long scheduleId) {
         scheduleRepository.deleteById(scheduleId);
+    }
+
+    @Override
+    public Long getRoomIdByScheduleId(Long scheduleId) {
+        Schedule schedule = scheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new RuntimeException("Schedule not found"));
+        return schedule.getRoom().getRoomId();
     }
 }

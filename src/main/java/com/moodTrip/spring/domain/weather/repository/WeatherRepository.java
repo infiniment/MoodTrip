@@ -8,5 +8,5 @@ import java.util.Optional;
 import java.util.List;
 
 public interface WeatherRepository extends JpaRepository<Weather, Long> {
-
+    Optional<Weather> findTopByDateOrderByDateTimeDesc(String date); // 당일 날짜
 }

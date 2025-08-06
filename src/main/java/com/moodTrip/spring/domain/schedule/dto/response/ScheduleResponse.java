@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @Builder
 public class ScheduleResponse {
     private Long scheduleId;
+    private Long roomId;
     private String scheduleTitle;
     private String scheduleDescription;
     private LocalDateTime travelStartDate;
@@ -18,6 +19,7 @@ public class ScheduleResponse {
     public static ScheduleResponse from(Schedule schedule) {
         return ScheduleResponse.builder()
                 .scheduleId(schedule.getScheduleId())
+                .roomId(schedule.getRoom().getRoomId())
                 .scheduleTitle(schedule.getScheduleTitle())
                 .scheduleDescription(schedule.getScheduleDescription())
                 .travelStartDate(schedule.getTravelStartDate())

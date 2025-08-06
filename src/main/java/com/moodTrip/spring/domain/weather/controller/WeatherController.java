@@ -23,4 +23,9 @@ public class WeatherController {
     public List<WeatherResponse> getHourlyForecast(@RequestParam String date) {
         return weatherService.getHourlyForecast(date);
     }
+
+    @GetMapping("/current")
+    public WeatherResponse getCurrentWeather() {
+        return weatherService.getCurrentWeather();
+    }
 }

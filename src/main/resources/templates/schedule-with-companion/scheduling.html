@@ -12,7 +12,10 @@
 <body>
 <div class="container">
     <div id="chatData"
-         th:attr="data-room-id=${roomId}, data-current-user=${currentMember.nickname}"
+         th:attr="data-room-id=${roomId},
+              data-current-user=${currentMember.nickname},
+              data-travel-start=${room.travelStartDate},
+              data-travel-end=${room.travelEndDate}"
          style="display: none;"></div>
     <div class="header">
         <h1>🌟 함께 떠나는 여행</h1>
@@ -193,9 +196,11 @@
             <button class="modal-close" onclick="closeScheduleModal()">×</button>
         </div>
         <div class="modal-body">
-            <div class="form-group">
+            <div class="form-group time-wrapper">
                 <label for="scheduleTime">시간</label>
-                <input type="time" id="scheduleTime" class="form-input" placeholder="예: 14:30">
+                <div class="time-input-wrapper">
+                    <input type="time" id="scheduleTime" class="form-input" placeholder="예: 14:30">
+                </div>
             </div>
             <div class="form-group">
                 <label for="scheduleTitle">일정 제목</label>
@@ -220,7 +225,7 @@
                 <img th:src="@{/image/schedule-with-companion/label-logo.jpg}" alt="무드트립">
             </div>
             <div class="profile-info">
-                <h3>채팅방 - 동행자들과 소통하기</h3>
+                <h3>채팅방</h3>
                 <small id="chatRoomUsers">현재 접속자: 김상우, 노수민</small>
             </div>
         </div>
