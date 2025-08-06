@@ -44,10 +44,6 @@
                     <span class="menu-icon">📢</span>
                     <span class="menu-text">공지사항</span>
                 </div>
-                <div class="menu-item" data-menu="faq">
-                    <span class="menu-icon">❓</span>
-                    <span class="menu-text">FAQ 관리</span>
-                </div>
                 <div class="menu-item" data-menu="settings">
                     <span class="menu-icon">⚙️</span>
                     <span class="menu-text">설정</span>
@@ -749,79 +745,6 @@
 <!--                    </div>-->
 <!--                </div>-->
             </section>
-
-            <!-- FAQ 관리 섹션 -->
-            <section class="content-section" id="faq-section" style="display: none;">
-                <div class="section-header">
-                    <h2>FAQ 관리</h2>
-                    <button class="btn-primary" onclick="showFaqForm()">새 FAQ 작성</button>
-                </div>
-
-                <!-- FAQ 목록 -->
-                <div id="faq-list-view">
-                    <div class="table-container">
-                        <table class="data-table">
-                            <thead>
-                            <tr>
-                                <th>질문</th>
-                                <th>카테고리</th>
-                                <th>작성일</th>
-                                <th>관리</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr>
-                                <td>매칭은 어떻게 이루어지나요?</td>
-                                <td>매칭</td>
-                                <td>2024-07-01</td>
-                                <td>
-                                    <button class="btn-small" onclick="editFaq(this)">수정</button>
-                                    <button class="btn-small danger" onclick="deleteFaq(this)">삭제</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>회원 탈퇴는 어디서 하나요?</td>
-                                <td>회원</td>
-                                <td>2024-06-28</td>
-                                <td>
-                                    <button class="btn-small" onclick="editFaq(this)">수정</button>
-                                    <button class="btn-small danger" onclick="deleteFaq(this)">삭제</button>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-
-                <!-- FAQ 작성 폼 -->
-                <div class="faq-form" id="faq-form-view" style="display: none;">
-                    <div class="form-group">
-                        <label>카테고리</label>
-                        <select id="faq-category">
-                            <option>서비스 소개</option>
-                            <option>회원 정보</option>
-                            <option>이용 방법</option>
-                            <option>결제</option>
-                            <option>취소·환불</option>
-                            <option>분쟁·페널티</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>질문</label>
-                        <input type="text" id="faq-question" placeholder="질문을 입력하세요">
-                    </div>
-                    <div class="form-group">
-                        <label>답변</label>
-                        <textarea id="faq-answer" placeholder="답변을 입력하세요" rows="5"></textarea>
-                    </div>
-                    <div class="form-actions">
-                        <button class="btn-primary" onclick="saveFaq()">저장</button>
-                        <button class="btn-secondary" onclick="cancelFaqForm()">취소</button>
-                    </div>
-                </div>
-            </section>
-
 
             <!-- 설정 섹션 -->
             <section class="content-section" id="settings-section" style="display: none;">
