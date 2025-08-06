@@ -25,7 +25,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     //엔티티를 반환하는 조회 메서드(소셜)
     Optional<Member> findByProviderAndProviderId(String provider, String providerId);
 
-
+    //비밀번호 찾기 할 때 유효 이메일 인증
+    Optional<Member> findByEmail(String email);
 
 
 }

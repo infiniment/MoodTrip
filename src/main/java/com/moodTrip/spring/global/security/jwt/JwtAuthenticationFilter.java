@@ -11,8 +11,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-
 import java.io.IOException;
+
+
+
+
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -41,7 +44,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         } catch (Exception ex) {
             // 로그로 남기고, 인증 없이 넘어간다 (필터는 중단하지 않음)
-            System.out.println("JWT 인증 실패 or 회원가입 로직 : " + ex.getMessage());
+            System.out.println("JWT 인증 실패 or 회원가입 로직or 임시 비밀번호 등  : " + ex.getMessage());
         }
         filterChain.doFilter(request, response);
     }

@@ -50,8 +50,14 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                                "/login",            // 로그인 폼 GET
+                                "/api/login",        // 커스텀 로그인 폼
+                                "/signup", "/api/signup","/password/**", "/password/find",
                                 "/login", "/api/login", "/signup", "/api/signup",
                                 "/css/**", "/js/**", "/image/**",
+                                "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**",  "/api-docs/**",
+                                "/css/**", "/js/**", "/images/**",
+                                "/error",
                                 "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/api-docs/**",
                                 "/error", "/api/v1/room-online/**"
                         ).permitAll()
@@ -61,6 +67,7 @@ public class SecurityConfig {
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint)  // ✅ 설정
                 )
                 .formLogin(form -> form.disable())
+                //.formLogin(form -> form.loginPage("/api/login").loginProcessingUrl("/login").permitAll())
                 .oauth2Login(oauth2 -> oauth2
                         .loginPage("/login")
                         .authorizationEndpoint(endpoint ->

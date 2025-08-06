@@ -6,19 +6,9 @@
   <title>무드 트립</title>
   <link rel="stylesheet" th:href="@{/css/signup/signup.css}" href="/static/css/signup/signup.css"/>
   <script th:src="@{/js/signup/signup.js}" src="/static/js/signup/signup.js"></script>
-  <link rel=" stylesheet" th:href="@{/css/fix/header.css}">
-  <link rel="stylesheet" th:href="@{/css/fix/footer.css}">
-  <link rel="stylesheet" th:href="@{/css/fix/header-after.css}">
+
 </head>
-<!-- 로그인 상태에 따른 조건부 헤더 렌더링 -->
-<div th:if="${isLoggedIn}">
-  <!-- 로그인된 사용자용 헤더 -->
-  <th:block th:replace="~{fix/header-after-login :: header}"></th:block>
-</div>
-<div th:unless="${isLoggedIn}">
-  <!-- 로그인 안된 사용자용 헤더 -->
-  <th:block th:replace="~{fix/header :: header}"></th:block>
-</div>
+
 <body>
 <div class="py-6 desktop:min-h-screen desktop:bg-w-gray-10 desktop:py-[120px]">
   <div class="mx-auto grid w-full max-w-container px-5 desktop:px-9 desktop:gap-x-6 desktop:grid-areas-signUp-desktop">
@@ -56,6 +46,9 @@
           <p class="form-subtitle">무드트립과 함께 특별한 여행을 시작하세요</p>
         </div>
         <form th:object="${memberRequest}" method="post" data-testid="signup-form-contents" id="signupForm" class="w-full">
+          <div th:if="${errorMessage}" class="error-message" th:text="${errorMessage}"
+               style="color:red; text-align:center; margin-bottom:16px;"></div>
+
           <div class="input-section">
             <!-- 이메일 -->
             <div class="input-group">
@@ -295,8 +288,6 @@
     </div>
   </div>
 </div>
-<th:block th:replace="~{fix/footer :: footer}"></th:block>
-<script th:src="@{/js/fix/header.js}"></script>
-<script th:src="@{/js/fix/header-after.js}"></script>
+
 </body>
 </html>

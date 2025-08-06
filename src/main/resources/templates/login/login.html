@@ -6,19 +6,10 @@
   <title>무드 트립</title>
   <link rel="stylesheet" th:href="@{/css/login/login.css}">
   <script th:src="@{/js/login/login.js}"></script>
-  <link rel=" stylesheet" th:href="@{/css/fix/header.css}">
-  <link rel="stylesheet" th:href="@{/css/fix/footer.css}">
-  <link rel="stylesheet" th:href="@{/css/fix/header-after.css}">
+
 </head>
-<!-- 로그인 상태에 따른 조건부 헤더 렌더링 -->
-<div th:if="${isLoggedIn}">
-  <!-- 로그인된 사용자용 헤더 -->
-  <th:block th:replace="~{fix/header-after-login :: header}"></th:block>
-</div>
-<div th:unless="${isLoggedIn}">
-  <!-- 로그인 안된 사용자용 헤더 -->
-  <th:block th:replace="~{fix/header :: header}"></th:block>
-</div>
+
+
 <body>
 <div class="box-border py-6 desktop:min-h-screen desktop:bg-w-gray-10 desktop:py-[120px]">
   <div class="mx-auto grid w-full max-w-container auto-cols-1fr gap-x-5 px-5 desktop:gap-x-6 desktop:px-9 grid-areas-signUp-mobile tablet:grid-areas-signUp-tablet desktop:grid-areas-signUp-desktop">
@@ -115,25 +106,25 @@
               </div>
             </div>
             <div class="box-border flex right-items-center justify-between chkBox-gap-loginBtn">
-              <label data-testid="design-system-checkbox" class="group flex size-chkBox-fit">
-                <input class="absolute option-h-0 option-w-0 option-opacity-0" type="checkbox" name="remember">
-                <div class="group relative box-border cursor-pointer border option-size-4 option-m-px rounded group-hover:border-primary-500 border-w-gray-200 bg-white flex items-center" role="checkbox-button">
-                  <svg width="10" height="8" viewBox="0 0 10 8" fill="none" xmlns="http://www.w3.org/2000/svg"
-                       class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-transparent"
-                       style="visibility: hidden;">
-                    <path d="M1 3.8L4 7L9 1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
-                  </svg>
+              <label data-testid="design-system-checkbox" class="flex items-center justify-between size-chkBox-fit w-full">
+                <div class="flex items-center">
+                  <input class="absolute option-h-0 option-w-0 option-opacity-0" type="checkbox" name="remember">
+                  <div class="box-border cursor-pointer border option-size-4 option-m-px rounded group-hover:border-primary-500 border-w-gray-200 bg-white flex items-center relative" role="checkbox-button">
+                    <svg width="10" height="8" viewBox="0 0 10 8" fill="none" xmlns="http://www.w3.org/2000/svg"
+                         class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-transparent"
+                         style="visibility: hidden;">
+                      <path d="M1 3.8L4 7L9 1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
+                    </svg>
+                  </div>
+                  <span class="textbox typo-body1 cursor-pointer text-w-gray-900 ml-2">로그인 상태 유지</span>
                 </div>
-                <span class="textbox typo-body1 cursor-pointer text-w-gray-900 ml-2">로그인 상태 유지</span>
               </label>
-              <!--
- <a data-testid="find-password-link" class="no-underline" th:href="@{/find-password}">
-   <span class="textbox typo-body1 font-medium text-w-primary">
-     비밀번호 찾기
-   </span>
- </a>
- -->
+              <a href="/password/find" class="typo-body1 text-primary-600 hover:underline cursor-pointer">
+                비밀번호 찾기
+              </a>
             </div>
+
+
             <div class="box-border btn-login-pb-4" data-testid="login-button">
               <button class="box-border flex cursor-pointer right-items-center right-justify-center h-[50px] text-base leading-[26px] gap-x-1.5 px-input-loginBtn text-w-white bg-primary-500 btn-login-border-0 hover:bg-primary-700 w-full text-rounded-xl loginBtn" type="submit">
                   <span class="textbox typo-body1">
@@ -195,7 +186,7 @@
               <span class="textbox typo-body1 text-w-gray-600">
                 아직 무드트립 통합회원이 아니신가요?
               </span>
-            <a class="no-underline" data-testid="sign-up-link" th:href="@{/signup}">
+            <a class="no-underline" data-testid="sign-up-link" th:href="@{/api/signup}">
                 <span class="textbox typo-body1 font-medium text-w-primary">
                   회원가입
                 </span>
@@ -207,80 +198,5 @@
   </div>
 </div>
 
-<!-- 모달 HTML (body 태그 맨 아래에 추가) -->
-<!--<div id="inputErrorModal" style="
-    display: none;
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.4);
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(2px);
-    transition: opacity 0.3s ease;
-  ">
-  <div id="inputErrorContent" style="
-      background: #ffffff;
-      padding: 2rem 3rem;
-      border-radius: 1rem;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-      text-align: center;
-      max-width: 400px;
-      width: 90%;
-      animation: fadeIn 0.3s ease;
-    ">
-    <div style="
-        font-size: 1.1rem;
-        font-weight: 500;
-        color: #333;
-        margin-bottom: 1rem;
-      ">
-      ⚠️ 입력값이 누락되었습니다
-    </div>
-    <div style="
-        color: #555;
-        font-size: 1rem;
-        margin-bottom: 2rem;
-      ">
-      올바른 아이디 또는 비밀번호를 <strong>입력해 주세요.</strong>
-    </div>
-    <button id="closeInputModal" style="
-        padding: 0.6rem 2rem;
-        border: none;
-        border-radius: 0.5rem;
-        color: #fff;
-        font-weight: 500;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: background 0.3s;
-        background: linear-gradient(to right, #005792, #001A2C);
-      "
-            onmouseover="this.style.background='linear-gradient(to right, #004271, #000e1a)'"
-            onmouseout="this.style.background='linear-gradient(to right, #005792, #001A2C)'">
-      닫기
-    </button>
-  </div>
-</div>
-<style>
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: scale(0.95);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-</style>
--->
-<!-- 푸터 포함 -->
-<th:block th:replace="~{fix/footer :: footer}"></th:block>
-<script th:src="@{/js/fix/header.js}"></script>
-<script th:src="@{/js/fix/header-after.js}"></script>
 </body>
 </html>
