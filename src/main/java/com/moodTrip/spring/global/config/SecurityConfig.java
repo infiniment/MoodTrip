@@ -50,6 +50,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                                "/ws/**",
                                 "/login",            // 로그인 폼 GET
                                 "/api/login",        // 커스텀 로그인 폼
                                 "/signup", "/api/signup","/password/**", "/password/find",
