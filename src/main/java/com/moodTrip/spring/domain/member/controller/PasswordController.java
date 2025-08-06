@@ -1,5 +1,6 @@
 package com.moodTrip.spring.domain.member.controller;
 
+import com.moodTrip.spring.domain.member.dto.request.LoginRequest;
 import com.moodTrip.spring.domain.member.dto.request.PasswordForm;
 import com.moodTrip.spring.domain.member.entity.Member;
 import com.moodTrip.spring.domain.member.service.MailService;
@@ -136,7 +137,8 @@ public String showNewPasswordForm(Model model) {
         memberService.updatePassword(member, passwordEncoder.encode(form.getNewPassword()));
         session.removeAttribute("emailVerified");
         redirectAttributes.addFlashAttribute("success", "비밀번호가 성공적으로 변경되었습니다. 다시 로그인해주세요.");
-        return "login/login"; // 성공 메시지 포함 동일 페이지 or 성공페이지
+        return "redirect:/login";
+
 
     }
 

@@ -49,6 +49,7 @@ public class SignUpController {
         }
     }
 
+
     @GetMapping("/signup/success")
     public String signupSuccess() {
         return "signup/success"; // templates/signup/success.html이 렌더링됨

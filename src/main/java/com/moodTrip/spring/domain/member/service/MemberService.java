@@ -37,6 +37,7 @@ public class MemberService {
         // 중복 확인
         // 비번 암호화
         log.info("회원가입 요청 처리 시작 - {}", request.getUserId());
+        log.info("이메일 들어왔는지 확인 - {}", request.getEmail());
 
         // 엔티티 변환 및 저장
         if (!request.isTerms()) {
@@ -56,6 +57,7 @@ public class MemberService {
         if (memberRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("이미 등록된 이메일입니다.");
         }
+
         String encodedPassword = passwordEncoder.encode(request.getPassword());
 
         // 엔티티 객체로 변환
