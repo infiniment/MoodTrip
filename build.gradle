@@ -32,9 +32,6 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 
-	//통합 로그인  pom.xml
-	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
-
 	// WebSocket(채팅 기능용)
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
@@ -70,7 +67,6 @@ dependencies {
 
 
 
-
 	// Query DSL (복잡한 쿼리용)
 	implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
 	annotationProcessor 'com.querydsl:querydsl-apt:5.0.0:jakarta'
@@ -80,15 +76,7 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-
-
-	//메일 전송 기능
-	implementation 'org.springframework.boot:spring-boot-starter-mail'
 }
-
-
-
-
 
 tasks.named('test') {
 	useJUnitPlatform()
@@ -111,7 +99,3 @@ clean {
 compileJava {
 	options.generatedSourceOutputDirectory = file(generated)
 }
-
-
-
-
