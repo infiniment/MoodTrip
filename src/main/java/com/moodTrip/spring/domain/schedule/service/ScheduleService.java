@@ -9,5 +9,6 @@ public interface ScheduleService {
     List<ScheduleResponse> getSchedulesByRoomId(Long roomId);
     ScheduleResponse createSchedule(Long roomId, ScheduleRequest request);
     ScheduleResponse updateSchedule(Long scheduleId, ScheduleRequest request);
+    Long getRoomIdByScheduleId(Long scheduleId);
     void deleteSchedule(Long scheduleId);
 }

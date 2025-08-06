@@ -40,7 +40,7 @@ public class RoomMemberResponse {
 
     public static RoomMemberResponse from(RoomMember roomMember) {
 
-        if (member == null) {
+        if (roomMember == null || roomMember.getMember() == null) {
             throw new CustomException(INTERNAL_SERVER_ERROR);
         }
 
