@@ -22,6 +22,9 @@ public class WeatherResponse {
     private double lat;
     private double lon;
 
+    private Double maxTemp;
+    private Double minTemp;
+
     public WeatherResponse(Weather weather) {
         this.dateTime = weather.getDateTime();
         this.date = weather.getDate();

@@ -8,7 +8,8 @@ let roomId = null;
 let selectedDate = null; // 선택된 날짜
 let schedules = {}; // 일정 데이터 저장소 (날짜별)
 let connectedUsers = [];
-let allSchedules = []; // 전체 일정 전역 저장
+let travelStartDate = null;
+let travelEndDate = null;
 
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -16,12 +17,25 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!chatDataElement) return;
 
     // 초기 변수 세팅
+    const travelStartStr = chatDataElement.dataset.travelStart;
+    const travelEndStr = chatDataElement.dataset.travelEnd;
+    travelStartDate = new Date(travelStartStr);
+    travelEndDate = new Date(travelEndStr);
     chattingRoomId = parseInt(chatDataElement.dataset.roomId);
     currentUser = chatDataElement.dataset.currentUser;
     roomId = chattingRoomId;
 
-    console.log("✅ chattingRoomId:", chattingRoomId);
-    console.log("✅ currentUser:", currentUser);
+    const wrapper = document.querySelector(".time-input-wrapper");
+    const timeInput = document.getElementById("scheduleTime");
+
+    if (wrapper && timeInput) {
+        wrapper.addEventListener("click", function () {
+            timeInput.showPicker(); // 최신 브라우저 지원
+        });
+    }
+
+    console.log("chattingRoomId:", chattingRoomId);
+    console.log("currentUser:", currentUser);
 
     updateUserInterface();
     connectWebSocket();
@@ -33,6 +47,20 @@ document.addEventListener('DOMContentLoaded', function () {
     let currentDate = new Date();
     let currentYear = currentDate.getFullYear();
     let currentMonth = currentDate.getMonth();
+
+    function getDayElement(year, month, day) {
+        const allDays = document.querySelectorAll(".calendar-day.date");
+        for (const d of allDays) {
+            if (
+                parseInt(d.textContent) === day &&
+                !d.classList.contains("empty") &&
+                !d.classList.contains("disabled")
+            ) {
+                return d;
+            }
+        }
+        return null;
+    }
 
     function renderCalendar(year, month) {
         const allDays = calendarGrid.querySelectorAll(".calendar-day.date");
@@ -54,18 +82,32 @@ document.addEventListener('DOMContentLoaded', function () {
             dayDiv.className = "calendar-day date";
             dayDiv.textContent = day;
 
-            if (
-                day === currentDate.getDate() &&
-                month === currentDate.getMonth() &&
-                year === currentDate.getFullYear()
-            ) {
-                dayDiv.style.fontWeight = "bold";
-                dayDiv.style.color = "#007BFF";
-            }
+            // 현재 날짜를 yyyy-MM-dd 형식 문자열로 변환
+            const currentDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
-            dayDiv.addEventListener("click", () => {
-                handleDateClick(year, month, day);
-            });
+            if (travelStartStr && travelEndStr &&
+                (currentDateStr < travelStartStr || currentDateStr > travelEndStr)) {
+                // 날짜가 범위 밖이면 비활성화
+                dayDiv.classList.add("disabled");
+                dayDiv.style.pointerEvents = 'none';
+                dayDiv.style.opacity = 0.3;
+            } else {
+                // 선택 가능 날짜
+                if (travelStartStr && travelEndStr &&
+                    (currentDateStr < travelStartStr || currentDateStr > travelEndStr)) {
+                    // 날짜가 범위 밖이면 비활성화
+                    dayDiv.classList.add("disabled");
+                    dayDiv.style.pointerEvents = 'none';
+                    dayDiv.style.opacity = 0.3;
+                } else {
+                    // 선택 가능 날짜
+                    dayDiv.addEventListener("click", () => {
+                        handleDateClick(year, month, day, dayDiv);
+                    });
+                }
+
+
+            }
 
             calendarGrid.appendChild(dayDiv);
         }
@@ -73,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     renderCalendar(currentYear, currentMonth);
 
-    fetch(`/api/schedules/${roomId}`)
+    fetch(`/api/schedules/room/${roomId}`)
         .then(response => response.json())
         .then(data => {
             data.forEach(schedule => {
@@ -82,11 +124,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 schedules[date].push(schedule);
             });
 
-            console.log('✅ 전체 일정 데이터:', schedules);
+            console.log('전체 일정 데이터:', schedules);
             updateScheduleListAll();
         })
         .catch(error => {
-            console.error("❌ 일정 데이터 로드 실패:", error);
+            console.error("일정 데이터 로드 실패:", error);
         });
 
     const [prevBtn, nextBtn] = document.querySelectorAll(".calendar-nav .nav-btn");
@@ -107,134 +149,49 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         renderCalendar(currentYear, currentMonth);
     });
-});
 
-// document.addEventListener('DOMContentLoaded', function () {
-//     const chatDataElement = document.getElementById('chatData');
-//     if (!chatDataElement) return;
-//
-//     chattingRoomId = parseInt(chatDataElement.dataset.roomId); // 채팅방 id
-//     currentUser = chatDataElement.dataset.currentUser;
-//     roomId = chattingRoomId; // 🔁 필요한 경우 roomId 별도 저장
-//
-//     console.log("✅ chattingRoomId:", chattingRoomId);
-//     console.log("✅ currentUser:", currentUser);
-//
-//     updateUserInterface(); // UI 초기 렌더링
-//
-//     connectWebSocket(); // WebSocket 연결 시작
-//
-// });
-//
-// function highlightCalendarDate(dateString) {
-//     const [year, month, day] = dateString.split('-').map(Number);
-//
-//     const allDateElements = document.querySelectorAll('.calendar-day.date');
-//     allDateElements.forEach(elem => {
-//         if (elem.classList.contains('empty')) return;
-//         if (parseInt(elem.textContent) === day) {
-//             elem.classList.add('selected');
-//         } else {
-//             elem.classList.remove('selected');
-//         }
-//     });
-// }
-//
-// // 달력 관련 기능
-// document.addEventListener("DOMContentLoaded", function () {
-//     const calendarGrid = document.getElementById("calendarGrid");
-//     const calendarHeader = document.querySelector(".calendar-header h3");
-//
-//     // 현재 날짜 가져오기
-//     let currentDate = new Date();
-//     let currentYear = currentDate.getFullYear();
-//     let currentMonth = currentDate.getMonth(); // 0: 1월 ~ 11: 12월
-//
-//     function renderCalendar(year, month) {
-//         // 기존 날짜 div 초기화 (요일 헤더 제외)
-//         const allDays = calendarGrid.querySelectorAll(".calendar-day.date");
-//         allDays.forEach(day => day.remove());
-//
-//         // 달력 헤더 갱신
-//         calendarHeader.textContent = `${year}년 ${month + 1}월`;
-//
-//         // 해당 월의 1일과 마지막 날짜 계산
-//         const firstDay = new Date(year, month, 1).getDay(); // 0:일 ~ 6:토
-//         const lastDate = new Date(year, month + 1, 0).getDate(); // 말일
-//
-//         // 앞쪽 빈칸 채우기
-//         for (let i = 0; i < firstDay; i++) {
-//             const emptyDiv = document.createElement("div");
-//             emptyDiv.className = "calendar-day date empty";
-//             calendarGrid.appendChild(emptyDiv);
-//         }
-//
-//         // 날짜 채우기
-//         for (let day = 1; day <= lastDate; day++) {
-//             const dayDiv = document.createElement("div");
-//             dayDiv.className = "calendar-day date";
-//             dayDiv.textContent = day;
-//
-//             // 오늘 날짜 강조
-//             if (
-//                 day === currentDate.getDate() &&
-//                 month === currentDate.getMonth() &&
-//                 year === currentDate.getFullYear()
-//             ) {
-//                 dayDiv.style.fontWeight = "bold";
-//                 dayDiv.style.color = "#007BFF";
-//             }
-//
-//             // 클릭 이벤트 (일정 불러오기 등)
-//             dayDiv.addEventListener("click", () => {
-//                 handleDateClick(year, month, day);
-//             });
-//
-//             calendarGrid.appendChild(dayDiv);
-//         }
-//     }
-//
-//     // 초기 렌더링
-//     renderCalendar(currentYear, currentMonth);
-//
-//     fetch(`/api/schedules/${roomId}`)
-//         .then(response => response.json())
-//         .then(data => {
-//             // 날짜별로 그룹화
-//             data.forEach(schedule => {
-//                 const date = schedule.travelStartDate.split('T')[0]; // 'YYYY-MM-DD'
-//                 if (!schedules[date]) schedules[date] = [];
-//                 schedules[date].push(schedule);
-//             });
-//
-//             console.log('✅ 전체 일정 데이터:', schedules);
-//
-//             updateScheduleListAll(); // 날짜별 일정 전체 출력
-//         })
-//         .catch(error => {
-//             console.error("❌ 일정 데이터 로드 실패:", error);
-//         });
-//
-//     // 이전/다음 달 이동
-//     const [prevBtn, nextBtn] = document.querySelectorAll(".calendar-nav .nav-btn");
-//     prevBtn.addEventListener("click", () => {
-//         currentMonth--;
-//         if (currentMonth < 0) {
-//             currentMonth = 11;
-//             currentYear--;
-//         }
-//         renderCalendar(currentYear, currentMonth);
-//     });
-//
-//     nextBtn.addEventListener("click", () => {
-//         currentMonth++;
-//         if (currentMonth > 11) {
-//             currentMonth = 0;
-//             currentYear++;
-//         }
-//         renderCalendar(currentYear, currentMonth);
-//     });
-// });
+    function setInitialSelectedDate() {
+        if (!travelStartDate) return;
+
+        const year = travelStartDate.getFullYear();
+        const month = travelStartDate.getMonth();
+        const day = travelStartDate.getDate();
+
+        currentYear = year;
+        currentMonth = month;
+
+        renderCalendar(year, month); // 초기 렌더링 다시
+
+        const initialElement = getDayElement(year, month, day);
+        handleDateClick(year, month, day, initialElement);
+        setTimeout(() => {
+            const allDays = document.querySelectorAll(".calendar-day.date");
+            allDays.forEach(d => {
+                if (
+                    parseInt(d.textContent) === day &&
+                    !d.classList.contains("empty") &&
+                    !d.classList.contains("disabled")
+                ) {
+                    d.classList.add("selected");
+                }
+            });
+        }, 0);
+    }
+
+    setInitialSelectedDate();
+
+    // 현재 날씨
+    fetch('/api/weather/current')
+        .then(res => res.json())
+        .then(renderCurrentWeather)
+        .catch(err => console.error('현재 날씨 불러오기 실패:', err));
+
+    // 3일 예보
+    fetch('/api/weather/daily')
+        .then(res => res.json())
+        .then(renderDailyForecast)
+        .catch(err => console.error('3일 예보 불러오기 실패:', err));
+});
 
 
 
@@ -247,32 +204,32 @@ function updateUserInterface() {
     }
 }
 
-// 메신저 초기화
-function initializeMessenger() {
-    const messengerWidget = document.getElementById('messengerWidget');
-    const floatingBtn = document.getElementById('messengerFloatingBtn');
-
-    // 초기에는 메신저 숨김
-    if (messengerWidget) {
-        messengerWidget.style.display = 'none';
-    }
-
-    // 플로팅 버튼 표시
-    if (floatingBtn) {
-        floatingBtn.style.display = 'flex';
-    }
-
-    // 채팅 입력창 엔터키 이벤트
-    const chatInput = document.getElementById('chatInput');
-    if (chatInput) {
-        chatInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
-        });
-    }
-}
+// // 메신저 초기화
+// function initializeMessenger() {
+//     const messengerWidget = document.getElementById('messengerWidget');
+//     const floatingBtn = document.getElementById('messengerFloatingBtn');
+//
+//     // 초기에는 메신저 숨김
+//     if (messengerWidget) {
+//         messengerWidget.style.display = 'none';
+//     }
+//
+//     // 플로팅 버튼 표시
+//     if (floatingBtn) {
+//         floatingBtn.style.display = 'flex';
+//     }
+//
+//     // 채팅 입력창 엔터키 이벤트
+//     const chatInput = document.getElementById('chatInput');
+//     if (chatInput) {
+//         chatInput.addEventListener('keypress', function(e) {
+//             if (e.key === 'Enter' && !e.shiftKey) {
+//                 e.preventDefault();
+//                 sendMessage();
+//             }
+//         });
+//     }
+// }
 
 // 메신저 토글 기능
 function toggleMessenger() {
@@ -365,7 +322,7 @@ function addMessageToUI(sender, content, isCurrentUser = false, timeString = nul
     } else {
         messageDiv.innerHTML = `
             <div class="message-avatar">
-                <img src="/static/image/schedule-with-companion/label-logo.jpg" alt="${sender}">
+                <img th:src="@{/image/schedule-with-companion/label-logo.jpg}" alt="${sender}">
             </div>
             <div class="message-content">
                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
@@ -469,16 +426,6 @@ function addSystemMessage(content) {
     scrollToBottom();
 }
 
-// 실시간 시간 업데이트 (메시지 시간 표시용)
-function updateCurrentTime() {
-    const now = new Date();
-    const timeString = now.toLocaleTimeString('ko-KR', {
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-
-    return timeString;
-}
 
 // WebSocket 연결 설정
 function connectWebSocket() {
@@ -495,11 +442,29 @@ function connectWebSocket() {
         });
 
         // 스케줄링 접속자 목록 구독
-        stompClient.subscribe(`/sub/scheduling/${roomId}`, function (message) {
+        stompClient.subscribe(`/sub/schedule/${roomId}`, function (message) {
             console.log("[서버에서 수신함]", message.body);
             const onlineUsers = JSON.parse(message.body);
             updateSchedulingOnlineUsers(onlineUsers);
         });
+
+        stompClient.subscribe(`/sub/schedule/room/${roomId}`, function (message) {
+            const payload = JSON.parse(message.body);
+            const type = payload.type;
+            const data = payload.data;
+
+            switch (type) {
+                case 'CREATE':
+                    addScheduleToUI(data);
+                    break;
+                case 'UPDATE':
+                    updateScheduleInUI(data);
+                    break;
+                case 'DELETE':
+                    removeScheduleFromUI(data);
+                    break;
+            }
+        })
 
         // 입장 메시지 전송
         sendEnterMessage();
@@ -511,11 +476,71 @@ function connectWebSocket() {
     });
 }
 
+function addScheduleToUI(data) {
+    const date = data.travelStartDate.split('T')[0];
+
+    if (!schedules[date]) schedules[date] = [];
+
+    const isDuplicate = schedules[date].some(s => s.scheduleId === data.scheduleId);
+    if (!isDuplicate) {
+        schedules[date].push(data);
+        updateScheduleListAll();
+    }
+}
+
+function updateScheduleInUI(updatedSchedule) {
+    if (!updatedSchedule.travelStartDate) {
+        console.warn("travelStartDate가 없습니다. UI 업데이트 생략");
+        return;
+    }
+
+    const newDate = updatedSchedule.travelStartDate.split('T')[0];
+
+    // 모든 날짜 그룹을 순회하면서 일정 ID를 가진 항목을 찾음
+    for (const date in schedules) {
+        const index = schedules[date].findIndex(item => item.scheduleId === updatedSchedule.scheduleId);
+        if (index !== -1) {
+            // 날짜가 변경되었으면 기존에서 제거하고 새 날짜에 추가
+            if (date !== newDate) {
+                const removed = schedules[date].splice(index, 1)[0];
+                if (schedules[date].length === 0) delete schedules[date];
+
+                if (!schedules[newDate]) schedules[newDate] = [];
+                schedules[newDate].push(updatedSchedule);
+            } else {
+                // 같은 날짜라면 기존 데이터 교체
+                schedules[date][index] = updatedSchedule;
+            }
+
+            updateScheduleListAll();
+            return;
+        }
+    }
+
+    // 못 찾았으면 새로 추가 (예외 처리)
+    if (!schedules[newDate]) schedules[newDate] = [];
+    schedules[newDate].push(updatedSchedule);
+    updateScheduleListAll();
+}
+
+function removeScheduleFromUI(scheduleId) {
+    for (const date in schedules) {
+        const index = schedules[date].findIndex(s => s.scheduleId === scheduleId);
+        if (index !== -1) {
+            schedules[date].splice(index, 1);
+            if (schedules[date].length === 0) delete schedules[date];
+            break;
+        }
+    }
+
+    updateScheduleListAll();
+}
 
 function updateSchedulingOnlineUsers(users) {
     connectedUsers = users; // 실제 리스트 업데이트
 
     const onlineUsersElement = document.getElementById('onlineUsers');
+    const chatRoomElement = document.getElementById('chatRoomUsers');
     const onlineCountElement = document.getElementById('onlineCount');
 
     if (onlineUsersElement) {
@@ -525,6 +550,11 @@ function updateSchedulingOnlineUsers(users) {
     if (onlineCountElement) {
         onlineCountElement.textContent = `${users.length}명 온라인`;
     }
+
+    if (chatRoomElement) {
+        chatRoomElement.textContent = `현재 접속자: ${users.join(', ')}`;
+    }
+
 }
 
 // 입장 메시지 전송
@@ -548,7 +578,7 @@ function sendSchedulingEnterMessage() {
             roomId: roomId,
             sender: currentUser
         };
-        stompClient.send("/pub/scheduling/enter", {}, JSON.stringify(schedulingEnterMsg));
+        stompClient.send("/pub/schedule/enter", {}, JSON.stringify(schedulingEnterMsg));
     }
 }
 // WebSocket 연결 해제
@@ -784,11 +814,11 @@ function fetchAndRenderAllSchedules() {
                 schedules[date].push(schedule);
             });
 
-            console.log('✅ 전체 일정 불러오기 성공:', schedules);
+            console.log('전체 일정 불러오기 성공:', schedules);
             updateScheduleListAll(); // 렌더링 함수 호출
         })
         .catch(error => {
-            console.error("❌ 일정 데이터 로드 실패:", error);
+            console.error("일정 데이터 로드 실패:", error);
         });
 }
 
@@ -890,7 +920,6 @@ function saveScheduleToServer(schedule) {
         })
         .then(data => {
             console.log('일정 저장 성공:', data);
-            handleScheduleCreated(data);  // 서버에서 scheduleId 등을 채워서 응답했을 경우 반영
         })
         .catch(error => {
             console.error('일정 저장 실패:', error);
@@ -983,19 +1012,15 @@ function showNotification(message) {
 }
 
 // 달력 날짜 클릭 이벤트 수정 (기존 함수 내용 대체)
-function handleDateClick(year, month, day) {
-    // 이전에 선택된 날짜 스타일 제거
+function handleDateClick(year, month, day, element) {
     const previousSelected = document.querySelector('.calendar-day.selected');
     if (previousSelected) {
         previousSelected.classList.remove('selected');
     }
 
-    // 현재 클릭된 날짜에 선택 스타일 추가
-    event.target.classList.add('selected');
+    element.classList.add('selected');
 
-    // 선택된 날짜 설정
     selectedDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-
 }
 
 // 모달 외부 클릭시 닫기
@@ -1017,3 +1042,47 @@ document.addEventListener('keydown', function(event) {
 });
 
 
+
+// 현재 날씨 랜더링
+function renderCurrentWeather(data) {
+    document.querySelector('.weather-icon').textContent = getWeatherEmoji(data.weather);
+    document.querySelector('.weather-temp').textContent = `${Math.round(data.temperature)}°C`;
+    document.querySelector('.weather-current p:nth-of-type(1)').textContent = data.description;
+    document.querySelector('.weather-current p:nth-of-type(2)').textContent = `서울 · ${formatDate(data.date)}`;
+    document.querySelector('.weather-current p:nth-of-type(3)').textContent = `습도 ${data.humidity}% · 바람 ${data.windSpeed ?? 2}m/s`;
+}
+
+
+// 일일 날씨 랜더링
+function renderDailyForecast(forecasts) {
+    const forecastItems = document.querySelectorAll('.forecast-item');
+    forecasts.slice(0, 3).forEach((f, i) => {
+        const item = forecastItems[i];
+        item.querySelector('strong').textContent = formatDateWithWeekday(f.date); // 예: "8월 6일 (화)"
+        item.querySelector('p').textContent = f.description;
+        item.querySelector('span').textContent = getWeatherEmoji(f.weather);
+        item.querySelectorAll('p')[1].innerHTML = `<strong>${Math.round(f.maxTemp)}°C</strong> / ${Math.round(f.minTemp)}°C`;
+    });
+}
+
+function formatDate(dateStr) {
+    const date = new Date(dateStr);
+    return `${date.getMonth() + 1}월 ${date.getDate()}일`;
+}
+
+function formatDateWithWeekday(dateStr) {
+    const date = new Date(dateStr);
+    const days = ['일', '월', '화', '수', '목', '금', '토'];
+    return `${date.getMonth() + 1}월 ${date.getDate()}일 (${days[date.getDay()]})`;
+}
+
+function getWeatherEmoji(main) {
+    switch (main) {
+        case 'Clear': return '☀️';
+        case 'Clouds': return '⛅';
+        case 'Rain': return '🌧️';
+        case 'Snow': return '❄️';
+        case 'Thunderstorm': return '⛈️';
+        default: return '🌤️';
+    }
+}
