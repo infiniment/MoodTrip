@@ -4,9 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>무드 트립 - 매칭 정보</title>
-    <link rel="stylesheet" th:href="@{/static/css/mypage/my-matching.css}">
+    <link rel="stylesheet" th:href="@{/css/mypage/my-matching.css}">
+    <script th:src="@{/js/mypage/my-matching.js}"></script>
+    <link rel=" stylesheet" th:href="@{/css/fix/header.css}">
+    <link rel="stylesheet" th:href="@{/css/fix/footer.css}">
+    <link rel="stylesheet" th:href="@{/css/fix/header-after.css}">
 </head>
 <body>
+<!-- 로그인 상태에 따른 조건부 헤더 렌더링 -->
+<div th:if="${isLoggedIn}">
+    <!-- 로그인된 사용자용 헤더 -->
+    <th:block th:replace="~{fix/header-after-login :: header}"></th:block>
+</div>
+<div th:unless="${isLoggedIn}">
+    <!-- 로그인 안된 사용자용 헤더 -->
+    <th:block th:replace="~{fix/header :: header}"></th:block>
+</div>
 <div>
     <div class="wrap">
         <div class="page">
@@ -147,7 +160,10 @@
         </div>
     </div>
 </div>
+<!-- 푸터 포함 -->
+<th:block th:replace="~{fix/footer :: footer}"></th:block>
 
-<script th:src="@{/js/mypage/my-matching.js}"></script>
+<script th:src="@{/js/fix/header.js}"></script>
+<script th:src="@{/js/fix/header-after.js}"></script>
 </body>
 </html>
