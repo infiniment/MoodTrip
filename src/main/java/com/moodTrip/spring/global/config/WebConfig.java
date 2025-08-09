@@ -4,13 +4,17 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.nio.file.Paths;
+
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    // 마이페이지에서 프로필 변경 시 사용
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // 현재 프로젝트 루트 기준 uploads 폴더를 정적 리소스로 매핑
+        String uploadPath = Paths.get(System.getProperty("user.dir"), "uploads").toUri().toString();
+
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:///C:/moodTrip/MoodTrip/uploads/");
+                .addResourceLocations(uploadPath);  // 반드시 마지막에 '/' 들어가야 함
     }
 }

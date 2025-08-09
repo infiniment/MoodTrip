@@ -35,6 +35,9 @@ dependencies {
 	//통합 로그인  pom.xml
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 
+	//메일 전송 기능
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
+
 
 
 	// WebSocket(채팅 기능용)

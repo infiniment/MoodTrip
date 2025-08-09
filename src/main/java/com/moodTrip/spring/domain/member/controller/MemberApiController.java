@@ -31,9 +31,9 @@ public class MemberApiController {
 
     private final MemberService memberService;
     private final MemberRepository memberRepository;
-    private final SecurityUtil securityUtil; // 🔥 새로 추가된 의존성!
+    private final SecurityUtil securityUtil;
 
-    // 🔥 새로 추가된 로그아웃 API
+    // 로그아웃 관련 api
     @Operation(
             summary = "로그아웃",
             description = "현재 로그인한 사용자를 완전히 로그아웃 처리합니다. " +
@@ -46,19 +46,19 @@ public class MemberApiController {
     })
     @PostMapping("/logout")  // POST /api/v1/members/logout
     public ResponseEntity<LogoutResponse> logout(
-            HttpServletRequest request,   // 🔥 세션 관리를 위해 추가
-            HttpServletResponse response  // 🔥 쿠키 삭제를 위해 추가
+            HttpServletRequest request,
+            HttpServletResponse response
     ) {
         log.info("🚪 로그아웃 API 호출됨 - 완전한 로그아웃 처리 시작");
 
         try {
-            // 1️⃣ 현재 로그인된 사용자 확인 (JWT 토큰 검증)
+            // 현재 로그인된 사용자 확인 (JWT 토큰 검증)
             Member currentMember = securityUtil.getCurrentMember();
 
             log.info("👤 로그아웃 처리 대상 사용자: {}, 닉네임: {}",
                     currentMember.getMemberId(), currentMember.getNickname());
 
-            // 2️⃣ 🔥 JWT 토큰 쿠키 삭제
+            // JWT 토큰 쿠키 삭제
             Cookie jwtCookie = new Cookie("jwtToken", null);
             jwtCookie.setMaxAge(0);          // 즉시 만료
             jwtCookie.setPath("/");          // 전체 경로에서 삭제
@@ -68,7 +68,7 @@ public class MemberApiController {
 
             log.info("🗑️ JWT 토큰(jwtToken) 쿠키 삭제 완료");
 
-            // 3️⃣ 🔥 JSESSIONID 쿠키 삭제
+            // JSESSIONID 쿠키 삭제
             Cookie sessionCookie = new Cookie("JSESSIONID", null);
             sessionCookie.setMaxAge(0);      // 즉시 만료
             sessionCookie.setPath("/");      // 전체 경로에서 삭제
@@ -88,11 +88,11 @@ public class MemberApiController {
                 log.info("📭 무효화할 서버 세션이 없음");
             }
 
-            // 5️⃣ 🔥 보안 컨텍스트 클리어 (현재 요청에서 인증 정보 완전 제거)
+            // 보안 컨텍스트 클리어 (현재 요청에서 인증 정보 완전 제거)
             SecurityContextHolder.clearContext();
             log.info("🧹 Spring Security 컨텍스트 클리어 완료");
 
-            // 6️⃣ 개인화된 성공 응답 생성
+            // 개인화된 성공 응답 생성
             LogoutResponse logoutResponse = LogoutResponse.success(
                     currentMember.getNickname() + "님, 안전하게 로그아웃되었습니다. 다음에 또 만나요! 👋"
             );
@@ -107,7 +107,6 @@ public class MemberApiController {
             log.warn("❌ 로그아웃 처리 중 오류 발생: {}", e.getMessage());
             log.debug("🔍 오류 상세:", e);
 
-            // 🔥 인증 실패여도 모든 쿠키는 정리해주기 (방어적 프로그래밍)
             try {
                 log.info("🧹 오류 상황에서도 쿠키 정리 시작");
 
@@ -211,5 +210,4 @@ public class MemberApiController {
      * 기존에 있던 createTestMember() 메서드는 더 이상 필요 없습니다.
      * SecurityUtil.getCurrentMember()로 실제 로그인된 회원 정보를 가져오니까요!
      */
-
 }

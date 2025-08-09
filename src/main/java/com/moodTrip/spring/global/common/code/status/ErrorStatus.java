@@ -27,6 +27,10 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // Schedule 관련
     SCHEDULE_NOT_FOUND(HttpStatus.NOT_FOUND, "SCHEDULE_001", "존재하지 않는 일정입니다."),
+    SCHEDULE_TITLE_REQUIRED(HttpStatus.BAD_REQUEST, "SCHEDULE_002", "일정 제목은 필수입니다."),
+    SCHEDULE_DATE_INVALID(HttpStatus.BAD_REQUEST, "SCHEDULE_003", "일정 날짜가 유효하지 않습니다."),
+    SCHEDULE_DUPLICATED(HttpStatus.CONFLICT, "SCHEDULE_004", "동일한 일정이 이미 존재합니다."),
+    SCHEDULE_UNAUTHORIZED_ACCESS(HttpStatus.FORBIDDEN, "SCHEDULE_005", "일정에 대한 접근 권한이 없습니다."),
 
     //기타 도메인 예시,
     CARD_NOT_FOUND(HttpStatus.NOT_FOUND, "CARD_001", "해당 카드를 찾을 수 없습니다."),
@@ -43,7 +47,14 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // RoomMember 관련
     ROOM_MEMBER_ALREADY_EXISTS(HttpStatus.CONFLICT, "ROOM_MEMBER_001", "이미 해당 방에 참여한 회원입니다."),
-    ROOM_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "ROOM_MEMBER_002", "방 참여 정보를 찾을 수 없습니다.");
+    ROOM_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "ROOM_MEMBER_002", "방 참여 정보를 찾을 수 없습니다."),
+
+    // Transport 관련
+    TRANSPORT_API_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "TRANSPORT_001", "대중교통 API 호출 중 오류가 발생했습니다."),
+    TRANSPORT_NO_ROUTE(HttpStatus.NOT_FOUND, "TRANSPORT_002", "대중교통 경로를 찾지 못했습니다."),
+    TRANSPORT_RATE_LIMIT(HttpStatus.TOO_MANY_REQUESTS, "TRANSPORT_003", "대중교통 API 호출 한도를 초과했습니다."),
+    TRANSPORT_AUTH_ERROR(HttpStatus.UNAUTHORIZED, "TRANSPORT_004", "대중교통 API 인증에 실패했습니다."),
+    TRANSPORT_BAD_REQUEST(HttpStatus.BAD_REQUEST, "TRANSPORT_005", "대중교통 API 요청 파라미터가 유효하지 않습니다.");
 
 
 

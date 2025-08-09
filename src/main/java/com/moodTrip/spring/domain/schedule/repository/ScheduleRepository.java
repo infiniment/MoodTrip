@@ -14,4 +14,7 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
 
     // 여행 시작일 기준 정렬
     List<Schedule> findByRoom_RoomIdOrderByTravelStartDateAsc(Long roomId);
+
+    // 방 삭제에서 사용하기 위함. 방 삭제 시 스케줄들도 전부 삭제
+    List<Schedule> findByRoom(Room room);
 }
