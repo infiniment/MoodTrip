@@ -20,6 +20,7 @@
     <!-- 로그인 안된 사용자용 헤더 -->
     <th:block th:replace="~{fix/header :: header}"></th:block>
 </div>
+<div id="notification-container"></div>
 <div>
     <div class="wrap">
         <div class="page">
@@ -43,112 +44,158 @@
                         <h1 class="info-title">매칭 정보</h1>
                         <div class="main-wrapper">
                             <div class="tab-navigation">
-                                <button class="tab-btn active" data-tab="received">내가 입장한 방</button>
-                                <button class="tab-btn" data-tab="created">내가 만든 방</button>
+                                <button class="tab-btn" th:classappend="${activeTab == 'received' ? 'active' : ''}" data-tab="received">내가 입장한 방</button>
+                                <button class="tab-btn" th:classappend="${activeTab == 'created' ? 'active' : ''}" data-tab="created">내가 만든 방</button>
                             </div>
 
-                            <!-- 내가 입장한 방 탭 -->
-                            <section class="tab-content active" id="received-tab">
+                            <!-- 🔥 내가 입장한 방 탭 (Thymeleaf 렌더링) -->
+                            <section class="tab-content" th:classappend="${activeTab == 'received' ? 'active' : ''}" id="received-tab">
                                 <div class="matching-list-wrapper">
-                                    <div class="matching-item" th:each="room : ${joinedRooms}">
-                                        <div class="matching-item-inner">
-                                            <div class="matching-info-section">
-                                                <div class="matching-image-wrapper">
-                                                    <img th:src="@{${room.imageUrl}}" th:alt="${room.title}" class="matching-image">
+
+                                    <!-- 🎯 입장한 방이 있는 경우 -->
+                                    <div th:if="${hasJoinedRooms}">
+                                        <div th:each="room : ${joinedRooms}" class="matching-item" th:attr="data-room-id=${room.roomId}">
+                                            <div class="matching-item-inner">
+                                                <div class="matching-info-section">
+                                                    <div class="matching-image-wrapper">
+                                                        <img src="/image/fix/moodtrip.png" th:alt="${room.roomName}" class="matching-image">
+                                                    </div>
+                                                    <div class="matching-details">
+                                                        <h3 class="matching-title" th:text="${room.roomName}">방 제목</h3>
+                                                        <div class="matching-meta">
+                                                                <span class="host-badge" th:classappend="${room.myRole == 'LEADER' ? 'host' : ''}"
+                                                                      th:text="${room.myRole == 'LEADER' ? '방장' : '멤버'}">역할</span>
+                                                            <span class="separator">|</span>
+                                                            <span class="host-name" th:text="${room.creatorNickname ?: '알 수 없음'}">방장명</span>
+                                                        </div>
+                                                        <div class="matching-meta-secondary">
+                                                            <span class="category" th:text="${room.destinationCategory ?: '기타'}">카테고리</span>
+                                                            <span class="separator">|</span>
+                                                            <span class="tags">여행</span>
+                                                            <span class="location-tag" th:text="${room.destinationName ?: ''}">목적지</span>
+                                                        </div>
+                                                        <p class="matching-description"
+                                                           th:text="${room.roomDescription ?: '즐거운 여행을 함께 하실 분들을 찾습니다!'}">설명</p>
+                                                        <div class="matching-tags">
+                                                                <span th:each="emotion : ${room.emotions}"
+                                                                      class="tag" th:text="'#' + ${emotion}">#감정태그</span>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div class="matching-details">
-                                                    <h3 class="matching-title" th:text="${room.title}"></h3>
-                                                    <div class="matching-meta">
-                                                        <span class="host-badge">방장</span>
-                                                        <span class="separator">|</span>
-                                                        <span class="host-name" th:text="${room.hostName}"></span>
-                                                        <span class="verification-badge" th:classappend="${room.isVerified} ? 'verified' : 'unverified'">신원 인증</span>
-                                                        <span class="verification-badge" th:classappend="${room.isContactRegistered} ? 'verified' : 'unverified'">연락처 등록</span>
+                                                <!-- 🔥 핵심: 상태 및 버튼 섹션 -->
+                                                <div class="matching-status-section">
+                                                    <div class="status-info">
+                                                        <div class="participants-info">
+                                                            <span class="label">멤버 인원</span>
+                                                            <span class="count" th:text="${room.currentCount} + ' / ' + ${room.maxCount}">0 / 0</span>
+                                                        </div>
+                                                        <div class="travel-date">
+                                                            <span class="label">여행 날짜</span>
+                                                            <span class="date">
+                                                                <span th:text="${#temporals.format(room.travelStartDate, 'yy/MM/dd')}">시작일</span>
+                                                                ~
+                                                                <span th:text="${#temporals.format(room.travelEndDate, 'yy/MM/dd')}">종료일</span>
+                                                            </span>
+                                                        </div>
                                                     </div>
-                                                    <div class="matching-meta-secondary">
-                                                        <span class="category" th:text="${room.category}"></span>
-                                                        <span class="separator">|</span>
-                                                        <span class="tags" th:text="${room.tags}"></span>
-                                                        <span class="location-tag" th:text="${room.location}"></span>
-                                                    </div>
-                                                    <p class="matching-description" th:text="${room.description}"></p>
-                                                    <div class="matching-tags">
-                                                        <span class="tag" th:each="tag : ${#strings.split(room.tags, ',')}" th:text="'#' + tag"></span>
+                                                    <!-- 🔥 중요: 버튼 섹션 -->
+                                                    <div class="action-buttons">
+                                                        <button class="btn-chat" th:attr="data-room-id=${room.roomId}">스케줄 짜러 가기</button>
+                                                        <button class="btn-exit-room" data-room-type="participant"
+                                                                th:attr="data-room-id=${room.roomId}">방 나가기</button>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="matching-status-section">
-                                                <div class="status-info">
-                                                    <div class="participants-info">
-                                                        <span class="label">멤버 인원</span>
-                                                        <span class="count" th:text="${room.currentParticipants} + ' / ' + ${room.maxParticipants}"></span>
-                                                    </div>
-                                                    <div class="travel-date">
-                                                        <span class="label">여행 날짜</span>
-                                                        <span class="date" th:text="${room.travelDate}"></span>
-                                                    </div>
-                                                </div>
-                                                <div class="action-buttons">
-                                                    <button class="btn-chat">스케줄 짜러 가기</button>
-                                                    <button class="btn-exit-room" th:attr="data-room-id=${room.roomId}" data-room-type="participant">방 나가기</button>
-                                                </div>
-                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 🎯 입장한 방이 없는 경우 -->
+                                    <div th:unless="${hasJoinedRooms}" class="empty-state">
+                                        <div style="text-align: center; padding: 4rem 2rem; color: #64748b;">
+                                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="margin-bottom: 1rem; opacity: 0.5;">
+                                                <circle cx="12" cy="12" r="10"></circle>
+                                                <path d="M12 6v6l4 2"></path>
+                                            </svg>
+                                            <h3 style="margin-bottom: 0.5rem; color: #475569;">참여 중인 매칭이 없습니다</h3>
+                                            <p style="color: #64748b;">새로운 여행 매칭을 찾아보세요!</p>
                                         </div>
                                     </div>
                                 </div>
                             </section>
 
-                            <!-- 내가 만든 방 탭 -->
-                            <section class="tab-content" id="created-tab">
+                            <!-- 🔥 내가 만든 방 탭 -->
+                            <section class="tab-content" th:classappend="${activeTab == 'created' ? 'active' : ''}" id="created-tab">
                                 <div class="matching-list-wrapper">
-                                    <div class="matching-item" th:each="room : ${createdRooms}">
-                                        <div class="matching-item-inner">
-                                            <div class="matching-info-section">
-                                                <div class="matching-image-wrapper">
-                                                    <img th:src="@{${room.imageUrl}}" th:alt="${room.title}" class="matching-image">
+
+                                    <!-- 🎯 생성한 방이 있는 경우 -->
+                                    <div th:if="${hasCreatedRooms}">
+                                        <div th:each="room : ${createdRooms}" class="matching-item" th:attr="data-room-id=${room.roomId}">
+                                            <div class="matching-item-inner">
+                                                <div class="matching-info-section">
+                                                    <div class="matching-image-wrapper">
+                                                        <img src="/image/fix/moodtrip.png" th:alt="${room.roomName}" class="matching-image">
+                                                    </div>
+                                                    <div class="matching-details">
+                                                        <h3 class="matching-title" th:text="${room.roomName}">방 제목</h3>
+                                                        <div class="matching-meta">
+                                                            <span class="host-badge host">방장</span>
+                                                            <span class="separator">|</span>
+                                                            <span class="host-name" th:text="${currentMember.nickname}">나</span>
+                                                        </div>
+                                                        <div class="matching-meta-secondary">
+                                                            <span class="category" th:text="${room.destinationCategory ?: '기타'}">카테고리</span>
+                                                            <span class="separator">|</span>
+                                                            <span class="tags">여행</span>
+                                                            <span class="location-tag" th:text="${room.destinationName ?: ''}">목적지</span>
+                                                        </div>
+                                                        <p class="matching-description"
+                                                           th:text="${room.roomDescription ?: '즐거운 여행을 함께 하실 분들을 찾습니다!'}">설명</p>
+                                                        <div class="matching-tags">
+                                                                <span th:each="emotion : ${room.emotions}"
+                                                                      class="tag" th:text="'#' + ${emotion}">#감정태그</span>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div class="matching-details">
-                                                    <h3 class="matching-title" th:text="${room.title}"></h3>
-                                                    <div class="matching-meta">
-                                                        <span class="host-badge host">방장</span>
-                                                        <span class="separator">|</span>
-                                                        <span class="host-name" th:text="${room.hostName}"></span>
-                                                        <span class="verification-badge" th:classappend="${room.isVerified} ? 'verified' : 'unverified'">신원 인증</span>
-                                                        <span class="verification-badge" th:classappend="${room.isContactRegistered} ? 'verified' : 'unverified'">연락처 등록</span>
+                                                <!-- 🔥 핵심: 방장용 버튼들 -->
+                                                <div class="matching-status-section">
+                                                    <div class="status-info">
+                                                        <div class="participants-info">
+                                                            <span class="label">멤버 인원</span>
+                                                            <span class="count" th:text="${room.currentCount} + ' / ' + ${room.maxCount}">0 / 0</span>
+                                                        </div>
+                                                        <div class="travel-date">
+                                                            <span class="label">여행 날짜</span>
+                                                            <span class="date">
+                                                            <span th:text="${#temporals.format(room.travelStartDate, 'yy/MM/dd')}">시작일</span>
+                                                                ~
+                                                            <span th:text="${#temporals.format(room.travelEndDate, 'yy/MM/dd')}">종료일</span>
+                                                        </span>
+                                                        </div>
+                                                        <div class="join-requests-info">
+                                                            <span class="label">대기 중인 요청</span>
+                                                            <span class="count pending-requests" th:attr="data-room-id=${room.roomId}">0건</span>
+                                                        </div>
                                                     </div>
-                                                    <div class="matching-meta-secondary">
-                                                        <span class="category" th:text="${room.category}"></span>
-                                                        <span class="separator">|</span>
-                                                        <span class="tags" th:text="${room.tags}"></span>
-                                                        <span class="location-tag" th:text="${room.location}"></span>
-                                                    </div>
-                                                    <p class="matching-description" th:text="${room.description}"></p>
-                                                    <div class="matching-tags">
-                                                        <span class="tag" th:each="tag : ${#strings.split(room.tags, ',')}" th:text="'#' + tag"></span>
+                                                    <!-- 🔥 중요: 방장용 버튼들 -->
+                                                    <div class="action-buttons">
+                                                        <button class="btn-chat" th:attr="data-room-id=${room.roomId}">스케줄 짜러 가기</button>
+                                                        <button class="btn-manage-requests" th:attr="data-room-id=${room.roomId}" disabled>입장 요청 관리</button>
+                                                        <button class="btn-delete-room" data-room-type="host"
+                                                                th:attr="data-room-id=${room.roomId}">방 삭제하기</button>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="matching-status-section">
-                                                <div class="status-info">
-                                                    <div class="participants-info">
-                                                        <span class="label">멤버 인원</span>
-                                                        <span class="count" th:text="${room.currentParticipants} + ' / ' + ${room.maxParticipants}"></span>
-                                                    </div>
-                                                    <div class="travel-date">
-                                                        <span class="label">여행 날짜</span>
-                                                        <span class="date" th:text="${room.travelDate}"></span>
-                                                    </div>
-                                                    <div class="join-requests-info">
-                                                        <span class="label">대기 중인 요청</span>
-                                                        <span class="count pending-requests" th:attr="data-room-id=${room.roomId}" th:text="${room.pendingRequestCount} + '건'"></span>
-                                                    </div>
-                                                </div>
-                                                <div class="action-buttons">
-                                                    <button class="btn-chat">스케줄 짜러 가기</button>
-                                                    <button class="btn-manage-requests" th:attr="data-room-id=${room.roomId}" th:disabled="${room.pendingRequestCount == 0}">입장 요청 관리</button>
-                                                    <button class="btn-delete-room" data-room-type="host" th:attr="data-room-id=${room.roomId}">방 삭제하기</button>
-                                                </div>
-                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 🎯 생성한 방이 없는 경우 -->
+                                    <div th:unless="${hasCreatedRooms}" class="empty-state">
+                                        <div style="text-align: center; padding: 4rem 2rem; color: #64748b;">
+                                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="margin-bottom: 1rem; opacity: 0.5;">
+                                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                                            </svg>
+                                            <h3 style="margin-bottom: 0.5rem; color: #475569;">생성한 매칭이 없습니다</h3>
+                                            <p style="color: #64748b;">새로운 여행 매칭을 만들어보세요!</p>
                                         </div>
                                     </div>
                                 </div>
@@ -159,6 +206,70 @@
             </div>
         </div>
     </div>
+</div>
+
+<!-- 🔥 모달들 -->
+<!-- 방 나가기 확인 모달 -->
+<div id="exitRoomModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>방 나가기 확인</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>정말로 이 방을 나가시겠습니까?</p>
+            <p class="modal-warning">방을 나가면 다시 참여하려면 방장의 승인이 필요합니다.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel">취소</button>
+            <button class="btn-confirm">방 나가기</button>
+        </div>
+    </div>
+</div>
+
+<!-- 방 삭제 확인 모달 -->
+<div id="deleteRoomModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>방 삭제 확인</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>정말로 이 방을 삭제하시겠습니까?</p>
+            <p class="modal-warning">방을 삭제하면 모든 참여자가 내보내지며, 채팅 기록도 삭제됩니다.</p>
+            <p class="modal-danger">이 작업은 되돌릴 수 없습니다.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel">취소</button>
+            <button class="btn-confirm btn-danger">방 삭제하기</button>
+        </div>
+    </div>
+</div>
+
+<!-- 입장 요청 관리 모달 -->
+<div id="manageRequestsModal" class="modal" style="display: none;">
+    <div class="modal-content modal-large">
+        <div class="modal-header">
+            <h3>입장 요청 관리</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="requests-list">
+                <div class="empty-requests">
+                    <p>대기 중인 요청이 없습니다.</p>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel">닫기</button>
+        </div>
+    </div>
+</div>
+</div>
+</main>
+</div>
+</div>
+</div>
 </div>
 <!-- 푸터 포함 -->
 <th:block th:replace="~{fix/footer :: footer}"></th:block>

@@ -22,7 +22,7 @@ public class CreatedRoomResponse {
     private String destinationCategory;
     private String destinationName;
     private LocalDateTime createdAt;
-    private List<String> emotions; // 선택한 감정 텍스트들
+    private List<String> emotions;
 
     public static CreatedRoomResponse from(Room room) {
         List<String> emotionTexts = room.getEmotionRooms().stream()

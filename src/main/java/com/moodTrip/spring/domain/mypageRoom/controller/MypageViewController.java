@@ -3,6 +3,9 @@ package com.moodTrip.spring.domain.mypageRoom.controller;
 import com.moodTrip.spring.domain.member.dto.response.ProfileResponse;
 import com.moodTrip.spring.domain.member.entity.Member;
 import com.moodTrip.spring.domain.member.service.ProfileService;
+import com.moodTrip.spring.domain.mypageRoom.dto.response.CreatedRoomResponse;
+import com.moodTrip.spring.domain.mypageRoom.dto.response.JoinedRoomResponse;
+import com.moodTrip.spring.domain.mypageRoom.service.MypageRoomService;
 import com.moodTrip.spring.global.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,8 +15,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-// 마이페이지 뷰 렌더링 해주는 컨트롤러
-@Slf4j
+import java.util.List;
+
 @Controller
 @RequestMapping("/mypage")
 @RequiredArgsConstructor
@@ -21,13 +24,11 @@ public class MypageViewController {
 
     private final SecurityUtil securityUtil;
     private final ProfileService profileService;
+    private final MypageRoomService mypageRoomService;
 
     // 기본정보 프로필 페이지
     @GetMapping("/my-profile")
     public String viewMyProfile(Model model) {
-        log.info("👤 마이페이지 내 프로필 페이지 요청");
-
-        try {
             Member currentMember = securityUtil.getCurrentMember();
             ProfileResponse profile = profileService.getMyProfile(currentMember);
 
@@ -37,53 +38,77 @@ public class MypageViewController {
             model.addAttribute("isLoggedIn", true);
 
             return "mypage/my-profile";
-
-        } catch (RuntimeException e) {
-            log.warn("❌ 프로필 페이지 JWT 인증 실패: {}", e.getMessage());
-            return "redirect:/login?error=로그인이+필요합니다&returnUrl=/mypage/my-profile";
-
-        } catch (Exception e) {
-            log.error("💥 프로필 조회 중 예상치 못한 오류", e);
-            return "error/500";
-        }
     }
 
-    // 마이페이지에 매칭 정보 페이지
+    // 마이페이지 매칭 정보 페이지 렌더링
     @GetMapping("/my-matching")
-    public String myMatching(
-            @RequestParam(value = "tab", defaultValue = "received") String tab,
-            Model model
-    ) {
-        log.info("🏠 마이페이지 매칭 정보 페이지 요청 - 탭: {}", tab);
-
-        try {
+    public String myMatching(String tab, Model model) {
             Member currentMember = securityUtil.getCurrentMember();
 
-            log.info("👤 매칭 정보 페이지 - 회원ID: {}, 닉네임: {}",
-                    currentMember.getMemberId(), currentMember.getNickname());
+            //  탭 파라미터 검증 및 정규화
+            String validatedTab = validateAndNormalizeTab(tab);
 
-            model.addAttribute("activeTab", tab);
-            model.addAttribute("pageTitle", "매칭 정보");
-            model.addAttribute("currentMember", currentMember);
-            model.addAttribute("isLoggedIn", true);
+            // 탭별 데이터 로딩
+            List<JoinedRoomResponse> joinedRooms = null;
+            List<CreatedRoomResponse> createdRooms = null;
 
+            if ("received".equals(validatedTab)) {
+                // 내가 입장한 방 탭 데이터 로드하기
+                joinedRooms = mypageRoomService.getMyJoinedRooms(currentMember);
+            } else if ("created".equals(validatedTab)) {
+                // "내가 만든 방 탭 데이터 로드하기
+                createdRooms = mypageRoomService.getMyCreatedRooms(currentMember);
+            }
+
+            // 3. 템플릿에 렌더링할 데이터 준비
+            setupModelAttributes(model, validatedTab, currentMember, joinedRooms, createdRooms);
             return "mypage/my-matching";
+    }
 
-        } catch (RuntimeException e) {
-            log.warn("❌ 매칭 정보 페이지 JWT 인증 실패: {}", e.getMessage());
-            return "redirect:/login?error=로그인이+필요합니다&returnUrl=/mypage/my-matching";
+    private String validateAndNormalizeTab(String tab) {
+        if (tab == null || tab.trim().isEmpty()) {
+            return "received";
+        }
+        // 공백 제거 후 소문자 변환
+        String normalizedTab = tab.trim().toLowerCase();
 
-        } catch (Exception e) {
-            log.error("💥 매칭 정보 페이지 로드 실패", e);
-            return "error/500";
+        switch (normalizedTab) {
+            case "received":
+            case "joined":  // "joined"도 "received"로 처리 (동일한 의미)
+                return "received";
+
+            case "created":
+            case "created-rooms":  // 다양한 변형 처리
+                return "created";
+
+            default:
+                return "received";
         }
     }
+      // 템플릿에서 th:classappend="${activeTab == 'received' ? 'active' : ''}" 가 작동하도록 함
+    private void setupModelAttributes(Model model, String activeTab, Member currentMember,
+                                      List<JoinedRoomResponse> joinedRooms,
+                                      List<CreatedRoomResponse> createdRooms) {
 
-    //마이페이지의 메인으로 리다이렉트
-    @GetMapping
-    public String mypageMain() {
-        log.info("🏠 마이페이지 메인 요청 - 내 프로필로 리다이렉트");
-        return "redirect:/mypage/my-profile";
+        model.addAttribute("activeTab", activeTab);
+
+        // 기본 페이지 정보
+        model.addAttribute("pageTitle", "매칭 정보");
+        model.addAttribute("currentMember", currentMember);
+        model.addAttribute("isLoggedIn", true);
+
+        // 방 데이터 전달
+        model.addAttribute("joinedRooms", joinedRooms != null ? joinedRooms : List.of());
+        model.addAttribute("createdRooms", createdRooms != null ? createdRooms : List.of());
+
+        // 빈 상태 체크용 boolean (HTML에서 조건부 렌더링에 사용)
+        model.addAttribute("hasJoinedRooms", joinedRooms != null && !joinedRooms.isEmpty());
+        model.addAttribute("hasCreatedRooms", createdRooms != null && !createdRooms.isEmpty());
     }
 
+    // 마이페이지의 메인으로 리다이렉트
+    @GetMapping
+    public String mypageMain() {
+        return "redirect:/mypage/my-profile";
+    }
 }
