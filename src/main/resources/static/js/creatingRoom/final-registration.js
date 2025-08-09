@@ -611,7 +611,7 @@ function goToPreviousPage() {
 
 // 내 방 보기로 이동 (나중에 href 수정해야됨)
 function goToMyRooms() {
-    window.location.href = "/mypage/my-rooms"; // 실제 내 방 목록 페이지로 이동
+    window.location.href = "/mypage/my-matching"; // 실제 내 방 목록 페이지로 이동
 }
 
 // 새 방 만들기

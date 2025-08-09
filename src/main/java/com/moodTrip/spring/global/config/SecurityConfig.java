@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,6 +31,13 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() { // 프로필 변경 업로드 시 사용
+        return (web) -> web.ignoring()
+                .requestMatchers("/uploads/**")
+                .requestMatchers("/css/**", "/js/**", "/image/**");
+    }
+
 
     //  SuccessHandler를 Bean으로 꼭 등록! MemberService 주입 필요
     @Bean
@@ -45,20 +53,13 @@ public class SecurityConfig {
                                            JwtUtil jwtUtil,
                                            UserDetailsService userDetailsService,
                                            JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint  // ✅ 추가
-    ) throws Exception {
+    ) throws Exception { // uploads 폴더 추가(프로필 변경에서 사용)
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/ws/**",
-                                "/login",            // 로그인 폼 GET
-                                "/api/login",        // 커스텀 로그인 폼
-                                "/signup", "/api/signup","/password/**", "/password/find",
                                 "/login", "/api/login", "/signup", "/api/signup",
-                                "/css/**", "/js/**", "/image/**",
-                                "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**",  "/api-docs/**",
-                                "/css/**", "/js/**", "/images/**",
-                                "/error",
+                                "/css/**", "/js/**", "/image/**","/uploads/**",
                                 "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/api-docs/**",
                                 "/error", "/api/v1/room-online/**"
                         ).permitAll()
@@ -68,7 +69,6 @@ public class SecurityConfig {
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint)  // ✅ 설정
                 )
                 .formLogin(form -> form.disable())
-                //.formLogin(form -> form.loginPage("/api/login").loginProcessingUrl("/login").permitAll())
                 .oauth2Login(oauth2 -> oauth2
                         .loginPage("/login")
                         .authorizationEndpoint(endpoint ->

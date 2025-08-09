@@ -151,14 +151,11 @@ public class ProfileService {
                 imageUrl.startsWith("/static/image/");
     }
 
-    /**
-     * 🔥 프로필 존재 여부 확인 (다른 서비스에서 사용할 수 있는 유틸리티)
-     */
+    // 프로필 존재 여부 확인
     public boolean hasProfile(Member member) {
         return profileRepository.findByMember(member).isPresent();
     }
-    // 프로필은 로그인 후 생기는 메서드가 존재하지 않음
-    // 해당 코드를 활용하여 member 테이블 생성 시 프로필 테이블 생성.
+
     @Transactional
     public Profile createDefaultProfile(Member member) {
         log.info("기본 Profile 생성 - 회원ID: {}", member.getMemberId());

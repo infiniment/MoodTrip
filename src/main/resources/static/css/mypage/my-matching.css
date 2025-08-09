@@ -1071,13 +1071,13 @@ a:focus:not(:focus-visible) {
     .wrap {
         min-width: auto;
     }
-    
+
     .page-inner {
         width: 100%;
         flex-direction: column;
         padding: 0px 20px;
     }
-    
+
     .user-settings-nav {
         width: 100%;
         margin-bottom: 2rem;
@@ -1085,34 +1085,34 @@ a:focus:not(:focus-visible) {
         overflow-x: auto;
         gap: 1rem;
     }
-    
+
     .user-settings-nav a {
         white-space: nowrap;
         min-width: max-content;
     }
-    
+
     .account-settings {
         display: none;
     }
-    
+
     .horizontal-line {
         display: none;
     }
-    
+
     .total-wrapper {
         margin-left: 0;
     }
-    
+
     .matching-item-inner {
         flex-direction: column;
         gap: 1rem;
     }
-    
+
     .matching-status-section {
         align-items: flex-start;
         min-width: auto;
     }
-    
+
     .status-info {
         flex-direction: row;
         justify-content: space-between;
@@ -1120,14 +1120,14 @@ a:focus:not(:focus-visible) {
         text-align: left;
         flex-wrap: wrap;
     }
-    
+
     .participants-info,
     .travel-date,
     .join-requests-info {
         text-align: center;
         min-width: 80px;
     }
-    
+
     .action-buttons {
         flex-direction: row;
         justify-content: flex-end;
@@ -1135,7 +1135,7 @@ a:focus:not(:focus-visible) {
         width: auto;
         gap: 8px;
     }
-    
+
     .action-buttons .btn-exit-room,
     .action-buttons .btn-chat,
     .action-buttons .btn-manage-requests,
@@ -1144,43 +1144,43 @@ a:focus:not(:focus-visible) {
         padding: 0px 16px;
         font-size: 11px;
     }
-    
+
     .modal-content {
         width: 95%;
         margin: 1rem;
         max-height: 90vh;
     }
-    
+
     .request-item {
         flex-direction: column;
         align-items: flex-start;
         gap: 0.5rem;
     }
-    
+
     .request-actions {
         width: 100%;
         justify-content: flex-end;
     }
-    
+
     .tab-navigation {
         flex-direction: column;
         gap: 4px;
     }
-    
+
     .tab-btn {
         padding: 12px;
         font-size: 14px;
     }
-    
+
     .main-wrapper {
         padding: 1.5rem;
     }
-    
+
     .matching-image-wrapper {
         width: 60px;
         height: 60px;
     }
-    
+
     .notification {
         top: 10px;
         right: 10px;
@@ -1196,83 +1196,83 @@ a:focus:not(:focus-visible) {
         padding: 0px 16px;
         margin: 20px auto;
     }
-    
+
     .user-settings-nav {
         flex-direction: column;
         gap: 0;
     }
-    
+
     .user-settings-nav a {
         padding: 12px 16px;
         border-radius: 0;
         border-bottom: 1px solid rgba(0, 87, 146, 0.1);
     }
-    
+
     .user-settings-nav a:last-child {
         border-bottom: none;
     }
-    
+
     .matching-item-inner {
         padding: 1rem;
     }
-    
+
     .matching-details {
         gap: 6px;
     }
-    
+
     .matching-title {
         font-size: 14px;
     }
-    
+
     .matching-description {
         font-size: 13px;
         -webkit-line-clamp: 2;
     }
-    
+
     .tag {
         padding: 4px 8px;
         font-size: 11px;
     }
-    
+
     .status-info {
         padding: 12px;
         gap: 8px;
     }
-    
+
     .count,
     .date {
         font-size: 14px;
     }
-    
+
     .label {
         font-size: 11px;
     }
-    
+
     .action-buttons {
         gap: 6px;
     }
-    
+
     .action-buttons button {
         height: 28px;
         font-size: 10px;
         padding: 0 8px;
     }
-    
+
     .modal-content {
         width: 98%;
         margin: 1rem 1%;
     }
-    
+
     .modal-header,
     .modal-body,
     .modal-footer {
         padding: 1rem;
     }
-    
+
     .pagination {
         gap: 4px;
     }
-    
+
     .page-btn {
         width: 32px;
         height: 32px;

@@ -48,9 +48,9 @@ public class Room extends BaseEntity {
 
     @Column(name = "destination_name")
     private String destinationName;
-//
-//    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<EmotionRoom> emotionRooms = new ArrayList<>();
+
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EmotionRoom> emotionRooms = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "creator_id")
