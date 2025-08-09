@@ -1,80 +1,80 @@
-// 방 데이터 (실제로는 서버에서 가져올 데이터)
-let roomsData = [
-    {
-        id: 1,
-        title: "한성대학교 캠퍼스 투어!!!",
-        location: "서울",
-        date: "7월 셋째주",
-        dateValue: new Date('2025-07-21'),
-        views: "3명이 봄",
-        viewCount: 3,
-        description: "안녕하세요! 저희는 세상 최고 멋쟁이 김상우가 다니고 있는 한성대학교 캠퍼스 투어로 떠납니다!!",
-        tags: ["설렘", "역사", "야경"],
-        currentParticipants: 2,
-        maxParticipants: 8,
-        createdDate: "25/07/21 ~ 25/07/25",
-        image: "/static/image/enteringRoom/hansung.png",
-        category: "학교",
-        urgent: false
-    },
-    {
-        id: 2,
-        title: "고양 종합 운동장",
-        location: "경기",
-        date: "11월 둘째주",
-        dateValue: new Date('2025-11-10'),
-        views: "11명이 봄",
-        viewCount: 11,
-        description: "최근에 방탄소년단이 전부 전역했다는 소식 다 들었죠!!! 방탄소년단 콘서트가 11월 둘쨰주에 있다고 해요! 저랑 떠나실 분들 떠나요!!",
-        tags: ["행복", "떨림", "설렘"],
-        currentParticipants: 3,
-        maxParticipants: 4,
-        createdDate: "25/11/21 ~ 25/11/27",
-        image: "/static/image/enteringRoom/stadium.png",
-        category: "스타디움",
-        urgent: false
-    },
-    {
-        id: 3,
-        title: "고양 킨텍스",
-        location: "경기",
-        date: "9월 첫째주",
-        dateValue: new Date('2025-09-01'),
-        views: "31명이 봄",
-        viewCount: 31,
-        description: "킨텍스에서 싸이 워터밤이 열립니다!!!!!!!!!!!!!시원하게 노실 분 구해요!",
-        tags: ["힐링", "행복", "설렘"],
-        currentParticipants: 1,
-        maxParticipants: 2,
-        createdDate: "25/09/01 ~ 25/09/07",
-        image: "/static/image/enteringRoom/kintex.png",
-        category: "스타디움",
-        urgent: true
-    }
-];
-
-// 현재 날짜
-const currentDate = new Date('2025-07-02');
-
-// 현재 필터 및 정렬 상태
-let currentFilter = 'all';
-let currentSort = 'default';
-let currentPage = 1;
-let currentPeopleFilter = 'all';
-let currentRegionFilter = 'all';
-let filteredRooms = [...roomsData];
-let currentDetailRoomId = null;
-let currentReportRoomId = null;
-
-// 방 상태 계산 함수
-function calculateRoomStatus(room) {
-    const occupancyRate = room.currentParticipants / room.maxParticipants;
-    if (occupancyRate >= 0.5) {
-        return { status: '마감임박', urgent: true };
-    } else {
-        return { status: '모집중', urgent: false };
-    }
-}
+// // 방 데이터 (실제로는 서버에서 가져올 데이터)
+// let roomsData = [
+//     {
+//         id: 1,
+//         title: "한성대학교 캠퍼스 투어!!!",
+//         location: "서울",
+//         date: "7월 셋째주",
+//         dateValue: new Date('2025-07-21'),
+//         views: "3명이 봄",
+//         viewCount: 3,
+//         description: "안녕하세요! 저희는 세상 최고 멋쟁이 김상우가 다니고 있는 한성대학교 캠퍼스 투어로 떠납니다!!",
+//         tags: ["설렘", "역사", "야경"],
+//         currentParticipants: 2,
+//         maxParticipants: 8,
+//         createdDate: "25/07/21 ~ 25/07/25",
+//         image: "/static/image/enteringRoom/hansung.png",
+//         category: "학교",
+//         urgent: false
+//     },
+//     {
+//         id: 2,
+//         title: "고양 종합 운동장",
+//         location: "경기",
+//         date: "11월 둘째주",
+//         dateValue: new Date('2025-11-10'),
+//         views: "11명이 봄",
+//         viewCount: 11,
+//         description: "최근에 방탄소년단이 전부 전역했다는 소식 다 들었죠!!! 방탄소년단 콘서트가 11월 둘쨰주에 있다고 해요! 저랑 떠나실 분들 떠나요!!",
+//         tags: ["행복", "떨림", "설렘"],
+//         currentParticipants: 3,
+//         maxParticipants: 4,
+//         createdDate: "25/11/21 ~ 25/11/27",
+//         image: "/static/image/enteringRoom/stadium.png",
+//         category: "스타디움",
+//         urgent: false
+//     },
+//     {
+//         id: 3,
+//         title: "고양 킨텍스",
+//         location: "경기",
+//         date: "9월 첫째주",
+//         dateValue: new Date('2025-09-01'),
+//         views: "31명이 봄",
+//         viewCount: 31,
+//         description: "킨텍스에서 싸이 워터밤이 열립니다!!!!!!!!!!!!!시원하게 노실 분 구해요!",
+//         tags: ["힐링", "행복", "설렘"],
+//         currentParticipants: 1,
+//         maxParticipants: 2,
+//         createdDate: "25/09/01 ~ 25/09/07",
+//         image: "/static/image/enteringRoom/kintex.png",
+//         category: "스타디움",
+//         urgent: true
+//     }
+// ];
+//
+// // 현재 날짜
+// const currentDate = new Date('2025-07-02');
+//
+// // 현재 필터 및 정렬 상태
+// let currentFilter = 'all';
+// let currentSort = 'default';
+// let currentPage = 1;
+// let currentPeopleFilter = 'all';
+// let currentRegionFilter = 'all';
+// let filteredRooms = [...roomsData];
+// let currentDetailRoomId = null;
+// let currentReportRoomId = null;
+//
+// // 방 상태 계산 함수
+// function calculateRoomStatus(room) {
+//     const occupancyRate = room.currentParticipants / room.maxParticipants;
+//     if (occupancyRate >= 0.5) {
+//         return { status: '마감임박', urgent: true };
+//     } else {
+//         return { status: '모집중', urgent: false };
+//     }
+// }
 
 // 방 데이터 상태 업데이트
 function updateRoomStatuses() {

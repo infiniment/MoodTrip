@@ -71,15 +71,11 @@ public class LoginViewController {
     //소셜 로그인 성공 시
     @GetMapping("/mainpage/mainpage")
     public String mainPage(Model model) {
-
-
         log.info("==== [RoomController] /mainpage/mainpage 진입 ====");
         List<RoomResponse> rooms = roomService.getAllRooms();
         log.info("rooms 개수: {}", rooms.size());
         model.addAttribute("rooms", rooms);
         return "mainpage/mainpage"; // 뷰 파일명
-
-
     }
 
 }

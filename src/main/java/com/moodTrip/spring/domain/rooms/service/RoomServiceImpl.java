@@ -1,5 +1,7 @@
 package com.moodTrip.spring.domain.rooms.service;
 
+import com.moodTrip.spring.domain.emotion.entity.Emotion;
+import com.moodTrip.spring.domain.emotion.repository.EmotionRepository;
 import com.moodTrip.spring.domain.member.entity.Member;
 import com.moodTrip.spring.domain.member.repository.MemberRepository;
 import com.moodTrip.spring.domain.rooms.dto.request.RoomRequest;
@@ -14,6 +16,7 @@ import com.moodTrip.spring.domain.rooms.entity.RoomMember;
 import com.moodTrip.spring.domain.rooms.repository.EmotionRoomRepository;
 import com.moodTrip.spring.domain.rooms.repository.RoomMemberRepository;
 import com.moodTrip.spring.domain.rooms.repository.RoomRepository;
+import com.moodTrip.spring.global.common.code.status.ErrorStatus;
 import com.moodTrip.spring.global.common.exception.CustomException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +26,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -40,11 +44,14 @@ public class RoomServiceImpl implements RoomService {
     // private final EmotionRepository emotionRepository; // 추후 활성화
     private final RoomMemberRepository roomMemberRepository;
     private final MemberRepository memberRepository;
+    private final EmotionRepository emotionRepository;
+
 
     // 방 생성 로직
     @Override
     @Transactional
     public RoomResponse createRoom(RoomRequest request, Long memberPk) {
+
         // 방 생성 회원 조회
         Member creator = memberRepository.findByMemberPk(memberPk)
                 .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
@@ -72,6 +79,25 @@ public class RoomServiceImpl implements RoomService {
                 .build();
 
         Room savedRoom = roomRepository.save(room);
+
+
+        // 감정 태그 저장 및 연관 처리
+//        if (request.getEmotions() != null && !request.getEmotions().isEmpty()) {
+//            List<EmotionRoom> emotionRooms = new ArrayList<>();
+//            for (RoomRequest.EmotionDto emotionDto : request.getEmotions()) {
+//                Long tagId = emotionDto.getTagId();
+//                Emotion emotion = emotionRepository.findById(tagId)
+//                        .orElseThrow(() -> new CustomException(ErrorStatus.EMOTION_NOT_FOUND));
+//
+//                EmotionRoom emotionRoom = EmotionRoom.builder()
+//                        .room(savedRoom)
+//                        .emotion(emotion)
+//                        .build();
+//                emotionRooms.add(emotionRoom);
+//            }
+//            emotionRoomRepository.saveAll(emotionRooms);
+//        }
+
 
         // RoomMember로 리더 등록
         RoomMember leader = RoomMember.builder()
@@ -221,6 +247,7 @@ public class RoomServiceImpl implements RoomService {
 
 
     // 방 목록을 RoomCardDto로 변환해 반환
+    // 추후에 가중치 부여 한
     @Override
     public List<RoomCardDto> getRoomCards() {
         return roomRepository.findAll().stream()

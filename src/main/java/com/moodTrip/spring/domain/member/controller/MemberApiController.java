@@ -211,4 +211,5 @@ public class MemberApiController {
      * 기존에 있던 createTestMember() 메서드는 더 이상 필요 없습니다.
      * SecurityUtil.getCurrentMember()로 실제 로그인된 회원 정보를 가져오니까요!
      */
+
 }

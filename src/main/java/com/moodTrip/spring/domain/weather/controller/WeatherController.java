@@ -27,5 +27,6 @@ public class WeatherController {
     @GetMapping("/current")
     public WeatherResponse getCurrentWeather() {
         return weatherService.getCurrentWeather();
+
     }
 }

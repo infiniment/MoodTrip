@@ -102,12 +102,16 @@ class PasswordController {
 
     }
 
-//비밀번호 변경페이지
-@GetMapping("/new-password")
-public String showNewPasswordForm(Model model) {
-    model.addAttribute("passwordForm", new PasswordForm());
-    return "find-password/new-password";
-}
+
+
+
+
+    //비밀번호 변경페이지
+    @GetMapping("/new-password")
+    public String showNewPasswordForm(Model model) {
+        model.addAttribute("passwordForm", new PasswordForm());
+        return "find-password/new-password";
+    }
 
 
     @PostMapping("/reset")
@@ -138,7 +142,6 @@ public String showNewPasswordForm(Model model) {
         session.removeAttribute("emailVerified");
         redirectAttributes.addFlashAttribute("success", "비밀번호가 성공적으로 변경되었습니다. 다시 로그인해주세요.");
         return "redirect:/login";
-
 
     }
 

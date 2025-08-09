@@ -62,6 +62,7 @@ public class SecurityConfig {
                                 "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/api-docs/**",
                                 "/error", "/api/v1/room-online/**"
                         ).permitAll()
+                        .requestMatchers("/mypage/**").authenticated()
                         .anyRequest().permitAll()
                 )
                 .exceptionHandling(exception -> exception
