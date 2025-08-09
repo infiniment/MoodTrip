@@ -4,26 +4,26 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 공유 버튼 기능
     const shareButton = document.getElementById('share-button');
-    
-    shareButton.addEventListener('click', function() {
-        if (navigator.share) {
-            // Web Share API 지원하는 경우
-            navigator.share({
-                title: document.querySelector('.announcement-title').textContent,
-                text: '무드트립 공지사항을 확인해보세요.',
-                url: window.location.href
-            }).then(() => {
-                console.log('공유 성공');
-            }).catch((error) => {
-                console.log('공유 실패:', error);
+    if (shareButton) {
+        shareButton.addEventListener('click', function () {
+            if (navigator.share) {
+                // Web Share API 지원하는 경우
+                navigator.share({
+                    title: document.querySelector('.announcement-title').textContent,
+                    text: '무드트립 공지사항을 확인해보세요.',
+                    url: window.location.href
+                }).then(() => {
+                    console.log('공유 성공');
+                }).catch((error) => {
+                    console.log('공유 실패:', error);
+                    fallbackShare();
+                });
+            } else {
+                // Web Share API 지원하지 않는 경우
                 fallbackShare();
-            });
-        } else {
-            // Web Share API 지원하지 않는 경우
-            fallbackShare();
-        }
-    });
-    
+            }
+        });
+    }
     function fallbackShare() {
         // URL 복사 기능
         navigator.clipboard.writeText(window.location.href).then(() => {
