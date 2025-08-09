@@ -5,6 +5,7 @@ import com.moodTrip.spring.global.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -31,4 +32,13 @@ public class Schedule extends BaseEntity {
 
     private LocalDateTime startedSchedule;
     private LocalDateTime updatedSchedule;
+
+    @Column(name = "place_name", length = 200)
+    private String placeName;
+
+    @Column(name = "place_lat", precision = 10, scale = 7)
+    private BigDecimal placeLat;
+
+    @Column(name = "place_lon", precision = 10, scale = 7)
+    private BigDecimal placeLon;
 }

@@ -17,7 +17,7 @@ import java.util.List;
 @Tag(name = "Companion Room API", description = "동행자 방 관련 REST API")
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/companion-rooms")
+@RequestMapping("/api/v1/companion-rooms/search")
 @RequiredArgsConstructor
 public class CompanionRoomApiController {
 
