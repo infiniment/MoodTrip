@@ -1111,7 +1111,7 @@ function cancelNoticeForm() {
 
 function publishNotice() {
     const title = document.getElementById('notice-title').value.trim();
-    console.log('제목:', title, '길이:', title.length);  // 디버깅용 로그
+    console.log('제목:', title, '길이:', title.length);
     const category = document.getElementById('notice-category').value;
     const visibility = document.getElementById('notice-visibility').value;
     const priority = document.getElementById('notice-priority').value;
@@ -1120,66 +1120,82 @@ function publishNotice() {
     const emailNotification = document.getElementById('notice-email').checked;
     const pinned = document.getElementById('notice-pinned').checked;
 
+    // 파일 정보도 수집! (추가)
+    const fileInput = document.getElementById('notice-attachment');
+    const files = fileInput ? fileInput.files : [];
+
     // 유효성 검사
     if (!title) {
         showErrorMessage('제목을 입력해주세요.');
         return;
     }
-    
+
     if (title.length < 5) {
         showErrorMessage('제목은 5자 이상 입력해주세요.');
         return;
     }
-    
+
     if (!content) {
         showErrorMessage('내용을 입력해주세요.');
         return;
     }
-    
+
     if (content.length < 10) {
         showErrorMessage('내용은 10자 이상 입력해주세요.');
         return;
     }
-    
+
+    // 파일 유효성 검사 (추가)
+    if (files.length > 5) {
+        showErrorMessage('첨부파일은 최대 5개까지 업로드 가능합니다.');
+        return;
+    }
+
     // 긴급공지나 중요 공지의 경우 추가 확인
     if (priority === 'urgent' || category === '긴급공지') {
         showConfirmModal(
             '긴급공지로 발행하시겠습니까?\n\n긴급공지는 모든 사용자에게 즉시 알림이 발송됩니다.',
             function() {
-                executePublishNotice({ title, category, visibility, priority, content, pushNotification, emailNotification, pinned });
+                executePublishNotice({
+                    title,
+                    category,
+                    visibility,
+                    priority,
+                    content,
+                    pushNotification,
+                    emailNotification,
+                    pinned,
+                    files  // 파일 정보 추가!
+                });
             }
         );
     } else {
         showConfirmModal('공지사항을 발행하시겠습니까?', function() {
-            executePublishNotice({ title, category, visibility, priority, content, pushNotification, emailNotification, pinned });
+            executePublishNotice({
+                title,
+                category,
+                visibility,
+                priority,
+                content,
+                pushNotification,
+                emailNotification,
+                pinned,
+                files  // 파일 정보 추가!
+            });
         });
     }
 }
-
-// function executePublishNotice(noticeData) {
-//     // 실제로는 서버에 저장 요청
-//     console.log('공지사항 발행:', noticeData);
-//
-//     // 테이블에 새 행 추가
-//     addNoticeToTable(noticeData.title, noticeData.category, noticeData.priority);
-//
-//     // 알림 발송 처리
-//     if (noticeData.pushNotification) {
-//         console.log('푸시 알림 발송 요청');
-//     }
-//     if (noticeData.emailNotification) {
-//         console.log('이메일 알림 발송 요청');
-//     }
-//
-//     closeModal();
-//     showSuccessMessage('공지사항이 성공적으로 발행되었습니다.');
-// }
-
-//api 연동 할거임
 function executePublishNotice(noticeData) {
-    const fileInput = document.getElementById('notice-attachment');
-    console.log('fileInput:', fileInput); // null인지 확인
-    const files = fileInput ? fileInput.files : [];
+    // noticeData에 files가 있으면 그걸 사용, 없으면 DOM에서 직접 찾기
+    let files;
+    if (noticeData.files) {
+        files = noticeData.files;
+        console.log('noticeData에서 파일 가져옴:', files.length);
+    } else {
+        const fileInput = document.getElementById('notice-attachment');
+        console.log('fileInput:', fileInput);
+        files = fileInput ? fileInput.files : [];
+    }
 
     if (files.length > 5) {
         showErrorMessage('첨부파일은 최대 5개까지 업로드 가능합니다.');
@@ -1200,7 +1216,15 @@ function executePublishNotice(noticeData) {
             return;
         }
         formData.append('files', files[i]);
+        console.log('파일 추가:', files[i].name); // 디버깅용
     }
+
+    // FormData 내용 확인 (디버깅용)
+    console.log('FormData 내용:');
+    for (let pair of formData.entries()) {
+        console.log(pair[0] + ':', pair[1]);
+    }
+
     fetch('/api/v1/admin/notifications', {
         method: 'POST',
         body: formData
@@ -1692,7 +1716,6 @@ function loadNoticeList() {
         .then(res => res.json())
         .then(notices => {
             const tbody = document.querySelector('#notice-list-view .data-table tbody');
-            //tbody.innerHTML = ''; // 기존 내용 삭제
 
             notices.forEach(notice => {
                 const row = document.createElement('tr');

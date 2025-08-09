@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.hibernate.Hibernate;
 
 @Service
 @RequiredArgsConstructor
@@ -26,11 +27,15 @@ public class CustomerNotificationService {
     public NotificationResponse findById(Long id) {
         Notification notification = notificationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("공지사항을 찾을 수 없습니다."));
+        // Hibernate.initialize를 사용해서 attachments 초기화
+        if (notification.getAttachments() != null) {
+            Hibernate.initialize(notification.getAttachments());
+        }
         return convertToResponse(notification);
     }
 
     // 조회수 증가 메서드 추가
-    @Transactional  // 읽기 전용이 아니므로 @Transactional 필요
+    @Transactional
     public void increaseViewCount(Long id) {
         Notification notification = notificationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("공지사항을 찾을 수 없습니다."));
@@ -49,6 +54,7 @@ public class CustomerNotificationService {
         response.setIsImportant(notification.getIsImportant());
         response.setRegisteredDate(notification.getRegisteredDate().atStartOfDay());
         response.setViewCount(notification.getViewCount());
+        response.setAttachments(notification.getAttachments());
         return response;
     }
 }

@@ -78,7 +78,8 @@ public class CustomerCenterController {
     public String announcementDetailPage(@RequestParam Long id, Model model) {
         NotificationResponse notice = customerNotificationService.findById(id);
 
-        // 조회수 증가 (선택사항)
+
+        // 조회수 증가
         customerNotificationService.increaseViewCount(id);
 
         // 이전글/다음글 찾기

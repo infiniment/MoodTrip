@@ -114,7 +114,34 @@
                         <!-- 공지사항 내용 -->
                         <article class="announcement-content">
                             <div class="content-body" th:utext="${notice.content}">
-                                <!-- DB의 content 내용이 HTML 형식으로 저장되어 있다면 th:utext 사용 -->
+                                <!-- DB의 content 내용 -->
+                            </div>
+
+                            <!-- 첨부파일 섹션 추가 -->
+                            <div class="attachment-section" th:if="${notice.attachments != null and !notice.attachments.isEmpty()}">
+                                <h3>📎 첨부파일</h3>
+                                <div class="attachment-list">
+                                    <!-- 이미지 파일 표시 -->
+                                    <div th:each="file : ${notice.attachments}" class="attachment-item">
+                                        <!-- 이미지인 경우 미리보기 -->
+                                        <div th:if="${file.contentType != null and file.contentType.startsWith('image/')}" class="image-preview">
+                                            <img th:src="${file.storedName}"
+                                                 th:alt="${file.originalName}"
+                                                 style="max-width: 100%; height: auto; margin: 10px 0;">
+                                        </div>
+
+                                        <!-- 다운로드 링크 -->
+                                        <div class="file-info">
+                                            <a th:href="${file.storedName}"
+                                               th:text="${file.originalName}"
+                                               download
+                                               class="file-download-link">
+                                                파일명.jpg
+                                            </a>
+                                            <span class="file-size" th:text="'(' + ${file.fileSize/1024} + 'KB)'"></span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </article>
 
