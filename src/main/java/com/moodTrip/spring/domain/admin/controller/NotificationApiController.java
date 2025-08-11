@@ -3,6 +3,7 @@ package com.moodTrip.spring.domain.admin.controller;
 import com.moodTrip.spring.domain.admin.dto.response.NotificationResponse;
 import com.moodTrip.spring.domain.admin.service.NotificationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -37,12 +38,25 @@ public class NotificationApiController {
     }
 
 
-    // 공지사항 조회
+//    // 공지사항 조회
+//    @GetMapping("/{noticeId}")
+//    public ResponseEntity<NotificationResponse> getNotification(@PathVariable Long noticeId) {
+//        NotificationResponse notification = notificationService.findByIdForAdmin(noticeId);
+//        return ResponseEntity.ok(notification);
+//    }
+
+    //공지사항 조회 테스트
     @GetMapping("/{noticeId}")
     public ResponseEntity<NotificationResponse> getNotification(@PathVariable Long noticeId) {
-        NotificationResponse notification = notificationService.findByIdForAdmin(noticeId);
-        return ResponseEntity.ok(notification);
+        try {
+            NotificationResponse notification = notificationService.findByIdForAdmin(noticeId);
+            return ResponseEntity.ok(notification);
+        } catch (Exception e) {
+            e.printStackTrace();  // 에러 로그 출력
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
+
 
     // 공지사항 수정
     @PutMapping("/{noticeId}")
