@@ -19,18 +19,14 @@ public class Emotion extends BaseEntity {
     @Column(name="tag_id")
     private Integer tagId;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "emotion_category_id")
     private EmotionCategory emotionCategory;
 
-
     @Column(name = "tag_name")
     private String tagName; // 태그명
 
-
     @Column(name = "display_order")
     private Integer displayOrder; // 표시순서
-
 
 }

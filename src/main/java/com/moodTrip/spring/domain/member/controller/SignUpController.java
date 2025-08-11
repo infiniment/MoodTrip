@@ -54,7 +54,9 @@ public class SignUpController {
     public String signupSuccess() {
         return "signup/success"; // templates/signup/success.html이 렌더링됨
     }
-//회원 가입 에러
+
+
+    //회원 가입 에러
     @GetMapping("/signup")
     public String signupForm(@RequestParam(value = "error", required = false) String error, Model model) {
         if (error != null) model.addAttribute("errorMessage", error);

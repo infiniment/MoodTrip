@@ -92,17 +92,17 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
                 jwtCookie.setHttpOnly(true);
                 jwtCookie.setPath("/");
                 jwtCookie.setMaxAge(24 * 60 * 60);
-                response.addCookie(jwtCookie);
 
+                response.addCookie(jwtCookie);
                 response.sendRedirect("/signup/success");
             }
         } else {
+            //회원가입 말고 소셜 로그인 할 떄
             if (exists) {
-                Member member = memberService.findByProviderAndProviderId(provider, providerId);
 
+                Member member = memberService.findByProviderAndProviderId(provider, providerId);
                 String token = jwtUtil.generateToken(member.getMemberId(), member.getMemberPk());
                 Cookie jwtCookie = new Cookie("jwtToken", token);
-                log.info(" 소셜 JWT 토큰 발급 : {}", token);
                 jwtCookie.setHttpOnly(true);
                 jwtCookie.setPath("/");
                 jwtCookie.setHttpOnly(true);
