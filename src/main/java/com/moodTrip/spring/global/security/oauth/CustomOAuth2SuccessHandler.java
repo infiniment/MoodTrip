@@ -104,7 +104,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
                 String token = jwtUtil.generateToken(member.getMemberId(), member.getMemberPk());
                 Cookie jwtCookie = new Cookie("jwtToken", token);
                 jwtCookie.setHttpOnly(true);
-                jwtCookie.setPath("/");
+                gitjwtCookie.setPath("/");
                 jwtCookie.setHttpOnly(true);
                 jwtCookie.setMaxAge(24 * 60 * 60);
                 response.addCookie(jwtCookie);
