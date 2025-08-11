@@ -66,6 +66,7 @@ public class LoginViewController {
 
         // 해당 부분 김상우가 수정 메인페이지로 redirect 시 Member 테이블 정보 가져오기 위함
         return "redirect:/";
+
     }
 
     //소셜 로그인 성공 시

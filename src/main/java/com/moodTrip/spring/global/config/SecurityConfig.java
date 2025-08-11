@@ -26,6 +26,7 @@ import java.util.Map;
 @Configuration
 public class SecurityConfig {
 
+    //단방향 PassWordEncoder 사용
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -39,7 +40,7 @@ public class SecurityConfig {
     }
 
 
-    //  SuccessHandler를 Bean으로 꼭 등록! MemberService 주입 필요
+    //  소셜 로그인에서 SuccessHandler를 Bean으로  등록 MemberService 주입 필요
     @Bean
     public AuthenticationSuccessHandler customOAuth2SuccessHandler(MemberService memberService, JwtUtil jwtUtil) {
         return new CustomOAuth2SuccessHandler(memberService, jwtUtil);
@@ -70,6 +71,7 @@ public class SecurityConfig {
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint)  // ✅ 설정
                 )
                 .formLogin(form -> form.disable())
+                // 소셜 로그인 커스터 마이징
                 .oauth2Login(oauth2 -> oauth2
                         .loginPage("/login")
                         .authorizationEndpoint(endpoint ->
@@ -122,5 +124,7 @@ public class SecurityConfig {
             }
         };
     }
+
+
 
 }
