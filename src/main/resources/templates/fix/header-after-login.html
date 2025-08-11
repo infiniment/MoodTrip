@@ -32,7 +32,7 @@
                 <a th:href="@{/emotions}" class="left-nav-menu" data-menu="emotions">
                     <div class="main-header text-header">감정여행</div>
                 </a>
-                <a th:href="@{/companion-rooms}" class="left-nav-menu" data-menu="companion">
+                <a th:href="@{~/entering-room}" class="left-nav-menu" data-menu="companion">
                     <div class="main-header text-header">동행매칭</div>
                 </a>
                 <a th:href="@{/notifications}" class="left-nav-menu" data-menu="notice">
@@ -86,8 +86,8 @@
                     </div>
                     <div class="dropdown-menu-list" id="companion-dropdown" style="width: 109px;">
                         <a class="dropdown-menu-item" th:href="@{/companion-rooms/create}">방 만들기</a>
-                        <a class="dropdown-menu-item" th:href="@{/companion-rooms}">방 입장하기</a>
-                        <a class="dropdown-menu-item" th:href="@{/scheduling}">스케줄 짜기</a>
+                        <a class="dropdown-menu-item" th:href="@{/entering-room}">방 입장하기</a>
+                        <a class="dropdown-menu-item" th:href="@{/mypage/my-matching}">스케줄 짜기</a>
                     </div>
                     <div class="dropdown-menu-list" id="notice-dropdown" style="width: 113px;">
                         <a class="dropdown-menu-item" th:href="@{/faqs}">자주 묻는 질문</a>
