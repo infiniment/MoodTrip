@@ -1,14 +1,26 @@
 package com.moodTrip.spring.domain.rooms.controller;
 
+import com.moodTrip.spring.domain.rooms.dto.response.RoomCardDto;
+import com.moodTrip.spring.domain.rooms.dto.response.RoomResponse;
+import com.moodTrip.spring.domain.rooms.service.RoomService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.List;
+import lombok.extern.slf4j.Slf4j;
+
 @Controller
+@Slf4j
+@RequiredArgsConstructor
 @RequestMapping("/companion-rooms")
 public class RoomViewController {
+
+    private final RoomService roomService;
+
     // 렌더링 시작
     @GetMapping("/start")
     public String showStartPage() {
@@ -17,7 +29,12 @@ public class RoomViewController {
 
     // 방 찾기 목록으로 가는 렌더링
     @GetMapping("/list")
-    public String showListPage() {
+    public String showListPage(Model model) {
+
+        log.info("==== [EnteringRoomController] /entering-room 진입 ====");
+        List<RoomCardDto> rooms = roomService.getRoomCards();
+        log.info("방 개수: {}", rooms.size());
+        model.addAttribute("rooms", rooms);
         return "enteringRoom/enteringRoom";
     }
 
@@ -52,6 +69,10 @@ public class RoomViewController {
     public String showFinalRegistrationPage() {
         return "creatingRoom/final-registration";
     }
+
+
+
+
 
 
 

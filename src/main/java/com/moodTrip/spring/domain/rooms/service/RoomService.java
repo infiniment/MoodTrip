@@ -4,6 +4,7 @@ package com.moodTrip.spring.domain.rooms.service;
 import com.moodTrip.spring.domain.member.entity.Member;
 import com.moodTrip.spring.domain.rooms.dto.request.RoomRequest;
 import com.moodTrip.spring.domain.rooms.dto.request.UpdateRoomRequest;
+import com.moodTrip.spring.domain.rooms.dto.response.RoomCardDto;
 import com.moodTrip.spring.domain.rooms.dto.response.RoomMemberResponse;
 import com.moodTrip.spring.domain.rooms.dto.response.RoomResponse;
 import com.moodTrip.spring.domain.rooms.entity.Room;
@@ -24,4 +25,5 @@ public interface RoomService {
     List<RoomMemberResponse> getActiveMembers(Room room); // 방의 활성 멤버 조회
     Room getRoomEntityById(Long roomId);
     RoomResponse toResponseDto(Room room);
+    List<RoomCardDto> getRoomCards();
 }

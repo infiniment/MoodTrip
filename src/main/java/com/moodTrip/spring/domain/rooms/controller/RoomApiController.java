@@ -24,6 +24,7 @@ import java.util.List;
 @Tag(name = "companion-rooms API", description = "동행 방 생성, 조회, 수정, 삭제 관련 API")
 @SecurityRequirement(name = "BearerAuth")
 public class RoomApiController { // CRUD 담당 Controller
+
     private final RoomService roomService;
 
 

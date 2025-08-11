@@ -41,6 +41,9 @@ public enum ErrorStatus implements BaseErrorCode {
     INVALID_TRAVEL_DATE(HttpStatus.BAD_REQUEST, "ROOM_002", "여행 날짜가 유효하지 않습니다."),
     INVALID_MAX_PARTICIPANT(HttpStatus.BAD_REQUEST, "ROOM_003", "현재 인원보다 적은 최대 인원은 설정할 수 없습니다."),
 
+    // Room 생성 관련
+    //EMOTION_NOT_FOUND(HttpStatus.NOT_FOUND, "EMOTION_001", "존재하지 않는 감정 태그입니다."),  // 추가된 부분
+
 
     // RoomMember 관련
     ROOM_MEMBER_ALREADY_EXISTS(HttpStatus.CONFLICT, "ROOM_MEMBER_001", "이미 해당 방에 참여한 회원입니다."),
@@ -53,7 +56,11 @@ public enum ErrorStatus implements BaseErrorCode {
     TRANSPORT_AUTH_ERROR(HttpStatus.UNAUTHORIZED, "TRANSPORT_004", "대중교통 API 인증에 실패했습니다."),
     TRANSPORT_BAD_REQUEST(HttpStatus.BAD_REQUEST, "TRANSPORT_005", "대중교통 API 요청 파라미터가 유효하지 않습니다.");
 
+
+
     private final HttpStatus httpStatus;
     private final String code;
     private final String message;
+
+
 }

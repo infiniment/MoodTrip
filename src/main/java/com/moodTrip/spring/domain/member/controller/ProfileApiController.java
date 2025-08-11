@@ -1,5 +1,6 @@
 package com.moodTrip.spring.domain.member.controller;
 
+import com.moodTrip.spring.domain.member.dto.request.ChangePasswordForm;
 import com.moodTrip.spring.domain.member.dto.request.IntroduceUpdateRequest;
 import com.moodTrip.spring.domain.member.dto.request.NicknameUpdateRequest;
 import com.moodTrip.spring.domain.member.dto.request.ProfileImageUpdateRequest;
@@ -16,10 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * ✅ REST API 전용 프로필 컨트롤러 - JWT 인증 적용
@@ -160,6 +158,7 @@ public class ProfileApiController {
             @ApiResponse(responseCode = "404", description = "회원/프로필을 찾을 수 없음"),
             @ApiResponse(responseCode = "500", description = "서버 내부 오류")
     })
+
     @PatchMapping("/me/profileImage")
     public ResponseEntity<ProfileResponse> updateProfileImage(
             @RequestBody(description = "프로필 사진 변경 요청 데이터")
@@ -185,5 +184,14 @@ public class ProfileApiController {
             return ResponseEntity.internalServerError().build(); // 500 에러
         }
     }
+
+    // 비밀번호 변경 폼을 보여주는 GET 핸들러
+    @GetMapping("/change-password")
+    public String changePasswordForm(@ModelAttribute("form") ChangePasswordForm form) {
+        return "mypage/change-password"; // templates/mypage/change-password.html
+    }
+
+
+
 
 }
