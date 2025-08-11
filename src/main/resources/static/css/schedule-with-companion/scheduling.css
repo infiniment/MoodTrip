@@ -569,38 +569,194 @@ body {
 }
 
 /* 교통 섹션 */
+/*.transport-section {*/
+/*    display: grid;*/
+/*    grid-template-columns: 1fr 1fr;*/
+/*    gap: 35px;*/
+/*}*/
+
 .transport-section {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 35px;
+    grid-template-columns: 1.2fr 0.8fr; /* 왼쪽을 조금 더 넓게 */
+    gap: 24px;
+    align-items: start;                 /* 위쪽에 정렬 */
 }
 
+.map-block {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;                          /* 검색창·결과·지도 간격 */
+}
+
+/* 검색 박스 카드화(기존 스타일 응용) */
+.search-container {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafb 100%);
+    border: 1px solid rgba(0, 87, 146, 0.10);
+    border-radius: 20px;
+    padding: 16px;
+    box-shadow: 0 12px 28px rgba(0, 26, 44, 0.12);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+#placeSearchInput {
+    flex: 1;
+    height: 48px;
+    padding: 0 16px;
+    border: 2px solid rgba(0, 87, 146, 0.20);
+    border-radius: 14px;
+    outline: none;
+    font-size: 15px;
+}
+
+#placeSearchInput:focus {
+    border-color: #005792;
+    box-shadow: 0 0 0 3px rgba(0, 87, 146, 0.15);
+}
+
+#placeSearchBtn { height: 48px; padding: 0 20px; }
+
+/* 검색 결과 박스(지도 위에, 레이아웃 밀지 않게 하고 싶으면 absolute로 바꿔도 됨) */
+#placeResults {
+    background:#fff;
+    border:1px solid rgba(0,87,146,.1);
+    border-radius:16px;
+    box-shadow:0 8px 20px rgba(0,26,44,.1);
+    max-height:260px;
+    overflow:auto;
+    padding: 6px 0;
+}
+
+
+/* 지도 카드 높이/정렬 조정 */
 .map-container {
     background: linear-gradient(135deg, #f0f7ff 0%, #e1f0ff 100%);
     border-radius: 20px;
-    padding: 30px;
+    padding: 16px;
     box-shadow: 0 15px 35px rgba(0, 26, 44, 0.15);
-    min-height: 450px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #001A2C;
-    font-size: 18px;
+    min-height: 520px;
     border: 2px dashed rgba(0, 87, 146, 0.3);
     position: relative;
     overflow: hidden;
 }
 
-.map-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(0, 87, 146, 0.1), transparent);
-    animation: mapShimmer 3s infinite;
+.map-container {
+    position: relative; /* 오버레이 포지셔닝용 */
 }
+
+.map-container::before {
+    content:'';
+    position:absolute; inset:0;
+    background:linear-gradient(90deg,transparent,rgba(0,87,146,.1),transparent);
+    animation: mapShimmer 3s infinite;
+    pointer-events:none; /* 오버레이가 지도를 막지 않게 */
+}
+
+.route-search {
+    position: absolute;
+    top: 16px; left: 16px; right: 16px;
+    z-index: 5;
+    display: grid;
+    gap: 10px;
+}
+
+/* 검색 인풋 묶음 */
+.route-inputs {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr auto;
+    gap: 10px;
+    align-items: center;
+    background: linear-gradient(135deg, #eef6ff 0%, #e7f0ff 100%);
+    border: 1px solid rgba(11, 109, 190, .18);
+    border-radius: 14px;
+    padding: 12px;
+    box-shadow: 0 12px 28px rgba(0, 26, 44, .15);
+    backdrop-filter: blur(4px);
+}
+
+.route-inputs input {
+    height: 40px;
+    border: 1px solid rgba(11, 109, 190, .25);
+    border-radius: 10px;
+    padding: 0 12px;
+    font-size: 14px;
+    color: #0a263b;
+    background: #fff;
+    outline: none;
+}
+
+#swapRouteBtn {
+    height: 40px;
+    padding: 0 10px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #0b6dbe 0%, #0a263b 100%);
+    color: #fff;
+    cursor: pointer;
+}
+
+.results {
+    display: none;
+    background: #fff;
+    border: 1px solid rgba(11, 109, 190, .2);
+    border-radius: 12px;
+    box-shadow: 0 16px 40px rgba(0,26,44,.18);
+    max-height: 260px;
+    overflow: auto;
+}
+
+.results .result-item {
+    padding: 10px 12px;
+    border-bottom: 1px solid #f1f4f8;
+    cursor: pointer;
+}
+.results .result-item:last-child { border-bottom: none; }
+.results .result-item:hover {
+    background: #f5faff;
+}
+.results .name { font-weight: 700; color: #0a263b; }
+.results .addr { font-size: 12px; color: #5a7a94; margin-top: 2px; }
+
+#map {
+    width:100%;
+    height:100%;
+    min-height:488px;      /* 컨테이너 높이에 맞춰 조정 */
+    border-radius:12px;
+}
+
+@media (max-width: 992px) {
+    .transport-section { grid-template-columns: 1fr; }
+    .map-container { min-height: 380px; }
+    #map { min-height: 340px; }
+}
+
+/*.map-container {*/
+/*    background: linear-gradient(135deg, #f0f7ff 0%, #e1f0ff 100%);*/
+/*    border-radius: 20px;*/
+/*    padding: 30px;*/
+/*    box-shadow: 0 15px 35px rgba(0, 26, 44, 0.15);*/
+/*    min-height: 450px;*/
+/*    display: flex;*/
+/*    align-items: center;*/
+/*    justify-content: center;*/
+/*    color: #001A2C;*/
+/*    font-size: 18px;*/
+/*    border: 2px dashed rgba(0, 87, 146, 0.3);*/
+/*    position: relative;*/
+/*    overflow: hidden;*/
+/*}*/
+
+/*.map-container::before {*/
+/*    content: '';*/
+/*    position: absolute;*/
+/*    top: 0;*/
+/*    left: -100%;*/
+/*    width: 100%;*/
+/*    height: 100%;*/
+/*    background: linear-gradient(90deg, transparent, rgba(0, 87, 146, 0.1), transparent);*/
+/*    animation: mapShimmer 3s infinite;*/
+/*}*/
 
 @keyframes mapShimmer {
     0% { left: -100%; }
@@ -615,6 +771,108 @@ body {
     border: 1px solid rgba(0, 87, 146, 0.1);
 }
 
+.transport-options { display: flex; flex-direction: column; gap: 12px; }
+
+/* 카드 레이아웃: 기본 1fr + 버튼, 아이콘 있으면 3열 */
+.transport-options .transport-item{
+    padding: 14px 16px;                  /* 작게 */
+    align-items: flex-start;              /* 내용 위로 */
+    gap: 14px;
+    display: grid;
+    grid-template-columns: 1fr auto;      /* [제목+내용] [버튼] */
+}
+.transport-options .transport-item:has(.transport-icon){
+    grid-template-columns: 56px 1fr auto; /* [아이콘] [제목+내용] [버튼] */
+}
+
+/* 아이콘 사이즈를 작게 */
+.transport-options .transport-icon {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    border-radius: 12px; /* 원형 대신 라운드 사각 */
+    background: linear-gradient(135deg, #ffffff 0%, #f0f6ff 100%);
+    border: 1px solid rgba(0,87,146,0.15);
+    box-shadow: 0 4px 10px rgba(0, 87, 146, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px; /* 아이콘 이미지와 경계 여백 */
+}
+
+.transport-options .transport-icon img {
+    width: 70%;
+    height: auto;
+    object-fit: contain;
+}
+
+
+/* 제목 줄바꿈 깨짐 방지 + 여백 축소 */
+.transport-options .transport-item h4{
+    margin: 0 0 6px 0;
+    font-size: 15px;
+    line-height: 1.25;
+    white-space: normal;                  /* 한글이 세로로 쪼개지는 현상 방지 */
+    word-break: keep-all;                 /* 자연스러운 줄바꿈 */
+}
+
+/* 요약/시간/요금 텍스트 크기 축소 */
+.transport-options .transport-info{ margin: 0; }
+.transport-options .transport-info p{
+    margin: 2px 0;
+    font-size: 13px;
+    color: #1E3A5F;
+}
+
+/* 구간 리스트(도보/지하철/버스) */
+.transport-options .segments{
+    margin: 8px 0 0;
+    padding-left: 18px;
+}
+.transport-options .segments li{
+    font-size: 13px;
+    color: #334;
+    margin: 2px 0;
+}
+
+/* 우측 버튼을 작은 필( pill )로 */
+.transport-options .transport-actions{
+    align-self: center;
+}
+.transport-options .transport-actions a{
+    display: inline-block;
+    padding: 8px 14px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #005792 0%, #001A2C 100%);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+    box-shadow: 0 8px 18px rgba(0,87,146,.28);
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+.transport-options .transport-actions a:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 12px 26px rgba(0,87,146,.35);
+}
+
+/* 카드 간 마진 보정 (flex gap + 안전망) */
+.transport-options .transport-item + .transport-item{ margin-top: 0; }
+
+/* 반응형에서 더 타이트하게 */
+@media (max-width: 768px){
+    .transport-options .transport-item{
+        padding: 12px 14px;
+        gap: 10px;
+    }
+    .transport-options .transport-item:has(.transport-icon){
+        grid-template-columns: 44px 1fr auto;
+    }
+    .transport-options .transport-icon{ width: 44px; height: 44px; font-size: 20px; }
+    .transport-options .transport-actions a{ padding: 7px 12px; font-size: 12px; }
+}
 .transport-item {
     display: flex;
     align-items: center;
@@ -652,18 +910,18 @@ body {
 }
 
 .transport-icon {
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #005792 0%, #001A2C 100%);
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    min-height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #ffffff 0%, #f0f6ff 100%);
+    border: 1px solid rgba(0,87,146,0.15);
+    box-shadow: 0 4px 10px rgba(0, 87, 146, 0.15);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
-    font-size: 28px;
-    margin-right: 25px;
-    box-shadow: 0 10px 25px rgba(0, 87, 146, 0.3);
-    transition: transform 0.3s ease;
+    padding: 6px;
 }
 
 .transport-item:hover .transport-icon {
@@ -693,7 +951,7 @@ body {
     font-weight: 700;
     font-size: 14px;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    margin-top: 25px;
+    /*margin-top: 25px;*/
     box-shadow: 0 10px 25px rgba(0, 87, 146, 0.3);
     position: relative;
     overflow: hidden;

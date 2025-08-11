@@ -5,6 +5,7 @@ import com.moodTrip.spring.global.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +43,7 @@ public class Room extends BaseEntity {
     //    @ManyToOne(fetch = FetchType.LAZY)
 //    @JoinColumn(name = "attraction_id")
 //    private Attraction attraction;
+
     // 나중에 Attraction 완료되면 교체 예정
     @Column(name = "destination_category")
     private String destinationCategory;
@@ -51,6 +53,17 @@ public class Room extends BaseEntity {
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EmotionRoom> emotionRooms = new ArrayList<>();
+
+
+    // Attraction 사용하면 이거 대신 attraction
+    @Column(name = "destination_lat", precision = 10, scale = 7) // 예: 37.5665357
+    private BigDecimal destinationLat;
+
+    @Column(name = "destination_lon", precision = 10, scale = 7) // 예: 126.9779692
+    private BigDecimal destinationLon;
+
+//    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<EmotionRoom> emotionRooms = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "creator_id")
