@@ -31,12 +31,10 @@ public class MypageViewController {
     public String viewMyProfile(Model model) {
             Member currentMember = securityUtil.getCurrentMember();
             ProfileResponse profile = profileService.getMyProfile(currentMember);
-
             model.addAttribute("profile", profile);
             model.addAttribute("currentMember", currentMember);
             model.addAttribute("pageTitle", "내 정보");
             model.addAttribute("isLoggedIn", true);
-
             return "mypage/my-profile";
     }
 
@@ -111,4 +109,5 @@ public class MypageViewController {
     public String mypageMain() {
         return "redirect:/mypage/my-profile";
     }
+
 }

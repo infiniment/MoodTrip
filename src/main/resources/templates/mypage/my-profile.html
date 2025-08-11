@@ -37,14 +37,15 @@
                         <span class="notification-badge" id="join-requests-badge" style="display: none;">0</span>
                     </a>
                     <a class="my_tourist_attraction_wishlist" th:href="@{/mypage/my-tourist-attraction-wishlist}">관광지 찜 목록</a>
-                    <a class="change_password" th:href="@{/mypage/change-password}">비밀번호 변경 정보</a>
+                    <a class="change_password active"
+                       th:if="${currentMember != null and #strings.isEmpty(currentMember.providerId)}"
+                       th:href="@{/mypage/change-password}">비밀번호 변경 정보</a>
                     <a class="alarm" th:href="@{/mypage/alarm}">알림 설정</a>
                 </aside>
 
                 <main class="mypage_info">
                     <div class="total-wrapper">
                         <h1 class="info-title">내 정보</h1>
-
                         <!-- ✅ 에러/성공 메시지 표시 영역 추가 -->
                         <div th:if="${error}" class="error-message" style="background: #fee; color: #c33; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
                             <p th:text="${error}"></p>
