@@ -17,13 +17,12 @@
   <link rel="stylesheet" th:href="@{/css/mainpage/mainpage.css}">
 </head>
 <body>
-
-<!-- 로그인 상태에 따른 조건부 헤더 렌더링 -->
-<!-- Spring Security에서는 Thymeleaf에 #authentication 내장 객체를 지원 -->
-<div th:if="${#authorization.expression('isAuthenticated()')}">
+<div th:if="${isLoggedIn}">
+  <!-- 로그인된 사용자용 헤더 -->
   <th:block th:replace="~{fix/header-after-login :: header}"></th:block>
 </div>
-<div th:unless="${#authorization.expression('isAuthenticated()')}">
+<div th:unless="${isLoggedIn}">
+  <!-- 로그인 안된 사용자용 헤더 -->
   <th:block th:replace="~{fix/header :: header}"></th:block>
 </div>
 
