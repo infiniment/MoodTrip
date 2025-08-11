@@ -57,17 +57,45 @@ public class WeatherController {
     }
 
     @GetMapping("/daily")
-    public List<WeatherResponse> getDailyForecast() {
-        return weatherService.getDailyForecast();
-    }
-
-    @GetMapping("/hourly")
-    public List<WeatherResponse> getHourlyForecast(@RequestParam String date) {
-        return weatherService.getHourlyForecast(date);
+    public List<WeatherResponse> daily(
+            @RequestParam(name="roomId", required=false) Long roomId,
+            @RequestParam(name="lat", required=false) Double lat,
+            @RequestParam(name="lon", required=false) Double lon
+    ) {
+        if (roomId != null) return weatherService.getDailyByRoom(roomId);   // ★
+        double la = (lat != null ? lat : 37.5665);
+        double lo = (lon != null ? lon : 126.9780);
+        return weatherService.getDailyForecast(la, lo);                      // 좌표 기반
     }
 
     @GetMapping("/current")
-    public WeatherResponse getCurrentWeather() {
-        return weatherService.getCurrentWeather();
+    public WeatherResponse current(
+            @RequestParam(name="roomId", required=false) Long roomId,
+            @RequestParam(name="lat", required=false) Double lat,
+            @RequestParam(name="lon", required=false) Double lon
+    ) {
+        if (roomId != null) return weatherService.getCurrentByRoom(roomId);  // ★
+        double la = (lat != null ? lat : 37.5665);
+        double lo = (lon != null ? lon : 126.9780);
+        return weatherService.getCurrentWeather(la, lo);
+    }
+
+    @GetMapping("/hourly")
+    public List<WeatherResponse> hourly(
+            @RequestParam(name="date") String date,
+            @RequestParam(name="roomId", required=false) Long roomId,
+            @RequestParam(name="lat", required=false) Double lat,
+            @RequestParam(name="lon", required=false) Double lon
+    ) {
+        if (roomId != null) return weatherService.getHourlyByRoom(roomId, date); // ★
+        double la = (lat != null ? lat : 37.5665);
+        double lo = (lon != null ? lon : 126.9780);
+        return weatherService.getHourlyForecast(date, la, lo);
+    }
+
+    // 필요하면 좌표 기반 엔드포인트도 유지
+    @GetMapping("/current/by-coord")
+    public WeatherResponse getCurrentByCoord(@RequestParam double lat, @RequestParam double lon) {
+        return weatherService.getCurrentWeather(lat, lon);
     }
 }
