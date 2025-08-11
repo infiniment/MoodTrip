@@ -32,6 +32,11 @@ function setupMenuNavigation() {
             const targetSection = document.getElementById(menuType + '-section');
             if (targetSection) {
                 targetSection.style.display = 'block';
+
+                // 공지사항 메뉴 클릭 시 목록 로드
+                if (menuType === 'notices') {
+                    loadNoticeList();
+                }
             }
             
             // 페이지 제목 변경
@@ -79,6 +84,44 @@ function updatePageTitle(menuType) {
         pageSubtitle.textContent = subtitles[menuType] || '';
     }
 }
+
+
+function showFaqForm() {
+    document.getElementById('faq-list-view').style.display = 'none';
+    document.getElementById('faq-form-view').style.display = 'block';
+}
+
+function cancelFaqForm() {
+    document.getElementById('faq-form-view').style.display = 'none';
+    document.getElementById('faq-list-view').style.display = 'block';
+}
+
+function saveFaq() {
+    const question = document.getElementById('faq-question').value;
+    const category = document.getElementById('faq-category').value;
+
+    if (!question.trim()) {
+        alert("질문을 입력하세요.");
+        return;
+    }
+
+    // 단순 alert (실제 서버 연동은 추후 추가)
+    alert(`FAQ 저장 완료: [${category}] ${question}`);
+
+    cancelFaqForm();
+}
+
+function editFaq(button) {
+    alert("FAQ 수정 기능은 준비 중입니다.");
+}
+
+function deleteFaq(button) {
+    if (confirm("정말로 삭제하시겠습니까?")) {
+        const row = button.closest('tr');
+        row.remove();
+    }
+}
+
 
 // 2. 탭 네비게이션
 function setupTabNavigation() {
@@ -1068,6 +1111,7 @@ function cancelNoticeForm() {
 
 function publishNotice() {
     const title = document.getElementById('notice-title').value.trim();
+    console.log('제목:', title, '길이:', title.length);
     const category = document.getElementById('notice-category').value;
     const visibility = document.getElementById('notice-visibility').value;
     const priority = document.getElementById('notice-priority').value;
@@ -1075,60 +1119,136 @@ function publishNotice() {
     const pushNotification = document.getElementById('notice-push').checked;
     const emailNotification = document.getElementById('notice-email').checked;
     const pinned = document.getElementById('notice-pinned').checked;
-    
+
+    // 파일 정보도 수집! (추가)
+    const fileInput = document.getElementById('notice-attachment');
+    const files = fileInput ? fileInput.files : [];
+
     // 유효성 검사
     if (!title) {
         showErrorMessage('제목을 입력해주세요.');
         return;
     }
-    
+
     if (title.length < 5) {
         showErrorMessage('제목은 5자 이상 입력해주세요.');
         return;
     }
-    
+
     if (!content) {
         showErrorMessage('내용을 입력해주세요.');
         return;
     }
-    
+
     if (content.length < 10) {
         showErrorMessage('내용은 10자 이상 입력해주세요.');
         return;
     }
-    
+
+    // 파일 유효성 검사 (추가)
+    if (files.length > 5) {
+        showErrorMessage('첨부파일은 최대 5개까지 업로드 가능합니다.');
+        return;
+    }
+
     // 긴급공지나 중요 공지의 경우 추가 확인
     if (priority === 'urgent' || category === '긴급공지') {
         showConfirmModal(
             '긴급공지로 발행하시겠습니까?\n\n긴급공지는 모든 사용자에게 즉시 알림이 발송됩니다.',
             function() {
-                executePublishNotice({ title, category, visibility, priority, content, pushNotification, emailNotification, pinned });
+                executePublishNotice({
+                    title,
+                    category,
+                    visibility,
+                    priority,
+                    content,
+                    pushNotification,
+                    emailNotification,
+                    pinned,
+                    files  // 파일 정보 추가!
+                });
             }
         );
     } else {
         showConfirmModal('공지사항을 발행하시겠습니까?', function() {
-            executePublishNotice({ title, category, visibility, priority, content, pushNotification, emailNotification, pinned });
+            executePublishNotice({
+                title,
+                category,
+                visibility,
+                priority,
+                content,
+                pushNotification,
+                emailNotification,
+                pinned,
+                files  // 파일 정보 추가!
+            });
         });
     }
 }
-
 function executePublishNotice(noticeData) {
-    // 실제로는 서버에 저장 요청
-    console.log('공지사항 발행:', noticeData);
-    
-    // 테이블에 새 행 추가
-    addNoticeToTable(noticeData.title, noticeData.category, noticeData.priority);
-    
-    // 알림 발송 처리
-    if (noticeData.pushNotification) {
-        console.log('푸시 알림 발송 요청');
+    // noticeData에 files가 있으면 그걸 사용, 없으면 DOM에서 직접 찾기
+    let files;
+    if (noticeData.files) {
+        files = noticeData.files;
+        console.log('noticeData에서 파일 가져옴:', files.length);
+    } else {
+        const fileInput = document.getElementById('notice-attachment');
+        console.log('fileInput:', fileInput);
+        files = fileInput ? fileInput.files : [];
     }
-    if (noticeData.emailNotification) {
-        console.log('이메일 알림 발송 요청');
+
+    if (files.length > 5) {
+        showErrorMessage('첨부파일은 최대 5개까지 업로드 가능합니다.');
+        return;
     }
-    
-    closeModal();
-    showSuccessMessage('공지사항이 성공적으로 발행되었습니다.');
+
+    const formData = new FormData();
+    formData.append('title', noticeData.title);
+    formData.append('content', noticeData.content);
+    formData.append('classification', noticeData.category);
+    formData.append('isImportant', noticeData.priority === 'important' || noticeData.priority === 'urgent');
+    formData.append('isVisible', noticeData.visibility !== 'draft');
+
+    // 파일이 있을 때만 처리
+    for (let i = 0; i < files.length; i++) {
+        if (files[i].size > 10 * 1024 * 1024) {
+            showErrorMessage(`${files[i].name} 파일이 10MB를 초과합니다.`);
+            return;
+        }
+        formData.append('files', files[i]);
+        console.log('파일 추가:', files[i].name); // 디버깅용
+    }
+
+    // FormData 내용 확인 (디버깅용)
+    console.log('FormData 내용:');
+    for (let pair of formData.entries()) {
+        console.log(pair[0] + ':', pair[1]);
+    }
+
+    fetch('/api/v1/admin/notifications', {
+        method: 'POST',
+        body: formData
+    })
+        .then(res => {
+            if (!res.ok) {
+                if (res.status === 400) throw new Error('잘못된 요청입니다.');
+                if (res.status === 500) throw new Error('서버 오류가 발생했습니다.');
+                throw new Error('서버 오류');
+            }
+            return res.json(); // 서버에서 noticeId 반환
+        })
+        .then(noticeId => {
+            // noticeId를 제대로 전달
+            addNoticeToTable(noticeData.title, noticeData.category, noticeData.priority, noticeId);
+            if (noticeData.pushNotification) console.log('푸시 알림 발송 요청');
+            if (noticeData.emailNotification) console.log('이메일 알림 발송 요청');
+            closeModal();
+            showSuccessMessage('공지사항이 성공적으로 발행되었습니다.');
+        })
+        .catch(err => {
+            console.error('공지사항 발행 오류:', err);
+            showErrorMessage(err.message || '공지사항 발행 중 오류가 발생했습니다.');
+        });
 }
 
 function draftNotice() {
@@ -1148,10 +1268,14 @@ function draftNotice() {
     showSuccessMessage('공지사항이 임시저장되었습니다.');
 }
 
-function addNoticeToTable(title, category, priority = 'normal') {
+function addNoticeToTable(title, category, priority = 'normal',noticeId) {
     const tbody = document.querySelector('#notice-list-view .data-table tbody');
     const newRow = document.createElement('tr');
-    
+    if (noticeId) {
+        newRow.setAttribute('data-notice-id', noticeId);
+    } else {
+        console.error('noticeId가 없습니다!');
+    }
     // 중요도에 따른 스타일 클래스 추가
     if (priority === 'urgent') {
         newRow.classList.add('urgent-notice');
@@ -1178,100 +1302,290 @@ function addNoticeToTable(title, category, priority = 'normal') {
     tbody.insertBefore(newRow, tbody.firstChild);
 }
 
-// 공지사항 수정 함수
+// // 공지사항 수정 함수
+// function handleNoticeEdit(btn) {
+//     const row = btn.closest('tr');
+//     const titleCell = row.cells[0];
+//     const title = titleCell.textContent.trim();
+//     const category = row.cells[1].textContent;
+//     const author = row.cells[2].textContent;
+//     const date = row.cells[3].textContent;
+//     const views = row.cells[4].textContent;
+//     const status = row.querySelector('.status').textContent;
+//
+//     // 제목에서 우선순위 배지 제거
+//     const cleanTitle = title.replace(/^(긴급|중요)\s*/, '');
+//
+//     const content = `
+//         <h3>공지사항 수정</h3>
+//         <div class="notice-edit-form">
+//             <div class="form-row">
+//                 <div class="form-group">
+//                     <label>제목</label>
+//                     <input type="text" id="edit-notice-title" value="${cleanTitle}" maxlength="100">
+//                 </div>
+//                 <div class="form-group">
+//                     <label>분류</label>
+//                     <select id="edit-notice-category">
+//                         <option value="일반공지" ${category === '일반공지' ? 'selected' : ''}>일반공지</option>
+//                         <option value="긴급공지" ${category === '긴급공지' ? 'selected' : ''}>긴급공지</option>
+//                         <option value="업데이트" ${category === '업데이트' ? 'selected' : ''}>업데이트</option>
+//                         <option value="이벤트" ${category === '이벤트' ? 'selected' : ''}>이벤트</option>
+//                         <option value="점검안내" ${category === '점검안내' ? 'selected' : ''}>점검안내</option>
+//                         <option value="정책변경" ${category === '정책변경' ? 'selected' : ''}>정책변경</option>
+//                     </select>
+//                 </div>
+//             </div>
+//
+//             <div class="form-row">
+//                 <div class="form-group">
+//                     <label>공개 설정</label>
+//                     <select id="edit-notice-visibility">
+//                         <option value="public" ${status === '공개' ? 'selected' : ''}>전체 공개</option>
+//                         <option value="members">회원 전용</option>
+//                         <option value="private" ${status === '비공개' ? 'selected' : ''}>비공개</option>
+//                     </select>
+//                 </div>
+//                 <div class="form-group">
+//                     <label>중요도</label>
+//                     <select id="edit-notice-priority">
+//                         <option value="normal">일반</option>
+//                         <option value="important" ${title.includes('중요') ? 'selected' : ''}>중요</option>
+//                         <option value="urgent" ${title.includes('긴급') ? 'selected' : ''}>긴급</option>
+//                     </select>
+//                 </div>
+//             </div>
+//
+//             <div class="form-group">
+//                 <label>내용</label>
+//                 <textarea id="edit-notice-content" rows="8" placeholder="공지사항 내용을 입력하세요">${getNoticeContent(cleanTitle)}</textarea>
+//             </div>
+//
+//             <div class="form-group">
+//                 <label>기존 정보</label>
+//                 <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin: 10px 0;">
+//                     <p><strong>작성자:</strong> ${author}</p>
+//                     <p><strong>작성일:</strong> ${date}</p>
+//                     <p><strong>조회수:</strong> ${views}회</p>
+//                     <p><strong>현재 상태:</strong> ${status}</p>
+//                     <p><strong>최근 수정:</strong> ${new Date().toLocaleDateString()}</p>
+//                 </div>
+//             </div>
+//
+//             <div class="form-group">
+//                 <label>
+//                     <input type="checkbox" id="edit-notice-pinned">
+//                     상단 고정
+//                 </label>
+//                 <label>
+//                     <input type="checkbox" id="edit-send-notification">
+//                     수정 알림 발송
+//                 </label>
+//             </div>
+//         </div>
+//
+//         <div class="modal-actions">
+//             <button class="btn-secondary" onclick="closeModal()">취소</button>
+//             <button class="btn-secondary" onclick="previewNotice()">미리보기</button>
+//             <button class="btn-primary" onclick="saveNoticeEdit('${cleanTitle}')">수정 완료</button>
+//         </div>
+//     `;
+//
+//     showModal(content);
+// }
+
+// handleNoticeEdit api 연동
 function handleNoticeEdit(btn) {
     const row = btn.closest('tr');
+    const noticeId = row.getAttribute('data-notice-id');
     const titleCell = row.cells[0];
     const title = titleCell.textContent.trim();
     const category = row.cells[1].textContent;
-    const author = row.cells[2].textContent;
-    const date = row.cells[3].textContent;
-    const views = row.cells[4].textContent;
-    const status = row.querySelector('.status').textContent;
-    
-    // 제목에서 우선순위 배지 제거
-    const cleanTitle = title.replace(/^(긴급|중요)\s*/, '');
-    
-    const content = `
+
+    // noticeId가 유효한지 확인하는 로직 추가
+    if (!noticeId || noticeId === 'undefined') { // 'undefined' 문자열도 체크
+        console.error("오류: 공지사항 ID를 찾을 수 없거나 유효하지 않습니다.", noticeId);
+        showErrorMessage('공지사항 ID를 찾을 수 없어 수정할 수 없습니다.');
+        return; // 함수 실행 중단
+    }
+
+    // 서버에서 공지사항 정보 가져오기
+    fetch(`/api/v1/admin/notifications/${noticeId}`)  // admin 경로 사용
+        .then(res => res.json())
+        .then(data => {
+            // 기존 모달 표시 코드를 함수로 분리
+            showEditNoticeModalWithData(data, row);
+        })
+        .catch(err => {
+            console.error('공지사항 조회 실패:', err);
+            showErrorMessage('공지사항 정보를 불러올 수 없습니다.');
+        });
+}
+// admin.js 파일의 적절한 위치에 추가 (예: 모달 관련 함수들 섹션)
+
+function showEditNoticeModalWithData(data, row) {
+    const noticeId = data.noticeId; // 서버 응답에서 noticeId 추출
+    const title = data.title;
+    const content = data.content;
+    const classification = data.classification;
+    const isImportant = data.isImportant;
+    const isVisible = data.isVisible;
+
+    const currentStatusText = row.querySelector('.status').textContent; // 현재 테이블의 상태 텍스트
+    const currentPriorityText = row.cells[0].querySelector('.priority-badge')?.textContent || '일반'; // 현재 테이블의 중요도 배지 텍스트
+
+    const contentHtml = `
         <h3>공지사항 수정</h3>
         <div class="notice-edit-form">
             <div class="form-row">
                 <div class="form-group">
                     <label>제목</label>
-                    <input type="text" id="edit-notice-title" value="${cleanTitle}" maxlength="100">
+                    <input type="text" id="edit-notice-title" value="${title}" maxlength="100">
                 </div>
                 <div class="form-group">
                     <label>분류</label>
                     <select id="edit-notice-category">
-                        <option value="일반공지" ${category === '일반공지' ? 'selected' : ''}>일반공지</option>
-                        <option value="긴급공지" ${category === '긴급공지' ? 'selected' : ''}>긴급공지</option>
-                        <option value="업데이트" ${category === '업데이트' ? 'selected' : ''}>업데이트</option>
-                        <option value="이벤트" ${category === '이벤트' ? 'selected' : ''}>이벤트</option>
-                        <option value="점검안내" ${category === '점검안내' ? 'selected' : ''}>점검안내</option>
-                        <option value="정책변경" ${category === '정책변경' ? 'selected' : ''}>정책변경</option>
+                        <option value="일반공지" ${classification === '일반공지' ? 'selected' : ''}>일반공지</option>
+                        <option value="긴급공지" ${classification === '긴급공지' ? 'selected' : ''}>긴급공지</option>
+                        <option value="업데이트" ${classification === '업데이트' ? 'selected' : ''}>업데이트</option>
+                        <option value="이벤트" ${classification === '이벤트' ? 'selected' : ''}>이벤트</option>
+                        <option value="점검안내" ${classification === '점검안내' ? 'selected' : ''}>점검안내</option>
+                        <option value="정책변경" ${classification === '정책변경' ? 'selected' : ''}>정책변경</option>
                     </select>
                 </div>
             </div>
-            
+
             <div class="form-row">
                 <div class="form-group">
                     <label>공개 설정</label>
                     <select id="edit-notice-visibility">
-                        <option value="public" ${status === '공개' ? 'selected' : ''}>전체 공개</option>
-                        <option value="members">회원 전용</option>
-                        <option value="private" ${status === '비공개' ? 'selected' : ''}>비공개</option>
+                        <option value="public" ${isVisible ? 'selected' : ''}>전체 공개</option>
+                        <option value="draft" ${!isVisible ? 'selected' : ''}>임시저장</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label>중요도</label>
                     <select id="edit-notice-priority">
-                        <option value="normal">일반</option>
-                        <option value="important" ${title.includes('중요') ? 'selected' : ''}>중요</option>
-                        <option value="urgent" ${title.includes('긴급') ? 'selected' : ''}>긴급</option>
+                        <option value="normal" ${!isImportant ? 'selected' : ''}>일반</option>
+                        <option value="important" ${isImportant && currentPriorityText === '중요' ? 'selected' : ''}>중요</option>
+                        <option value="urgent" ${isImportant && currentPriorityText === '긴급' ? 'selected' : ''}>긴급</option>
                     </select>
                 </div>
             </div>
-            
+
             <div class="form-group">
                 <label>내용</label>
-                <textarea id="edit-notice-content" rows="8" placeholder="공지사항 내용을 입력하세요">${getNoticeContent(cleanTitle)}</textarea>
+                <textarea id="edit-notice-content" rows="8" placeholder="공지사항 내용을 입력하세요">${content}</textarea>
             </div>
-            
+
             <div class="form-group">
                 <label>기존 정보</label>
                 <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin: 10px 0;">
-                    <p><strong>작성자:</strong> ${author}</p>
-                    <p><strong>작성일:</strong> ${date}</p>
-                    <p><strong>조회수:</strong> ${views}회</p>
-                    <p><strong>현재 상태:</strong> ${status}</p>
+                    <p><strong>작성자:</strong> 관리자</p>
+                    <p><strong>작성일:</strong> ${row.cells[3].textContent}</p>
+                    <p><strong>조회수:</strong> ${row.cells[4].textContent}회</p>
+                    <p><strong>현재 상태:</strong> ${currentStatusText}</p>
                     <p><strong>최근 수정:</strong> ${new Date().toLocaleDateString()}</p>
                 </div>
             </div>
             
             <div class="form-group">
+                <label>첨부파일</label>
+                <input type="file" id="edit-notice-attachment" accept=".pdf,.doc,.docx,.jpg,.png,.gif" multiple>
+                <small>최대 5개 파일, 파일당 10MB 이하 (기존 파일 유지, 추가만 가능)</small>
+                <div id="existing-files" style="margin-top: 5px;">
+                    </div>
+            </div>
+
+            <div class="form-group">
                 <label>
-                    <input type="checkbox" id="edit-notice-pinned"> 
+                    <input type="checkbox" id="edit-notice-pinned">
                     상단 고정
                 </label>
                 <label>
-                    <input type="checkbox" id="edit-send-notification"> 
+                    <input type="checkbox" id="edit-send-notification">
                     수정 알림 발송
                 </label>
             </div>
         </div>
-        
+
         <div class="modal-actions">
             <button class="btn-secondary" onclick="closeModal()">취소</button>
             <button class="btn-secondary" onclick="previewNotice()">미리보기</button>
-            <button class="btn-primary" onclick="saveNoticeEdit('${cleanTitle}')">수정 완료</button>
+            <button class="btn-primary" onclick="saveNoticeEdit('${noticeId}')">수정 완료</button>
         </div>
     `;
-    
-    showModal(content);
+
+    showModal(contentHtml);
+
+    // 포커스 설정
+    setTimeout(() => {
+        const input = document.getElementById('edit-notice-title');
+        if (input) input.focus();
+    }, 100);
+
+    // TODO: 기존 첨부파일 목록을 서버에서 받아와서 #existing-files div에 표시하는 로직 추가
+    // Attachment.java 엔티티에 `filePath`가 있으므로, 이를 활용하여 파일 다운로드 링크를 만들 수 있습니다.
+    // 예를 들어, attachmentList를 API 응답에 포함시키고 이를 순회하여 표시할 수 있습니다.
+    // data.attachments.forEach(attachment => {
+    //     const fileLink = document.createElement('a');
+    //     fileLink.href = `/download/${attachment.storedName}`; // 실제 다운로드 경로에 맞게 수정
+    //     fileLink.textContent = attachment.originalName;
+    //     document.getElementById('existing-files').appendChild(fileLink);
+    //     document.getElementById('existing-files').appendChild(document.createElement('br'));
+    // });
 }
 
-// 공지사항 수정 저장
-function saveNoticeEdit(originalTitle) {
+
+// // 공지사항 수정 저장
+// function saveNoticeEdit(originalTitle) {
+//     const newTitle = document.getElementById('edit-notice-title').value.trim();
+//     const category = document.getElementById('edit-notice-category').value;
+//     const visibility = document.getElementById('edit-notice-visibility').value;
+//     const priority = document.getElementById('edit-notice-priority').value;
+//     const content = document.getElementById('edit-notice-content').value.trim();
+//     const pinned = document.getElementById('edit-notice-pinned').checked;
+//     const sendNotification = document.getElementById('edit-send-notification').checked;
+//
+//     if (!newTitle) {
+//         showErrorMessage('제목을 입력해주세요.');
+//         return;
+//     }
+//
+//     if (!content) {
+//         showErrorMessage('내용을 입력해주세요.');
+//         return;
+//     }
+//
+//     // 중복 제목 확인 (자기 자신 제외)
+//     const existingTitles = Array.from(document.querySelectorAll('#notice-list-view .data-table tbody tr'))
+//         .map(row => row.cells[0].textContent.replace(/^(긴급|중요)\s*/, '').trim())
+//         .filter(title => title !== originalTitle);
+//
+//     if (existingTitles.includes(newTitle)) {
+//         showErrorMessage('이미 존재하는 제목입니다.');
+//         return;
+//     }
+//
+//     showConfirmModal('공지사항을 수정하시겠습니까?', function() {
+//         // 실제로는 서버에 수정 요청
+//         console.log('공지사항 수정:', { originalTitle, newTitle, category, visibility, priority, content, pinned, sendNotification });
+//
+//         // 테이블에서 해당 행 업데이트
+//         updateNoticeInTable(originalTitle, newTitle, category, priority, visibility);
+//
+//         // 수정 알림 발송
+//         if (sendNotification) {
+//             console.log('수정 알림 발송 요청');
+//         }
+//
+//         closeModal();
+//         showSuccessMessage('공지사항이 성공적으로 수정되었습니다.');
+//     });
+// }
+
+// saveNoticeEdit api 연동
+function saveNoticeEdit(noticeId) {  // originalTitle 대신 noticeId 사용
     const newTitle = document.getElementById('edit-notice-title').value.trim();
     const category = document.getElementById('edit-notice-category').value;
     const visibility = document.getElementById('edit-notice-visibility').value;
@@ -1279,53 +1593,95 @@ function saveNoticeEdit(originalTitle) {
     const content = document.getElementById('edit-notice-content').value.trim();
     const pinned = document.getElementById('edit-notice-pinned').checked;
     const sendNotification = document.getElementById('edit-send-notification').checked;
-    
-    if (!newTitle) {
-        showErrorMessage('제목을 입력해주세요.');
+
+    if (!newTitle || newTitle.length < 5) {
+        showErrorMessage('제목은 5자 이상 입력해주세요.');
         return;
     }
-    
-    if (!content) {
-        showErrorMessage('내용을 입력해주세요.');
+
+    if (!content || content.length < 10) {
+        showErrorMessage('내용은 10자 이상 입력해주세요.');
         return;
     }
-    
-    // 중복 제목 확인 (자기 자신 제외)
-    const existingTitles = Array.from(document.querySelectorAll('#notice-list-view .data-table tbody tr'))
-        .map(row => row.cells[0].textContent.replace(/^(긴급|중요)\s*/, '').trim())
-        .filter(title => title !== originalTitle);
-    
-    if (existingTitles.includes(newTitle)) {
-        showErrorMessage('이미 존재하는 제목입니다.');
-        return;
-    }
-    
+
     showConfirmModal('공지사항을 수정하시겠습니까?', function() {
-        // 실제로는 서버에 수정 요청
-        console.log('공지사항 수정:', { originalTitle, newTitle, category, visibility, priority, content, pinned, sendNotification });
-        
-        // 테이블에서 해당 행 업데이트
-        updateNoticeInTable(originalTitle, newTitle, category, priority, visibility);
-        
-        // 수정 알림 발송
-        if (sendNotification) {
-            console.log('수정 알림 발송 요청');
-        }
-        
-        closeModal();
-        showSuccessMessage('공지사항이 성공적으로 수정되었습니다.');
+        const formData = new FormData();
+        formData.append('title', newTitle);
+        formData.append('content', content);
+        formData.append('classification', category);
+        formData.append('isImportant', priority === 'important' || priority === 'urgent');
+        formData.append('isVisible', visibility === 'public');
+
+        fetch(`/api/v1/admin/notifications/${noticeId}`, {  // admin 경로 사용
+            method: 'PUT',
+            body: formData
+        })
+            .then(res => {
+                if (!res.ok) throw new Error('서버 오류');
+                return res;
+            })
+            .then(result => {
+                updateNoticeInTable(noticeId, newTitle, category, priority, visibility);
+
+                if (sendNotification) {
+                    console.log('수정 알림 발송 요청');
+                }
+
+                closeModal();
+                showSuccessMessage('공지사항이 성공적으로 수정되었습니다.');
+            })
+            .catch(err => {
+                console.error('공지사항 수정 오류:', err);
+                showErrorMessage('공지사항 수정 중 오류가 발생했습니다.');
+            });
     });
 }
 
-// 테이블에서 공지사항 업데이트
-function updateNoticeInTable(originalTitle, newTitle, category, priority, visibility) {
+// // 테이블에서 공지사항 업데이트
+// function updateNoticeInTable(originalTitle, newTitle, category, priority, visibility) {
+//     const rows = document.querySelectorAll('#notice-list-view .data-table tbody tr');
+//
+//     rows.forEach(row => {
+//         const titleCell = row.cells[0];
+//         const currentTitle = titleCell.textContent.replace(/^(긴급|중요)\s*/, '').trim();
+//
+//         if (currentTitle === originalTitle) {
+//             // 우선순위 배지와 함께 제목 업데이트
+//             let displayTitle = newTitle;
+//             if (priority === 'urgent') {
+//                 displayTitle = '<span class="priority-badge urgent">긴급</span> ' + newTitle;
+//                 row.classList.add('urgent-notice');
+//             } else if (priority === 'important') {
+//                 displayTitle = '<span class="priority-badge important">중요</span> ' + newTitle;
+//                 row.classList.add('important-notice');
+//             } else {
+//                 row.classList.remove('urgent-notice', 'important-notice');
+//             }
+//
+//             titleCell.innerHTML = displayTitle;
+//             row.cells[1].textContent = category;
+//
+//             // 상태 업데이트
+//             const statusCell = row.querySelector('.status');
+//             if (visibility === 'public') {
+//                 statusCell.textContent = '공개';
+//                 statusCell.className = 'status active';
+//             } else if (visibility === 'private') {
+//                 statusCell.textContent = '비공개';
+//                 statusCell.className = 'status suspended';
+//             }
+//         }
+//     });
+// }
+// 테이블에서 공지사항 업데이트 (noticeId 기준으로 수정)
+function updateNoticeInTable(noticeId, newTitle, category, priority, visibility) {
     const rows = document.querySelectorAll('#notice-list-view .data-table tbody tr');
-    
+
     rows.forEach(row => {
-        const titleCell = row.cells[0];
-        const currentTitle = titleCell.textContent.replace(/^(긴급|중요)\s*/, '').trim();
-        
-        if (currentTitle === originalTitle) {
+        // noticeId로 해당 행 찾기
+        if (row.getAttribute('data-notice-id') === String(noticeId)) {
+            const titleCell = row.cells[0];
+
             // 우선순위 배지와 함께 제목 업데이트
             let displayTitle = newTitle;
             if (priority === 'urgent') {
@@ -1337,16 +1693,16 @@ function updateNoticeInTable(originalTitle, newTitle, category, priority, visibi
             } else {
                 row.classList.remove('urgent-notice', 'important-notice');
             }
-            
+
             titleCell.innerHTML = displayTitle;
             row.cells[1].textContent = category;
-            
+
             // 상태 업데이트
             const statusCell = row.querySelector('.status');
             if (visibility === 'public') {
                 statusCell.textContent = '공개';
                 statusCell.className = 'status active';
-            } else if (visibility === 'private') {
+            } else if (visibility === 'draft') {
                 statusCell.textContent = '비공개';
                 statusCell.className = 'status suspended';
             }
@@ -1354,34 +1710,104 @@ function updateNoticeInTable(originalTitle, newTitle, category, priority, visibi
     });
 }
 
-// 공지사항 삭제 함수
+// 페이지 로드시 공지사항 목록 불러오기
+function loadNoticeList() {
+    fetch('/api/v1/admin/notifications')
+        .then(res => res.json())
+        .then(notices => {
+            const tbody = document.querySelector('#notice-list-view .data-table tbody');
+
+            notices.forEach(notice => {
+                const row = document.createElement('tr');
+                row.setAttribute('data-notice-id', notice.noticeId);
+
+                row.innerHTML = `
+                    <td>
+                        ${notice.isImportant ? '<span class="priority-badge important">중요</span> ' : ''}
+                        ${notice.title}
+                    </td>
+                    <td>${notice.classification}</td>
+                    <td>관리자</td>
+                    <td>${new Date(notice.registeredDate).toLocaleDateString()}</td>
+                    <td>${notice.viewCount || 0}</td>
+                    <td><span class="status ${notice.isVisible ? 'active' : 'suspended'}">${notice.isVisible ? '공개' : '비공개'}</span></td>
+                    <td>
+                        <button class="btn-small" onclick="handleNoticeEdit(this)">수정</button>
+                        <button class="btn-small danger" onclick="handleNoticeDelete(this)">삭제</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        })
+        .catch(err => {
+            console.error('공지사항 목록 로드 실패:', err);
+        });
+}
+
+// 공지사항 메뉴 클릭 시 목록 로드
+// setupMenuNavigation 함수 내부 수정
+if (menuType === 'notices') {
+    loadNoticeList();
+}
+
+// // 공지사항 삭제 함수
+// function handleNoticeDelete(btn) {
+//     const row = btn.closest('tr');
+//     const titleCell = row.cells[0];
+//     const title = titleCell.textContent.replace(/^(긴급|중요)\s*/, '').trim();
+//     const category = row.cells[1].textContent;
+//     const date = row.cells[3].textContent;
+//     const views = row.cells[4].textContent;
+//
+//     const warningMessage = parseInt(views) > 100 ?
+//         `\n\n⚠️ 주의: 이 공지사항은 ${views}회 조회되었습니다. 삭제하면 사용자들이 더 이상 확인할 수 없습니다.` : '';
+//
+//     showConfirmModal(
+//         `'${title}' 공지사항을 삭제하시겠습니까?${warningMessage}\n\n삭제된 공지사항은 복구할 수 없습니다.`,
+//         function() {
+//             // 실제로는 서버에 삭제 요청
+//             console.log('공지사항 삭제:', { title, category, date, views });
+//
+//             // 테이블에서 행 제거
+//             row.remove();
+//
+//             showSuccessMessage('공지사항이 삭제되었습니다.');
+//
+//             // 삭제 로그 기록
+//             console.log(`공지사항 삭제 로그: ${title} (${date}) - 관리자`);
+//         }
+//     );
+// }
+// handleNoticeDelete api 연동
 function handleNoticeDelete(btn) {
     const row = btn.closest('tr');
+    const noticeId = row.getAttribute('data-notice-id');
     const titleCell = row.cells[0];
     const title = titleCell.textContent.replace(/^(긴급|중요)\s*/, '').trim();
-    const category = row.cells[1].textContent;
-    const date = row.cells[3].textContent;
     const views = row.cells[4].textContent;
-    
-    const warningMessage = parseInt(views) > 100 ? 
-        `\n\n⚠️ 주의: 이 공지사항은 ${views}회 조회되었습니다. 삭제하면 사용자들이 더 이상 확인할 수 없습니다.` : '';
-    
+
+    const warningMessage = parseInt(views) > 100 ?
+        `\n\n⚠️ 주의: 이 공지사항은 ${views}회 조회되었습니다.` : '';
+
     showConfirmModal(
-        `'${title}' 공지사항을 삭제하시겠습니까?${warningMessage}\n\n삭제된 공지사항은 복구할 수 없습니다.`,
+        `'${title}' 공지사항을 삭제하시겠습니까?${warningMessage}`,
         function() {
-            // 실제로는 서버에 삭제 요청
-            console.log('공지사항 삭제:', { title, category, date, views });
-            
-            // 테이블에서 행 제거
-            row.remove();
-            
-            showSuccessMessage('공지사항이 삭제되었습니다.');
-            
-            // 삭제 로그 기록
-            console.log(`공지사항 삭제 로그: ${title} (${date}) - 관리자`);
+            fetch(`/api/v1/admin/notifications/${noticeId}`, {
+                method: 'DELETE'
+            })
+                .then(res => {
+                    if (!res.ok) throw new Error('서버 오류');
+                    row.remove();
+                    showSuccessMessage('공지사항이 삭제되었습니다.');
+                })
+                .catch(err => {
+                    console.error('공지사항 삭제 오류:', err);
+                    showErrorMessage('공지사항 삭제 중 오류가 발생했습니다.');
+                });
         }
     );
 }
+
 
 // 공지사항 미리보기
 function previewNotice() {

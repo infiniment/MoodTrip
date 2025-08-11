@@ -4,6 +4,8 @@ import com.moodTrip.spring.domain.rooms.entity.Room;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -26,6 +28,12 @@ public class RoomResponse {
     @Schema(description = "여행 목적지 이름", example = "속초 해수욕장")
     private String destinationName;
 
+    @Schema(description = "여행 목적지 위도", example = "37.5665357")
+    private BigDecimal destinationLat;
+
+    @Schema(description = "여행 목적지 경도", example = "126.9779692")
+    private BigDecimal destinationLon;
+
     @Schema(description = "최대 인원 수", example = "4")
     private int maxParticipants;
 
@@ -42,17 +50,19 @@ public class RoomResponse {
     private Boolean isDeleted;
 
     public static RoomResponse from(Room room) {
-        return new RoomResponse(
-                room.getRoomId(),
-                room.getRoomName(),
-                room.getRoomDescription(),
-                room.getDestinationCategory(),
-                room.getDestinationName(),
-                room.getRoomMaxCount(),
-                room.getRoomCurrentCount(),
-                room.getTravelStartDate() != null ? room.getTravelStartDate().toString() : null,
-                room.getTravelEndDate() != null ? room.getTravelEndDate().toString() : null,
-                room.getIsDeleteRoom()
-        );
+        return RoomResponse.builder()
+                .roomId(room.getRoomId())
+                .roomName(room.getRoomName())
+                .roomDescription(room.getRoomDescription())
+                .destinationCategory(room.getDestinationCategory())
+                .destinationName(room.getDestinationName())
+                .destinationLat(room.getDestinationLat())
+                .destinationLon(room.getDestinationLon())
+                .maxParticipants(room.getRoomMaxCount())
+                .currentParticipants(room.getRoomCurrentCount())
+                .travelStartDate(room.getTravelStartDate() != null ? room.getTravelStartDate().toString() : null)
+                .travelEndDate(room.getTravelEndDate() != null ? room.getTravelEndDate().toString() : null)
+                .isDeleted(room.getIsDeleteRoom())
+                .build();
     }
 }
