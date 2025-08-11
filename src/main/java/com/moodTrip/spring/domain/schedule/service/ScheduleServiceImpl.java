@@ -6,12 +6,15 @@ import com.moodTrip.spring.domain.schedule.dto.request.ScheduleRequest;
 import com.moodTrip.spring.domain.schedule.dto.response.ScheduleResponse;
 import com.moodTrip.spring.domain.schedule.entity.Schedule;
 import com.moodTrip.spring.domain.schedule.repository.ScheduleRepository;
+import com.moodTrip.spring.global.common.exception.CustomException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
+import static com.moodTrip.spring.global.common.code.status.ErrorStatus.*;
 
 @Service
 @RequiredArgsConstructor
@@ -32,7 +35,7 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Override
     public ScheduleResponse createSchedule(Long roomId, ScheduleRequest request) {
         Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("Room not found"));
+                .orElseThrow(() -> new CustomException(ROOM_NOT_FOUND));
 
         Schedule schedule = Schedule.builder()
                 .room(room)
@@ -49,7 +52,7 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Override
     public ScheduleResponse updateSchedule(Long scheduleId, ScheduleRequest request) {
         Schedule schedule = scheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 일정이 존재하지 않습니다."));
+                .orElseThrow(() -> new CustomException(SCHEDULE_NOT_FOUND));
 
         if (request.getScheduleTitle() != null) {
             schedule.setScheduleTitle(request.getScheduleTitle());
@@ -76,7 +79,7 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Override
     public Long getRoomIdByScheduleId(Long scheduleId) {
         Schedule schedule = scheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new RuntimeException("Schedule not found"));
+                .orElseThrow(() ->new CustomException(SCHEDULE_NOT_FOUND));
         return schedule.getRoom().getRoomId();
     }
 }

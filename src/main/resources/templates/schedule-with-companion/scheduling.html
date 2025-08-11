@@ -8,15 +8,22 @@
     <script th:src="@{/js/schedule-with-companion/scheduling.js}"></script>
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <script type="text/javascript"
+            src="//dapi.kakao.com/v2/maps/sdk.js?appkey=f7c5daa0da447a1ec0e8d643a60cfca1&autoload=false&libraries=services"></script>
 </head>
 <body>
 <div class="container">
     <div id="chatData"
-         th:attr="data-room-id=${roomId},
-              data-current-user=${currentMember.nickname},
-              data-travel-start=${room.travelStartDate},
-              data-travel-end=${room.travelEndDate}"
-         style="display: none;"></div>
+         th:attr="
+       data-room-id=${roomId},
+       data-current-user=${currentMember.nickname},
+       data-travel-start=${room.travelStartDate},
+       data-travel-end=${room.travelEndDate},
+       data-dest-name=${#strings.defaultString(room.destinationName, '여행지')},
+       data-dest-lat=${room.destinationLat},
+       data-dest-lon=${room.destinationLon}"
+         style="display:none;"></div><!--                data-dest-lat='${room.attraction.lat}',
+       data-dest-lon='${room.attraction.lon}', 나중에 이렇게 수정해야됨-->
     <div class="header">
         <h1>🌟 함께 떠나는 여행</h1>
         <p>동행자들과 완벽한 여행 계획을 세워보세요</p>
@@ -139,50 +146,55 @@
                 </div>
             </div>
         </div>
+        <!--                <div class="map-container">-->
+        <!--                    <div style="text-align: center;">-->
+        <!--                        <div style="font-size: 48px; margin-bottom: 20px;">🗺️</div>-->
+        <!--                        <p>카카오맵 API 연동 예정</p>-->
+        <!--                        <p style="margin-top: 10px; font-size: 14px;">실시간 교통정보 및 경로 안내</p>-->
+        <!--                    </div>-->
+        <!--                </div>-->
         <div id="transport" class="content-section">
             <div class="transport-section">
-                <div class="map-container">
-                    <div style="text-align: center;">
-                        <div style="font-size: 48px; margin-bottom: 20px;">🗺️</div>
-                        <p>카카오맵 API 연동 예정</p>
-                        <p style="margin-top: 10px; font-size: 14px;">실시간 교통정보 및 경로 안내</p>
+
+                <div class="map-block">
+                    <div class="search-container">
+                        <input id="placeSearchInput" type="text" placeholder="장소를 검색하세요 (예: 밀면, 해운대)">
+                        <button id="placeSearchBtn" class="add-btn">검색</button>
+                    </div>
+
+                    <!-- 검색 결과 드롭다운/리스트 -->
+                    <div id="placeResults" style="display:none;"></div>
+
+                    <div class="map-container">
+                        <div class="route-search">
+                            <div class="route-inputs">
+                                <input id="startInput" type="text" placeholder="출발지 검색" />
+                                <button id="swapRouteBtn" type="button" title="출발/도착 바꾸기">↕</button>
+                                <input id="endInput" type="text" placeholder="도착지 검색" />
+                                <button id="routeBtn" type="button" class="add-btn">길찾기</button>
+                            </div>
+
+                            <!-- 자동완성 결과 -->
+                            <div id="startResults" class="results route-results"></div>
+                            <div id="endResults" class="results route-results"></div>
+                        </div>
+                        <div id="map"></div>
                     </div>
                 </div>
 
+
                 <div class="transport-options">
-                    <h3 style="margin-bottom: 20px; color: #333;">교통편 옵션</h3>
-                    <div class="transport-item">
-                        <div class="transport-icon">🚄</div>
-                        <div class="transport-info">
-                            <h4>KTX (서울→부산)</h4>
-                            <p>2시간 30분 · 55,000원</p>
-                            <p>매시 정각 출발</p>
-                        </div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                        <h3 style="margin:0; color:#1E3A5F;">교통편 옵션</h3>
+
+                        <!-- 공용 카카오맵 버튼 -->
+                        <button id="openKakaoMapBtn" type="button" style="display:none; padding:10px 14px;border-radius:12px;
+                        background:linear-gradient(135deg,#005792,#001A2C); color:#fff;font-weight:700;">
+                            카카오맵 열기
+                        </button>
                     </div>
-                    <div class="transport-item">
-                        <div class="transport-icon">✈️</div>
-                        <div class="transport-info">
-                            <h4>항공편 (김포→김해)</h4>
-                            <p>1시간 20분 · 89,000원</p>
-                            <p>하루 6회 운항</p>
-                        </div>
-                    </div>
-                    <div class="transport-item">
-                        <div class="transport-icon">🚌</div>
-                        <div class="transport-info">
-                            <h4>고속버스</h4>
-                            <p>4시간 30분 · 32,000원</p>
-                            <p>30분 간격 운행</p>
-                        </div>
-                    </div>
-                    <div class="transport-item">
-                        <div class="transport-icon">🚗</div>
-                        <div class="transport-info">
-                            <h4>렌터카</h4>
-                            <p>4시간 · 일일 60,000원</p>
-                            <p>자유로운 이동</p>
-                        </div>
-                    </div>
+
+                    <div id="transportList"></div>
                 </div>
             </div>
         </div>

@@ -5,6 +5,7 @@ import com.moodTrip.spring.domain.admin.entity.Attachment;
 import com.moodTrip.spring.domain.admin.entity.Notification;
 import com.moodTrip.spring.domain.admin.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -64,6 +65,11 @@ public class NotificationService {
     public NotificationResponse findByIdForAdmin(Long noticeId) {
         Notification notification = notificationRepository.findById(noticeId)
                 .orElseThrow(() -> new RuntimeException("공지사항을 찾을 수 없습니다."));
+
+        // Lazy Loading 해결
+        if (notification.getAttachments() != null) {
+            Hibernate.initialize(notification.getAttachments());
+        }
 
         NotificationResponse response = new NotificationResponse();
         response.setNoticeId(notification.getNoticeId());

@@ -241,6 +241,9 @@ public class RoomServiceImpl implements RoomService {
                 .currentParticipants(room.getRoomCurrentCount())
                 .travelStartDate(room.getTravelStartDate().format(formatter))
                 .travelEndDate(room.getTravelEndDate().format(formatter))
+                .destinationName(room.getDestinationName())
+                .destinationLat(room.getDestinationLat())
+                .destinationLon(room.getDestinationLon())
                 .build();
     }
 
