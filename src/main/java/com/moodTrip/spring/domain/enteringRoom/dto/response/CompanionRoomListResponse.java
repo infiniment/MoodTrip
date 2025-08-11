@@ -1,14 +1,12 @@
 package com.moodTrip.spring.domain.enteringRoom.dto.response;
 
 import com.moodTrip.spring.domain.rooms.entity.Room;
-import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import java.time.format.DateTimeFormatter;
 
 @Getter
 @NoArgsConstructor
@@ -83,21 +81,18 @@ public class CompanionRoomListResponse {
 
     // 생성일 나타내기
     private static String formatCreatedDate(Room room) {
-        if (room.getCreatedAt() == null) {
-            return "";
+        // 🔥 createdAt 대신 travelStartDate 사용
+        if (room.getTravelStartDate() == null) {
+            return "날짜 미정";
         }
 
-        // 생성일을 yy/MM/dd 형식으로 변환
-        java.time.format.DateTimeFormatter formatter =
-                java.time.format.DateTimeFormatter.ofPattern("yy/MM/dd");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yy/MM/dd");
 
-        String startDate = room.getCreatedAt().format(formatter);
+        // 🔥 여행 시작일 사용
+        String startDate = room.getTravelStartDate().format(formatter);
 
-        // 여행 종료일이 있으면 함께 표시
         if (room.getTravelEndDate() != null) {
-            String endDate = room.getTravelEndDate().format(
-                    java.time.format.DateTimeFormatter.ofPattern("yy/MM/dd")
-            );
+            String endDate = room.getTravelEndDate().format(formatter);
             return startDate + " ~ " + endDate;
         }
 
@@ -122,10 +117,19 @@ public class CompanionRoomListResponse {
 
     // 방 상태 모집중, 모집 완료 나타내기
     private static String calculateStatus(Room room) {
-        if (room.getRoomCurrentCount() >= room.getRoomMaxCount()) {
+        boolean isFull = room.getRoomCurrentCount() >= room.getRoomMaxCount();
+
+        // 가득 찬 경우
+        if (isFull) {
             return "모집완료";
-        } else {
-            return "모집중";
         }
+        boolean isUrgent = calculateUrgent(room);
+
+        // 마감임박인 경우
+        if (isUrgent) {
+            return "마감임박";
+        }
+        // 평소
+        return "모집중";
     }
 }

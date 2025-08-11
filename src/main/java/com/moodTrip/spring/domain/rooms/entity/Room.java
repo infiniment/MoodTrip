@@ -39,7 +39,7 @@ public class Room extends BaseEntity {
     @Column(name = "travel_end_date")
     private LocalDate travelEndDate; // 여행 종료 날짜
 
-//    @ManyToOne(fetch = FetchType.LAZY)
+    //    @ManyToOne(fetch = FetchType.LAZY)
 //    @JoinColumn(name = "attraction_id")
 //    private Attraction attraction;
     // 나중에 Attraction 완료되면 교체 예정
@@ -58,6 +58,15 @@ public class Room extends BaseEntity {
 
     @Column(name = "is_delete_room")
     private Boolean isDeleteRoom = false;
+
+    // 상우가 방 입장하기 만들 때 추가한 조회수 필드!!
+    @Column(name = "view_count")
+    @Builder.Default
+    private Integer viewCount = 0;
+
+    public void incrementViewCount() {
+        this.viewCount = (this.viewCount == null ? 0 : this.viewCount) + 1;
+    }
 
     // 해당 member가 참여하고 있는 방을 가져오겠다는 뜻
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
