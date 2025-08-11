@@ -19,7 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/companion-rooms/search")
 @RequiredArgsConstructor
-public class CompanionRoomApiController {
+public class CompanionRoomSearchApiController {
 
     private final CompanionRoomService companionRoomService;
 
