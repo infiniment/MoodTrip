@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,9 +25,16 @@ public class AttractionController {
     }
 
     @GetMapping("/sync")
-    public ResponseEntity<String> sync(@RequestParam int areaCode,
-                                       @RequestParam(defaultValue = "12") int contentTypeId) {
+    public ResponseEntity<Map<String, Object>> sync(
+            @RequestParam("areaCode") int areaCode,
+            @RequestParam(name = "contentTypeId", defaultValue = "12") int contentTypeId
+    ) {
         int affected = attractionService.fetchAndSaveAttractions(areaCode, contentTypeId);
-        return ResponseEntity.ok("저장(업서트) 완료: " + affected + "건");
+        return ResponseEntity.ok(Map.of(
+                "message", "저장(업서트) 완료",
+                "affected", affected,
+                "areaCode", areaCode,
+                "contentTypeId", contentTypeId
+        ));
     }
 }
