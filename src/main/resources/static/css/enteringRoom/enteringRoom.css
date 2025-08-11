@@ -14,7 +14,10 @@ body {
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 40px 20px;
+}
+
+main.room-list {
+    min-height: 600px;
 }
 
 /* 숨김 텍스트 */
@@ -32,7 +35,7 @@ body {
 
 /* 페이지 헤더 */
 .page-header {
-    margin-bottom: 40px;
+    margin-bottom: 100px;
     text-align: center;
 }
 
@@ -40,7 +43,8 @@ body {
     font-size: 2.5rem;
     font-weight: 700;
     color: #1a202c;
-    margin-bottom: 16px;
+    margin-top : 70px;
+    margin-bottom: 40px;
 }
 
 .page-subtitle {
@@ -51,6 +55,7 @@ body {
 
 /* 검색 영역 */
 .search-section {
+    margin-top: 20px;
     margin-bottom: 32px;
     display: flex;
     justify-content: flex-end;
@@ -422,6 +427,10 @@ body {
     font-size: 10px;
     border-radius: 8px;
     font-weight: 500;
+}
+
+p {
+    margin-top: 10px;
 }
 
 .room-footer {
