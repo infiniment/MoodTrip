@@ -1,14 +1,12 @@
 package com.moodTrip.spring.global.controller;
 
 import com.moodTrip.spring.domain.member.entity.Member;
-import com.moodTrip.spring.domain.member.entity.Profile;
 import com.moodTrip.spring.domain.member.repository.ProfileRepository;
 import com.moodTrip.spring.domain.rooms.dto.response.RoomResponse;
 import com.moodTrip.spring.domain.rooms.repository.RoomRepository;
 import com.moodTrip.spring.domain.rooms.service.RoomService;
 import com.moodTrip.spring.global.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,42 +30,30 @@ public class MainPageController {
     private final RoomService roomService;
 
 
-    /**
-     * 🏠 메인 페이지 렌더링
-     * URL: http://localhost:8080/
-     *
-     * ✅ 로그인 상태 체크 후 적절한 헤더 렌더링
-     * ✅ 사용자 정보를 템플릿에 전달
-     */
     @GetMapping("/")
     public String mainPage(Model model) {
-        log.info("🏠 메인 페이지 접속");
+
+        boolean loggedIn = false;
 
         if (securityUtil.isAuthenticated()) {
             Member currentMember = securityUtil.getCurrentMember();
-
-            model.addAttribute("isLoggedIn", true);
-            model.addAttribute("currentMember", currentMember);
-            model.addAttribute("userNickname", currentMember.getNickname());
-            model.addAttribute("userEmail", currentMember.getEmail());
-
-            profileRepository.findByMember(currentMember).ifPresent(profile -> {
-                model.addAttribute("profileImage", profile.getProfileImage());
-            });
-
-            log.info("✅ 로그인 사용자: {}", currentMember.getMemberId());
-
-        } else {
-            model.addAttribute("isLoggedIn", false);
-            log.info("❌ 비로그인 사용자");
+            if (currentMember != null) {
+                loggedIn = true;
+                model.addAttribute("currentMember", currentMember);
+                model.addAttribute("userNickname", currentMember.getNickname());
+                model.addAttribute("userEmail", currentMember.getEmail());
+                profileRepository.findByMember(currentMember)
+                        .ifPresent(profile -> model.addAttribute("profileImage", profile.getProfileImage()));
+            }
         }
-
 
 
         List<RoomResponse> rooms = roomService.getAllRooms();
         model.addAttribute("rooms", rooms);
-
+        model.addAttribute("isLoggedIn", loggedIn);
 
         return "mainpage/mainpage";  // Thymeleaf 템플릿 위치
+
     }
+
 }
