@@ -14,14 +14,15 @@
 <body>
 <div class="container">
     <div id="chatData"
-         th:attr="data-room-id=${roomId},
-              data-current-user=${currentMember.nickname},
-              data-travel-start=${room.travelStartDate},
-              data-travel-end=${room.travelEndDate},
-              data-dest-name=${room.destinationName},
-              data-dest-lat=${room.destinationLat},
-              data-dest-lon=${room.destinationLon}"
-         style="display: none;"></div><!--                data-dest-lat='${room.attraction.lat}',
+         th:attr="
+       data-room-id=${roomId},
+       data-current-user=${currentMember.nickname},
+       data-travel-start=${room.travelStartDate},
+       data-travel-end=${room.travelEndDate},
+       data-dest-name=${#strings.defaultString(room.destinationName, '여행지')},
+       data-dest-lat=${room.destinationLat},
+       data-dest-lon=${room.destinationLon}"
+         style="display:none;"></div><!--                data-dest-lat='${room.attraction.lat}',
        data-dest-lon='${room.attraction.lon}', 나중에 이렇게 수정해야됨-->
     <div class="header">
         <h1>🌟 함께 떠나는 여행</h1>
@@ -174,8 +175,8 @@
                             </div>
 
                             <!-- 자동완성 결과 -->
-                            <div id="startResults" class="results"></div>
-                            <div id="endResults"   class="results"></div>
+                            <div id="startResults" class="results route-results"></div>
+                            <div id="endResults" class="results route-results"></div>
                         </div>
                         <div id="map"></div>
                     </div>
@@ -183,7 +184,16 @@
 
 
                 <div class="transport-options">
-                    <h3 style="margin-bottom: 16px; color:#1E3A5F;">교통편 옵션</h3>
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                        <h3 style="margin:0; color:#1E3A5F;">교통편 옵션</h3>
+
+                        <!-- 공용 카카오맵 버튼 -->
+                        <button id="openKakaoMapBtn" type="button" style="display:none; padding:10px 14px;border-radius:12px;
+                        background:linear-gradient(135deg,#005792,#001A2C); color:#fff;font-weight:700;">
+                            카카오맵 열기
+                        </button>
+                    </div>
+
                     <div id="transportList"></div>
                 </div>
             </div>

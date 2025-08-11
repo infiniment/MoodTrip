@@ -25,6 +25,11 @@ document.addEventListener('DOMContentLoaded', function () {
     currentUser = chatDataElement.dataset.currentUser;
     roomId = chattingRoomId;
 
+    window.destName = chatDataElement.dataset.destName || '';
+
+    console.log('destName:', destName);
+
+
     const wrapper = document.querySelector(".time-input-wrapper");
     const timeInput = document.getElementById("scheduleTime");
 
@@ -180,17 +185,29 @@ document.addEventListener('DOMContentLoaded', function () {
 
     setInitialSelectedDate();
 
-    // 현재 날씨
-    fetch('/api/weather/current')
-        .then(res => res.json())
+
+    const fetchJSON = (url) =>
+        fetch(url).then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); });
+
+    fetchJSON(`/api/weather/current?roomId=${roomId}`)
         .then(renderCurrentWeather)
         .catch(err => console.error('현재 날씨 불러오기 실패:', err));
 
-    // 3일 예보
-    fetch('/api/weather/daily')
-        .then(res => res.json())
+    fetchJSON(`/api/weather/daily?roomId=${roomId}`)
         .then(renderDailyForecast)
         .catch(err => console.error('3일 예보 불러오기 실패:', err));
+
+    // // 현재 날씨
+    // fetch('/api/weather/current')
+    //     .then(res => res.json())
+    //     .then(renderCurrentWeather)
+    //     .catch(err => console.error('현재 날씨 불러오기 실패:', err));
+    //
+    // // 3일 예보
+    // fetch('/api/weather/daily')
+    //     .then(res => res.json())
+    //     .then(renderDailyForecast)
+    //     .catch(err => console.error('3일 예보 불러오기 실패:', err));
 
 });
 
@@ -1027,8 +1044,12 @@ function renderCurrentWeather(data) {
     document.querySelector('.weather-icon').textContent = getWeatherEmoji(data.weather);
     document.querySelector('.weather-temp').textContent = `${Math.round(data.temperature)}°C`;
     document.querySelector('.weather-current p:nth-of-type(1)').textContent = data.description;
-    document.querySelector('.weather-current p:nth-of-type(2)').textContent = `서울 · ${formatDate(data.date)}`;
-    document.querySelector('.weather-current p:nth-of-type(3)').textContent = `습도 ${data.humidity}% · 바람 ${data.windSpeed ?? 2}m/s`;
+
+    document.querySelector('.weather-current p:nth-of-type(2)').textContent =
+        `${destName || '여행지'} · ${formatDate(data.date)}`;
+
+    document.querySelector('.weather-current p:nth-of-type(3)').textContent =
+        `습도 ${data.humidity}% · 바람 ${data.windSpeed ?? 2}m/s`;
 }
 
 
@@ -1264,11 +1285,17 @@ function addFromKakaoResult(doc) {
 // ===== 장소 검색 UI/로직 =====
 let placesService = null;       // kakao.maps.services.Places
 let searchDebounceTimer = null; // 디바운스 타이머
+let suppressSearch = false;
 
 function ensurePlacesService() {
     if (!placesService) {
         placesService = new kakao.maps.services.Places();
     }
+}
+
+function hidePlaceResults() {
+    const box = document.getElementById('placeResults');
+    if (box) { box.style.display = 'none'; box.innerHTML = ''; }
 }
 
 function setupSearchUIOnce() {
@@ -1279,9 +1306,9 @@ function setupSearchUIOnce() {
     btn.dataset.bound = 'true';
 
     // 버튼/엔터 → 첫 결과에 포커스(지도 이동)
-    btn.addEventListener('click', () => doPlaceSearch(input.value.trim(), { focusFirst: true }));
+    btn.addEventListener('click', () => doPlaceSearch(input.value.trim(), { focusFirst: true, hideList: true }));
     input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') doPlaceSearch(input.value.trim(), { focusFirst: true });
+        if (e.key === 'Enter') doPlaceSearch(input.value.trim(), { focusFirst: true, hideList: true });
     });
 
     // 입력 중엔 결과만 갱신(지도는 안 움직임)
@@ -1301,13 +1328,13 @@ function ensureMapReady(cb) {
         cb();
     });
 }
-function doPlaceSearch(query, opts = { focusFirst: false }) {
+
+function doPlaceSearch(query, opts = { focusFirst: false, hideList: false }) {
     const resBox = document.getElementById('placeResults');
     if (!query) { if (resBox) resBox.style.display = 'none'; return; }
     if (typeof kakao === 'undefined' || !kakao.maps) return;
 
     ensurePlacesService();
-
     const options = {};
     if (map) options.location = map.getCenter();
 
@@ -1317,18 +1344,19 @@ function doPlaceSearch(query, opts = { focusFirst: false }) {
             return;
         }
 
-        // 결과 렌더
-        renderSearchResults(data.slice(0, 8));
-
-        // 버튼/엔터일 때: 첫 결과를 곧바로 지도에 표시
+        // 버튼/엔터일 때: 첫 결과 지도 이동 + 리스트 숨김
         if (opts.focusFirst) {
             const d = data[0];
-            const lat = parseFloat(d.y);
-            const lon = parseFloat(d.x);
-            ensureMapReady(() => setMap(lat, lon, d.place_name));
+            ensureMapReady(() => setMap(parseFloat(d.y), parseFloat(d.x), d.place_name));
+            if (opts.hideList) { hidePlaceResults(); return; }  // ★ 여기서 끝
         }
+
+        // 입력 중인 경우에만 리스트 렌더링
+        renderSearchResults(data.slice(0, 8));
     }, options);
 }
+
+
 function renderSearchResults(list) {
     const box = document.getElementById('placeResults');
     if (!box) return;
@@ -1370,8 +1398,18 @@ function renderSearchResults(list) {
             const lat = parseFloat(doc.y);
             const lon = parseFloat(doc.x);
             setMap(lat, lon, doc.place_name);
+
+            // 🔹 검색창에 선택한 장소명 넣기
+            const searchInput = document.getElementById('placeSearchInput');
+            if (searchInput) {
+                searchInput.value = doc.place_name || '';
+            }
+
+            // 🔹 리스트 숨기기
+            hidePlaceResults();
         } else if (act === 'add') {
-            addFromKakaoResult(doc); // 네가 이미 만든 함수
+            addFromKakaoResult(doc);
+            hidePlaceResults();
         }
     };
 }
@@ -1381,22 +1419,67 @@ let startPick = null;   // {name, lat, lon}
 let endPick   = null;   // {name, lat, lon}
 let routeLine = null;   // 미니 프리뷰용 폴리라인
 
+let suppressUntil = 0;                 // 이 시간 전까지는 검색 무시
+const SUPPRESS_MS = 300;               // 0.3초면 충분
+
+// === 카카오맵 공용 버튼 제어(전역) ===
+let lastStart = null, lastEnd = null;
+
+function showKakaoBtn() {
+    const btn = document.getElementById('openKakaoMapBtn');
+    if (!btn) return;
+    btn.style.display = 'inline-block';
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.style.cursor = 'pointer';
+}
+function hideKakaoBtn() {
+    const btn = document.getElementById('openKakaoMapBtn');
+    if (!btn) return;
+    btn.style.display = 'none';
+}
+
+// 페이지 로드 후 한 번만 버튼 클릭 바인딩
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('openKakaoMapBtn')?.addEventListener('click', () => {
+        if (!lastStart || !lastEnd) return;
+        const url = buildKakaoRouteUrl(lastStart, lastEnd, 'transit');
+        window.open(url, '_blank', 'noopener');
+    });
+
+    // 출발/도착 변경 시 버튼 다시 숨김 (선택)
+    document.getElementById('startInput')?.addEventListener('input', hideKakaoBtn);
+    document.getElementById('endInput')?.addEventListener('input', hideKakaoBtn);
+});
+
+function isSuppressed() {
+    return Date.now() < suppressUntil;
+}
+
 function bindAutocomplete(inputEl, resultsEl, onPick) {
     if (!inputEl || !resultsEl) return;
 
-    inputEl.addEventListener('input', () => {
+    // 한글 조합 여부를 따지지 않는다. (space 안 눌러도 바로 뜸)
+    // 단, '선택' 직후 억제 시간에는 무시
+    inputEl.addEventListener('input', (e) => {
+        if (isSuppressed()) return;
+
         const q = inputEl.value.trim();
-        if (!q) { resultsEl.style.display = 'none'; return; }
-        if (!kakao?.maps?.services) return;
+        // 반대쪽 리스트 닫기
+        document.querySelectorAll('.route-results')?.forEach(bx => {
+            if (bx !== resultsEl) { bx.style.display = 'none'; bx.innerHTML = ''; }
+        });
+
+        if (!q || !kakao?.maps?.services) { resultsEl.style.display = 'none'; resultsEl.innerHTML=''; return; }
 
         const places = new kakao.maps.services.Places();
-        const opts = map ? { location: map.getCenter() } : {};
+        const opts = (window.map ? { location: map.getCenter() } : {});
         places.keywordSearch(q, (data, status) => {
-            if (status !== kakao.maps.services.Status.OK) {
-                resultsEl.style.display = 'none'; return;
+            if (status !== kakao.maps.services.Status.OK || !data?.length) {
+                resultsEl.style.display = 'none'; resultsEl.innerHTML = ''; return;
             }
             resultsEl.innerHTML = data.slice(0, 8).map(d => `
-        <div class="result-item" data-x="${d.x}" data-y="${d.y}" data-name="${d.place_name}">
+        <div class="result-item" data-x="${d.x}" data-y="${d.y}" data-name="${escapeHtml(d.place_name||'')}">
           <div class="name">${escapeHtml(d.place_name||'')}</div>
           <div class="addr">${escapeHtml(d.road_address_name || d.address_name || '')}</div>
         </div>
@@ -1405,20 +1488,30 @@ function bindAutocomplete(inputEl, resultsEl, onPick) {
         }, opts);
     });
 
-    resultsEl.addEventListener('click', (e) => {
+    // pointerdown에서 값 세팅 + 리스트 닫기 + 잠깐 억제
+    resultsEl.addEventListener('pointerdown', (e) => {
         const item = e.target.closest('.result-item');
         if (!item) return;
-        resultsEl.style.display = 'none';
-        inputEl.value = item.dataset.name || '';
+        e.preventDefault(); // blur 전에 값 세팅
+
         const pick = {
             name: item.dataset.name,
-            lon: parseFloat(item.dataset.x),
-            lat: parseFloat(item.dataset.y),
+            lon : parseFloat(item.dataset.x),
+            lat : parseFloat(item.dataset.y),
         };
-        onPick(pick);
 
-        // 지도 프리뷰
+        suppressUntil = Date.now() + SUPPRESS_MS;   // 🔒 잠깐 검색 막기
+        inputEl.value = pick.name || '';
+        onPick(pick);
         setMap(pick.lat, pick.lon, pick.name);
+
+        resultsEl.style.display = 'none';
+        resultsEl.innerHTML = '';
+    });
+
+    // blur 시 살짝 딜레이 후 닫기
+    inputEl.addEventListener('blur', () => {
+        setTimeout(() => { resultsEl.style.display = 'none'; }, 120);
     });
 }
 
@@ -1449,7 +1542,6 @@ document.getElementById('routeBtn')?.addEventListener('click', () => {
     const sInput = document.getElementById('startInput');
     const eInput = document.getElementById('endInput');
 
-    // 입력만 하고 선택 안 했을 때는 자동으로 첫 결과 사용
     const ensurePicked = (text, setter, done) => {
         if (!text) return done(false);
         if (kakao?.maps?.services && (!startPick || !endPick)) {
@@ -1474,12 +1566,17 @@ document.getElementById('routeBtn')?.addEventListener('click', () => {
             // 지도 프리뷰
             drawRoutePreview(startPick, endPick);
 
-            // 교통편 카드 갱신(대략치)
+            // 교통편 카드 갱신
             updateTransportCards(startPick, endPick);
 
-            // 카카오맵 길찾기 새 탭 열기 (대중교통/자동차 중 원하는 것 선택)
-            const url = buildKakaoRouteUrl(startPick, endPick, 'transit'); // 'car' 또는 'transit'
-            window.open(url, '_blank', 'noopener');
+            // 최신 경로 저장 + 버튼 보이기
+            lastStart = startPick;
+            lastEnd   = endPick;
+            showKakaoBtn();
+
+            // (자동 새 탭 열기는 원하면 유지/삭제)
+            // const url = buildKakaoRouteUrl(startPick, endPick, 'transit');
+            // window.open(url, '_blank', 'noopener');
         });
     });
 });
@@ -1491,8 +1588,8 @@ document.getElementById('swapRouteBtn')?.addEventListener('click', () => {
     [sInput.value, eInput.value] = [eInput.value, sInput.value];
     [startPick, endPick] = [endPick, startPick];
     if (startPick && endPick) drawRoutePreview(startPick, endPick);
+    hideKakaoBtn(); // ← 선택
 });
-
 // 오토컴플리트 바인딩
 bindAutocomplete(
     document.getElementById('startInput'),
@@ -1526,51 +1623,6 @@ function haversineKm(a, b) {
     const la2 = b.lat * Math.PI / 180;
     const h = Math.sin(dLat/2)**2 + Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;
     return R * 2 * Math.asin(Math.sqrt(h));
-}
-
-// 교통편 카드 채우기
-async function updateTransportCards(s, e) {
-    // 백엔드가 요구하는 순서 유의: sx/ex = 경도(lon), sy/ey = 위도(lat)
-    const q = new URLSearchParams({
-        sx: String(s.lon),
-        sy: String(s.lat),
-        ex: String(e.lon),
-        ey: String(e.lat)
-    });
-
-    const container = document.querySelector('#transport .transport-options');
-    if (!container) return;
-
-    // 로딩 표시
-    container.innerHTML = `
-    <div class="transport-loading" style="padding:12px;color:#666;">
-      경로를 검색 중입니다...
-    </div>
-  `;
-
-    try {
-        const res = await fetch(`/api/transport/routes?${q.toString()}`);
-        if (!res.ok) throw new Error('ODsay 요청 실패');
-        const data = await res.json(); // RouteOptionDto[]
-
-        if (!Array.isArray(data) || data.length === 0) {
-            container.innerHTML = `
-        <div class="transport-empty" style="padding:12px;color:#666;">
-          경로를 찾지 못했습니다.
-        </div>
-      `;
-            return;
-        }
-
-        renderTransitOptions(container, data, s, e);
-    } catch (err) {
-        console.error(err);
-        container.innerHTML = `
-      <div class="transport-error" style="padding:12px;color:#c33;">
-        교통 경로 조회 중 오류가 발생했습니다.
-      </div>
-    `;
-    }
 }
 
 // 포맷터
@@ -1628,19 +1680,23 @@ async function updateTransportCards(s, e) {
     const container = document.querySelector('#transport .transport-options #transportList');
     if (!container) return;
 
-    // 로딩
     renderTransportState(container, 'loading');
-
     try {
         const q = new URLSearchParams({ sx:String(s.lon), sy:String(s.lat), ex:String(e.lon), ey:String(e.lat) });
         const res = await fetch(`/api/transport/routes?${q.toString()}`);
         if (!res.ok) throw new Error('ODsay 요청 실패');
-        const routes = await res.json(); // RouteOptionDto[]
+        const routes = await res.json();
 
         if (!Array.isArray(routes) || routes.length === 0) {
             renderTransportState(container, 'empty');
             return;
         }
+
+        // 최신 경로 저장 + 버튼 표시
+        lastStart = s;
+        lastEnd   = e;
+        showKakaoBtn();
+
         renderTransitOptions(container, routes, s, e);
     } catch (err) {
         console.error(err);
@@ -1651,19 +1707,14 @@ async function updateTransportCards(s, e) {
 
 function renderTransitOptions(container, routes, s, e) {
     container.innerHTML = routes.map((r, idx) => {
-        const segHtml = (r.segments || []).map(seg =>
-            `<li>${escapeHtml(seg)}</li>`).join('');
-        const kakaoUrl = r.externalUrl || buildKakaoRouteUrl(s, e, 'transit');
+        const segHtml = (r.segments || []).map(seg => `<li>${escapeHtml(seg)}</li>`).join('');
         const transfers = (r.transferCount ?? 0) >= 0 ? `${r.transferCount}회` : '정보없음';
 
         return `
       <div class="transport-item">
-        <!-- 왼쪽 아이콘 -->
         <div class="transport-icon" style="flex-shrink:0;width:50px;height:50px;display:flex;align-items:center;justify-content:center;font-size:24px;">
           ${iconFor(r)}
         </div>
-
-        <!-- 중앙 정보 -->
         <div class="transport-info" style="flex:1;display:flex;flex-direction:column;gap:6px;">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
             <h4 style="margin:0;font-size:16px;font-weight:700;">대중교통 경로 ${idx + 1}</h4>
@@ -1675,15 +1726,6 @@ function renderTransitOptions(container, routes, s, e) {
           <p style="margin:0;color:#005792;font-weight:600;font-size:14px;">⏱ ${fmtMin(r.totalTime)} · ${fmtWon(r.fare)}</p>
           ${segHtml ? `<ul style="margin:0;padding-left:18px;color:#0a263b;font-size:13px;">${segHtml}</ul>` : ''}
         </div>
-
-        <!-- 오른쪽 버튼 -->
-        <div style="display:flex;align-items:center;flex-shrink:0;">
-          <a href="${kakaoUrl}" target="_blank" rel="noopener"
-             style="white-space:nowrap;padding:8px 12px;border-radius:10px;background:linear-gradient(135deg,#005792,#001A2C);color:#fff;font-weight:600;font-size:13px;box-shadow:0 4px 12px rgba(0,87,146,.3);">
-            카카오맵 보기
-          </a>
-        </div>
-      </div>
-    `;
+      </div>`;
     }).join('');
 }
