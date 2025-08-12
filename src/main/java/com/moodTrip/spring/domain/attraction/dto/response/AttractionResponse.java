@@ -1,44 +1,45 @@
 package com.moodTrip.spring.domain.attraction.dto.response;
 
 import com.moodTrip.spring.domain.attraction.entity.Attraction;
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
 
-import java.util.List;
+import java.time.LocalDateTime;
 
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor
+@Getter
 @Builder
 public class AttractionResponse {
-    private Long id;
+    private Long contentId;
+    private Integer contentTypeId;
     private String title;
-    private String thumbnail;
-    private String tel;
     private String addr1;
     private String addr2;
-    private String useTime;
-    private String restDate;
-    private String parking;
-    private String expAgeRange;
-    private String overview;
-    private List<String> imageUrls;
+    private String tel;
+    private String firstImage;
+    private String firstImage2;
     private Double mapX;
     private Double mapY;
+    private Integer areaCode;
+    private Integer sigunguCode;
+    private LocalDateTime createdTime;
+    private LocalDateTime modifiedTime;
 
-    public static AttractionResponse from(Attraction entity) {
+    public static AttractionResponse from(Attraction a) {
         return AttractionResponse.builder()
-                .id(entity.getId())
-                .title(entity.getTitle())
-                .thumbnail(entity.getThumbnail())
-                .tel(entity.getTel())
-                .addr1(entity.getAddr1())
-                .addr2(entity.getAddr2())
-                .useTime(entity.getUseTime())
-                .restDate(entity.getRestDate())
-                .parking(entity.getParking())
-                .expAgeRange(entity.getExpAgeRange())
-                .overview(entity.getOverview())
-                .mapX(entity.getMapX())
-                .mapY(entity.getMapY())
+                .contentId(a.getContentId())
+                .contentTypeId(a.getContentTypeId())
+                .title(a.getTitle())
+                .addr1(a.getAddr1())
+                .addr2(a.getAddr2())
+                .tel(a.getTel())
+                .firstImage(a.getFirstImage())
+                .firstImage2(a.getFirstImage2())
+                .mapX(a.getMapX())
+                .mapY(a.getMapY())
+                .areaCode(a.getAreaCode())
+                .sigunguCode(a.getSigunguCode())
+                .createdTime(a.getCreatedTime())
+                .modifiedTime(a.getModifiedTime())
                 .build();
     }
 }
