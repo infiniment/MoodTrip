@@ -6,8 +6,6 @@
     <title>무드트립 : 방 찾기</title>
     <link rel="stylesheet" th:href="@{/css/enteringRoom/enteringRoom.css}">
     <script th:src="@{/js/enteringRoom/enteringRoom.js}" defer></script>
-</head>
-<body>
     <link rel="stylesheet" th:href="@{/css/fix/header.css}">
     <link rel="stylesheet" th:href="@{/css/fix/footer.css}">
     <link rel="stylesheet" th:href="@{/css/fix/header-after.css}">
@@ -20,6 +18,7 @@
 <div th:unless="${isLoggedIn}">
     <th:block th:replace="~{fix/header :: header}"></th:block>
 </div>
+
 <div class="container">
     <header class="page-header">
         <h1 class="page-title">방 찾기</h1>
@@ -37,43 +36,6 @@
                     <path d="m21 21-4.35-4.35"></path>
                 </svg>
             </button>
-        </div>
-    </section>
-
-    <nav class="filter-tabs">
-        <button class="filter-tab active" data-filter="all">전체 별</button>
-        <button class="filter-tab" data-filter="nearby">지역 별</button>
-        <button class="filter-tab" data-filter="popular">인원 별</button>
-    </nav>
-
-    <div class="region-filter-section" id="regionFilterSection" style="display: none;">
-        <div class="region-filter-tabs">
-            <button class="region-filter-tab active" data-region="all">전체</button>
-            <button class="region-filter-tab" data-region="서울">서울</button>
-            <button class="region-filter-tab" data-region="경기">경기</button>
-            <button class="region-filter-tab" data-region="인천">인천</button>
-            <button class="region-filter-tab" data-region="강원">강원</button>
-            <button class="region-filter-tab" data-region="충북">충북</button>
-            <button class="region-filter-tab" data-region="충남">충남</button>
-            <button class="region-filter-tab" data-region="대전">대전</button>
-            <button class="region-filter-tab" data-region="경북">경북</button>
-            <button class="region-filter-tab" data-region="대구">대구</button>
-            <button class="region-filter-tab" data-region="울산">울산</button>
-            <button class="region-filter-tab" data-region="부산">부산</button>
-            <button class="region-filter-tab" data-region="경남">경남</button>
-            <button class="region-filter-tab" data-region="전북">전북</button>
-            <button class="region-filter-tab" data-region="전남">전남</button>
-            <button class="region-filter-tab" data-region="광주">광주</button>
-            <button class="region-filter-tab" data-region="제주">제주</button>
-        </div>
-    </div>
-
-    <div class="people-filter-section" id="peopleFilterSection" style="display: none;">
-        <div class="people-filter-tabs">
-            <button class="people-filter-tab active" data-people="all">전체</button>
-            <button class="people-filter-tab" data-people="2">2명</button>
-            <button class="people-filter-tab" data-people="4">4명</button>
-            <button class="people-filter-tab" data-people="other">기타</button>
         </div>
     </section>
 
@@ -243,29 +205,6 @@
         </div>
     </main>
 
-    <div class="results-header">
-        <div class="results-info">
-            <span class="results-count" id="resultsCount" th:text="${rooms != null ? #lists.size(rooms) : 0}">0</span>개의 프로젝트
-        </div>
-        <div class="sort-controls">
-            <label class="checkbox-container">
-                <input type="checkbox" id="urgentOnly">
-                <span class="checkmark"></span>
-                마감 임박 보기
-            </label>
-            <div class="sort-dropdown">
-                <button class="sort-button" id="sortButton">
-                    기본 정렬 순
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="6,9 12,15 18,9"></polyline>
-                    </svg>
-                </button>
-                <div class="sort-menu" id="sortMenu">
-                    <button class="sort-option active" data-sort="default">기본 정렬 순</button>
-                    <button class="sort-option" data-sort="nearest">가까운 날짜 순</button>
-                    <button class="sort-option" data-sort="popular">인기순</button>
-                </div>
-            </div>
     <!-- 페이지네이션 -->
     <nav class="pagination" id="pagination">
         <button class="page-btn prev" id="prevBtn" aria-label="이전 페이지">‹</button>
@@ -356,62 +295,7 @@
         </div>
     </div>
 </div>
-    <main class="room-list" id="roomList">
-        <div class="room-card" th:each="room : ${rooms}">
-            <div class="room-image">
-                <img th:src="@{/image/mainpage/sample1.png}" th:alt="${room.roomName} + ' 이미지'">
-                <div class="room-status" th:text="${room.status}"></div>
-            </div>
-            <div class="room-content">
-                <div class="room-header">
-                    <h3 class="room-title" th:text="${room.roomName}"></h3>
-                    <div class="room-meta">
-                        <span th:text="${room.destinationName}"></span>
-                        <span th:text="${room.destinationCategory}"></span>
-                        <span th:text="${room.travelStartDate} + ' ~ ' + ${room.travelEndDate}"></span>
-                    </div>
-                </div>
-                <div class="room-description" th:text="${room.roomDescription}"></div>
-                <!-- 태그 부분은 추후 연동시만 추가 -->
-                <div class="room-footer">
-                    <span th:text="${room.currentParticipants} + ' / ' + ${room.maxParticipants}"></span>
 
-                </div>
-            </div>
-        </div>
-        <div th:if="${rooms == null or #lists.isEmpty(rooms)}"
-             style="text-align:center; padding:60px 20px; color:#64748b;">
-            <h3>검색 결과가 없습니다</h3>
-            <p>다른 키워드로 검색해보세요.</p>
-        </div>
-    </main>
-
-
-    <nav class="pagination" id="pagination">
-        <button class="page-btn prev" id="prevBtn" aria-label="이전 페이지">‹</button>
-        <button class="page-btn active" data-page="1">1</button>
-        <button class="page-btn" data-page="2">2</button>
-        <button class="page-btn" data-page="3">3</button>
-        <button class="page-btn" data-page="4">4</button>
-        <button class="page-btn" data-page="5">5</button>
-        <span class="page-dots">...</span>
-        <button class="page-btn next" id="nextBtn" aria-label="다음 페이지">›</button>
-    </nav>
-</div>
-
-<!-- 상세보기/신청/신고 모달은 js 기반 그대로 유지 (원한다면 타임리프 th:if 등 추가 가능) -->
-<div id="detailModal" class="modal" style="display: none;" role="dialog" aria-labelledby="detailModalTitle" aria-hidden="true">
-    <!-- ... (생략: 기존 modal 코드 유지) ... -->
-</div>
-<div id="applicationModal" class="modal" style="display: none;" role="dialog" aria-labelledby="applicationModalTitle" aria-hidden="true">
-    <!-- ... (생략: 유지) ... -->
-</div>
-<div id="reportModal" class="modal" style="display: none;" role="dialog" aria-labelledby="reportModalTitle" aria-hidden="true">
-    <!-- ... (생략: 유지) ... -->
-</div>
-<div id="detailPage" class="detail-page" style="display: none;">
-    <!-- ... (생략: 유지) ... -->
-</div>
 <!-- 신고 모달 -->
 <div id="reportModal" class="modal" style="display: none;" role="dialog" aria-labelledby="reportModalTitle" aria-hidden="true">
     <div class="modal-overlay" onclick="closeReportModal()"></div>
