@@ -1,3 +1,4 @@
+
 // 선택된 태그들을 저장할 배열
 let selectedTags = [];
 const MAX_TAGS = 3; // 최대 태그 개수 제한
@@ -32,17 +33,17 @@ function selectSortOption(option, text) {
     const sortText = document.querySelector('.sort-text');
     const dropdown = document.querySelector('.sort-dropdown');
     const allOptions = document.querySelectorAll('.sort-option');
-    
+
     // 현재 선택된 옵션 업데이트
     sortText.textContent = text;
-    
+
     // active 클래스 업데이트
     allOptions.forEach(opt => opt.classList.remove('active'));
     event.target.classList.add('active');
-    
+
     // 드롭다운 닫기
     dropdown.classList.remove('active');
-    
+
     // 여기에 실제 정렬 로직 추가 가능
     console.log('정렬 기준:', option, text);
 }
@@ -54,7 +55,7 @@ function showNotification(message, type = 'info') {
     if (existingNotification) {
         existingNotification.remove();
     }
-    
+
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
     notification.style.cssText = `
@@ -72,9 +73,9 @@ function showNotification(message, type = 'info') {
         animation: slideIn 0.3s ease;
         max-width: 300px;
     `;
-    
+
     notification.textContent = message;
-    
+
     // 애니메이션 추가
     const style = document.createElement('style');
     style.textContent = `
@@ -88,9 +89,9 @@ function showNotification(message, type = 'info') {
         }
     `;
     document.head.appendChild(style);
-    
+
     document.body.appendChild(notification);
-    
+
     // 3초 후 제거
     setTimeout(() => {
         notification.style.animation = 'slideOut 0.3s ease';
@@ -111,33 +112,33 @@ function addTag(tagText) {
     if (!tagText.trim()) {
         return;
     }
-    
+
     // 이미 존재하는 태그인지 확인
     if (selectedTags.includes(tagText)) {
         showNotification('이미 선택된 태그입니다.', 'warning');
         return;
     }
-    
+
     // 최대 개수 체크
     if (selectedTags.length >= MAX_TAGS) {
         showNotification(`감정 태그는 최대 ${MAX_TAGS}개까지 선택할 수 있습니다.`, 'warning');
         return;
     }
-    
+
     // 태그 배열에 추가
     selectedTags.push(tagText);
-    
+
     // UI 업데이트
     renderTags();
     updateTagCounter();
     updateInputState();
-    
+
     // 입력창 클리어
     const inputArea = document.getElementById('emotionInput');
     if (inputArea) {
         inputArea.value = '';
     }
-    
+
     // 성공 메시지
     showNotification(`'${tagText}' 태그가 추가되었습니다.`, 'info');
 }
@@ -159,7 +160,7 @@ function updateTagCounter() {
     const counter = document.querySelector('.tag-counter');
     if (counter) {
         counter.textContent = `${selectedTags.length}/${MAX_TAGS}`;
-        
+
         // 색상 변경
         if (selectedTags.length >= MAX_TAGS) {
             counter.style.color = '#f59e0b';
@@ -177,23 +178,23 @@ function updateInputState() {
     const searchBtn = document.querySelector('.search-btn');
     const emotionTags = document.querySelectorAll('.emotion-tag');
     const popularTags = document.querySelectorAll('.popular-tag');
-    
+
     const isMaxReached = selectedTags.length >= MAX_TAGS;
-    
+
     if (inputArea) {
         inputArea.disabled = isMaxReached;
         if (isMaxReached) {
             inputArea.placeholder = ``;
         } else {
-            inputArea.placeholder = selectedTags.length > 0 
-                ? '추가할 감정을 입력하세요...' 
+            inputArea.placeholder = selectedTags.length > 0
+                ? '추가할 감정을 입력하세요...'
                 : '원하는 감정을 선택해보세요 (예: 힐링, 설렘, 평온)';
             inputArea.style.background = '';
             inputArea.style.color = '';
         }
     }
-    
-    
+
+
     // 감정 태그들 비활성화
     emotionTags.forEach(tag => {
         if (isMaxReached) {
@@ -206,7 +207,7 @@ function updateInputState() {
             tag.style.pointerEvents = '';
         }
     });
-    
+
     // 인기 태그들 비활성화
     popularTags.forEach(tag => {
         if (isMaxReached) {
@@ -225,9 +226,9 @@ function updateInputState() {
 function renderTags() {
     const selectedTagsContainer = document.getElementById('selectedTags');
     if (!selectedTagsContainer) return;
-    
+
     selectedTagsContainer.innerHTML = '';
-    
+
     selectedTags.forEach(tag => {
         const tagElement = document.createElement('div');
         tagElement.className = 'tag-item';
@@ -265,7 +266,7 @@ function addPopularTag(tagText) {
 // 하트 버튼 토글 기능
 function toggleLike(button) {
     button.classList.toggle('liked');
-    
+
     if (button.classList.contains('liked')) {
         button.innerHTML = '♥'; // 채워진 하트
         button.style.color = '#ff4757'; // 빨간색
@@ -283,7 +284,7 @@ function clearAllTags() {
         showNotification('선택된 태그가 없습니다.', 'warning');
         return;
     }
-    
+
     selectedTags = [];
     renderTags();
     updateTagCounter();
@@ -296,25 +297,25 @@ document.addEventListener('DOMContentLoaded', function() {
     // 초기 상태 설정
     updateTagCounter();
     updateInputState();
-    
+
     // 감정 태그 클릭 시 추가
     const emotionTags = document.querySelectorAll('.emotion-tag');
-    
+
     emotionTags.forEach(tag => {
         tag.addEventListener('click', function() {
             // 최대 개수 체크
             if (selectedTags.length >= MAX_TAGS) {
                 return;
             }
-            
+
             const emotion = this.textContent.trim();
             addEmotionTag(emotion);
-            
+
             // 선택된 태그 시각적 피드백
             this.style.background = 'linear-gradient(135deg, #005792 0%, #001A2C 100%)';
             this.style.color = 'white';
             this.style.transform = 'scale(0.95)';
-            
+
             // 2초 후 원래 스타일로 복원
             setTimeout(() => {
                 this.style.background = '';
@@ -332,15 +333,15 @@ document.addEventListener('DOMContentLoaded', function() {
             if (selectedTags.length >= MAX_TAGS) {
                 return;
             }
-            
+
             const tagText = this.textContent.trim();
             addPopularTag(tagText);
-            
+
             // 선택된 태그 시각적 피드백
             this.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%)';
             this.style.color = '#001A2C';
             this.style.transform = 'scale(0.95)';
-            
+
             // 2초 후 원래 스타일로 복원
             setTimeout(() => {
                 this.style.background = '';
@@ -349,13 +350,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 2000);
         });
     });
-    
+
     // 입력창 엔터 키 이벤트
     const inputArea = document.getElementById('emotionInput');
     if (inputArea) {
         inputArea.addEventListener('keypress', handleInputKeyPress);
     }
-    
+
     // 하트 버튼 이벤트 리스너 추가
     const likeButtons = document.querySelectorAll('.like-btn');
     likeButtons.forEach(button => {
@@ -365,7 +366,7 @@ document.addEventListener('DOMContentLoaded', function() {
             toggleLike(this);
         });
     });
-    
+
     // 정렬 옵션 클릭 이벤트
     const sortOptions = document.querySelectorAll('.sort-option');
     sortOptions.forEach(option => {
@@ -375,7 +376,7 @@ document.addEventListener('DOMContentLoaded', function() {
             selectSortOption(sortValue, sortText);
         });
     });
-    
+
     // 드롭다운 외부 클릭 시 닫기
     document.addEventListener('click', function(e) {
         const dropdown = document.querySelector('.sort-dropdown');
@@ -383,7 +384,7 @@ document.addEventListener('DOMContentLoaded', function() {
             dropdown.classList.remove('active');
         }
     });
-    
+
     // 검색 버튼 클릭 이벤트
     const searchBtn = document.querySelector('.search-btn');
     if (searchBtn) {
@@ -399,5 +400,5 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
+
 });
