@@ -339,4 +339,18 @@ public class AttractionServiceImpl implements AttractionService {
         return AttractionResponse.from(saved);
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public List<AttractionResponse> getRecommendedTop(int limit) {
+        return repository.findTop(org.springframework.data.domain.PageRequest.of(0, limit))
+                .stream().map(AttractionResponse::from).toList();
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<AttractionResponse> searchByKeyword(String q, int limit) {
+        if (q == null || q.isBlank()) return getRecommendedTop(limit);
+        return repository.searchByTitleOrAddr(q, org.springframework.data.domain.PageRequest.of(0, limit))
+                .stream().map(AttractionResponse::from).toList();
+    }
 }

@@ -23,6 +23,7 @@ repositories {
 	mavenCentral()
 }
 
+
 dependencies {
 	// Spring Boot Starters
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -113,5 +114,8 @@ compileJava {
 }
 
 
+tasks.withType(JavaCompile).configureEach {
+	options.compilerArgs += ['-parameters']
+}
 
 
