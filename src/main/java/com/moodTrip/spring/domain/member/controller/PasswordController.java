@@ -46,7 +46,7 @@ class PasswordController {
 
 
     @PostMapping("/send-temp")
-    public String sendTempPassword(@RequestParam("email") String email, Model model) {
+    public String sendTempPassword(@RequestParam String email, Model model) {
         // 1. 유저 조회
         Member member = memberService.findByEmail(email);
         if (member == null) {

@@ -28,11 +28,11 @@ public class AttractionController {
     // =============== 목록 동기화 (areaBasedList2) ===============
     @PostMapping("/sync/area")
     public ResponseEntity<SyncAreaResponse> syncArea(
-            @RequestParam @Min(1) @Max(99) int areaCode,
-            @RequestParam(required = false) @Min(1) Integer sigunguCode,
-            @RequestParam(required = false) @Min(12) @Max(99) Integer contentTypeId,
-            @RequestParam(defaultValue = "500") @Min(1) @Max(1000) int pageSize,
-            @RequestParam(defaultValue = "0") @Min(0) long pauseMillis
+            @RequestParam("areaCode") @Min(1) @Max(99) int areaCode,
+            @RequestParam(value = "sigunguCode", required = false) @Min(1) Integer sigunguCode,
+            @RequestParam(value = "contentTypeId", required = false) @Min(12) @Max(99) Integer contentTypeId,
+            @RequestParam(value = "pageSize", defaultValue = "500") @Min(1) @Max(1000) int pageSize,
+            @RequestParam(value = "pauseMillis", defaultValue = "0") @Min(0) long pauseMillis
     ) {
         int created = service.syncAreaBasedList(areaCode, sigunguCode, contentTypeId, pageSize, pauseMillis);
         return ResponseEntity.accepted().body(
@@ -43,8 +43,8 @@ public class AttractionController {
     // =============== 소개(detailIntro2) ===============
     @PostMapping("/sync/intro")
     public ResponseEntity<SyncIntroResponse> syncIntro(
-            @RequestParam @Positive long contentId,
-            @RequestParam(required = false) @Min(12) @Max(99) Integer contentTypeId
+            @RequestParam("contentId") @Positive long contentId,
+            @RequestParam(value = "contentTypeId", required = false) @Min(12) @Max(99) Integer contentTypeId
     ) {
         int saved = service.syncDetailIntro(contentId, contentTypeId);
         return ResponseEntity.accepted().body(
@@ -54,10 +54,10 @@ public class AttractionController {
 
     @PostMapping("/sync/intro/by-area")
     public ResponseEntity<SyncIntroByAreaResponse> syncIntroByArea(
-            @RequestParam @Min(1) @Max(99) int areaCode,
-            @RequestParam(required = false) @Min(1) Integer sigunguCode,
-            @RequestParam(required = false) @Min(12) @Max(99) Integer contentTypeId,
-            @RequestParam(defaultValue = "0") @Min(0) long pauseMillis
+            @RequestParam("areaCode") @Min(1) @Max(99) int areaCode,
+            @RequestParam(value = "sigunguCode", required = false) @Min(1) Integer sigunguCode,
+            @RequestParam(value = "contentTypeId", required = false) @Min(12) @Max(99) Integer contentTypeId,
+            @RequestParam(value = "pauseMillis", defaultValue = "0") @Min(0) long pauseMillis
     ) {
         int saved = service.syncDetailIntroByArea(areaCode, sigunguCode, contentTypeId, pauseMillis);
         return ResponseEntity.accepted().body(
@@ -68,9 +68,9 @@ public class AttractionController {
     // =============== 조회 API ===============
     @GetMapping
     public ResponseEntity<List<AttractionResponse>> list(
-            @RequestParam @Min(1) @Max(99) int areaCode,
-            @RequestParam(required = false) @Min(1) Integer sigunguCode,
-            @RequestParam(required = false) @Min(12) @Max(99) Integer contentTypeId
+            @RequestParam("areaCode") @Min(1) @Max(99) int areaCode,
+            @RequestParam(value = "sigunguCode", required = false) @Min(1) Integer sigunguCode,
+            @RequestParam(value = "contentTypeId", required = false) @Min(12) @Max(99) Integer contentTypeId
     ) {
         return ResponseEntity.ok(
                 service.find(areaCode, sigunguCode, contentTypeId)
@@ -85,7 +85,34 @@ public class AttractionController {
         return ResponseEntity
                 .created(URI.create("/api/attractions/content/" + created.getContentId()))
                 .body(created);
+    }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<AttractionResponse>> search(
+            @RequestParam(name = "q", required = false) String q,
+            @RequestParam(name = "areaCode", required = false) @Min(1) @Max(99) Integer areaCode,
+            @RequestParam(name = "sigunguCode", required = false) @Min(1) Integer sigunguCode,
+            @RequestParam(name = "contentTypeId", required = false) @Min(12) @Max(99) Integer contentTypeId,
+            @RequestParam(name = "limit", defaultValue = "30") @Min(1) @Max(100) Integer limit
+    ) {
+        // 필터가 오면 DB 필터 조회
+        if (areaCode != null || sigunguCode != null || contentTypeId != null) {
+            int ac = (areaCode != null) ? areaCode : 1;
+            return ResponseEntity.ok(
+                    service.find(ac, sigunguCode, contentTypeId)   // 엔티티 반환
+                            .stream()
+                            .map(AttractionResponse::from)          // 엔티티 → DTO
+                            .collect(java.util.stream.Collectors.toList())
+            );
+        }
+
+        // 키워드 없으면 추천 TOP N (이미 DTO)
+        if (q == null || q.isBlank()) {
+            return ResponseEntity.ok(service.getRecommendedTop(limit));
+        }
+
+        // 키워드 검색 (이미 DTO)
+        return ResponseEntity.ok(service.searchByKeyword(q, limit));
     }
 
     // --- 응답 DTO들 (record로 간단하게) ---

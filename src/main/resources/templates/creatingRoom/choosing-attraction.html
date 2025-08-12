@@ -4,11 +4,12 @@
     <meta charset="UTF-8">
     <title>무드트립 : 동행자 매칭 방 만들기 관광지 선택</title>
     <link rel="stylesheet" th:href="@{/css/creatingRoom/choosing-attraction.css}">
-    <script th:src = "@{/js/creatingRoom/choosing-attraction.js}"></script>
     <link rel=" stylesheet" th:href="@{/css/fix/header.css}">
     <link rel="stylesheet" th:href="@{/css/fix/footer.css}">
     <link rel="stylesheet" th:href="@{/css/fix/header-after.css}">
+    <script th:src = "@{/js/creatingRoom/choosing-attraction.js}"></script>
 </head>
+<body class="room-create phase-3">
 <!-- 로그인 상태에 따른 조건부 헤더 렌더링 -->
 <div th:if="${isLoggedIn}">
     <!-- 로그인된 사용자용 헤더 -->
@@ -18,13 +19,13 @@
     <!-- 로그인 안된 사용자용 헤더 -->
     <th:block th:replace="~{fix/header :: header}"></th:block>
 </div>
-<body class="room-create phase-3">
+
     <div class="big-frame">
         <div class="room-create-formview">
             <div class="container">
                 <div class="submit-progress">
                     <div class="room-status-box">
-                        <a class="back-to-before link-text" onclick="goToPreviousPage()" style="cursor: pointer;">
+                        <a class="back-to-before link-text" onclick="goToPreviousPage()" style="cursor:pointer;">
                             <img class="back-to-before-img" th:src="@{/image/creatingRoom/back-to-before.svg}">
                             <p class="back-to-before-title body-1-medium">뒤로 가기</p>
                         </a>
@@ -36,154 +37,189 @@
                             <p class="status-sub-menu-title completed">
                                 <span class="bottom-border"></span>
                                 <span class="sub-menu-marker">1</span>
-                                <img class="phase-complete-icon" th:src="@{/image/creatingRoom/checkbox-checked.svg}">
-                                기본 정보
+                                <img class="phase-complete-icon" th:src="@{/image/creatingRoom/checkbox-checked.svg}">기본 정보
                             </p>
                             <p class="status-sub-menu-title completed">
-                                <span class="top-border"></span>
-                                <span class="bottom-border"></span>
+                                <span class="top-border"></span><span class="bottom-border"></span>
                                 <span class="sub-menu-marker">2</span>
-                                <img class="phase-complete-icon" th:src="@{/image/creatingRoom/checkbox-checked.svg}">
-                                감정 선택
+                                <img class="phase-complete-icon" th:src="@{/image/creatingRoom/checkbox-checked.svg}">감정 선택
                             </p>
                             <p class="status-sub-menu-title active">
-                                <span class="top-border"></span>
-                                <span class="bottom-border"></span>
+                                <span class="top-border"></span><span class="bottom-border"></span>
                                 <span class="sub-menu-marker">3</span>
-                                <img class="phase-complete-icon" th:src="@{/image/creatingRoom/checkbox-checked.svg}">
-                                관광지 선택
+                                <img class="phase-complete-icon" th:src="@{/image/creatingRoom/checkbox-checked.svg}">관광지 선택
                             </p>
                             <p class="status-sub-menu-title">
                                 <span class="top-border"></span>
                                 <span class="sub-menu-marker">4</span>
-                                <img class="phase-complete-icon" th:src="@{/image/creatingRoom/checkbox-checked.svg}">
-                                일정 선택
+                                <img class="phase-complete-icon" th:src="@{/image/creatingRoom/checkbox-checked.svg}">일정 선택
                             </p>
                         </div>
                         <p class="status-main-menu status-menu-with-tooltip body-2">방 최종 등록</p>
                     </div>
                 </div>
-                <form autocomplete="off" enctype="multipart/form-data" id="temporary_room_phase_3" method="POST" onsubmit="return validationPhase(this);" data-hs-cf-bound="true">
-                    <input name="csrfmiddlewaretoken" type="hidden" value="tLyscS3cOgu3CROlEEk0U8u43AL0s2XJkUqonCkA8AGVb6qzImREIKoGdO5DQoNU">
-                    
+
+                <!-- 서버 제출용 폼은 유지(다음 단계로 이동 시 hidden 채우는 용도) -->
+                <form autocomplete="off" enctype="multipart/form-data"
+                      id="temporary_room_phase_3" method="POST"
+                      onsubmit="return validationPhase(this);">
+
+                    <!-- CSRF: 활성화된 경우에만 렌더 -->
+                    <input type="hidden"
+                           th:if="${_csrf != null}"
+                           th:name="${_csrf.parameterName}"
+                           th:value="${_csrf.token}"/>
+
                     <div class="room-create-form-section">
                         <div class="form-section-header">
                             <p class="form-section-title subtitle-1">관광지 선택</p>
                             <button class="room-form-guide-button header-button btn btn-8-16" type="button" onclick="openHelpModal()">
-                                <img class="room-form-guide-button-img" th:src="@{/image/creatingRoom/question.svg}">
-                                도움말
+                                <img class="room-form-guide-button-img" th:src="@{/image/creatingRoom/question.svg}">도움말
                             </button>
                         </div>
+
                         <div class="form-input-section">
-                            <div class="form-group-light mb48">
-                                <label class="form-group-title body-1-bold">가고 싶은 관광지 선택
-                                    <span class="required">*</span>
+                            <div class="form-group-light">
+                                <label class="form-group-title body-1-bold">
+                                    가고 싶은 관광지 선택 <span class="required">*</span>
                                 </label>
-                                <div class="form-content">
-                                    <div class="roomName-search-form theme-client mb8">
-                                        <input name="destination_name" type="hidden">
-                                        <div class="roomName-search-typing-box">
-                                            <div class="roomName-search-input-group">
-                                                <i class="search_icon">
-                                                    <img class="text-icon" th:src="@{/image/creatingRoom/search.svg}">
-                                                </i>
-                                                <div class="roomName-search-selected"></div>
-                                                <input class="roomName-search-typing-input theme-client body-2" id="destinationInput" placeholder="가고싶은 관광지를 선택해주세요 ex ) 고양시" type="text">
+
+                                <form id="searchForm"
+                                      th:action="@{/companion-rooms/attraction}"
+                                      method="get"
+                                      class="roomName-search-form theme-client mb8"
+                                      autocomplete="off">
+                                    <div class="roomName-search-typing-box">
+                                        <div class="roomName-search-input-group">
+                                            <i class="search_icon"><img class="text-icon" th:src="@{/image/creatingRoom/search.svg}"></i>
+                                            <div class="roomName-search-selected"></div>
+                                            <input class="roomName-search-typing-input theme-client body-2"
+                                                   id="destinationInput" name="q"
+                                                   placeholder="가고싶은 관광지를 선택해주세요 ex ) 고양시"
+                                                   type="text" th:value="${q}">
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+
+
+
+                            <!-- 검색 결과 -->
+                            <div class="form-group-light">
+                                <label class="form-group-title body-1-bold mb4">관광지 검색 결과</label>
+                                <p class="mb16 body-2 text900"
+                                   th:text="${#lists.size(attractions)} + '개 검색어 추천'">0개 검색어 추천</p>
+
+                                <div class="destination-filter mb16">
+                                    <select class="filter-select" id="regionFilter">
+                                        <option value="">추천순</option>
+                                        <option value="distance">거리순</option>
+                                    </select>
+                                </div>
+
+                                <div class="destination-results-grid mb32" id="destinationResults">
+                                    <div class="empty" th:if="${#lists.isEmpty(attractions)}">
+                                        검색 결과가 없습니다. 다른 키워드로 검색해보세요.
+                                    </div>
+
+                                    <!-- 결과 카드 -->
+                                    <div class="destination-card"
+                                         th:each="a, iStat : ${attractions}"
+                                         th:attr="data-destination=${a.title}">
+                                        <input type="radio"
+                                               class="destination-radio"
+                                               name="destination"
+                                               th:id="'dest-' + ${iStat.index}"
+                                               th:value="${a.title}">
+                                        <label class="destination-label"
+                                               th:for="'dest-' + ${iStat.index}"
+                                               th:with="
+         rawDesc=${#strings.defaultString(a.tel, a.addr2)},
+         desc=${#strings.trim(#strings.replace(#strings.replace(rawDesc,'<br/>',' '),'<br>',' '))}
+       ">
+                                            <div class="destination-image">
+                                                <!-- 이미지가 있을 때 -->
+                                                <img th:if="${!#strings.isEmpty(a.firstImage)}"
+                                                     th:src="${a.firstImage}"
+                                                     th:alt="${a.title}"
+                                                     loading="lazy" decoding="async"
+                                                     onerror="this.onerror=null; this.src='/image/creatingRoom/landscape-placeholder-svgrepo-com.svg';" />
+
+                                                <!-- 이미지가 없을 때 -->
+                                                <img th:if="${#strings.isEmpty(a.firstImage)}"
+                                                     th:src="@{/image/creatingRoom/landscape-placeholder-svgrepo-com.svg}"
+                                                     th:alt="${a.title}" />
                                             </div>
-                                        </div>
-                                    </div>
-                                </div>
+                                            <div class="destination-info">
+                                                <div class="destination-category"
+                                                     th:text="${#strings.defaultString(a.addr1, '주소 정보 없음')}"></div>
+                                                <div class="destination-name" th:text="${a.title}"></div>
+                                                <div class="destination-description"
+                                                     th:if="${!#strings.isEmpty(desc) and #strings.toLowerCase(desc) != 'null'}"
+                                                     th:text="${desc}">
+                                                </div>
+                                            </div>
+                                        </label>
 
-                                <div class="form-group-light">
-                                    <label class="form-group-title body-1-bold mb4">관광지 검색 결과</label>
-                                    <p class="mb16 body-2 text900">4개 검색어 추천</p>
-                                    
-                                    <div class="destination-filter mb16">
-                                        <select class="filter-select" id="regionFilter">
-                                            <option value="">추천순</option>
-                                            <option value="distance">거리순</option>
-                                        </select>
-                                    </div>
-
-                                    <!-- 관광지 검색 결과 그리드 -->
-                                    <div class="destination-results-grid mb32" id="destinationResults">
-                                        <div class="destination-card" data-destination="고양 종합 운동장">
-                                            <input type="radio" id="dest-goyang" name="destination" value="고양 종합 운동장" class="destination-radio">
-                                            <label for="dest-goyang" class="destination-label">
-                                                <div class="destination-image">
-                                                    <img th:src="@{/image/creatingRoom/stadium.png}" alt="고양 종합 운동장">
-                                                </div>
-                                                <div class="destination-info">
-                                                    <div class="destination-category">경기도 고양시 일산서구</div>
-                                                    <div class="destination-name">고양 종합 운동장</div>
-                                                    <div class="destination-description">
-                                                        일산의 중심부에 위치한 운동장으로 각종 체육행사와 축구 시합 등이 개최되는 종합 운동 시설입니다. 주변에는 호수공원이 조성되어 있어 시민들의 쉼터 역할을 하고 있습니다.
-                                                    </div>
-                                                </div>
-                                            </label>
+                                        <!-- 메타 데이터 (JS가 읽음) -->
+                                        <div class="hidden"
+                                             th:attr="
+                             data-content-id=${a.contentId},
+                             data-title=${a.title},
+                             data-addr1=${a.addr1},
+                             data-addr2=${a.addr2},
+                             data-img=${a.firstImage},
+                             data-mapx=${a.mapX},
+                             data-mapy=${a.mapY},
+                             data-type=${a.contentTypeId}">
                                         </div>
-
-                                        <div class="destination-card" data-destination="킨텍스">
-                                            <input type="radio" id="dest-kintex" name="destination" value="킨텍스" class="destination-radio">
-                                            <label for="dest-kintex" class="destination-label">
-                                                <div class="destination-image">
-                                                    <img th:src="@{/image/creatingRoom/kintex.png}" alt="킨텍스">
-                                                </div>
-                                                <div class="destination-info">
-                                                    <div class="destination-category">경기도 고양시 일산서구</div>
-                                                    <div class="destination-name">킨텍스</div>
-                                                    <div class="destination-description">
-                                                        주차 할 곳이 상당히 많습니다! 차 가지고 오셔도 됩니다. 근데 지하철 GTX 타면 금방와요 gtx 요금이 쫌 비싸긴 한디.. 뭐.. 서울역까지 12분 걸려요.
-                                                    </div>
-                                                </div>
-                                            </label>
-                                        </div>
-
-                                        <div class="destination-card" data-destination="고양 현대 모토 스튜디오">
-                                            <input type="radio" id="dest-motor" name="destination" value="고양 현대 모토 스튜디오" class="destination-radio">
-                                            <label for="dest-motor" class="destination-label">
-                                                <div class="destination-image">
-                                                    <img th:src="@{/image/creatingRoom/car.png}" alt="고양 현대 모토 스튜디오">
-                                                </div>
-                                                <div class="destination-info">
-                                                    <div class="destination-category">경기도 고양시 일산서구</div>
-                                                    <div class="destination-name">고양 현대 모토 스튜디오</div>
-                                                    <div class="destination-description">
-                                                        멋있는 차들이 엄청 많아요 놀러와요~~ 남자분들 여기에서 멋잇는 차 한대 뽑아서 와이프한테 자랑해봐요~
-                                                    </div>
-                                                </div>
-                                            </label>
-                                        </div>
-                                        <div class="destination-card" data-destination="한성대학교">
-                                            <input type="radio" id="dest-hansung" name="destination" value="한성대학교" class="destination-radio">
-                                            <label for="dest-hansung" class="destination-label">
-                                                <div class="destination-image">
-                                                    <img th:src="@{/image/creatingRoom/hansung.png}" alt="한성대학교">
-                                                </div>
-                                                <div class="destination-info">
-                                                    <div class="destination-category">서울특별시 성북구</div>
-                                                    <div class="destination-name">한성대학교</div>
-                                                    <div class="destination-description">
-                                                        멋쟁이 김상우가 다니는 대학교에요 환영합니다^^
-                                                    </div>
-                                                </div>
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- 선택된 관광지 표시 -->
-                                <div class="selected-destination-container" id="selectedDestinationContainer" style="display: none;">
-                                    <h4 class="selected-destination-title">선택된 관광지</h4>
-                                    <div class="selected-destination-info" id="selectedDestinationInfo">
-                                        <!-- 선택된 관광지 정보가 여기에 표시됩니다 -->
                                     </div>
                                 </div>
                             </div>
-                            
-                            <div class="form-section-footer" style="position: sticky; bottom: 0; background-color: white; z-index: 50">
-                                <button class="btn btn-client btn-11-24 btn-right" name="can_submit" type="submit" value="False" id="nextButton">다음</button>
-                                <div style="clear: both;"></div>
+
+                            <!-- 페이징 섹션 -->
+                            <div class="pagination-container" id="paginationContainer" hidden>
+                                <nav class="pagination" aria-label="페이지 네비게이션">
+                                    <button class="pagination-button prev" type="button" disabled>
+                                        <svg class="pagination-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <polyline points="15,18 9,12 15,6"></polyline>
+                                        </svg>
+                                        이전
+                                    </button>
+
+                                    <div class="pagination-numbers"><!-- JS가 페이지 번호 버튼을 채움 --></div>
+
+                                    <button class="pagination-button next" type="button">
+                                        다음
+                                        <svg class="pagination-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <polyline points="9,18 15,12 9,6"></polyline>
+                                        </svg>
+                                    </button>
+                                </nav>
+
+                                <div class="pagination-info">
+                                    <span class="range">0 - 0 / <strong class="total">0</strong>개</span>
+                                </div>
+                            </div>
+
+                            <!-- 선택된 관광지 표시 -->
+                            <div class="selected-destination-container" id="selectedDestinationContainer" style="display:none;">
+                                <h4 class="selected-destination-title">선택된 관광지</h4>
+                                <div class="selected-destination-info" id="selectedDestinationInfo"></div>
+                            </div>
+
+                            <!-- hidden inputs (다음 단계/제출용) -->
+                            <input type="hidden" id="destContentId" name="destination.contentId">
+                            <input type="hidden" id="destTitle"     name="destination.name">
+                            <input type="hidden" id="destAddr"      name="destination.addr">
+                            <input type="hidden" id="destImage"     name="destination.image">
+                            <input type="hidden" id="destLat"       name="destination.lat">
+                            <input type="hidden" id="destLon"       name="destination.lon">
+                            <input type="hidden" id="destCategory"  name="destination.category" value="ATTRACTION">
+
+                            <div class="form-section-footer" style="position:sticky;bottom:0;background-color:white;z-index:50">
+                                <!-- 🔧 실제 제출 막고 JS로만 이동 -->
+                                <button class="btn btn-client btn-11-24 btn-right" type="button" id="nextButton">다음</button>
                             </div>
                         </div>
                     </div>
@@ -191,6 +227,7 @@
             </div>
         </div>
     </div>
+
 
     <!-- 관광지 선택 도움말 모달 -->
     <div id="helpModal" class="help-modal" style="display: none;">
@@ -204,7 +241,7 @@
                     </svg>
                 </button>
             </div>
-            
+
             <div class="help-modal-body">
                 <div class="help-section">
                     <h4>📍 관광지 선택이란?</h4>
@@ -389,7 +426,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="help-modal-footer">
                 <div class="help-footer-info">
                     <p>🎯 감정에 딱 맞는 관광지로 특별한 만남을 시작해보세요!</p>
@@ -397,28 +434,15 @@
             </div>
         </div>
     </div>
-</body>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // localStorage에서 감정 정보 불러오기
-        let emotionsFromLocal = localStorage.getItem('selected_emotions_step2');
-        let emotionsFromSession = sessionStorage.getItem('selected_emotions_step2');
-
-        // JSON 파싱
         try {
-            if (emotionsFromLocal) {
-                const parsedLocal = JSON.parse(emotionsFromLocal);
-                console.log('[localStorage] 선택된 감정 목록:', parsedLocal);
-            } else {
-                console.log('[localStorage] 선택된 감정 없음');
-            }
-
-            if (emotionsFromSession) {
-                const parsedSession = JSON.parse(emotionsFromSession);
-                console.log('[sessionStorage] 선택된 감정 목록:', parsedSession);
-            } else {
-                console.log('[sessionStorage] 선택된 감정 없음');
-            }
+            const emotionsFromLocal = localStorage.getItem('selected_emotions_step2');
+            const emotionsFromSession = sessionStorage.getItem('selected_emotions_step2');
+            if (emotionsFromLocal) console.log('[localStorage] 선택된 감정 목록:', JSON.parse(emotionsFromLocal));
+            else console.log('[localStorage] 선택된 감정 없음');
+            if (emotionsFromSession) console.log('[sessionStorage] 선택된 감정 목록:', JSON.parse(emotionsFromSession));
+            else console.log('[sessionStorage] 선택된 감정 없음');
         } catch (e) {
             console.error('감정 데이터 파싱 오류:', e);
         }
@@ -427,4 +451,5 @@
 <th:block th:replace="~{fix/footer :: footer}"></th:block>
 <script th:src="@{/js/fix/header.js}"></script>
 <script th:src="@{/js/fix/header-after.js}"></script>
+</body>
 </html>
