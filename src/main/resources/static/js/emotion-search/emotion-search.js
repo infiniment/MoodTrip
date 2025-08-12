@@ -3,18 +3,21 @@ let selectedTags = [];
 const MAX_TAGS = 3; // 최대 태그 개수 제한
 
 function toggleEmotionCategories() {
-    const categories = document.getElementById('emotionCategories');
+    const categoriesContainer = document.getElementById('emotionCategories');
+    const toggleButton = document.querySelector('.category-toggle-btn');
     const toggleText = document.querySelector('.toggle-text');
-    const toggleIcon = document.querySelector('.toggle-icon');
-    
-    if (categories.classList.contains('show')) {
-        categories.classList.remove('show');
+    const toggleIcon = document.querySelector('.toggle-icon'); // 이 변수 선언은 되어 있으나 사용이 안 되고 있습니다.
+
+    if (categoriesContainer.classList.contains('active')) {
+        categoriesContainer.classList.remove('active');
+        toggleButton.classList.remove('active');
         toggleText.textContent = '감정 카테고리 보기';
-        toggleIcon.style.transform = 'rotate(0deg)';
+        toggleIcon.style.transform = 'rotate(0deg)'; // 아이콘 회전 추가
     } else {
-        categories.classList.add('show');
+        categoriesContainer.classList.add('active');
+        toggleButton.classList.add('active');
         toggleText.textContent = '감정 카테고리 숨기기';
-        toggleIcon.style.transform = 'rotate(180deg)';
+        toggleIcon.style.transform = 'rotate(180deg)'; // 아이콘 회전 추가
     }
 }
 
