@@ -1,404 +1,306 @@
-
-// 선택된 태그들을 저장할 배열
-let selectedTags = [];
-const MAX_TAGS = 3; // 최대 태그 개수 제한
-
-function toggleEmotionCategories() {
-    const categoriesContainer = document.getElementById('emotionCategories');
-    const toggleButton = document.querySelector('.category-toggle-btn');
-    const toggleText = document.querySelector('.toggle-text');
-    const toggleIcon = document.querySelector('.toggle-icon'); // 이 변수 선언은 되어 있으나 사용이 안 되고 있습니다.
-
-    if (categoriesContainer.classList.contains('active')) {
-        categoriesContainer.classList.remove('active');
-        toggleButton.classList.remove('active');
-        toggleText.textContent = '감정 카테고리 보기';
-        toggleIcon.style.transform = 'rotate(0deg)'; // 아이콘 회전 추가
-    } else {
-        categoriesContainer.classList.add('active');
-        toggleButton.classList.add('active');
-        toggleText.textContent = '감정 카테고리 숨기기';
-        toggleIcon.style.transform = 'rotate(180deg)'; // 아이콘 회전 추가
-    }
-}
-
-// 정렬 드롭다운 토글
-function toggleSortDropdown() {
-    const dropdown = document.querySelector('.sort-dropdown');
-    dropdown.classList.toggle('active');
-}
-
-// 정렬 옵션 선택
-function selectSortOption(option, text) {
-    const sortText = document.querySelector('.sort-text');
-    const dropdown = document.querySelector('.sort-dropdown');
-    const allOptions = document.querySelectorAll('.sort-option');
-
-    // 현재 선택된 옵션 업데이트
-    sortText.textContent = text;
-
-    // active 클래스 업데이트
-    allOptions.forEach(opt => opt.classList.remove('active'));
-    event.target.classList.add('active');
-
-    // 드롭다운 닫기
-    dropdown.classList.remove('active');
-
-    // 여기에 실제 정렬 로직 추가 가능
-    console.log('정렬 기준:', option, text);
-}
-
-// 알림 메시지 표시 함수
-function showNotification(message, type = 'info') {
-    // 기존 알림 제거
-    const existingNotification = document.querySelector('.notification');
-    if (existingNotification) {
-        existingNotification.remove();
-    }
-
-    const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: ${type === 'warning' ? 'linear-gradient(135deg, #f59e0b, #d97706)' : 'linear-gradient(135deg, #005792, #001A2C)'};
-        color: white;
-        padding: 12px 20px;
-        border-radius: 8px;
-        font-size: 14px;
-        font-weight: 500;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        z-index: 1000;
-        animation: slideIn 0.3s ease;
-        max-width: 300px;
-    `;
-
-    notification.textContent = message;
-
-    // 애니메이션 추가
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        @keyframes slideOut {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100%); opacity: 0; }
-        }
-    `;
-    document.head.appendChild(style);
-
-    document.body.appendChild(notification);
-
-    // 3초 후 제거
-    setTimeout(() => {
-        notification.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => {
-            if (notification.parentNode) {
-                notification.remove();
-            }
-            if (style.parentNode) {
-                style.remove();
-            }
-        }, 300);
-    }, 3000);
-}
-
-// 태그 추가 함수 (3개 제한)
-function addTag(tagText) {
-    // 빈 문자열 체크
-    if (!tagText.trim()) {
-        return;
-    }
-
-    // 이미 존재하는 태그인지 확인
-    if (selectedTags.includes(tagText)) {
-        showNotification('이미 선택된 태그입니다.', 'warning');
-        return;
-    }
-
-    // 최대 개수 체크
-    if (selectedTags.length >= MAX_TAGS) {
-        showNotification(`감정 태그는 최대 ${MAX_TAGS}개까지 선택할 수 있습니다.`, 'warning');
-        return;
-    }
-
-    // 태그 배열에 추가
-    selectedTags.push(tagText);
-
-    // UI 업데이트
-    renderTags();
-    updateTagCounter();
-    updateInputState();
-
-    // 입력창 클리어
-    const inputArea = document.getElementById('emotionInput');
-    if (inputArea) {
-        inputArea.value = '';
-    }
-
-    // 성공 메시지
-    showNotification(`'${tagText}' 태그가 추가되었습니다.`, 'info');
-}
-
-// 태그 제거 함수
-function removeTag(tagText) {
-    const index = selectedTags.indexOf(tagText);
-    if (index > -1) {
-        selectedTags.splice(index, 1);
-        renderTags();
-        updateTagCounter();
-        updateInputState();
-        showNotification(`'${tagText}' 태그가 제거되었습니다.`, 'info');
-    }
-}
-
-// 태그 카운터 업데이트
-function updateTagCounter() {
-    const counter = document.querySelector('.tag-counter');
-    if (counter) {
-        counter.textContent = `${selectedTags.length}/${MAX_TAGS}`;
-
-        // 색상 변경
-        if (selectedTags.length >= MAX_TAGS) {
-            counter.style.color = '#f59e0b';
-            counter.style.fontWeight = '600';
-        } else {
-            counter.style.color = '#64748b';
-            counter.style.fontWeight = '500';
-        }
-    }
-}
-
-// 입력 상태 업데이트 (최대 개수 도달 시 비활성화)
-function updateInputState() {
-    const inputArea = document.getElementById('emotionInput');
-    const searchBtn = document.querySelector('.search-btn');
-    const emotionTags = document.querySelectorAll('.emotion-tag');
-    const popularTags = document.querySelectorAll('.popular-tag');
-
-    const isMaxReached = selectedTags.length >= MAX_TAGS;
-
-    if (inputArea) {
-        inputArea.disabled = isMaxReached;
-        if (isMaxReached) {
-            inputArea.placeholder = ``;
-        } else {
-            inputArea.placeholder = selectedTags.length > 0
-                ? '추가할 감정을 입력하세요...'
-                : '원하는 감정을 선택해보세요 (예: 힐링, 설렘, 평온)';
-            inputArea.style.background = '';
-            inputArea.style.color = '';
-        }
-    }
-
-
-    // 감정 태그들 비활성화
-    emotionTags.forEach(tag => {
-        if (isMaxReached) {
-            tag.style.opacity = '0.5';
-            tag.style.cursor = 'not-allowed';
-            tag.style.pointerEvents = 'none';
-        } else {
-            tag.style.opacity = '';
-            tag.style.cursor = '';
-            tag.style.pointerEvents = '';
-        }
-    });
-
-    // 인기 태그들 비활성화
-    popularTags.forEach(tag => {
-        if (isMaxReached) {
-            tag.style.opacity = '0.5';
-            tag.style.cursor = 'not-allowed';
-            tag.style.pointerEvents = 'none';
-        } else {
-            tag.style.opacity = '';
-            tag.style.cursor = '';
-            tag.style.pointerEvents = '';
-        }
-    });
-}
-
-// 태그들을 화면에 렌더링
-function renderTags() {
-    const selectedTagsContainer = document.getElementById('selectedTags');
-    if (!selectedTagsContainer) return;
-
-    selectedTagsContainer.innerHTML = '';
-
-    selectedTags.forEach(tag => {
-        const tagElement = document.createElement('div');
-        tagElement.className = 'tag-item';
-        tagElement.innerHTML = `
-            <span class="tag-text">${tag}</span>
-            <button class="tag-remove" onclick="removeTag('${tag}')" title="태그 제거">×</button>
-        `;
-        selectedTagsContainer.appendChild(tagElement);
-    });
-}
-
-// 입력창에서 엔터 입력 처리
-function handleInputKeyPress(event) {
-    if (event.key === 'Enter') {
-        event.preventDefault();
-        const inputValue = event.target.value.trim();
-        if (inputValue) {
-            addTag(inputValue);
-        }
-    }
-}
-
-// 감정 태그 클릭 시 추가
-function addEmotionTag(emotion) {
-    addTag(emotion);
-}
-
-// 인기 태그에서 # 제거하고 추가
-function addPopularTag(tagText) {
-    // # 제거하고 태그 추가
-    const emotion = tagText.replace('#', '');
-    addTag(emotion);
-}
-
-// 하트 버튼 토글 기능
-function toggleLike(button) {
-    button.classList.toggle('liked');
-
-    if (button.classList.contains('liked')) {
-        button.innerHTML = '♥'; // 채워진 하트
-        button.style.color = '#ff4757'; // 빨간색
-        button.style.background = 'rgba(255, 255, 255, 0.95)';
-    } else {
-        button.innerHTML = '♡'; // 빈 하트
-        button.style.color = '#005792'; // 원래 색상
-        button.style.background = 'rgba(255, 255, 255, 0.9)';
-    }
-}
-
-// 모든 태그 초기화
-function clearAllTags() {
-    if (selectedTags.length === 0) {
-        showNotification('선택된 태그가 없습니다.', 'warning');
-        return;
-    }
-
-    selectedTags = [];
-    renderTags();
-    updateTagCounter();
-    updateInputState();
-    showNotification('모든 태그가 제거되었습니다.', 'info');
-}
-
-// 페이지 로드 시 실행
+// [진단용 코드]
+// HTML 문서가 완전히 로드되면 이 안의 코드가 실행됩니다.
 document.addEventListener('DOMContentLoaded', function() {
-    // 초기 상태 설정
-    updateTagCounter();
-    updateInputState();
 
-    // 감정 태그 클릭 시 추가
-    const emotionTags = document.querySelectorAll('.emotion-tag');
+    // 1번 로그: 이 메시지가 보이면 DOMContentLoaded 이벤트는 성공적으로 실행된 것입니다.
+    console.log('✅ [1/3] 페이지 로딩 완료: DOMContentLoaded 이벤트가 실행되었습니다.');
 
-    emotionTags.forEach(tag => {
-        tag.addEventListener('click', function() {
-            // 최대 개수 체크
-            if (selectedTags.length >= MAX_TAGS) {
-                return;
-            }
+    // '.category-toggle-btn' 클래스를 가진 버튼을 찾습니다.
+    const categoryToggleButton = document.querySelector('.category-toggle-btn');
 
-            const emotion = this.textContent.trim();
-            addEmotionTag(emotion);
+    // 2번 로그: 버튼을 찾았는지 확인합니다.
+    if (categoryToggleButton) {
+        console.log('✅ [2/3] 버튼 찾기 성공:', categoryToggleButton);
 
-            // 선택된 태그 시각적 피드백
-            this.style.background = 'linear-gradient(135deg, #005792 0%, #001A2C 100%)';
-            this.style.color = 'white';
-            this.style.transform = 'scale(0.95)';
-
-            // 2초 후 원래 스타일로 복원
-            setTimeout(() => {
-                this.style.background = '';
-                this.style.color = '';
-                this.style.transform = '';
-            }, 2000);
+        // 버튼에 클릭 이벤트를 연결합니다.
+        categoryToggleButton.addEventListener('click', function() {
+            // 3번 로그: 이 메시지가 보이면 클릭 이벤트가 드디어 성공한 것입니다.
+            console.log('🔥🔥🔥 [3/3] 버튼 클릭 성공! 이벤트가 정상적으로 연결되었습니다. 🔥🔥🔥');
         });
-    });
 
-    // 인기 태그 클릭 시 추가
-    const popularTags = document.querySelectorAll('.popular-tag');
-    popularTags.forEach(tag => {
-        tag.addEventListener('click', function() {
-            // 최대 개수 체크
-            if (selectedTags.length >= MAX_TAGS) {
-                return;
-            }
-
-            const tagText = this.textContent.trim();
-            addPopularTag(tagText);
-
-            // 선택된 태그 시각적 피드백
-            this.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%)';
-            this.style.color = '#001A2C';
-            this.style.transform = 'scale(0.95)';
-
-            // 2초 후 원래 스타일로 복원
-            setTimeout(() => {
-                this.style.background = '';
-                this.style.color = '';
-                this.style.transform = '';
-            }, 2000);
-        });
-    });
-
-    // 입력창 엔터 키 이벤트
-    const inputArea = document.getElementById('emotionInput');
-    if (inputArea) {
-        inputArea.addEventListener('keypress', handleInputKeyPress);
+    } else {
+        // 버튼을 찾지 못했다면, 이것이 문제의 원인입니다.
+        console.error('❌ [오류] 버튼 찾기 실패: HTML에서 ".category-toggle-btn" 클래스를 가진 버튼을 찾을 수 없습니다. 클래스 이름에 오타가 없는지 확인하세요.');
     }
-
-    // 하트 버튼 이벤트 리스너 추가
-    const likeButtons = document.querySelectorAll('.like-btn');
-    likeButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            toggleLike(this);
-        });
-    });
-
-    // 정렬 옵션 클릭 이벤트
-    const sortOptions = document.querySelectorAll('.sort-option');
-    sortOptions.forEach(option => {
-        option.addEventListener('click', function() {
-            const sortValue = this.getAttribute('data-sort');
-            const sortText = this.textContent;
-            selectSortOption(sortValue, sortText);
-        });
-    });
-
-    // 드롭다운 외부 클릭 시 닫기
-    document.addEventListener('click', function(e) {
-        const dropdown = document.querySelector('.sort-dropdown');
-        if (dropdown && !dropdown.contains(e.target)) {
-            dropdown.classList.remove('active');
-        }
-    });
-
-    // 검색 버튼 클릭 이벤트
-    const searchBtn = document.querySelector('.search-btn');
-    if (searchBtn) {
-        searchBtn.addEventListener('click', function() {
-            const inputValue = inputArea?.value.trim();
-            if (inputValue && selectedTags.length < MAX_TAGS) {
-                addTag(inputValue);
-            }
-            // 여기에 실제 검색 로직 추가
-            if (selectedTags.length > 0) {
-                console.log('검색할 태그들:', selectedTags);
-                // 실제 검색 API 호출 등
-            }
-        });
-    }
-
 });
+
+
+
+// // HTML 문서가 모두 로드된 후, 이 안의 모든 코드를 안전하게 실행합니다.
+// document.addEventListener('DOMContentLoaded', function() {
+//     // --- 로그를 찍어볼 함수 정의 ---
+//     function logButtonClick() {
+//         // [로그 확인] 이 메시지가 콘솔에 찍히는지 확인하는 것이 첫 번째 목표입니다.
+//         console.log('✅ "감정 카테고리 보기" 버튼이 성공적으로 클릭되었습니다.');
+//
+//         // 기존의 토글 기능을 호출합니다.
+//         toggleEmotionCategories();
+//     }
+//
+//     // --- 전역 변수 및 상수 선언 ---
+//     let selectedTags = [];
+//     const MAX_TAGS = 3;
+//
+//     // --- 모든 함수 정의 ---
+//
+//     // 감정 카테고리 토글 함수
+//     function toggleEmotionCategories() {
+//         const categoriesContainer = document.getElementById('emotionCategories');
+//         const toggleButton = document.querySelector('.category-toggle-btn');
+//         const toggleText = document.querySelector('.toggle-text');
+//         const toggleIcon = document.querySelector('.toggle-icon');
+//
+//         if (!categoriesContainer || !toggleButton) return;
+//
+//         // 'active' 클래스를 토글하여 보이기/숨기기 상태를 제어합니다.
+//         if (categoriesContainer.classList.contains('active')) {
+//             categoriesContainer.classList.remove('active');
+//             toggleButton.classList.remove('active');
+//             if(toggleText) toggleText.textContent = '감정 카테고리 보기';
+//         } else {
+//             categoriesContainer.classList.add('active');
+//             toggleButton.classList.add('active');
+//             if(toggleText) toggleText.textContent = '감정 카테고리 숨기기';
+//         }
+//     }
+//
+//     // 정렬 드롭다운 토글 함수
+//     function toggleSortDropdown() {
+//         const dropdown = document.querySelector('.sort-dropdown');
+//         if(dropdown) dropdown.classList.toggle('active');
+//     }
+//
+//     // 정렬 옵션 선택 함수
+//     function selectSortOption(event, option, text) {
+//         const sortText = document.querySelector('.sort-text');
+//         const dropdown = document.querySelector('.sort-dropdown');
+//         const allOptions = document.querySelectorAll('.sort-option');
+//
+//         if (sortText) sortText.textContent = text;
+//
+//         allOptions.forEach(opt => opt.classList.remove('active'));
+//         if (event.target) event.target.classList.add('active');
+//
+//         if (dropdown) dropdown.classList.remove('active');
+//         console.log('정렬 기준:', option, text);
+//     }
+//
+//     // 알림 메시지 표시 함수
+//     function showNotification(message, type = 'info') {
+//         const existingNotification = document.querySelector('.notification');
+//         if (existingNotification) {
+//             existingNotification.remove();
+//         }
+//
+//         const notification = document.createElement('div');
+//         notification.className = `notification ${type}`;
+//         notification.style.cssText = `
+//             position: fixed; top: 20px; right: 20px;
+//             background: ${type === 'warning' ? 'linear-gradient(135deg, #f59e0b, #d97706)' : 'linear-gradient(135deg, #005792, #001A2C)'};
+//             color: white; padding: 12px 20px; border-radius: 8px; font-size: 14px;
+//             font-weight: 500; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+//             z-index: 1000; animation: slideIn 0.3s ease; max-width: 300px;
+//         `;
+//         notification.textContent = message;
+//
+//         const style = document.createElement('style');
+//         style.textContent = `
+//             @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+//             @keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
+//         `;
+//         document.head.appendChild(style);
+//         document.body.appendChild(notification);
+//
+//         setTimeout(() => {
+//             notification.style.animation = 'slideOut 0.3s ease forwards';
+//             notification.addEventListener('animationend', () => {
+//                 notification.remove();
+//                 style.remove();
+//             });
+//         }, 3000);
+//     }
+//
+//     // 태그 추가 함수 (3개 제한)
+//     function addTag(tagText) {
+//         if (!tagText.trim()) return;
+//         if (selectedTags.includes(tagText)) {
+//             showNotification('이미 선택된 태그입니다.', 'warning');
+//             return;
+//         }
+//         if (selectedTags.length >= MAX_TAGS) {
+//             showNotification(`감정 태그는 최대 ${MAX_TAGS}개까지 선택할 수 있습니다.`, 'warning');
+//             return;
+//         }
+//         selectedTags.push(tagText);
+//         renderTags();
+//         updateTagCounter();
+//         updateInputState();
+//         const inputArea = document.getElementById('emotionInput');
+//         if (inputArea) inputArea.value = '';
+//         showNotification(`'${tagText}' 태그가 추가되었습니다.`, 'info');
+//     }
+//
+//     // 태그 제거 함수
+//     function removeTag(tagText) {
+//         const index = selectedTags.indexOf(tagText);
+//         if (index > -1) {
+//             selectedTags.splice(index, 1);
+//             renderTags();
+//             updateTagCounter();
+//             updateInputState();
+//             showNotification(`'${tagText}' 태그가 제거되었습니다.`, 'info');
+//         }
+//     }
+//
+//     // 태그 카운터 업데이트
+//     function updateTagCounter() {
+//         const counter = document.querySelector('.tag-counter');
+//         if (!counter) return;
+//         counter.textContent = `${selectedTags.length}/${MAX_TAGS}`;
+//         if (selectedTags.length >= MAX_TAGS) {
+//             counter.style.color = '#f59e0b';
+//             counter.style.fontWeight = '600';
+//         } else {
+//             counter.style.color = '#64748b';
+//             counter.style.fontWeight = '500';
+//         }
+//     }
+//
+//     // 입력 상태 업데이트 (최대 개수 도달 시 비활성화)
+//     function updateInputState() {
+//         const inputArea = document.getElementById('emotionInput');
+//         const emotionTags = document.querySelectorAll('.emotion-tag');
+//         const popularTags = document.querySelectorAll('.popular-tag');
+//         const isMaxReached = selectedTags.length >= MAX_TAGS;
+//
+//         if (inputArea) {
+//             inputArea.disabled = isMaxReached;
+//             inputArea.placeholder = isMaxReached ? '' : (selectedTags.length > 0 ? '추가할 감정을 입력하세요...' : '원하는 감정을 선택해보세요 (예: 힐링, 설렘, 평온)');
+//         }
+//
+//         const setTagState = (tags) => {
+//             tags.forEach(tag => {
+//                 tag.style.opacity = isMaxReached ? '0.5' : '1';
+//                 tag.style.cursor = isMaxReached ? 'not-allowed' : 'pointer';
+//                 tag.style.pointerEvents = isMaxReached ? 'none' : 'auto';
+//             });
+//         };
+//         setTagState(emotionTags);
+//         setTagState(popularTags);
+//     }
+//
+//     // 태그들을 화면에 렌더링
+//     function renderTags() {
+//         const selectedTagsContainer = document.getElementById('selectedTags');
+//         if (!selectedTagsContainer) return;
+//         selectedTagsContainer.innerHTML = '';
+//         selectedTags.forEach(tag => {
+//             const tagElement = document.createElement('div');
+//             tagElement.className = 'tag-item';
+//             tagElement.innerHTML = `<span class="tag-text">${tag}</span><button class="tag-remove" title="태그 제거">×</button>`;
+//             tagElement.querySelector('.tag-remove').onclick = () => removeTag(tag);
+//             selectedTagsContainer.appendChild(tagElement);
+//         });
+//     }
+//
+//     // 감정 태그 클릭 시 추가
+//     function addEmotionTag(emotion) {
+//         addTag(emotion);
+//     }
+//
+//     // 인기 태그에서 # 제거하고 추가
+//     function addPopularTag(tagText) {
+//         const emotion = tagText.replace('#', '');
+//         addTag(emotion);
+//     }
+//
+//     // 하트 버튼 토글 기능
+//     function toggleLike(button) {
+//         button.classList.toggle('liked');
+//         if (button.classList.contains('liked')) {
+//             button.innerHTML = '♥';
+//             button.style.color = '#ff4757';
+//             button.style.background = 'rgba(255, 255, 255, 0.95)';
+//         } else {
+//             button.innerHTML = '♡';
+//             button.style.color = '#005792';
+//             button.style.background = 'rgba(255, 255, 255, 0.9)';
+//         }
+//     }
+//
+//     // --- 이벤트 리스너 연결 ---
+//
+//     // 카테고리 토글 버튼
+//     const categoryToggleButton = document.querySelector('.category-toggle-btn');
+//     if (categoryToggleButton) {
+//         categoryToggleButton.addEventListener('click', toggleEmotionCategories);
+//     }
+//
+//     // 감정 태그들
+//     document.querySelectorAll('.emotion-tag').forEach(tag => {
+//         tag.addEventListener('click', function() {
+//             addEmotionTag(this.textContent.trim());
+//         });
+//     });
+//
+//     // 인기 태그들
+//     document.querySelectorAll('.popular-tag').forEach(tag => {
+//         tag.addEventListener('click', function() {
+//             addPopularTag(this.textContent.trim());
+//         });
+//     });
+//
+//     // 입력창 엔터 키
+//     const inputArea = document.getElementById('emotionInput');
+//     if (inputArea) {
+//         inputArea.addEventListener('keypress', function(event) {
+//             if (event.key === 'Enter') {
+//                 event.preventDefault();
+//                 addTag(this.value.trim());
+//             }
+//         });
+//     }
+//
+//     // 검색 버튼
+//     const searchBtn = document.querySelector('.search-btn');
+//     if (searchBtn && inputArea) {
+//         searchBtn.addEventListener('click', function() {
+//             addTag(inputArea.value.trim());
+//             if (selectedTags.length > 0) {
+//                 console.log('검색할 태그들:', selectedTags);
+//                 // 실제 검색 API 호출 로직 추가
+//             }
+//         });
+//     }
+//
+//     // 하트 버튼들
+//     document.querySelectorAll('.like-btn').forEach(button => {
+//         button.addEventListener('click', function(e) {
+//             e.preventDefault();
+//             e.stopPropagation();
+//             toggleLike(this);
+//         });
+//     });
+//
+//     // 정렬 옵션 버튼들
+//     document.querySelectorAll('.sort-option').forEach(option => {
+//         option.addEventListener('click', function(event) {
+//             const sortValue = this.getAttribute('data-sort');
+//             const sortText = this.textContent;
+//             selectSortOption(event, sortValue, sortText);
+//         });
+//     });
+//
+//     // 정렬 드롭다운 외부 클릭 시 닫기
+//     document.addEventListener('click', function(e) {
+//         const dropdown = document.querySelector('.sort-dropdown');
+//         if (dropdown && !dropdown.contains(e.target)) {
+//             dropdown.classList.remove('active');
+//         }
+//     });
+//
+//     // --- 초기 상태 설정 ---
+//     updateTagCounter();
+//     updateInputState();
+//
+// });
