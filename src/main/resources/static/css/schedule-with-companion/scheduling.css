@@ -8,7 +8,6 @@ body {
     font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
     background: linear-gradient(135deg, #1E3A5F 0%, #2E5B8C 50%, #4A7BA7 100%);
     min-height: 100vh;
-    padding: 20px;
 }
 
 .container {
@@ -1552,4 +1551,32 @@ body {
         width: 28px;
         height: 28px;
     }
+}
+
+
+/* 추가/수정 */
+.scale-viewport{
+    width: 100%;                 /* 100vw 말고 100%: 스크롤바 두께로 인한 우측 잘림 방지 */
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;     /* 가로 중앙 */
+    align-items: flex-start;     /* 기본은 위에서 시작 */
+    padding: 20px;               /* body 패딩을 여기로 */
+    box-sizing: border-box;
+    overflow-x: hidden;          /* 가로 스크롤 방지 */
+    overflow-y: auto;            /* 세로 스크롤 허용 (위가 잘림 방지) */
+    background: linear-gradient(135deg,#1E3A5F,#2E5B8C 50%,#4A7BA7);
+}
+
+.scale-canvas{
+    width: var(--design-width);  /* 1200px 과 동일 */
+    margin: 0 auto;              /* 가로 중앙 */
+    transform-origin: top center;
+    display: block;
+}
+:root { --design-width: 1200px; }
+
+/* 캔버스 축소 시 가로 스크롤 방지용 (보너스) */
+@media (max-width: 1200px) {
+    html, body { overflow-x: hidden; }
 }

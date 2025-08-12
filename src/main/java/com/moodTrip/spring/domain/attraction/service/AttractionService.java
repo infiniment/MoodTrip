@@ -12,6 +12,8 @@ public interface AttractionService {
     int syncDetailIntroByArea(int areaCode, Integer sigunguCode, Integer contentTypeId, long pauseMillis);
 
     // 조회
+    List<AttractionResponse> getRecommendedTop(int limit);
+    List<AttractionResponse> searchByKeyword(String q, int limit);
     List<Attraction> find(int areaCode, Integer sigunguCode, Integer contentTypeId);
 
     // 수동 등록

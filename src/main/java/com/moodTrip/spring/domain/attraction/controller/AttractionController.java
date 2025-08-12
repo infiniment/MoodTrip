@@ -87,6 +87,34 @@ public class AttractionController {
                 .body(created);
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<AttractionResponse>> search(
+            @RequestParam(name = "q", required = false) String q,
+            @RequestParam(name = "areaCode", required = false) @Min(1) @Max(99) Integer areaCode,
+            @RequestParam(name = "sigunguCode", required = false) @Min(1) Integer sigunguCode,
+            @RequestParam(name = "contentTypeId", required = false) @Min(12) @Max(99) Integer contentTypeId,
+            @RequestParam(name = "limit", defaultValue = "30") @Min(1) @Max(100) Integer limit
+    ) {
+        // 필터가 오면 DB 필터 조회
+        if (areaCode != null || sigunguCode != null || contentTypeId != null) {
+            int ac = (areaCode != null) ? areaCode : 1;
+            return ResponseEntity.ok(
+                    service.find(ac, sigunguCode, contentTypeId)   // 엔티티 반환
+                            .stream()
+                            .map(AttractionResponse::from)          // 엔티티 → DTO
+                            .collect(java.util.stream.Collectors.toList())
+            );
+        }
+
+        // 키워드 없으면 추천 TOP N (이미 DTO)
+        if (q == null || q.isBlank()) {
+            return ResponseEntity.ok(service.getRecommendedTop(limit));
+        }
+
+        // 키워드 검색 (이미 DTO)
+        return ResponseEntity.ok(service.searchByKeyword(q, limit));
+    }
+
     // --- 응답 DTO들 (record로 간단하게) ---
     public record SyncAreaResponse(
             String message, int areaCode, Integer sigunguCode, Integer contentTypeId, int created) {}

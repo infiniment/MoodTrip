@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function () {
     console.log("chattingRoomId:", chattingRoomId);
     console.log("currentUser:", currentUser);
 
-    updateUserInterface();
+    // updateUserInterface();
     connectWebSocket();
 
     // 달력 렌더링 관련
@@ -211,16 +211,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 
-
-
-// 사용자 인터페이스 업데이트
-function updateUserInterface() {
-    // 채팅 헤더에 현재 사용자 표시
-    const profileInfo = document.querySelector('.profile-info h3');
-    if (profileInfo) {
-        profileInfo.textContent = `채팅방 - ${currentUser}`;
-    }
-}
 
 // // 메신저 초기화
 // function initializeMessenger() {
