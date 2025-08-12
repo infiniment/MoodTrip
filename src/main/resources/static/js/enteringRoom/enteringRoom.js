@@ -1,5 +1,6 @@
 // 🔥 서버 API 기본 URL
 const API_BASE_URL = '/api/v1/companion-rooms/search';
+const JOIN_API_BASE_URL = '/api/v1/companion-rooms'; // 🔥 방 입장 신청 API URL 추가
 
 // 방 데이터 (서버에서 가져온 데이터로 저장)
 let roomsData = [];
@@ -579,8 +580,8 @@ function closeApplicationModal() {
     if (applicationMessage) applicationMessage.value = '';
 }
 
-// 신청 제출
-function submitApplication() {
+// 🔥 수정된 신청 제출 함수 - 실제 API 호출
+async function submitApplication() {
     const modal = document.getElementById('applicationModal');
     if (!modal) return;
 
@@ -599,16 +600,55 @@ function submitApplication() {
     const room = roomsData.find(r => r.id === roomId);
     if (!room) return;
 
-    // 🔥 TODO: 실제 서버에 신청 데이터 전송하는 API 구현 필요
-    console.log('신청 데이터:', {
-        roomId: roomId,
-        roomTitle: room.title,
-        message: message,
-        timestamp: new Date().toISOString()
-    });
+    // 🔥 버튼 비활성화 (중복 클릭 방지)
+    const submitButton = modal.querySelector('.btn-primary');
+    if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = '신청 중...';
+    }
 
-    alert(`"${room.title}" 방에 입장 신청이 완료되었습니다!\n방장의 승인을 기다려주세요.`);
-    closeApplicationModal();
+    try {
+        console.log('🚀 방 입장 신청 API 호출 시작 - roomId:', roomId);
+
+        // 🔥 실제 API 호출
+        const response = await fetch(`${JOIN_API_BASE_URL}/${roomId}/join-requests`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                message: message
+            })
+        });
+
+        const result = await response.json();
+
+        console.log('✅ 방 입장 신청 API 응답:', result);
+
+        if (response.ok && result.success) {
+            // 🎉 성공 시
+            alert(`"${room.title}" 방에 입장 신청이 완료되었습니다!\n${result.resultMessage}`);
+            closeApplicationModal();
+
+            // 🔄 방 목록 새로고침 (참여자 수 업데이트 등)
+            await loadRoomsData();
+
+        } else {
+            // ❌ 실패 시 (비즈니스 로직 오류)
+            alert(result.resultMessage || '입장 신청 중 오류가 발생했습니다.');
+        }
+
+    } catch (error) {
+        console.error('❌ 방 입장 신청 API 오류:', error);
+        alert('네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+
+    } finally {
+        // 🔄 버튼 복구
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.textContent = '신청하기';
+        }
+    }
 }
 
 // 방 신고하기 (카드에서만)

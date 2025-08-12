@@ -21,6 +21,7 @@ public class CompanionRoomSearchApiController {
 
     private final CompanionRoomService companionRoomService;
 
+    // 방 목록 조회하기
     @Operation(
             summary = "방 목록 조회",
             description = "동행자 모집방 목록을 조회합니다. 검색, 필터링 기능을 지원합니다."
@@ -71,6 +72,8 @@ public class CompanionRoomSearchApiController {
         }
     }
 
+
+    // 방 상세보기 모달
     @Operation(
             summary = "방 상세보기",
             description = "특정 방의 상세 정보를 조회합니다. 조회 시 조회수가 증가합니다."
