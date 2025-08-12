@@ -26,7 +26,7 @@ public class AttractionController {
 
     @GetMapping("/sync")
     public ResponseEntity<Map<String, Object>> sync(
-            @RequestParam("areaCode") int areaCode,
+            @RequestParam(value="areaCode", defaultValue="0")int areaCode,
             @RequestParam(name = "contentTypeId", defaultValue = "12") int contentTypeId
     ) {
         int affected = attractionService.fetchAndSaveAttractions(areaCode, contentTypeId);

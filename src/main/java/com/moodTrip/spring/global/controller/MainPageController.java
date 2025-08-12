@@ -20,7 +20,7 @@ import java.util.List;
  * - 메인페이지 렌더링 (로그인 상태별 조건부 헤더)
  * - 로그인/회원가입 페이지 렌더링
  */
-@Slf4j
+
 @Controller
 @RequiredArgsConstructor
 public class MainPageController {

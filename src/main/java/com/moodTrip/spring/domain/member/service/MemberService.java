@@ -33,11 +33,6 @@ public class MemberService {
 
     public void register(MemberRequest request) {
 
-        // 유효성 검증
-        // 중복 확인
-        // 비번 암호화
-        log.info("회원가입 요청 처리 시작 - {}", request.getUserId());
-        log.info("이메일 들어왔는지 확인 - {}", request.getEmail());
 
         // 엔티티 변환 및 저장
         if (!request.isTerms()) {
