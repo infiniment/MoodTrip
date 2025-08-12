@@ -640,9 +640,24 @@ body {
     overflow: hidden;
 }
 
-.map-container {
-    position: relative; /* 오버레이 포지셔닝용 */
+.map-container { overflow: visible; }       /* 기존 hidden 을 덮어쓰기 */
+.route-search { position: absolute; z-index: 10; overflow: visible; }
+
+
+.results.route-results{
+    position: absolute;     /* 지도 위에 떠 있게 */
+    z-index: 1000;
+    left: 16px;             /* 필요 시 조정 */
+    right: 16px;
 }
+
+/* 각 리스트의 수직 위치 (인풋 바로 아래) */
+#startResults{ top: 70px; }   /* 인풋 높이에 맞춰 값 조정 */
+#endResults  { top: 70px; }   /* 동일 높이면 같은 값 사용 */
+
+/*.map-container {*/
+/*    position: relative; !* 오버레이 포지셔닝용 *!*/
+/*}*/
 
 .map-container::before {
     content:'';

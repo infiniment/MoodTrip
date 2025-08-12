@@ -542,6 +542,14 @@ body.room-create .room-create-form-section .form-section-footer {
     border-top: 1px solid #e0e0e0;
     border-bottom-left-radius: 8px;
     border-bottom-right-radius: 8px;
+    bottom: auto;
+}
+
+body.room-create .room-create-form-section .form-section-footer{
+    position: static !important;
+    bottom: auto !important;
+    z-index: auto !important;
+    box-shadow: none !important; /* 예전 sticky용 그림자도 제거 */
 }
 
 .btn-client {
@@ -621,13 +629,17 @@ body.room-create .room-create-formview .container::after {
     }
 
     .destination-results-grid {
-        grid-template-columns: repeat(2, 1fr);
+        display:grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px; /* 기존 값 유지 */
     }
 }
 
 @media (max-width: 768px) {
     .destination-results-grid {
-        grid-template-columns: 1fr;
+        display:grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px; /* 기존 값 유지 */
     }
 
     .destination-image {
@@ -1103,7 +1115,8 @@ body.room-create .room-create-formview .container::after {
     gap: 16px;
     padding: 24px 0;
     position: relative;
-    width: 100%;           /* 컨테이너 너비 확보(옵션이지만 안정적) */
+    width: 100%;
+    margin-bottom: 16px;
 }
 
 .pagination-container::before {

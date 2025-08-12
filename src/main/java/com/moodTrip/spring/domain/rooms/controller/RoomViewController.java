@@ -59,39 +59,43 @@ public class RoomViewController {
         if (user == null) return "redirect:/login?redirect=" + url("/companion-rooms/emotion");
         return "creatingRoom/choosing-emotion";
     }
+
     // 방 만들 때 관광지 선택하는 곳 렌더링
     @GetMapping("/attraction")
-    public String showAttractionPage(@RequestParam(value = "q", required = false) String q,
-                                     // 선택 필터(원하면 사용): 지역/시군구/타입
-                                     @RequestParam(value = "areaCode", required = false) Integer areaCode,
-                                     @RequestParam(value = "sigunguCode", required = false) Integer sigunguCode,
-                                     @RequestParam(value = "contentTypeId", required = false) Integer contentTypeId,
-                                     @AuthenticationPrincipal MyUserDetails user,
-                                     Model model) {
+    public String showAttractionPage(
+            @RequestParam(value = "q", required = false) String q,
+            @RequestParam(value = "areaCode", required = false) Integer areaCode,
+            @RequestParam(value = "sigunguCode", required = false) Integer sigunguCode,
+            @RequestParam(value = "contentTypeId", required = false) Integer contentTypeId,
+            // SSR 초기 페이지/사이즈 (기본 0, 9개 = 3x3)
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "9") int size,
+            @AuthenticationPrincipal MyUserDetails user,
+            Model model
+    ) {
+        if (user == null) {
+            return "redirect:/login?redirect=" + url(buildAttractionPath(q, areaCode, sigunguCode, contentTypeId));
+        }
 
-        if (user == null) return "redirect:/login?redirect=" + url(buildAttractionPath(q, areaCode, sigunguCode, contentTypeId));
-
-        // 로그인 여부 + 검색어 바인딩
+        // 로그인/검색어 바인딩
         model.addAttribute("isLoggedIn", true);
         model.addAttribute("q", q == null ? "" : q);
 
-        // 1) areaCode 등 필터가 오면 DB 필터 조회
-        List<AttractionResponse> attractions;
-        if (areaCode != null || sigunguCode != null || contentTypeId != null) {
-            // areaCode는 필수로 보려면 검증 추가
-            int ac = areaCode != null ? areaCode : 1; // 기본값(서울=1) 등 프로젝트 룰에 맞게
-            attractions = attractionService.find(ac, sigunguCode, contentTypeId)
-                    .stream().map(AttractionResponse::from).toList();
-        } else {
-            // 2) 필터가 없으면: q 유/무에 따라 추천 TOP N 또는 키워드 검색
-            attractions = (q == null || q.isBlank())
-                    ? attractionService.getRecommendedTop(30)
-                    : attractionService.searchByKeyword(q, 50);
-        }
+        // ★ 통합 검색 + 페이지네이션 (제목 앞글자 우선 정렬)
+        var pageResult = attractionService
+                .searchKeywordPrefTitleStarts(q, areaCode, sigunguCode, contentTypeId, page, size);
+
+        var attractions = pageResult.map(AttractionResponse::from).getContent();
 
         model.addAttribute("attractions", attractions);
+        model.addAttribute("page", pageResult.getNumber());            // 현재 페이지(0-base)
+        model.addAttribute("size", pageResult.getSize());              // 페이지 크기
+        model.addAttribute("totalPages", pageResult.getTotalPages());  // 전체 페이지 수
+        model.addAttribute("totalElements", pageResult.getTotalElements()); // 전체 아이템 수
+
         return "creatingRoom/choosing-attraction";
     }
+
     // 방 만들 때 스케줄 선택하는 곳 렌더링
     @GetMapping("/schedule")
     public String showSchedulePage(@AuthenticationPrincipal MyUserDetails user) {
