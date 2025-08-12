@@ -26,15 +26,15 @@ public class SignUpController {
 
 
     @Operation(summary = "회원가입 폼", description = "회원가입 화면을 반환한다.")
-    @GetMapping("/api/signup")
-    public String signupForm(Model model) {
-        // 타임리프에서 th:object="${memberRequest}"를 사용하므로 반드시 넣어야 함
+    @GetMapping("/signup")
+    public String signupForm(@RequestParam(value = "error", required = false) String error, Model model) {
+        if (error != null) model.addAttribute("errorMessage", error);
         model.addAttribute("memberRequest", new MemberRequest());
         return "signup/signup"; // templates/signup/signup.html
     }
 
     @Operation(summary = "회원가입 처리", description = "회원정보를 받아서 가입 처리한다.")
-    @PostMapping("/api/signup")
+    @PostMapping("/signup")
     public String signupSubmit(@ModelAttribute("memberRequest") MemberRequest memberRequest,Model model) {
         try {
             //요청 객체 서비스 로직으로
@@ -53,15 +53,6 @@ public class SignUpController {
     @GetMapping("/signup/success")
     public String signupSuccess() {
         return "signup/success"; // templates/signup/success.html이 렌더링됨
-    }
-
-
-    //회원 가입 에러
-    @GetMapping("/signup")
-    public String signupForm(@RequestParam(value = "error", required = false) String error, Model model) {
-        if (error != null) model.addAttribute("errorMessage", error);
-        model.addAttribute("memberRequest", new MemberRequest());
-        return "signup/signup"; // templates/signup/signup.html
     }
 
 }
