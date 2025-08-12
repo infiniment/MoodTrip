@@ -46,7 +46,7 @@ class PasswordController {
 
 
     @PostMapping("/send-temp")
-    public String sendTempPassword(@RequestParam String email, Model model) {
+    public String sendTempPassword(@RequestParam("email") String email, Model model) {
         // 1. 유저 조회
         Member member = memberService.findByEmail(email);
         if (member == null) {
@@ -75,8 +75,8 @@ class PasswordController {
 //임시 비밀번호 인증
 
     @PostMapping("/validate-temp")
-    public String validateTempPassword(@RequestParam String email,
-                                       @RequestParam String extra_input,
+    public String validateTempPassword(@RequestParam("email") String email,
+                                       @RequestParam("extra_input") String extra_input,
                                        Model model, HttpSession session) {
         // 1. DB에서 해당 이메일 계정의 변경된 임시 비밀번호 조회
         Member member = memberService.findByEmail(email);
