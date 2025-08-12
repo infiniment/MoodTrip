@@ -3,37 +3,47 @@ package com.moodTrip.spring.domain.attraction.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter @Setter
-@Builder
-@NoArgsConstructor @AllArgsConstructor
-@Table(name = "attraction")
+@NoArgsConstructor @AllArgsConstructor @Builder
+@Table(name = "attraction",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"contentId"}))
 public class Attraction {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String contentId;
-    private String contentTypeId;
+    // TourAPI 고유 ID
+    @Column(nullable = false)
+    private Long contentId;
+
+    // 12=관광지, 32=숙박 등
+    private Integer contentTypeId;
+
+    @Column(length = 200, nullable = false)
     private String title;
-    private String thumbnail;
-    private String tel;
-    private String addr1;
-    private String addr2;
 
-    @Column(length = 1000)
-    private String useTime;
+    @Column(length = 200) private String addr1;
+    @Column(length = 200) private String addr2;
+    @Column(length = 20)  private String zipcode;
+    @Column(length = 60)  private String tel;
 
-    private String restDate;
-    private String parking;
-    private String expAgeRange;
+    // 대표 이미지 URL
+    private String firstImage;
+    private String firstImage2;
 
-    @Column(columnDefinition = "TEXT")
-    private String overview;
+    // 좌표
+    private Double mapX;   // 경도
+    private Double mapY;   // 위도
+    private Integer mlevel;
 
-    private Double mapX;
-    private Double mapY;
-    private String areaCode;
-    private String sigunguCode;
+    // 행정 코드
+    @Column(nullable = false) private Integer areaCode;   // 광역
+    private Integer sigunguCode;                          // 시군구
+
+    // 원문 타임스탬프(yyyyMMddHHmmss → LocalDateTime)
+    private LocalDateTime createdTime;
+    private LocalDateTime modifiedTime;
 }
