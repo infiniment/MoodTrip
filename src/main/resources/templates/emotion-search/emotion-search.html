@@ -4,9 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>감정별 여행지 검색</title>
-    <!-- CSS 파일 경로는 th:href를 사용하여 올바르게 설정합니다. -->
-    <link rel="stylesheet" th:href="@{/css/emotion-search/emotion-search.css}">
-    <!-- <link rel="stylesheet" th:href="@{/css/default-common/default-common.css}"> -->
+    <link rel="stylesheet" href="/css/emotion-search/emotion-search.css">
+    <!-- <link rel="stylesheet" href="/static/css/default-common/default-common.css"> -->
 </head>
 <body>
 <div class="emotion-search-main">
@@ -38,9 +37,9 @@
                 <div class="emotion-category-section">
                     <p class="category-title">또는 감정 카테고리에서 선택해보세요</p>
 
-                    <!-- [수정됨] JavaScript에서 이벤트를 처리하므로 onclick 속성을 제거했습니다. -->
+                    <!-- 카테고리 토글 버튼 -->
                     <div class="category-toggle-wrapper">
-                        <button class="category-toggle-btn">
+                        <button class="category-toggle-btn" onclick="toggleEmotionCategories()">
                             <span class="toggle-text">감정 카테고리 보기</span>
                             <svg class="toggle-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -48,21 +47,48 @@
                         </button>
                     </div>
 
-                    <!-- [핵심] Thymeleaf가 DB 데이터로 이 부분을 동적으로 생성합니다. -->
+                    <!-- ========================================================== -->
+                    <!-- Thymeleaf로 동적 생성되는 부분 -->
+                    <!-- ========================================================== -->
                     <div class="emotion-categories" id="emotionCategories">
+                        <!--
+                           [설명]
+                           th:each="category : ${emotionCategories}"
+                           - Spring 컨트롤러가 모델에 담아 보낸 'emotionCategories' 리스트를 순회합니다.
+                           - 각 EmotionCategory 객체는 'category' 변수에 담깁니다.
+                        -->
                         <div class="category-group" th:each="category : ${emotionCategories}">
-                            <h3 class="category-group-title" th:text="${category.categoryIcon + ' ' + category.categoryName}"></h3>
+                            <!--
+                               [설명]
+                               th:text="${category.emotionCategoryIcon + ' ' + category.emotionCategoryName}"
+                               - 'category' 객체의 아이콘과 이름을 가져와 제목으로 설정합니다.
+                               - 예: '🌿 평온 & 힐링'
+                            -->
+                            <h3 class="category-group-title" th:text="${category.emotionCategoryIcon + ' ' + category.emotionCategoryName}">
+                                <!-- 정적 텍스트는 Thymeleaf에 의해 대체됩니다 -->
+                                🌿 평온 & 힐링
+                            </h3>
                             <div class="emotion-tags">
-                                <button class="emotion-tag"
-                                        th:each="emotion : ${category.emotions}"
-                                        th:text="${emotion.tagName}"
-                                        th:data-tag-id="${emotion.tagId}"></button>
+                                <!--
+                                   [설명]
+                                   th:each="emotion : ${category.emotions}"
+                                   - 현재 'category'에 속한 'emotions' 리스트를 순회합니다.
+                                   - 각 Emotion 객체는 'emotion' 변수에 담깁니다.
+
+                                   th:text="${emotion.tagName}"
+                                   - 'emotion' 객체의 태그명을 버튼의 텍스트로 설정합니다.
+                                   - 예: '평온', '안정', ...
+                                -->
+                                <button class="emotion-tag" th:each="emotion : ${category.emotions}" th:text="${emotion.tagName}">
+                                    <!-- 정적 텍스트는 Thymeleaf에 의해 대체됩니다 -->
+                                    평온
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- 인기 검색어 -->
+                <!-- 인기 검색어 (정적 유지) -->
                 <div class="popular-search-section">
                     <p class="popular-title">인기 감정 검색어</p>
                     <div class="popular-tags">
@@ -79,7 +105,7 @@
     </div>
 </div>
 
-<!-- 검색 결과 섹션 -->
+<!-- 검색 결과 섹션 (정적 유지) -->
 <div class="search-results-section">
     <div class="results-container">
         <div class="results-header">
@@ -89,7 +115,7 @@
             </div>
             <div class="sort-filter">
                 <div class="sort-dropdown">
-                    <button class="sort-btn">
+                    <button class="sort-btn" onclick="toggleSortDropdown()">
                         <span class="sort-text">추천순</span>
                         <svg class="sort-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -110,7 +136,7 @@
             <!-- 첫 번째 행 -->
             <div class="destination-card">
                 <div class="card-image">
-                    <img th:src="@{/image/emotion-search/emotion-search-test-img1.png}" alt="여행지 이미지" />
+                    <img src="/static/image/emotion-search/emotion-search-test-img1.png" alt="오이카와" />
                     <button class="like-btn">♡</button>
                     <span class="emotion-badge">힐링/평온</span>
                 </div>
@@ -125,7 +151,7 @@
 
             <div class="destination-card">
                 <div class="card-image">
-                    <img th:src="@{/image/emotion-search/emotion-search-test-img1.png}" alt="여행지 이미지" />
+                    <img src="/static/image/emotion-search/emotion-search-test-img1.png" alt="제주 올레길" />
                     <button class="like-btn">♡</button>
                     <span class="emotion-badge">힐링/평온</span>
                 </div>
@@ -140,7 +166,7 @@
 
             <div class="destination-card">
                 <div class="card-image">
-                    <img th:src="@{/image/emotion-search/emotion-search-test-img1.png}" alt="여행지 이미지" />
+                    <img src="/static/image/emotion-search/emotion-search-test-img1.png" alt="부산 해운대" />
                     <button class="like-btn">♡</button>
                     <span class="emotion-badge">힐링/평온</span>
                 </div>
@@ -156,7 +182,7 @@
             <!-- 두 번째 행 -->
             <div class="destination-card">
                 <div class="card-image">
-                    <img th:src="@{/image/emotion-search/emotion-search-test-img2.png}" alt="여행지 이미지" />
+                    <img src="/static/image/emotion-search/emotion-search-test-img2.png" alt="경주 불국사" />
                     <button class="like-btn">♡</button>
                     <span class="emotion-badge">성찰/사색</span>
                 </div>
@@ -171,7 +197,7 @@
 
             <div class="destination-card">
                 <div class="card-image">
-                    <img th:src="@{/image/emotion-search/emotion-search-test-img2.png}" alt="여행지 이미지" />
+                    <img src="/static/image/emotion-search/emotion-search-test-img2.png" alt="남이섬" />
                     <button class="like-btn">♡</button>
                     <span class="emotion-badge">낭만/감성</span>
                 </div>
@@ -186,7 +212,7 @@
 
             <div class="destination-card">
                 <div class="card-image">
-                    <img th:src="@{/image/emotion-search/emotion-search-test-img2.png}" alt="여행지 이미지" />
+                    <img src="/static/image/emotion-search/emotion-search-test-img2.png" alt="전주 한옥마을" />
                     <button class="like-btn">♡</button>
                     <span class="emotion-badge">전통/문화</span>
                 </div>
@@ -200,14 +226,12 @@
             </div>
         </div>
 
-        <!-- 더보기 버튼 -->
+        <!-- 더보기 버튼 (정적 유지) -->
         <div class="load-more-section">
             <button class="load-more-btn">더 많은 여행지 보기</button>
         </div>
     </div>
 </div>
-
-<!-- [핵심] 스크립트 파일은 반드시 body 태그가 끝나기 직전에 위치해야 합니다. -->
-<script th:src="@{/js/emotion-search/emotion-search.js}"></script>
+<script src="/js/emotion-search/emotion-search.js"></script>
 </body>
 </html>

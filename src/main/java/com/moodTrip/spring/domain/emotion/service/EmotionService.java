@@ -1,13 +1,17 @@
 package com.moodTrip.spring.domain.emotion.service;
 
-import com.moodTrip.spring.domain.emotion.dto.request.EmotionCategoryDto;
+import com.moodTrip.spring.domain.emotion.dto.response.EmotionCategoryDto;
+import com.moodTrip.spring.domain.emotion.entity.EmotionCategory;
 import com.moodTrip.spring.domain.emotion.repository.EmotionCategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList; // ArrayList import
+import java.util.LinkedHashSet; // LinkedHashSet import
 import java.util.List;
 import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
@@ -16,9 +20,16 @@ public class EmotionService {
 
     private final EmotionCategoryRepository emotionCategoryRepository;
 
-    public List<EmotionCategoryDto> findAllEmotionData() {
-        // N+1 문제 해결을 위해 fetch join 사용을 권장합니다.
-        return emotionCategoryRepository.findAllWithEmotions().stream()
+    public List<EmotionCategoryDto> getEmotionCategories() {
+
+        // 1. 리포지토리에서 데이터를 가져오면 이 리스트에는 중복된 EmotionCategory가 포함될수도
+        List<EmotionCategory> categoriesWithDuplicates = emotionCategoryRepository.findAllWithEmotions();
+
+        // 2. LinkedHashSet을 사용하여 혹시모를 중복 제거
+        List<EmotionCategory> distinctCategories = new ArrayList<>(new LinkedHashSet<>(categoriesWithDuplicates));
+
+        // 3. 중복이 제거된 순수한 리스트를 DTO로 변환하여 반환합니다.
+        return distinctCategories.stream()
                 .map(EmotionCategoryDto::from)
                 .collect(Collectors.toList());
     }

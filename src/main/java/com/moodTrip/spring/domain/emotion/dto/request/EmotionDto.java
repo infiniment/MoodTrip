@@ -9,13 +9,12 @@ import lombok.Getter;
 public class EmotionDto {
     private Integer tagId;
     private String tagName;
-    private Integer displayOrder;
 
-    public static EmotionDto from(Emotion entity) {
+    // Entity를 DTO로 변환하는 정적 팩토리 메서드
+    public static EmotionDto from(Emotion emotion) {
         return EmotionDto.builder()
-                .tagId(entity.getTagId())
-                .tagName(entity.getTagName())
-                .displayOrder(entity.getDisplayOrder())
+                .tagId(emotion.getTagId())
+                .tagName(emotion.getTagName())
                 .build();
     }
 }
