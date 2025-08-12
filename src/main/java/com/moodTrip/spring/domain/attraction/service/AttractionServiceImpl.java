@@ -1,230 +1,342 @@
 package com.moodTrip.spring.domain.attraction.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.moodTrip.spring.domain.attraction.dto.request.AttractionInsertRequest;
+import com.moodTrip.spring.domain.attraction.dto.response.AttractionResponse;
 import com.moodTrip.spring.domain.attraction.entity.Attraction;
+import com.moodTrip.spring.domain.attraction.entity.AttractionIntro;
+import com.moodTrip.spring.domain.attraction.repository.AttractionIntroRepository;
 import com.moodTrip.spring.domain.attraction.repository.AttractionRepository;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.net.URLDecoder;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Transactional
 public class AttractionServiceImpl implements AttractionService {
 
-    private final AttractionRepository attractionRepository;
+    private final AttractionRepository repository;
+    private final AttractionIntroRepository introRepository;
+    private final RestTemplate restTemplate;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
-    private final HttpClient http = HttpClient.newHttpClient();
-
-    // yml에서 주입받는 인코딩된 API 키
-    @Value("${attraction.apikey.encoding}")
+    @Value("${attraction.apikey.decoding}")
     private String apiKey;
 
-    // KorService1 Base URL
-    private static final String BASE_URL        = "https://apis.data.go.kr/B551011/KorService1";
-    private static final String AREA_BASED_LIST = "/areaBasedList1";
-    private static final String DETAIL_COMMON   = "/detailCommon1";
-    private static final String DETAIL_INTRO    = "/detailIntro1";
-    private static final String DETAIL_IMAGE    = "/detailImage1";
+    private final ObjectMapper om = new ObjectMapper();
+
+    private static final String BASE = "https://apis.data.go.kr/B551011/KorWithService2";
+    private static final DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+
+    // ===== 목록(areaBasedList2) =====
+    @Override
+    public int syncAreaBasedList(int areaCode, Integer sigunguCode, Integer contentTypeId,
+                                 int pageSize, long pauseMillis) {
+        int created = 0, pageNo = 1, total = Integer.MAX_VALUE;
+
+        while ((pageNo - 1) * pageSize < total) {
+            URI uri = buildAreaBasedListUri(areaCode, sigunguCode, contentTypeId, pageSize, pageNo);
+            log.info("TourAPI GET {}", uri.toString().replaceAll("serviceKey=[^&]+", "serviceKey=***"));
+
+            String body = restTemplate.getForObject(uri, String.class);
+            String preview = body == null ? "null" : body.substring(0, Math.min(body.length(), 300));
+            log.info("areaBasedList2 preview: {}", preview);
+
+            String trimmed = body == null ? "" : body.trim();
+            if (!trimmed.isEmpty() && trimmed.charAt(0) == '<') {
+                throw new IllegalStateException("TourAPI가 JSON 대신 XML 에러를 반환. preview=" + preview);
+            }
+
+            JsonNode root = safe(parseJson(body));
+            JsonNode header = root.path("response").path("header");
+            String resultCode = header.path("resultCode").asText("");
+            if (!"0000".equals(resultCode)) {
+                String msg = header.path("resultMsg").asText("");
+                throw new IllegalStateException("TourAPI 오류: " + resultCode + " / " + msg);
+            }
+
+            JsonNode bodyNode = root.path("response").path("body");
+            total = bodyNode.path("totalCount").asInt(0);
+            JsonNode items = bodyNode.path("items").path("item");
+
+            if (items.isArray()) {
+                for (JsonNode it : items) created += upsertAttraction(it);
+            } else if (!items.isMissingNode() && !items.isNull()) {
+                created += upsertAttraction(items);
+            }
+
+            pageNo++;
+            sleep(pauseMillis);
+        }
+        return created;
+    }
+
+    private URI buildAreaBasedListUri(int areaCode, Integer sigunguCode, Integer contentTypeId,
+                                      int pageSize, int pageNo) {
+        boolean alreadyEncoded = apiKey != null && apiKey.contains("%");
+        return UriComponentsBuilder.fromUriString(BASE + "/areaBasedList2")
+                .queryParam("serviceKey", apiKey)
+                .queryParam("MobileOS", "ETC")
+                .queryParam("MobileApp", "moodTrip")
+                .queryParam("_type", "json")
+                .queryParam("areaCode", areaCode)
+                .queryParam("numOfRows", pageSize)
+                .queryParam("pageNo", pageNo)
+                .queryParam("arrange", "A")
+                .queryParamIfPresent("sigunguCode", Optional.ofNullable(sigunguCode))
+                .queryParamIfPresent("contentTypeId", Optional.ofNullable(contentTypeId))
+                .build(alreadyEncoded)
+                .toUri();
+    }
+
+    private int upsertAttraction(JsonNode it) {
+        long contentId = asLong(it, "contentid");
+        if (contentId == 0L) return 0;
+
+        Attraction a = repository.findByContentId(contentId)
+                .orElseGet(() -> Attraction.builder().contentId(contentId).build());
+        boolean isNew = (a.getId() == null);
+
+        a.setContentTypeId(asInt(it, "contenttypeid"));
+        a.setTitle(asText(it, "title"));
+        a.setAddr1(asText(it, "addr1"));
+        a.setAddr2(asText(it, "addr2"));
+        a.setZipcode(asText(it, "zipcode"));
+        a.setTel(asText(it, "tel"));
+        a.setFirstImage(asText(it, "firstimage"));
+        a.setFirstImage2(asText(it, "firstimage2"));
+        a.setMapX(asDouble(it, "mapx"));
+        a.setMapY(asDouble(it, "mapy"));
+        a.setMlevel(asInt(it, "mlevel"));
+        a.setAreaCode(asInt(it, "areacode"));
+        a.setSigunguCode(asInt(it, "sigungucode"));
+        a.setCreatedTime(parseTs(asText(it, "createdtime")));
+        a.setModifiedTime(parseTs(asText(it, "modifiedtime")));
+
+        repository.save(a);
+        return isNew ? 1 : 0;
+    }
+
+    // ===== 소개(detailIntro2) =====
+    @Override
+    public int syncDetailIntro(long contentId, Integer contentTypeId) {
+        // 파라미터를 직접 바꾸지 말고 ctid 로컬 변수에 담기
+        Integer ctid = (contentTypeId != null)
+                ? contentTypeId
+                : repository.findByContentId(contentId)
+                .map(Attraction::getContentTypeId)
+                .orElse(null);
+
+        URI uri = buildDetailIntroUri(contentId, ctid);
+        log.info("TourAPI GET {}", uri.toString().replaceAll("serviceKey=[^&]+", "serviceKey=***"));
+
+
+        String body = restTemplate.getForObject(uri, String.class);
+        String preview = body == null ? "null" : body.substring(0, Math.min(body.length(), 400));
+        log.info("detailIntro2 preview: {}", preview);
+
+        String trimmed = body == null ? "" : body.trim();
+        if (!trimmed.isEmpty() && trimmed.charAt(0) == '<') {
+            throw new IllegalStateException("detailIntro2가 XML 에러를 반환. preview=" + preview);
+        }
+
+        JsonNode root = safe(parseJson(body));
+        JsonNode header = root.path("response").path("header");
+        if (!header.hasNonNull("resultCode")) {
+            throw new IllegalStateException("detailIntro2 응답 포맷 예외. preview=" + preview);
+        }
+        String resultCode = header.path("resultCode").asText("");
+        if (!"0000".equals(resultCode)) {
+            String msg = header.path("resultMsg").asText("");
+            throw new IllegalStateException("detailIntro2 오류: " + resultCode + " / " + msg);
+        }
+
+        JsonNode item = root.path("response").path("body").path("items").path("item");
+        if (item.isArray()) {
+            if (item.size() == 0) return 0;
+            item = item.get(0);
+        }
+        if (item.isMissingNode() || item.isNull()) return 0;
+
+        upsertIntro(item);
+        return 1;
+    }
 
     @Override
-    @Transactional
-    public int fetchAndSaveAttractions(int areaCode, int contentTypeId) {
-        // 1) 지역 기반 목록 호출
-        JsonNode listRoot = call(buildAreaListUri(areaCode, contentTypeId));
-        JsonNode listItems = listRoot.path("response").path("body").path("items").path("item");
-
-        if (!listItems.isArray() || listItems.size() == 0) return 0;
-
-        int affected = 0;
-
-        for (JsonNode li : listItems) {
-            String contentId   = li.path("contentid").asText(null);
-            String typeId      = li.path("contenttypeid").asText(null);
-
-            // 2) 상세 호출 (공통/이미지) - detailIntro1 호출은 삭제
-            JsonNode common = firstItem(call(buildDetailCommonUri(contentId, typeId)));
-            // JsonNode intro  = firstItem(call(buildDetailIntroUri(contentId, typeId))); // intro 호출 삭제
-            JsonNode imgs   = call(buildDetailImageUri(contentId, typeId));
-
-            // 3) 공통/소개에서 페이지에 필요한 필드만 추출
-            String title      = text(li, "title");
-            String firstimage = text(common, "firstimage");
-            String addr1      = text(common, "addr1");
-            String addr2      = text(common, "addr2");
-            String tel        = text(common, "tel");
-            String overview   = text(common, "overview");
-
-            // intro 호출을 삭제했으므로 관련 변수도 주석 처리 또는 초기화
-            String useTime    = null; // text(intro, "usetime");
-            String restDate   = null; // text(intro, "restdate");
-            String parking    = null; // text(intro, "parking");
-            String expAge     = null; // text(intro, "expagerange");
-
-            // 4) 대표 이미지 보강: firstimage가 없으면 이미지 목록 첫 장 사용
-            if ((firstimage == null || firstimage.isBlank())) {
-                JsonNode imgItems = imgs.path("response").path("body").path("items").path("item");
-                if (imgItems.isArray() && imgItems.size() > 0) {
-                    firstimage = imgItems.get(0).path("originimgurl").asText(null);
-                }
-            }
-
-            // 5) 업서트 (contentId 기준)
-            Attraction entity = attractionRepository.findByContentId(contentId)
-                    .orElseGet(() -> Attraction.builder().contentId(contentId).build());
-
-            entity.setContentTypeId(typeId);
-            entity.setTitle(title);
-            entity.setThumbnail(firstimage);
-            entity.setTel(tel);
-            entity.setAddr1(addr1);
-            entity.setAddr2(addr2);
-            // intro 호출을 삭제했으므로 관련 필드 설정도 주석 처리
-            // entity.setUseTime(useTime);
-            // entity.setRestDate(restDate);
-            // entity.setParking(parking);
-            // entity.setExpAgeRange(expAge);
-            entity.setOverview(overview);
-
-            // 좌표/지역코드: 목록 응답 기준
-            entity.setMapX(safeDouble(li.path("mapx").asText(null)));
-            entity.setMapY(safeDouble(li.path("mapy").asText(null)));
-            entity.setAreaCode(text(li, "areacode"));
-            entity.setSigunguCode(text(li, "sigungucode"));
-
-            attractionRepository.save(entity);
-            affected++;
+    public int syncDetailIntroByArea(int areaCode, Integer sigunguCode, Integer contentTypeId, long pauseMillis) {
+        List<Attraction> targets = (sigunguCode == null)
+                ? repository.findAllByAreaCode(areaCode)
+                : repository.findAllByAreaCodeAndSigunguCode(areaCode, sigunguCode);
+        if (contentTypeId != null) {
+            targets.removeIf(a -> !contentTypeId.equals(a.getContentTypeId()));
         }
-        return affected;
-    }
 
-    /* ----------------- HTTP & URI ----------------- */
-
-    // 예시: buildAreaListUri 메서드
-    private URI buildAreaListUri(int areaCode, int contentTypeId) {
-        return UriComponentsBuilder.fromHttpUrl(BASE_URL + AREA_BASED_LIST)
-                .queryParam("MobileOS", "ETC")
-                .queryParam("MobileApp", "moodTrip")
-                .queryParam("_type", "json")
-                .queryParam("serviceKey", apiKey)
-                .queryParam("numOfRows", 200)
-                .queryParam("pageNo", 1)
-                .queryParam("areaCode", areaCode)
-                .queryParam("contentTypeId", contentTypeId)
-                .build() // build(false) 대신 build()를 사용합니다.
-                .toUri();
-    }
-// 다른 build...Uri 메서드도 동일하게 수정합니다.
-
-    private URI buildDetailCommonUri(String contentId, String contentTypeId) {
-        return UriComponentsBuilder.fromHttpUrl(BASE_URL + "/detailCommon1")
-                .queryParam("MobileOS", "ETC")
-                .queryParam("MobileApp", "moodTrip")
-                .queryParam("_type", "json")
-                .queryParam("serviceKey", apiKey)
-                .queryParam("defaultYN", "Y")
-                .queryParam("firstImageYN", "Y")
-                .queryParam("addrinfoYN", "Y")
-                .queryParam("overviewYN", "Y")
-                .queryParam("contentId", contentId)
-                .queryParam("contentTypeId", contentTypeId)
-                .build() // ✅ 이중 인코딩 방지를 위해 false로 설정
-                .toUri();
-    }
-
-    private URI buildDetailIntroUri(String contentId, String contentTypeId) {
-        return UriComponentsBuilder.fromHttpUrl(BASE_URL + "/detailIntro1")
-                .queryParam("MobileOS", "ETC")
-                .queryParam("MobileApp", "moodTrip")
-                .queryParam("_type", "json")
-                .queryParam("serviceKey", apiKey)
-                .queryParam("contentId", contentId)
-                .queryParam("contentTypeId", contentTypeId)
-                .build() // ✅ 이중 인코딩 방지를 위해 false로 설정
-                .toUri();
-    }
-
-    private URI buildDetailImageUri(String contentId, String contentTypeId) {
-        return UriComponentsBuilder.fromHttpUrl(BASE_URL + "/detailImage1")
-                .queryParam("MobileOS", "ETC")
-                .queryParam("MobileApp", "moodTrip")
-                .queryParam("_type", "json")
-                .queryParam("serviceKey", apiKey)
-                .queryParam("contentId", contentId)
-                .queryParam("imageYN", "Y")
-                .queryParam("subImageYN", "Y")
-                .queryParam("numOfRows", 50)
-                .build() // ✅ 이중 인코딩 방지를 위해 false로 설정
-                .toUri();
-    }
-
-    private JsonNode call(URI uri) {
-        try {
-            HttpRequest req = HttpRequest.newBuilder(uri)
-                    .header("Accept", "application/json")
-                    .header("User-Agent", "moodTrip/1.0")
-                    .GET().build();
-
-
-            HttpResponse<String> res = http.send(req, HttpResponse.BodyHandlers.ofString());
-
-            // 상태코드 확인
-            if (res.statusCode() != 200) {
-                throw new RuntimeException("HTTP " + res.statusCode() + " : " + uri + "\n" + head(res.body()));
+        int saved = 0;
+        for (Attraction a : targets) {
+            try {
+                saved += syncDetailIntro(a.getContentId(), a.getContentTypeId());
+            } catch (Exception e) {
+                log.warn("intro sync fail contentId={} : {}", a.getContentId(), e.getMessage());
             }
+            sleep(pauseMillis);
+        }
+        return saved;
+    }
 
-            // JSON 형태가 아니면(HTML 등) 바로 에러로 노출
-            String ct = res.headers().firstValue("Content-Type").orElse("");
-            if (!ct.toLowerCase().contains("json") && !looksLikeJson(res.body())) {
-                throw new RuntimeException("Non-JSON response: " + uri + "\n" + head(res.body()));
-            }
+    private URI buildDetailIntroUri(long contentId, Integer contentTypeId) {
+        boolean alreadyEncoded = apiKey != null && apiKey.contains("%");
+        UriComponentsBuilder b = UriComponentsBuilder.fromUriString(BASE + "/detailIntro2")
+                .queryParam("serviceKey", apiKey)
+                .queryParam("MobileOS", "ETC")
+                .queryParam("MobileApp", "moodTrip")
+                .queryParam("_type", "json")
+                .queryParam("contentId", contentId);
+        if (contentTypeId != null) b.queryParam("contentTypeId", contentTypeId);
+        return b.build(alreadyEncoded).toUri();
+    }
 
-            return objectMapper.readTree(res.body());
-        } catch (Exception e) {
-            throw new RuntimeException("TourAPI 호출 실패: " + uri, e);
+    private void upsertIntro(JsonNode it) {
+        long contentId = asLong(it, "contentid");
+        if (contentId == 0L) return;
+
+        Integer ctype = asInt(it, "contenttypeid");
+        AttractionIntro intro = introRepository.findById(contentId)
+                .orElse(AttractionIntro.builder().contentId(contentId).build());
+
+        intro.setContentTypeId(ctype);
+        intro.setInfocenter(firstNonEmpty(
+                asText(it,"infocenter"), asText(it,"infocenterlodging"),
+                asText(it,"infocenterfood"), asText(it,"infocenterculture"),
+                asText(it,"infocentershopping"), asText(it,"infocenterleports"),
+                asText(it,"infocentertourcourse")
+        ));
+        intro.setUsetime(firstNonEmpty(
+                asText(it,"usetime"), asText(it,"usetimeculture"),
+                asText(it,"usetimefestival"), asText(it,"usetimeleports"),
+                asText(it,"opentime"), asText(it,"opentimefood")
+        ));
+        intro.setUsefee(firstNonEmpty(asText(it,"usefee"), asText(it,"usefeeleports")));
+        intro.setParking(firstNonEmpty(
+                asText(it,"parking"), asText(it,"parkingfood"),
+                asText(it,"parkingculture"), asText(it,"parkingshopping"),
+                asText(it,"parkinglodging"), asText(it,"parkingleports")
+        ));
+        intro.setRestdate(firstNonEmpty(
+                asText(it,"restdate"), asText(it,"restdatefood"),
+                asText(it,"restdateculture"), asText(it,"restdateshopping"),
+                asText(it,"restdateleports")
+        ));
+        intro.setChkcreditcard(firstNonEmpty(
+                asText(it,"chkcreditcard"), asText(it,"chkcreditcardfood"),
+                asText(it,"chkcreditcardculture"), asText(it,"chkcreditcardshopping"),
+                asText(it,"chkcreditcardleports")
+        ));
+        intro.setChkbabycarriage(firstNonEmpty(
+                asText(it,"chkbabycarriage"), asText(it,"chkbabycarriageshopping"),
+                asText(it,"chkbabycarriageleports"), asText(it,"chkbabycarriageculture")
+        ));
+        intro.setChkpet(firstNonEmpty(
+                asText(it,"chkpet"), asText(it,"chkpetculture"),
+                asText(it,"chkpetshopping"), asText(it,"chkpetleports")
+        ));
+
+        try { intro.setRawJson(om.writeValueAsString(it)); }
+        catch (JsonProcessingException e) { intro.setRawJson(it.toString()); }
+
+        intro.setSyncedAt(LocalDateTime.now());
+        introRepository.save(intro);
+    }
+
+    // ===== 조회 =====
+    @Transactional(readOnly = true)
+    @Override
+    public List<Attraction> find(int areaCode, Integer sigunguCode, Integer contentTypeId) {
+        if (sigunguCode == null && contentTypeId == null) {
+            return repository.findAllByAreaCode(areaCode);
+        }
+        if (sigunguCode == null) {
+            return repository.findAllByAreaCodeAndContentTypeId(areaCode, contentTypeId);
+        }
+        if (contentTypeId == null) {
+            return repository.findAllByAreaCodeAndSigunguCode(areaCode, sigunguCode);
+        }
+        return repository.findAllByAreaCodeAndSigunguCodeAndContentTypeId(areaCode, sigunguCode, contentTypeId);
+    }
+
+    // ===== 공통 유틸 =====
+    private JsonNode parseJson(String body) {
+        try { return om.readTree(body == null ? "{}" : body); }
+        catch (JsonProcessingException e) {
+            String preview = body == null ? "null" : body.substring(0, Math.min(body.length(), 500));
+            throw new IllegalStateException("JSON 파싱 실패: " + e.getOriginalMessage() + " / preview=" + preview, e);
         }
     }
-
-    private JsonNode firstItem(JsonNode root) {
-        if (root == null) return null;
-        JsonNode items = root.path("response").path("body").path("items").path("item");
-        if (items.isArray() && items.size() > 0) return items.get(0);
+    private JsonNode safe(JsonNode n) { return n == null ? om.createObjectNode() : n; }
+    private String asText(JsonNode n, String k) {
+        JsonNode v = n.path(k);
+        if (v.isMissingNode() || v.isNull()) return null;
+        String s = v.asText();
+        return (s == null || s.isBlank()) ? null : s;
+    }
+    private Long asLong(JsonNode n, String k) {
+        String s = asText(n, k);
+        if (s == null) return 0L;
+        try { return Long.parseLong(s); } catch (NumberFormatException e) { return 0L; }
+    }
+    private Integer asInt(JsonNode n, String k) {
+        String s = asText(n, k);
+        if (s == null) return null;
+        try { return Integer.parseInt(s); } catch (NumberFormatException e) { return null; }
+    }
+    private Double asDouble(JsonNode n, String k) {
+        String s = asText(n, k);
+        if (s == null) return null;
+        try { return Double.parseDouble(s); } catch (NumberFormatException e) { return null; }
+    }
+    private LocalDateTime parseTs(String s) {
+        if (s == null || s.isBlank()) return null;
+        try { return LocalDateTime.parse(s, TS); } catch (Exception e) { return null; }
+    }
+    private String firstNonEmpty(String... arr) {
+        for (String s : arr) if (s != null && !s.isBlank()) return s;
         return null;
     }
-
-    private String text(JsonNode node, String field) {
-        if (node == null) return null;
-        String v = node.path(field).asText(null);
-        return (v != null && !v.isBlank()) ? v : null;
+    private void sleep(long ms) {
+        if (ms <= 0) return;
+        try { Thread.sleep(ms); } catch (InterruptedException ie) { Thread.currentThread().interrupt(); }
     }
 
-    private Double safeDouble(String v) {
-        try { return v == null ? null : Double.valueOf(v); }
-        catch (Exception e) { return null; }
+    @PostConstruct
+    void checkApiKey() {
+        if (apiKey == null || apiKey.isBlank()) {
+            throw new IllegalStateException("attraction.apikey.decoding 비어있음 (application-local.yml 확인)");
+        }
+        apiKey = apiKey.trim();
+        log.info("TourAPI key loaded. len={}, tail={}", apiKey.length(),
+                apiKey.length() > 4 ? apiKey.substring(apiKey.length() - 4) : "****");
     }
 
-    private String head(String s) {
-        if (s == null) return "";
-        return s.substring(0, Math.min(500, s.length())); // 바디 앞부분만
-    }
-
-    private boolean looksLikeJson(String s) {
-        if (s == null) return false;
-        String t = s.trim();
-        return t.startsWith("{") || t.startsWith("[");
+    @Override
+    public AttractionResponse create(AttractionInsertRequest req) {
+        var contentId = req.getContentId();
+        var entity = (contentId != null)
+                ? repository.findByContentId(contentId).orElseGet(req::toEntity)
+                : req.toEntity();
+        var saved = repository.save(entity);
+        return AttractionResponse.from(saved);
     }
 
 }
