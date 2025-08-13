@@ -3,6 +3,7 @@ package com.moodTrip.spring.domain.attraction.controller;
 import com.moodTrip.spring.domain.attraction.dto.request.AttractionInsertRequest;
 import com.moodTrip.spring.domain.attraction.dto.response.AttractionResponse;
 import com.moodTrip.spring.domain.attraction.service.AttractionService;
+import com.moodTrip.spring.global.common.util.PageResult;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -25,7 +26,7 @@ public class AttractionController {
 
     private final AttractionService service;
 
-    // =============== 목록 동기화 (areaBasedList2) ===============
+    // ===== 동기화 =====
     @PostMapping("/sync/area")
     public ResponseEntity<SyncAreaResponse> syncArea(
             @RequestParam("areaCode") @Min(1) @Max(99) int areaCode,
@@ -65,7 +66,7 @@ public class AttractionController {
         );
     }
 
-    // =============== 조회 API ===============
+    // ===== 단순 필터 리스트 — 다른 곳에서 안 쓰면 삭제해도 됨 =====
     @GetMapping
     public ResponseEntity<List<AttractionResponse>> list(
             @RequestParam("areaCode") @Min(1) @Max(99) int areaCode,
@@ -87,32 +88,18 @@ public class AttractionController {
                 .body(created);
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<List<AttractionResponse>> search(
+    @GetMapping("/search-paged")
+    public ResponseEntity<PageResult<AttractionResponse>> searchPaged(
             @RequestParam(name = "q", required = false) String q,
-            @RequestParam(name = "areaCode", required = false) @Min(1) @Max(99) Integer areaCode,
-            @RequestParam(name = "sigunguCode", required = false) @Min(1) Integer sigunguCode,
-            @RequestParam(name = "contentTypeId", required = false) @Min(12) @Max(99) Integer contentTypeId,
-            @RequestParam(name = "limit", defaultValue = "30") @Min(1) @Max(100) Integer limit
+            @RequestParam(name = "areaCode", required = false) Integer areaCode,
+            @RequestParam(name = "sigunguCode", required = false) Integer sigunguCode,
+            @RequestParam(name = "contentTypeId", required = false) Integer contentTypeId,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "9") int size
     ) {
-        // 필터가 오면 DB 필터 조회
-        if (areaCode != null || sigunguCode != null || contentTypeId != null) {
-            int ac = (areaCode != null) ? areaCode : 1;
-            return ResponseEntity.ok(
-                    service.find(ac, sigunguCode, contentTypeId)   // 엔티티 반환
-                            .stream()
-                            .map(AttractionResponse::from)          // 엔티티 → DTO
-                            .collect(java.util.stream.Collectors.toList())
-            );
-        }
-
-        // 키워드 없으면 추천 TOP N (이미 DTO)
-        if (q == null || q.isBlank()) {
-            return ResponseEntity.ok(service.getRecommendedTop(limit));
-        }
-
-        // 키워드 검색 (이미 DTO)
-        return ResponseEntity.ok(service.searchByKeyword(q, limit));
+        var p = service.searchKeywordPrefTitleStarts(q, areaCode, sigunguCode, contentTypeId, page, size)
+                .map(AttractionResponse::from);
+        return ResponseEntity.ok(PageResult.of(p));
     }
 
     // --- 응답 DTO들 (record로 간단하게) ---

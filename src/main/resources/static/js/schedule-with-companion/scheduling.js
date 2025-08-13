@@ -1114,13 +1114,13 @@ function showSection(id) {
         }
         kakao.maps.load(() => {
             setupSearchUIOnce();
+            setupRouteUI();
             if (!mapInited) {
                 initKakaoMap();
             } else {
                 map.relayout();
                 map.setCenter(map.getCenter());
             }
-
         });
     }
 }
@@ -1490,7 +1490,7 @@ function bindAutocomplete(inputEl, resultsEl, onPick) {
             lat : parseFloat(item.dataset.y),
         };
 
-        suppressUntil = Date.now() + SUPPRESS_MS;   // 🔒 잠깐 검색 막기
+        suppressUntil = Date.now() + SUPPRESS_MS; // 잠깐 자동검색 억제
         inputEl.value = pick.name || '';
         onPick(pick);
         setMap(pick.lat, pick.lon, pick.name);
@@ -1498,6 +1498,7 @@ function bindAutocomplete(inputEl, resultsEl, onPick) {
         resultsEl.style.display = 'none';
         resultsEl.innerHTML = '';
     });
+
 
     // blur 시 살짝 딜레이 후 닫기
     inputEl.addEventListener('blur', () => {
@@ -1673,7 +1674,7 @@ async function updateTransportCards(s, e) {
     renderTransportState(container, 'loading');
     try {
         const q = new URLSearchParams({ sx:String(s.lon), sy:String(s.lat), ex:String(e.lon), ey:String(e.lat) });
-        const res = await fetch(`/api/transport/routes?${q.toString()}`);
+        const res = await fetch(`/api/v1/transport/routes?${q.toString()}`);
         if (!res.ok) throw new Error('ODsay 요청 실패');
         const routes = await res.json();
 

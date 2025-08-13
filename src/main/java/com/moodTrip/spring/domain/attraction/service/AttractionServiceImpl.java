@@ -13,6 +13,8 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -21,7 +23,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -41,7 +44,7 @@ public class AttractionServiceImpl implements AttractionService {
     private static final String BASE = "https://apis.data.go.kr/B551011/KorWithService2";
     private static final DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
-    // ===== 목록(areaBasedList2) =====
+    // ===== 동기화(areaBasedList2) =====
     @Override
     public int syncAreaBasedList(int areaCode, Integer sigunguCode, Integer contentTypeId,
                                  int pageSize, long pauseMillis) {
@@ -133,16 +136,12 @@ public class AttractionServiceImpl implements AttractionService {
     // ===== 소개(detailIntro2) =====
     @Override
     public int syncDetailIntro(long contentId, Integer contentTypeId) {
-        // 파라미터를 직접 바꾸지 말고 ctid 로컬 변수에 담기
         Integer ctid = (contentTypeId != null)
                 ? contentTypeId
-                : repository.findByContentId(contentId)
-                .map(Attraction::getContentTypeId)
-                .orElse(null);
+                : repository.findByContentId(contentId).map(Attraction::getContentTypeId).orElse(null);
 
         URI uri = buildDetailIntroUri(contentId, ctid);
         log.info("TourAPI GET {}", uri.toString().replaceAll("serviceKey=[^&]+", "serviceKey=***"));
-
 
         String body = restTemplate.getForObject(uri, String.class);
         String preview = body == null ? "null" : body.substring(0, Math.min(body.length(), 400));
@@ -155,13 +154,9 @@ public class AttractionServiceImpl implements AttractionService {
 
         JsonNode root = safe(parseJson(body));
         JsonNode header = root.path("response").path("header");
-        if (!header.hasNonNull("resultCode")) {
-            throw new IllegalStateException("detailIntro2 응답 포맷 예외. preview=" + preview);
-        }
-        String resultCode = header.path("resultCode").asText("");
-        if (!"0000".equals(resultCode)) {
+        if (!"0000".equals(header.path("resultCode").asText(""))) {
             String msg = header.path("resultMsg").asText("");
-            throw new IllegalStateException("detailIntro2 오류: " + resultCode + " / " + msg);
+            throw new IllegalStateException("detailIntro2 오류: " + msg);
         }
 
         JsonNode item = root.path("response").path("body").path("items").path("item");
@@ -198,7 +193,7 @@ public class AttractionServiceImpl implements AttractionService {
 
     private URI buildDetailIntroUri(long contentId, Integer contentTypeId) {
         boolean alreadyEncoded = apiKey != null && apiKey.contains("%");
-        UriComponentsBuilder b = UriComponentsBuilder.fromUriString(BASE + "/detailIntro2")
+        var b = UriComponentsBuilder.fromUriString(BASE + "/detailIntro2")
                 .queryParam("serviceKey", apiKey)
                 .queryParam("MobileOS", "ETC")
                 .queryParam("MobileApp", "moodTrip")
@@ -260,7 +255,7 @@ public class AttractionServiceImpl implements AttractionService {
         introRepository.save(intro);
     }
 
-    // ===== 조회 =====
+    // ===== 조회(단순 필터 리스트용) =====
     @Transactional(readOnly = true)
     @Override
     public List<Attraction> find(int areaCode, Integer sigunguCode, Integer contentTypeId) {
@@ -274,6 +269,24 @@ public class AttractionServiceImpl implements AttractionService {
             return repository.findAllByAreaCodeAndSigunguCode(areaCode, sigunguCode);
         }
         return repository.findAllByAreaCodeAndSigunguCodeAndContentTypeId(areaCode, sigunguCode, contentTypeId);
+    }
+
+    // ===== 통합 검색 (키워드+필터, 제목 앞글자 우선, 페이지네이션) =====
+    @Transactional(readOnly = true)
+    @Override
+    public Page<Attraction> searchKeywordPrefTitleStarts(String q, Integer area, Integer si, Integer type, int page, int size) {
+        return repository.searchKeywordPrefTitleStarts(q, area, si, type, PageRequest.of(page, size));
+    }
+
+    // ===== 수동 등록 =====
+    @Override
+    public AttractionResponse create(AttractionInsertRequest req) {
+        var contentId = req.getContentId();
+        var entity = (contentId != null)
+                ? repository.findByContentId(contentId).orElseGet(req::toEntity)
+                : req.toEntity();
+        var saved = repository.save(entity);
+        return AttractionResponse.from(saved);
     }
 
     // ===== 공통 유틸 =====
@@ -306,18 +319,12 @@ public class AttractionServiceImpl implements AttractionService {
         if (s == null) return null;
         try { return Double.parseDouble(s); } catch (NumberFormatException e) { return null; }
     }
-    private LocalDateTime parseTs(String s) {
+    private java.time.LocalDateTime parseTs(String s) {
         if (s == null || s.isBlank()) return null;
-        try { return LocalDateTime.parse(s, TS); } catch (Exception e) { return null; }
+        try { return java.time.LocalDateTime.parse(s, TS); } catch (Exception e) { return null; }
     }
-    private String firstNonEmpty(String... arr) {
-        for (String s : arr) if (s != null && !s.isBlank()) return s;
-        return null;
-    }
-    private void sleep(long ms) {
-        if (ms <= 0) return;
-        try { Thread.sleep(ms); } catch (InterruptedException ie) { Thread.currentThread().interrupt(); }
-    }
+    private String firstNonEmpty(String... arr) { for (String s : arr) if (s != null && !s.isBlank()) return s; return null; }
+    private void sleep(long ms) { if (ms <= 0) return; try { Thread.sleep(ms); } catch (InterruptedException ie) { Thread.currentThread().interrupt(); } }
 
     @PostConstruct
     void checkApiKey() {
@@ -327,30 +334,5 @@ public class AttractionServiceImpl implements AttractionService {
         apiKey = apiKey.trim();
         log.info("TourAPI key loaded. len={}, tail={}", apiKey.length(),
                 apiKey.length() > 4 ? apiKey.substring(apiKey.length() - 4) : "****");
-    }
-
-    @Override
-    public AttractionResponse create(AttractionInsertRequest req) {
-        var contentId = req.getContentId();
-        var entity = (contentId != null)
-                ? repository.findByContentId(contentId).orElseGet(req::toEntity)
-                : req.toEntity();
-        var saved = repository.save(entity);
-        return AttractionResponse.from(saved);
-    }
-
-    @Transactional(readOnly = true)
-    @Override
-    public List<AttractionResponse> getRecommendedTop(int limit) {
-        return repository.findTop(org.springframework.data.domain.PageRequest.of(0, limit))
-                .stream().map(AttractionResponse::from).toList();
-    }
-
-    @Transactional(readOnly = true)
-    @Override
-    public List<AttractionResponse> searchByKeyword(String q, int limit) {
-        if (q == null || q.isBlank()) return getRecommendedTop(limit);
-        return repository.searchByTitleOrAddr(q, org.springframework.data.domain.PageRequest.of(0, limit))
-                .stream().map(AttractionResponse::from).toList();
     }
 }

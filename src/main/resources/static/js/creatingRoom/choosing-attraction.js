@@ -1,7 +1,12 @@
 let selectedDestination = null;
 let previousEmotions = [];
 let searchTimer;
-let originalGridHTML = '';
+
+// ===== Pagination =====
+let currentPage = 1;
+let serverPage = 0;
+const serverSize = 9;  // (3열 × 3행)
+let lastQuery = '';
 
 // DOM 로드 후 실행
 document.addEventListener('DOMContentLoaded', function() {
@@ -14,20 +19,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // 나중에 관광지 상세 페이지에서 방만들기 버튼을 눌렀을 때 해당 관광지에 대한 정보 localstorage로 받았을 때 처리
     preselectDestinationIfNeeded();
 
-    const grid = document.getElementById('destinationResults');
-    if (grid) originalGridHTML = grid.innerHTML;
-    // 페이징 섹션
-    setupPaginationFromGrid();
+    runSearchPaged('', 0); // 전체 목록 1페이지(9개) 서버에서 받아오기
 });
 
-function restoreOriginalGrid() {
-    const grid = document.getElementById('destinationResults');
-    if (!grid || !originalGridHTML) return;
-
-    grid.innerHTML = originalGridHTML;            // 초기 카드 복원
-    initializeDestinationSelection();             // 이벤트 다시 연결
-    setupPaginationFromGrid();                    // 페이징 다시 계산
-}
 
 function getActiveFilters() {
     const usp = new URLSearchParams(location.search);
@@ -171,15 +165,14 @@ function initializeDestinationSearch() {
         searchInput.addEventListener('input', function () {
             clearTimeout(searchTimer);
             const q = this.value.trim();
-            searchTimer = setTimeout(() => runSearch(q), 350);
+            searchTimer = setTimeout(() => runSearchPaged(q, 0), 350); // ← 변경
         });
 
-        // 브라우저 X 버튼(clear) or ESC 로 비웠을 때도 즉시 복원
-        searchInput.addEventListener('search', () => runSearch(''));
+        searchInput.addEventListener('search', () => runSearchPaged('', 0));  // ← 변경
         searchInput.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 searchInput.value = '';
-                runSearch('');
+                runSearchPaged('', 0); // ← 변경
             }
         });
     }
@@ -191,20 +184,95 @@ function initializeDestinationSearch() {
     }
 }
 
-async function runSearch(q) {
+function setupServerPagination(totalPages, current, totalElements) {
+    const container = document.getElementById('paginationContainer');
+
+    if (!container) return;
+
+    if (totalPages <= 1) {
+        container.hidden = true;
+        return;
+    }
+    container.hidden = false;
+
+    const numbers = container.querySelector('.pagination-numbers');
+    numbers.innerHTML = '';
+
+    const maxButtons = 4;             // ← 한 번에 보여줄 최대 버튼 개수
+    let start = Math.max(0, current - Math.floor(maxButtons / 2));
+    let end   = start + maxButtons - 1;
+
+    if (end > totalPages - 1) {
+        end = totalPages - 1;
+        start = Math.max(0, end - (maxButtons - 1));
+    }
+
+    // 이전 버튼
+    const prevBtn = container.querySelector('.pagination-button.prev');
+    if (prevBtn) {
+        prevBtn.disabled = current === 0;
+        prevBtn.onclick = () => current > 0 && runSearchPaged(lastQuery, current - 1);
+    }
+
+    // 앞쪽 생략(...) 표시
+    if (start > 0) {
+        numbers.appendChild(makePageBtn(0, current));     // 1
+        numbers.appendChild(makeEllipsis());
+    }
+
+    // 윈도우 구간
+    for (let i = start; i <= end; i++) {
+        numbers.appendChild(makePageBtn(i, current));
+    }
+
+    // 뒤쪽 생략(...) 표시
+    if (end < totalPages - 1) {
+        numbers.appendChild(makeEllipsis());
+        numbers.appendChild(makePageBtn(totalPages - 1, current)); // 마지막
+    }
+
+    // 다음 버튼
+    const nextBtn = container.querySelector('.pagination-button.next');
+    if (nextBtn) {
+        nextBtn.disabled = current >= totalPages - 1;
+        nextBtn.onclick = () => current < totalPages - 1 && runSearchPaged(lastQuery, current + 1);
+    }
+
+    // 범위/총개수 표시
+    const size = serverSize;
+    const startIdx = current * size + 1;
+    const endIdx   = Math.min((current + 1) * size, totalElements || 0);
+    const range = container.querySelector('.pagination-info .range');
+    const totalEl = container.querySelector('.pagination-info .total');
+    if (range)  range.textContent = `${startIdx} - ${endIdx} / `;
+    if (totalEl) totalEl.textContent = String(totalElements ?? 0);
+
+    // helpers
+    function makePageBtn(pageIdx, cur) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'pagination-number' + (pageIdx === cur ? ' active' : '');
+        btn.textContent = (pageIdx + 1);
+        btn.dataset.page = pageIdx;
+        btn.addEventListener('click', () => runSearchPaged(lastQuery, pageIdx));
+        return btn;
+    }
+    function makeEllipsis() {
+        const span = document.createElement('span');
+        span.className = 'pagination-ellipsis';
+        span.textContent = '…';
+        return span;
+    }
+}
+
+async function runSearchPaged(q, page = 0) {
     const grid = document.getElementById('destinationResults');
     if (!grid) return;
 
     const { areaCode, sigunguCode, contentTypeId } = getActiveFilters();
+    lastQuery = q;
+    serverPage = page;
 
-    // 검색어가 비고, 활성화된 필터도 없으면 초기 상태로 복귀
-    if (!q || q.length === 0) {
-        if (!areaCode && !sigunguCode && !contentTypeId) {
-            restoreOriginalGrid();
-            return;
-        }
-        // 필터만 있는 경우에는 서버 검색 계속 수행
-    }
 
     try {
         const params = new URLSearchParams();
@@ -212,17 +280,22 @@ async function runSearch(q) {
         if (areaCode) params.set('areaCode', areaCode);
         if (sigunguCode) params.set('sigunguCode', sigunguCode);
         if (contentTypeId) params.set('contentTypeId', contentTypeId);
+        params.set('page', page);
+        params.set('size', serverSize);
 
-        const res = await fetch('/api/attractions/search?' + params.toString());
+        const res = await fetch('/api/attractions/search-paged?' + params.toString());
         if (!res.ok) throw new Error('검색 실패');
-        const items = await res.json();
 
-        renderAttractions(items);
+        const data = await res.json(); // { content, page, size, totalElements, totalPages }
+        renderAttractions(data.content);
         initializeDestinationSelection();
-        setupPaginationFromGrid();
+        setupServerPagination(data.totalPages, data.page, data.totalElements);
     } catch (e) {
         console.error(e);
         grid.innerHTML = `<div class="empty">검색 중 오류가 발생했습니다.</div>`;
+        // 페이징 영역 숨김
+        const container = document.getElementById('paginationContainer');
+        if (container) container.hidden = true;
     }
 }
 
@@ -550,87 +623,5 @@ window.addEventListener('beforeunload', function() {
     }
 });
 
-// ===== Pagination =====
-let currentPage = 1;
-const pageSize = 9; // 한번에 보여줄 카드 수 (그리드 3열이면 9가 보기 좋아요)
 
-/** 현재 그리드 상태로 페이지네이션(번호/범위/버튼)을 다시 구성 */
-function setupPaginationFromGrid() {
-    const container = document.getElementById('paginationContainer');
-    const grid = document.getElementById('destinationResults');
-    if (!container || !grid) return;
 
-    const cards = Array.from(grid.querySelectorAll('.destination-card'));
-    const totalItems = cards.length;
-    const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
-
-    // 아이템 없거나 한 페이지만 있으면 감추기
-    if (totalItems === 0 || totalPages <= 1) {
-        container.hidden = true;
-        // 모두 보이도록 (검색 직후 0개일 때도 안전)
-        cards.forEach(c => (c.style.display = 'block'));
-        return;
-    }
-    container.hidden = false;
-
-    // 번호 버튼 생성
-    const numbers = container.querySelector('.pagination-numbers');
-    numbers.innerHTML = '';
-    currentPage = Math.min(currentPage, totalPages); // 범위 보정
-    for (let i = 1; i <= totalPages; i++) {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'pagination-number' + (i === currentPage ? ' active' : '');
-        btn.textContent = i;
-        btn.dataset.page = i;
-        btn.addEventListener('click', () => renderPage(i));
-        numbers.appendChild(btn);
-    }
-
-    // 이전/다음 핸들러
-    const prevBtn = container.querySelector('.pagination-button.prev');
-    const nextBtn = container.querySelector('.pagination-button.next');
-    prevBtn.onclick = () => currentPage > 1 && renderPage(currentPage - 1);
-    nextBtn.onclick = () => currentPage < totalPages && renderPage(currentPage + 1);
-
-    // 첫 렌더
-    renderPage(currentPage);
-}
-
-/** 주어진 페이지의 카드만 보이게 */
-function renderPage(page) {
-    const container = document.getElementById('paginationContainer');
-    const grid = document.getElementById('destinationResults');
-    if (!container || !grid) return;
-
-    const cards = Array.from(grid.querySelectorAll('.destination-card'));
-    const totalItems = cards.length;
-    const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
-
-    currentPage = Math.max(1, Math.min(page, totalPages));
-
-    const start = (currentPage - 1) * pageSize;
-    const end = Math.min(start + pageSize, totalItems);
-
-    cards.forEach((card, idx) => {
-        card.style.display = (idx >= start && idx < end) ? 'block' : 'none';
-    });
-
-    // 번호 active 상태
-    container.querySelectorAll('.pagination-number').forEach(btn => {
-        btn.classList.toggle('active', Number(btn.dataset.page) === currentPage);
-    });
-
-    // prev/next disabled
-    container.querySelector('.pagination-button.prev').disabled = currentPage === 1;
-    container.querySelector('.pagination-button.next').disabled = currentPage === totalPages;
-
-    // 범위 텍스트
-    const range = container.querySelector('.pagination-info .range');
-    const totalEl = container.querySelector('.pagination-info .total');
-    if (range) range.textContent = `${start + 1} - ${end} / `;
-    if (totalEl) totalEl.textContent = String(totalItems);
-
-    // 뷰 상단으로 살짝 스크롤
-    grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
