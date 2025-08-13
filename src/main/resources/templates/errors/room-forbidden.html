@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>접근이 제한되었습니다</title>
+    <style>
+        :root { --bg:#f7fafc; --card:#fff; --text:#2d3748; --muted:#718096; --accent:#3182ce; }
+        body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif;}
+        .wrap{min-height:100vh;display:grid;place-items:center;padding:24px;}
+        .card{background:var(--card);max-width:560px;width:100%;border-radius:16px;
+            box-shadow:0 15px 40px rgba(0,0,0,.08);padding:32px;}
+        h1{margin:0 0 8px;font-size:24px;color:var(--text);}
+        p{margin:0 0 20px;color:var(--muted);line-height:1.6}
+        .hint{background:#edf2f7;border-radius:12px;padding:12px 14px;margin-bottom:20px;color:#4a5568}
+        .actions{display:flex;gap:10px;flex-wrap:wrap}
+        .btn{padding:10px 14px;border-radius:10px;text-decoration:none;display:inline-block}
+        .primary{background:var(--accent);color:#fff}
+        .ghost{background:#e2e8f0;color:#1a202c}
+        small{color:#a0aec0}
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div class="card">
+        <h1>이 방에 입장할 수 없어요</h1>
+        <p th:text="${reason}">해당 방에 참여 중인 사용자만 접근할 수 있어요.</p>
+
+        <div class="hint">
+            방 참여 상태를 확인하거나, 방장에게 초대를 요청해 주세요.<br>
+            <small th:text="'Room ID: ' + ${roomId}">Room ID: -</small>
+        </div>
+
+        <div class="actions">
+            <a class="btn primary" href="/companion-rooms">방 목록으로 가기</a>
+            <a class="btn ghost" href="javascript:history.back()">이전 페이지</a>
+            <!-- 필요하면 문의/요청 링크도 추가 -->
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -16,6 +16,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const chatDataElement = document.getElementById('chatData');
     if (!chatDataElement) return;
 
+    if (window.__chatBooted) return;
+    window.__chatBooted = true;
+
     // 초기 변수 세팅
     const travelStartStr = chatDataElement.dataset.travelStart;
     const travelEndStr = chatDataElement.dataset.travelEnd;
@@ -434,54 +437,107 @@ function addSystemMessage(content) {
     scrollToBottom();
 }
 
+let isConnecting = false;
+let closedByClient = false;
+
+// WebSocket 연결 설정
+// function connectWebSocket() {
+//     const socket = new SockJS('/ws/chat', null, { transports: ['websocket'] });
+//     stompClient = Stomp.over(socket);
+//
+//     stompClient.connect({}, function (frame) {
+//         console.log('WebSocket 연결 성공: ' + frame);
+//
+//         // 채팅방 메시지 구독
+//         stompClient.subscribe(`/sub/chatroom/${chattingRoomId}`, function (message) {
+//             const chatMessage = JSON.parse(message.body);
+//             addReceivedMessage(chatMessage);
+//         });
+//
+//         // 스케줄링 접속자 목록 구독
+//         stompClient.subscribe(`/sub/schedule/${roomId}`, function (message) {
+//             console.log("[서버에서 수신함]", message.body);
+//             const onlineUsers = JSON.parse(message.body);
+//             updateSchedulingOnlineUsers(onlineUsers);
+//         });
+//
+//         stompClient.subscribe(`/sub/schedule/room/${roomId}`, function (message) {
+//             const payload = JSON.parse(message.body);
+//             const type = payload.type;
+//             const data = payload.data;
+//
+//             switch (type) {
+//                 case 'CREATE':
+//                     addScheduleToUI(data);
+//                     break;
+//                 case 'UPDATE':
+//                     updateScheduleInUI(data);
+//                     break;
+//                 case 'DELETE':
+//                     removeScheduleFromUI(data);
+//                     break;
+//             }
+//         })
+//
+//         // 입장 메시지 전송
+//         sendEnterMessage();
+//         sendSchedulingEnterMessage();
+//
+//     }, function (error) {
+//         console.error('WebSocket 연결 실패:', error);
+//         setTimeout(connectWebSocket, 5000); // 재연결 시도
+//     });
+// }
 
 // WebSocket 연결 설정
 function connectWebSocket() {
-    const socket = new SockJS('/ws/chat');
+    if (stompClient?.connected || isConnecting) return;
+    isConnecting = true; closedByClient = false;
+
+    const socket = new SockJS('/ws/chat', null, { transports: ['websocket'] });
     stompClient = Stomp.over(socket);
 
-    stompClient.connect({}, function (frame) {
-        console.log('WebSocket 연결 성공: ' + frame);
+    // 디버그 로그 끄기(원하면 남겨두세요)
+    stompClient.debug = () => {};
 
-        // 채팅방 메시지 구독
-        stompClient.subscribe(`/sub/chatroom/${chattingRoomId}`, function (message) {
-            const chatMessage = JSON.parse(message.body);
-            addReceivedMessage(chatMessage);
-        });
+    // 하트비트(브로커 설정과 맞추세요. 예: 10초)
+    stompClient.heartbeat.outgoing = 10000;
+    stompClient.heartbeat.incoming = 10000;
 
-        // 스케줄링 접속자 목록 구독
-        stompClient.subscribe(`/sub/schedule/${roomId}`, function (message) {
-            console.log("[서버에서 수신함]", message.body);
-            const onlineUsers = JSON.parse(message.body);
-            updateSchedulingOnlineUsers(onlineUsers);
-        });
+    stompClient.connect({},
+        () => {
+            isConnecting = false;
+            console.log('[WS] connected');
 
-        stompClient.subscribe(`/sub/schedule/room/${roomId}`, function (message) {
-            const payload = JSON.parse(message.body);
-            const type = payload.type;
-            const data = payload.data;
+            // 구독은 여기서만 1회
+            stompClient.subscribe(`/sub/chatroom/${chattingRoomId}`, (msg) => {
+                addReceivedMessage(JSON.parse(msg.body));
+            });
 
-            switch (type) {
-                case 'CREATE':
-                    addScheduleToUI(data);
-                    break;
-                case 'UPDATE':
-                    updateScheduleInUI(data);
-                    break;
-                case 'DELETE':
-                    removeScheduleFromUI(data);
-                    break;
-            }
-        })
+            // 접속자 목록(인터셉터 체크 없이 쓰는 공개 채널)
+            stompClient.subscribe(`/sub/schedule/${roomId}`, (message) => {
+                updateSchedulingOnlineUsers(JSON.parse(message.body));
+            });
 
-        // 입장 메시지 전송
-        sendEnterMessage();
-        sendSchedulingEnterMessage();
+            // 일정 변경 브로드캐스트(인터셉터 대상: /sub/schedule/room/)
+            stompClient.subscribe(`/sub/schedule/room/${roomId}`, (message) => {
+                const { type, data } = JSON.parse(message.body);
+                if (type === 'CREATE') addScheduleToUI(data);
+                if (type === 'UPDATE') updateScheduleInUI(data);
+                if (type === 'DELETE') removeScheduleFromUI(data);
+            });
 
-    }, function (error) {
-        console.error('WebSocket 연결 실패:', error);
-        setTimeout(connectWebSocket, 5000); // 재연결 시도
-    });
+            // 입장 알림은 연결 직후 1회만
+            sendEnterMessage();
+            sendSchedulingEnterMessage();
+        },
+        (error) => {
+            isConnecting = false;
+            console.warn('[WS] disconnected:', error);
+            // 사용자가 수동으로 끊은 경우가 아니면 재접속
+            if (!closedByClient) setTimeout(connectWebSocket, 4000);
+        }
+    );
 }
 
 function addScheduleToUI(data) {
@@ -590,31 +646,48 @@ function sendSchedulingEnterMessage() {
     }
 }
 // WebSocket 연결 해제
+// function disconnectWebSocket() {
+//     if (stompClient && stompClient.connected) {
+//         // 퇴장 메시지 전송
+//         const leaveMessage = {
+//             type: 'LEAVE',
+//             chattingRoomId: chattingRoomId,
+//             sender: currentUser,
+//             message: `${currentUser}님이 퇴장했습니다.`
+//         };
+//
+//         stompClient.send("/pub/chat/message", {}, JSON.stringify(leaveMessage));
+//         stompClient.disconnect();
+//         console.log('WebSocket 연결 해제');
+//     }
+//
+//     // 사용자 목록에서 제거
+//     const usedUsers = JSON.parse(localStorage.getItem('usedUsers') || '[]');
+//     const updatedUsers = usedUsers.filter(user => user !== currentUser);
+//     localStorage.setItem('usedUsers', JSON.stringify(updatedUsers));
+// }
+
 function disconnectWebSocket() {
-    if (stompClient && stompClient.connected) {
-        // 퇴장 메시지 전송
-        const leaveMessage = {
-            type: 'LEAVE',
-            chattingRoomId: chattingRoomId,
-            sender: currentUser,
-            message: `${currentUser}님이 퇴장했습니다.`
-        };
+    // 1) LEAVE 알림은 sendBeacon(유실 최소화)
+    try {
+        const payload = JSON.stringify({
+            type: 'LEAVE', chattingRoomId, sender: currentUser, message: `${currentUser}님이 퇴장했습니다.`
+        });
+        navigator.sendBeacon?.('/api/chat/leave', payload);
+    } catch {}
 
-        stompClient.send("/pub/chat/message", {}, JSON.stringify(leaveMessage));
-        stompClient.disconnect();
-        console.log('WebSocket 연결 해제');
+    // 2) STOMP 종료
+    if (stompClient && (stompClient.connected || isConnecting)) {
+        closedByClient = true;
+        try {
+            stompClient.disconnect(() => console.log('[WS] cleanly disconnected'));
+        } catch (_) {}
     }
-
-    // 사용자 목록에서 제거
-    const usedUsers = JSON.parse(localStorage.getItem('usedUsers') || '[]');
-    const updatedUsers = usedUsers.filter(user => user !== currentUser);
-    localStorage.setItem('usedUsers', JSON.stringify(updatedUsers));
 }
 
 // 페이지 언로드시 WebSocket 연결 해제
-window.addEventListener('beforeunload', function() {
-    disconnectWebSocket();
-});
+window.addEventListener('pagehide', disconnectWebSocket);
+window.addEventListener('beforeunload', disconnectWebSocket);
 
 // 채팅방 설정 함수
 function setChattingRoomId(roomId) {

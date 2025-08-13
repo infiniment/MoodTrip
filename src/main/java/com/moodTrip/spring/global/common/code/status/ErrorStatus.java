@@ -54,8 +54,14 @@ public enum ErrorStatus implements BaseErrorCode {
     TRANSPORT_NO_ROUTE(HttpStatus.NOT_FOUND, "TRANSPORT_002", "대중교통 경로를 찾지 못했습니다."),
     TRANSPORT_RATE_LIMIT(HttpStatus.TOO_MANY_REQUESTS, "TRANSPORT_003", "대중교통 API 호출 한도를 초과했습니다."),
     TRANSPORT_AUTH_ERROR(HttpStatus.UNAUTHORIZED, "TRANSPORT_004", "대중교통 API 인증에 실패했습니다."),
-    TRANSPORT_BAD_REQUEST(HttpStatus.BAD_REQUEST, "TRANSPORT_005", "대중교통 API 요청 파라미터가 유효하지 않습니다.");
+    TRANSPORT_BAD_REQUEST(HttpStatus.BAD_REQUEST, "TRANSPORT_005", "대중교통 API 요청 파라미터가 유효하지 않습니다."),
 
+    // WebSocket 관련
+    WEBSOCKET_FORBIDDEN(HttpStatus.FORBIDDEN, "WS_001", "WebSocket 접근 권한이 없습니다."),
+
+    // Attraction 관련
+    INVALID_DESTINATION(HttpStatus.BAD_REQUEST, "ATTRACTION_001", "잘못된 목적지 정보입니다."),
+    ATTRACTION_NOT_FOUND(HttpStatus.NOT_FOUND, "ATTRACTION_002", "관광지 정보를 찾을 수 없습니다.");
 
 
     private final HttpStatus httpStatus;

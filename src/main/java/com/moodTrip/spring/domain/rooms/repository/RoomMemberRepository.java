@@ -32,4 +32,8 @@ public interface RoomMemberRepository extends JpaRepository<RoomMember, Long> {
 
     // 회원 기준 활성 참여 방 조회
     List<RoomMember> findByMemberAndIsActiveTrue(Member member);
+
+    // 활성 멤버 여부만 체크 (가장 추천)
+    boolean existsByMember_MemberPkAndRoom_RoomIdAndIsActiveTrue(Long memberPk, Long roomId);
+
 }
