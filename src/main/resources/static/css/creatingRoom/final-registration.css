@@ -817,39 +817,129 @@ body.room-create .room-create-formview .container::after {
 }
 
 /* 성공 모달 */
+/*.success-modal {*/
+/*    position: fixed;*/
+/*    top: 0;*/
+/*    left: 0;*/
+/*    width: 100%;*/
+/*    height: 100%;*/
+/*    z-index: 1001;*/
+/*    display: flex;*/
+/*    align-items: center;*/
+/*    justify-content: center;*/
+/*}*/
+
+
 .success-modal {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1001;
-    display: flex;
+    inset: 0;
+    display: none;
     align-items: center;
     justify-content: center;
+    z-index: 2000;
 }
+
+.success-modal.open { display: flex; }
 
 .success-modal-overlay {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(6px);
+    inset: 0;
+    background: rgba(0,0,0,.45);
+    backdrop-filter: blur(2px);
 }
 
+/*.success-modal-overlay {*/
+/*    position: absolute;*/
+/*    top: 0;*/
+/*    left: 0;*/
+/*    width: 100%;*/
+/*    height: 100%;*/
+/*    background: rgba(0, 0, 0, 0.6);*/
+/*    backdrop-filter: blur(6px);*/
+/*}*/
+
+
+/* 전역 line-height=1 무력화 */
+.success-modal-content,
+.success-modal-content * {
+    line-height: 1.4;
+}
+
+/* 아이콘(이미지/이모지) */
+.success-modal-icon {
+    width: 72px;              /* 사용하는 이미지 크기에 맞게 */
+    height: 72px;
+    display: inline-block;
+    margin-bottom: 4px;       /* 제목과 간격 */
+}
+
+/* 제목/본문/버튼 */
+.success-modal-title {
+    font-size: 26px;
+    font-weight: 800;
+    color: #111827;
+    margin: 0;
+}
+
+.success-modal-desc {
+    font-size: 16px;
+    color: #6b7280;
+    margin: 2px 0 8px;
+}
+
+.success-modal-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 4px;
+}
+
+.success-modal-actions .btn {
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.success-modal-actions .btn-primary {
+    background: linear-gradient(to right, #005792, #001a2c);
+    color: #fff;
+    border: 0;
+}
+.success-modal-actions .btn-outline {
+    background: #fff;
+    color: #005792;
+    border: 1px solid #d1d5db;
+}
+
+/* 컨텐츠 박스 */
 .success-modal-content {
     position: relative;
-    background: white;
-    border-radius: 20px;
-    padding: 40px;
+    width: min(560px, 92vw);
+    padding: 36px 28px;
+    background: #fff;
+    border-radius: 16px;
     text-align: center;
-    max-width: 480px;
-    width: 90%;
-    box-shadow: 0 25px 30px -5px rgba(0, 0, 0, 0.2);
-    animation: successModalShow 0.4s ease-out;
+
+    /* 겹침 방지: 수직 배치 + 간격 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+
+    box-shadow: 0 20px 40px rgba(0,0,0,.18);
 }
+
+/*.success-modal-content {*/
+/*    position: relative;*/
+/*    background: white;*/
+/*    border-radius: 20px;*/
+/*    padding: 40px;*/
+/*    text-align: center;*/
+/*    max-width: 480px;*/
+/*    width: 90%;*/
+/*    box-shadow: 0 25px 30px -5px rgba(0, 0, 0, 0.2);*/
+/*    animation: successModalShow 0.4s ease-out;*/
+/*}*/
 
 @keyframes successModalShow {
     from {
