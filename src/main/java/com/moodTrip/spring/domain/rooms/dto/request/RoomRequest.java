@@ -53,11 +53,26 @@ public class RoomRequest {
     @Schema(description = "목적지 정보 DTO")
     public static class DestinationDto {
 
-        @Schema(description = "목적지 카테고리 (예: 지역)", example = "강원도")
+        @Schema(description = "목적지 카테고리 (예: ATTRACTION/RESTAURANT 등)", example = "ATTRACTION")
         private String category;
 
-        @Schema(description = "목적지 이름 (예: 장소명)", example = "속초 해수욕장")
+        @Schema(description = "목적지 이름", example = "킨텍스")
         private String name;
+
+        @Schema(description = "TourAPI contentId (선택)", example = "1234567")
+        private Long contentId;
+
+        @Schema(description = "위도(Y, WGS84)", example = "37.66890")
+        private Double lat; // 또는 BigDecimal
+
+        @Schema(description = "경도(X, WGS84)", example = "126.74512")
+        private Double lon; // 또는 BigDecimal
+
+        @Schema(description = "대표 이미지 URL (선택)")
+        private String image;
+
+        @Schema(description = "주소 (선택)")
+        private String addr;
     }
 
     @Getter

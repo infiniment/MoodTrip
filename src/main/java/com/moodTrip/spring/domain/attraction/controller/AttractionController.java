@@ -3,6 +3,7 @@ package com.moodTrip.spring.domain.attraction.controller;
 import com.moodTrip.spring.domain.attraction.dto.request.AttractionInsertRequest;
 import com.moodTrip.spring.domain.attraction.dto.response.AttractionResponse;
 import com.moodTrip.spring.domain.attraction.service.AttractionService;
+import com.moodTrip.spring.global.common.util.PageResult;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -25,7 +26,7 @@ public class AttractionController {
 
     private final AttractionService service;
 
-    // =============== 목록 동기화 (areaBasedList2) ===============
+    // ===== 동기화 =====
     @PostMapping("/sync/area")
     public ResponseEntity<SyncAreaResponse> syncArea(
             @RequestParam("areaCode") @Min(1) @Max(99) int areaCode,
@@ -65,7 +66,7 @@ public class AttractionController {
         );
     }
 
-    // =============== 조회 API ===============
+    // ===== 단순 필터 리스트 — 다른 곳에서 안 쓰면 삭제해도 됨 =====
     @GetMapping
     public ResponseEntity<List<AttractionResponse>> list(
             @RequestParam("areaCode") @Min(1) @Max(99) int areaCode,
@@ -85,6 +86,20 @@ public class AttractionController {
         return ResponseEntity
                 .created(URI.create("/api/attractions/content/" + created.getContentId()))
                 .body(created);
+    }
+
+    @GetMapping("/search-paged")
+    public ResponseEntity<PageResult<AttractionResponse>> searchPaged(
+            @RequestParam(name = "q", required = false) String q,
+            @RequestParam(name = "areaCode", required = false) Integer areaCode,
+            @RequestParam(name = "sigunguCode", required = false) Integer sigunguCode,
+            @RequestParam(name = "contentTypeId", required = false) Integer contentTypeId,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "9") int size
+    ) {
+        var p = service.searchKeywordPrefTitleStarts(q, areaCode, sigunguCode, contentTypeId, page, size)
+                .map(AttractionResponse::from);
+        return ResponseEntity.ok(PageResult.of(p));
     }
 
     // --- 응답 DTO들 (record로 간단하게) ---

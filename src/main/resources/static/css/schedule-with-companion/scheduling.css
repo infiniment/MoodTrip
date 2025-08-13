@@ -8,7 +8,6 @@ body {
     font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
     background: linear-gradient(135deg, #1E3A5F 0%, #2E5B8C 50%, #4A7BA7 100%);
     min-height: 100vh;
-    padding: 20px;
 }
 
 .container {
@@ -641,9 +640,24 @@ body {
     overflow: hidden;
 }
 
-.map-container {
-    position: relative; /* 오버레이 포지셔닝용 */
+.map-container { overflow: visible; }       /* 기존 hidden 을 덮어쓰기 */
+.route-search { position: absolute; z-index: 10; overflow: visible; }
+
+
+.results.route-results{
+    position: absolute;     /* 지도 위에 떠 있게 */
+    z-index: 1000;
+    left: 16px;             /* 필요 시 조정 */
+    right: 16px;
 }
+
+/* 각 리스트의 수직 위치 (인풋 바로 아래) */
+#startResults{ top: 70px; }   /* 인풋 높이에 맞춰 값 조정 */
+#endResults  { top: 70px; }   /* 동일 높이면 같은 값 사용 */
+
+/*.map-container {*/
+/*    position: relative; !* 오버레이 포지셔닝용 *!*/
+/*}*/
 
 .map-container::before {
     content:'';
@@ -1552,4 +1566,32 @@ body {
         width: 28px;
         height: 28px;
     }
+}
+
+
+/* 추가/수정 */
+.scale-viewport{
+    width: 100%;                 /* 100vw 말고 100%: 스크롤바 두께로 인한 우측 잘림 방지 */
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;     /* 가로 중앙 */
+    align-items: flex-start;     /* 기본은 위에서 시작 */
+    padding: 20px;               /* body 패딩을 여기로 */
+    box-sizing: border-box;
+    overflow-x: hidden;          /* 가로 스크롤 방지 */
+    overflow-y: auto;            /* 세로 스크롤 허용 (위가 잘림 방지) */
+    background: linear-gradient(135deg,#1E3A5F,#2E5B8C 50%,#4A7BA7);
+}
+
+.scale-canvas{
+    width: var(--design-width);  /* 1200px 과 동일 */
+    margin: 0 auto;              /* 가로 중앙 */
+    transform-origin: top center;
+    display: block;
+}
+:root { --design-width: 1200px; }
+
+/* 캔버스 축소 시 가로 스크롤 방지용 (보너스) */
+@media (max-width: 1200px) {
+    html, body { overflow-x: hidden; }
 }
