@@ -50,7 +50,8 @@
                         <div class="filter-container">
                             <div class="category-container">
                                 <div class="faq-categories" id="faq-categories">
-                                    <button class="category-button active" data-category="service">서비스 소개</button>
+                                    <button class="category-button active" data-category="all">전체</button>
+                                    <button class="category-button" data-category="service">서비스 소개</button>
                                     <button class="category-button" data-category="profile">회원 정보</button>
                                     <button class="category-button" data-category="usage">이용 방법</button>
                                     <button class="category-button" data-category="payment">결제</button>
@@ -65,197 +66,28 @@
                                     <button class="sort-button" data-sort="latest">최신순</button>
                                     <button class="sort-button" data-sort="alphabetical">가나다순</button>
                                 </div>
+                                <!-- 질문 카운트 -->
                                 <div class="result-count">
-                                    <span>총 <strong>28</strong>개의 질문</span>
+                                    <span>총 <strong th:text="${totalItems}">0</strong>개의 질문</span>
                                 </div>
                             </div>
                         </div>
 
                         <!-- FAQ 목록 -->
                         <div class="faq-list-container" id="faq-list">
-                            <div class="faq-item-card">
-                                <div class="faq-category-tag">서비스 소개</div>
+                            <div th:each="faq : ${faqs}" class="faq-item-card">
+                                <div class="faq-category-tag" th:text="${faq.category}">카테고리</div>
                                 <div class="faq-content">
-                                    <a class="faq-item-link" href="#">
-                                        [서비스 소개] 쉽고, 편하고, 안전한 무드트립 이용 방법
+                                    <a class="faq-item-link"
+                                       th:href="@{/customer-center/faq-detail(id=${faq.id})}"
+                                       th:text="|[${faq.category}] ${faq.title}|">
                                     </a>
                                     <div class="faq-meta">
-                                        <span class="faq-views">조회 2,341</span>
+                                        <span class="faq-views" th:text="|조회 ${faq.viewCount}|">조회수</span>
                                     </div>
                                 </div>
                                 <div class="faq-action">
-                                    <button class="helpful-button" data-type="helpful">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="faq-item-card">
-                                <div class="faq-category-tag">서비스 소개</div>
-                                <div class="faq-content">
-                                    <a class="faq-item-link" href="#">
-                                        [서비스 소개] 무드트립 이용가이드: 의뢰인 편
-                                    </a>
-                                    <div class="faq-meta">
-                                        <span class="faq-views">조회 1,887</span>
-                                    </div>
-                                </div>
-                                <div class="faq-action">
-                                    <button class="helpful-button" data-type="helpful">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="faq-item-card">
-                                <div class="faq-category-tag">서비스 소개</div>
-                                <div class="faq-content">
-                                    <a class="faq-item-link" href="#">
-                                        [서비스 소개] 품질보장 서비스를 소개합니다!
-                                    </a>
-                                    <div class="faq-meta">
-                                        <span class="faq-views">조회 1,654</span>
-                                    </div>
-                                </div>
-                                <div class="faq-action">
-                                    <button class="helpful-button" data-type="helpful">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="faq-item-card">
-                                <div class="faq-category-tag">서비스 소개</div>
-                                <div class="faq-content">
-                                    <a class="faq-item-link" href="#">
-                                        [서비스 소개] 에스크로 결제방식은 무엇인가요?
-                                    </a>
-                                    <div class="faq-meta">
-                                        <span class="faq-views">조회 1,432</span>
-                                    </div>
-                                </div>
-                                <div class="faq-action">
-                                    <button class="helpful-button" data-type="helpful">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="faq-item-card">
-                                <div class="faq-category-tag">서비스 소개</div>
-                                <div class="faq-content">
-                                    <a class="faq-item-link" href="#">
-                                        [서비스 소개] Prime 서비스란 무엇인가요?
-                                    </a>
-                                    <div class="faq-meta">
-                                        <span class="faq-views">조회 1,298</span>
-                                    </div>
-                                </div>
-                                <div class="faq-action">
-                                    <button class="helpful-button" data-type="helpful">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="faq-item-card">
-                                <div class="faq-category-tag">회원 정보</div>
-                                <div class="faq-content">
-                                    <a class="faq-item-link" href="#">
-                                        [회원 정보] 회원가입은 어떻게 하나요?
-                                    </a>
-                                    <div class="faq-meta">
-                                        <span class="faq-views">조회 987</span>
-                                    </div>
-                                </div>
-                                <div class="faq-action">
-                                    <button class="helpful-button" data-type="helpful">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="faq-item-card">
-                                <div class="faq-category-tag">회원 정보</div>
-                                <div class="faq-content">
-                                    <a class="faq-item-link" href="#">
-                                        [회원 정보] 비밀번호를 잊어버렸어요
-                                    </a>
-                                    <div class="faq-meta">
-                                        <span class="faq-views">조회 823</span>
-                                    </div>
-                                </div>
-                                <div class="faq-action">
-                                    <button class="helpful-button" data-type="helpful">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="faq-item-card">
-                                <div class="faq-category-tag">이용 방법</div>
-                                <div class="faq-content">
-                                    <a class="faq-item-link" href="#">
-                                        [이용 방법] 서비스 이용 가이드
-                                    </a>
-                                    <div class="faq-meta">
-                                        <span class="faq-views">조회 756</span>
-                                    </div>
-                                </div>
-                                <div class="faq-action">
-                                    <button class="helpful-button" data-type="helpful">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="faq-item-card">
-                                <div class="faq-category-tag">결제</div>
-                                <div class="faq-content">
-                                    <a class="faq-item-link" href="#">
-                                        [결제] 결제 방법 안내
-                                    </a>
-                                    <div class="faq-meta">
-                                        <span class="faq-views">조회 642</span>
-                                    </div>
-                                </div>
-                                <div class="faq-action">
-                                    <button class="helpful-button" data-type="helpful">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="faq-item-card">
-                                <div class="faq-category-tag">취소·환불</div>
-                                <div class="faq-content">
-                                    <a class="faq-item-link" href="#">
-                                        [취소·환불] 환불 정책 안내
-                                    </a>
-                                    <div class="faq-meta">
-                                        <span class="faq-views">조회 589</span>
-                                    </div>
-                                </div>
-                                <div class="faq-action">
-                                    <button class="helpful-button" data-type="helpful">
+                                    <button class="helpful-button" data-type="helpful" th:data-faq-id="${faq.id}">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                             <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
                                         </svg>
@@ -267,29 +99,32 @@
                         <!-- 페이징 섹션 -->
                         <div class="pagination-container">
                             <nav class="pagination" aria-label="페이지 네비게이션">
-                                <button class="pagination-button prev" disabled>
+                                <button class="pagination-button prev" th:disabled="${currentPage == 1}">
                                     <svg class="pagination-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                         <polyline points="15,18 9,12 15,6"></polyline>
                                     </svg>
                                     이전
                                 </button>
-                                
+
                                 <div class="pagination-numbers">
-                                    <button class="pagination-number active" data-page="1">1</button>
-                                    <button class="pagination-number" data-page="2">2</button>
-                                    <button class="pagination-number" data-page="3">3</button>
+                                    <th:block th:each="pageNum : ${#numbers.sequence(1, totalPages)}">
+                                        <button class="pagination-number"
+                                                th:classappend="${pageNum == currentPage} ? 'active' : ''"
+                                                th:data-page="${pageNum}"
+                                                th:text="${pageNum}">1</button>
+                                    </th:block>
                                 </div>
-                                
-                                <button class="pagination-button next">
+
+                                <button class="pagination-button next" th:disabled="${currentPage == totalPages}">
                                     다음
                                     <svg class="pagination-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                         <polyline points="9,18 15,12 9,6"></polyline>
                                     </svg>
                                 </button>
                             </nav>
-                            
+
                             <div class="pagination-info">
-                                <span>1 - 10 / 28개</span>
+                                <span th:text="|${(currentPage - 1) * pageSize + 1} - ${(currentPage - 1) * pageSize + faqs.size()} / ${totalItems}개|">1 - 10 / 0개</span>
                             </div>
                         </div>
                     </div>
