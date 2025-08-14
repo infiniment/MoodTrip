@@ -17,8 +17,9 @@ public class Faq {
     @Column(name = "center_id")
     private Long id;
 
+    @Column(name = "category")
+    private String category;
 
-    //private FaqCategory category;
     @Column(name = "title")
     private String title;
 
@@ -26,14 +27,20 @@ public class Faq {
     private String content;
 
     @Column(name = "view_count")
-    private int viewCount;
+    private Integer viewCount = 0;
+
+    @Column(name = "helpful")
+    private Integer helpful = 0;
+
+    @Column(name = "not_helpful")
+    private Integer notHelpful = 0;
 
     @Column(name = "writer_id")
     private Long writerId;
 
     @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "modified_at")
-    private LocalDateTime modifiedAt;
+    private LocalDateTime modifiedAt = LocalDateTime.now();
 }
