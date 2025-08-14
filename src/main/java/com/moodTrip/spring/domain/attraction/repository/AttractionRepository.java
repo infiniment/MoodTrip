@@ -122,4 +122,13 @@ public interface AttractionRepository extends JpaRepository<Attraction, Long> {
     List<Attraction> findAllByAreaCodeAndSigunguCode(int areaCode, int sigunguCode);
     List<Attraction> findAllByAreaCodeAndContentTypeId(int areaCode, int contentTypeId);
     List<Attraction> findAllByAreaCodeAndSigunguCodeAndContentTypeId(int areaCode, int sigunguCode, int contentTypeId);
+
+    //  선택된 감정 ID 목록을 기반으로 관련 여행지를 조회하는 쿼리
+    @Query("SELECT ae.attraction " +
+            "FROM AttractionEmotion ae " +
+            "WHERE ae.isActive = true AND ae.emotion.tagId IN :emotionIds " +
+            "GROUP BY ae.attraction.id " +
+            "ORDER BY COUNT(ae.attraction.id) DESC, SUM(ae.weight) DESC")
+    List<Attraction> findAttractionsByEmotionIds(@Param("emotionIds") List<Integer> emotionIds);
+
 }

@@ -28,7 +28,7 @@ public class EmotionService {
         // 2. LinkedHashSet을 사용하여 혹시모를 중복 제거
         List<EmotionCategory> distinctCategories = new ArrayList<>(new LinkedHashSet<>(categoriesWithDuplicates));
 
-        // 3. 중복이 제거된 순수한 리스트를 DTO로 변환하여 반환합니다.
+        // 3. 중복이 제거된 순수한 리스트를 DTO로 변환하여 반환 (Response 객체, 추후 쓸 일?)
         return distinctCategories.stream()
                 .map(EmotionCategoryDto::from)
                 .collect(Collectors.toList());

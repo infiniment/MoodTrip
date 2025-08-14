@@ -51,36 +51,17 @@
                     <!-- Thymeleaf로 동적 생성되는 부분 -->
                     <!-- ========================================================== -->
                     <div class="emotion-categories" id="emotionCategories">
-                        <!--
-                           [설명]
-                           th:each="category : ${emotionCategories}"
-                           - Spring 컨트롤러가 모델에 담아 보낸 'emotionCategories' 리스트를 순회합니다.
-                           - 각 EmotionCategory 객체는 'category' 변수에 담깁니다.
-                        -->
                         <div class="category-group" th:each="category : ${emotionCategories}">
-                            <!--
-                               [설명]
-                               th:text="${category.emotionCategoryIcon + ' ' + category.emotionCategoryName}"
-                               - 'category' 객체의 아이콘과 이름을 가져와 제목으로 설정합니다.
-                               - 예: '🌿 평온 & 힐링'
-                            -->
                             <h3 class="category-group-title" th:text="${category.emotionCategoryIcon + ' ' + category.emotionCategoryName}">
                                 <!-- 정적 텍스트는 Thymeleaf에 의해 대체됩니다 -->
                                 🌿 평온 & 힐링
                             </h3>
                             <div class="emotion-tags">
-                                <!--
-                                   [설명]
-                                   th:each="emotion : ${category.emotions}"
-                                   - 현재 'category'에 속한 'emotions' 리스트를 순회합니다.
-                                   - 각 Emotion 객체는 'emotion' 변수에 담깁니다.
 
-                                   th:text="${emotion.tagName}"
-                                   - 'emotion' 객체의 태그명을 버튼의 텍스트로 설정합니다.
-                                   - 예: '평온', '안정', ...
-                                -->
-                                <button class="emotion-tag" th:each="emotion : ${category.emotions}" th:text="${emotion.tagName}">
-                                    <!-- 정적 텍스트는 Thymeleaf에 의해 대체됩니다 -->
+                                <button class="emotion-tag"
+                                        th:each="emotion : ${category.emotions}"
+                                        th:text="${emotion.tagName}"
+                                        th:data-tag-id="${emotion.tagId}">
                                     평온
                                 </button>
                             </div>
@@ -133,95 +114,34 @@
         </div>
 
         <div class="destination-grid">
-            <!-- 첫 번째 행 -->
-            <div class="destination-card">
+            <!--
+              [수정] th:each를 사용하여 컨트롤러에서 받은 initialAttractions 리스트를 순회합니다.
+              각 AttractionCardDTO 객체는 'attraction' 변수에 담깁니다.
+            -->
+            <div class="destination-card" th:each="attraction : ${initialAttractions}">
                 <div class="card-image">
-                    <img src="/static/image/emotion-search/emotion-search-test-img1.png" alt="오이카와" />
+                    <!--
+                      [수정] th:src와 th:alt를 사용하여 DTO의 이미지 URL과 제목을 동적으로 설정합니다.
+                      이미지가 없을 경우 기본 이미지를 보여줍니다.
+                    -->
+                    <img th:src="${attraction.firstImage != null ? attraction.firstImage : '/static/image/emotion-search/default-image.png'}"
+                         th:alt="${attraction.title}" />
                     <button class="like-btn">♡</button>
-                    <span class="emotion-badge">힐링/평온</span>
+                    <!--
+                      [참고] 초기 로딩 시 감정 배지는 비워두거나,
+                      가장 대표적인 감정 하나를 DTO에 포함시켜 표시할 수 있습니다.
+                      여기서는 우선 정적 텍스트로 둡니다.
+                    -->
+                    <span class="emotion-badge">추천 여행지</span>
                 </div>
                 <div class="card-content">
                     <div class="destination-header">
-                        <h3 class="destination-name">오이카와</h3>
-                        <span class="destination-location">강원도 속초시</span>
+                        <!-- [수정] th:text를 사용하여 DTO의 제목과 주소를 동적으로 설정합니다. -->
+                        <h3 class="destination-name" th:text="${attraction.title}">여행지 이름</h3>
+                        <span class="destination-location" th:text="${attraction.addr1}">여행지 위치</span>
                     </div>
-                    <p class="destination-description">자연이 주는 평온함을 느낄 수 있는 지역의 자유를 만끽할 수 있어요</p>
-                </div>
-            </div>
-
-            <div class="destination-card">
-                <div class="card-image">
-                    <img src="/static/image/emotion-search/emotion-search-test-img1.png" alt="제주 올레길" />
-                    <button class="like-btn">♡</button>
-                    <span class="emotion-badge">힐링/평온</span>
-                </div>
-                <div class="card-content">
-                    <div class="destination-header">
-                        <h3 class="destination-name">제주 올레길</h3>
-                        <span class="destination-location">제주특별자치도</span>
-                    </div>
-                    <p class="destination-description">지역의 문화적 정취를 느낄 수 있어 지역의 자유를 만끽할 수 있어요</p>
-                </div>
-            </div>
-
-            <div class="destination-card">
-                <div class="card-image">
-                    <img src="/static/image/emotion-search/emotion-search-test-img1.png" alt="부산 해운대" />
-                    <button class="like-btn">♡</button>
-                    <span class="emotion-badge">힐링/평온</span>
-                </div>
-                <div class="card-content">
-                    <div class="destination-header">
-                        <h3 class="destination-name">부산 해운대</h3>
-                        <span class="destination-location">부산광역시 해운대구</span>
-                    </div>
-                    <p class="destination-description">바다의 시원함과 도시의 활력을 동시에 느낄 수 있는 곳이에요</p>
-                </div>
-            </div>
-
-            <!-- 두 번째 행 -->
-            <div class="destination-card">
-                <div class="card-image">
-                    <img src="/static/image/emotion-search/emotion-search-test-img2.png" alt="경주 불국사" />
-                    <button class="like-btn">♡</button>
-                    <span class="emotion-badge">성찰/사색</span>
-                </div>
-                <div class="card-content">
-                    <div class="destination-header">
-                        <h3 class="destination-name">경주 불국사</h3>
-                        <span class="destination-location">경상북도 경주시</span>
-                    </div>
-                    <p class="destination-description">천년의 역사가 담긴 고즈넉한 사찰에서 마음의 평안을 찾을 수 있어요</p>
-                </div>
-            </div>
-
-            <div class="destination-card">
-                <div class="card-image">
-                    <img src="/static/image/emotion-search/emotion-search-test-img2.png" alt="남이섬" />
-                    <button class="like-btn">♡</button>
-                    <span class="emotion-badge">낭만/감성</span>
-                </div>
-                <div class="card-content">
-                    <div class="destination-header">
-                        <h3 class="destination-name">남이섬</h3>
-                        <span class="destination-location">강원도 춘천시</span>
-                    </div>
-                    <p class="destination-description">메타세쿼이아 길을 걸으며 로맨틱한 감성을 만끽할 수 있어요</p>
-                </div>
-            </div>
-
-            <div class="destination-card">
-                <div class="card-image">
-                    <img src="/static/image/emotion-search/emotion-search-test-img2.png" alt="전주 한옥마을" />
-                    <button class="like-btn">♡</button>
-                    <span class="emotion-badge">전통/문화</span>
-                </div>
-                <div class="card-content">
-                    <div class="destination-header">
-                        <h3 class="destination-name">전주 한옥마을</h3>
-                        <span class="destination-location">전라북도 전주시</span>
-                    </div>
-                    <p class="destination-description">전통 한옥의 아름다움과 맛있는 음식을 함께 즐길 수 있어요</p>
+                    <!-- [수정] DTO에 description 필드가 있다면 th:text로 표시할 수 있습니다. -->
+                    <p class="destination-description">이곳에서 특별한 경험을 즐겨보세요.</p>
                 </div>
             </div>
         </div>

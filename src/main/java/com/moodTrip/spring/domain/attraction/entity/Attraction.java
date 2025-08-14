@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList; // 추가
+import java.util.List;      // 추가
+
 
 @Entity
 @Getter @Setter
@@ -46,4 +49,9 @@ public class Attraction {
     // 원문 타임스탬프(yyyyMMddHHmmss → LocalDateTime)
     private LocalDateTime createdTime;
     private LocalDateTime modifiedTime;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "attraction", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AttractionEmotion> attractionEmotions = new ArrayList<>();
+
 }
