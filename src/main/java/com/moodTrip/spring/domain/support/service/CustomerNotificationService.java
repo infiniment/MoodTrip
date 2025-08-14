@@ -57,4 +57,26 @@ public class CustomerNotificationService {
         response.setAttachments(notification.getAttachments());
         return response;
     }
+
+    public List<NotificationResponse> searchByTitleOrContent(String query) {
+        List<Notification> notifications = notificationRepository.findByTitleContainingOrContentContaining(query, query);
+        return notifications.stream()
+                .map(this::convertToResponseWithoutAttachments)
+                .collect(Collectors.toList());
+    }
+
+    // 검색용 변환 메서드
+    private NotificationResponse convertToResponseWithoutAttachments(Notification notification) {
+        NotificationResponse response = new NotificationResponse();
+        response.setId(notification.getNoticeId());
+        response.setTitle(notification.getTitle());
+        response.setContent(notification.getContent());
+        response.setIsVisible(notification.getIsVisible());
+        response.setIsImportant(notification.getIsImportant());
+        response.setRegisteredDate(notification.getRegisteredDate().atStartOfDay());
+        response.setViewCount(notification.getViewCount());
+        return response;
+    }
+
+
 }

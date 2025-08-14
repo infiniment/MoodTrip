@@ -1,27 +1,20 @@
 package com.moodTrip.spring.domain.support.dto.response;
 
-import lombok.Builder;
-import com.moodTrip.spring.domain.admin.entity.Faq;
+import lombok.Getter;
+import lombok.Setter;
+import java.time.LocalDateTime;
 
-@Builder
-public record FaqResponse(
-        Long id,
-        String category,
-        String title,
-        String content,
-        int views,
-        int helpful,
-        int notHelpful
-) {
-//    public static FaqResponse from(Faq faq) {
-//        return FaqResponse.builder()
-//                .id(faq.getId())
-//                .category(faq.getCategory())
-//                .title(faq.getTitle())
-//                .content(faq.getContent())
-//                .views(faq.getViews())
-//                .helpful(faq.getHelpful())
-//                .notHelpful(faq.getNotHelpful())
-//                .build();
-//    }
+@Getter
+@Setter
+public class FaqResponse {
+    private Long id;
+    private String category;
+    private String title;
+    private String content;
+    private Integer viewCount;
+    private Integer helpful;
+    private Integer notHelpful;
+    private LocalDateTime createdAt;
+    private LocalDateTime modifiedAt;
 }
+

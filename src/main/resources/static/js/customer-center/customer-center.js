@@ -2,10 +2,10 @@
 function searchFAQ() {
     const searchInput = document.getElementById('support-search-input');
     const searchTerm = searchInput.value.trim();
-    
+
     if (searchTerm) {
-        console.log('검색어:', searchTerm);
-        // 여기에 실제 검색 로직 구현
+        // 검색 페이지로 이동
+        window.location.href = `/customer-center/search?query=${encodeURIComponent(searchTerm)}`;
     }
 }
 
@@ -68,75 +68,52 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // 카테고리별 FAQ 필터링 함수
-    function filterFAQByCategory(category) {
-        const faqList = document.getElementById('faq-list');
-        
-        // 카테고리별 FAQ 데이터 (실제로는 서버에서 가져와야 함)
-        const faqData = {
-            service: [
-                '[서비스 소개] 쉽고, 편하고, 안전한 무드트립 이용 방법',
-                '[서비스 소개] 무드트립 이용가이드: 의뢰인 편',
-                '[서비스 소개] 품질보장 서비스를 소개합니다!',
-                '[서비스 소개] 에스크로 결제방식은 무엇인가요?',
-                '[서비스 소개] Prime 서비스란 무엇인가요?'
-            ],
-            profile: [
-                '[회원 정보] 회원가입은 어떻게 하나요?',
-                '[회원 정보] 비밀번호를 잊어버렸어요',
-                '[회원 정보] 회원 탈퇴는 어떻게 하나요?',
-                '[회원 정보] 프로필 정보 수정 방법'
-            ],
-            usage: [
-                '[이용 방법] 서비스 이용 가이드',
-                '[이용 방법] 전문가 찾기 방법',
-                '[이용 방법] 프로젝트 의뢰 방법',
-                '[이용 방법] 채팅 사용법'
-            ],
-            payment: [
-                '[결제] 결제 방법 안내',
-                '[결제] 결제 오류 해결 방법',
-                '[결제] 세금계산서 발급',
-                '[결제] 카드 결제 문제 해결'
-            ],
-            refund: [
-                '[취소·환불] 환불 정책 안내',
-                '[취소·환불] 환불 신청 방법',
-                '[취소·환불] 부분 환불 가능한가요?',
-                '[취소·환불] 환불 처리 기간'
-            ],
-            dispute: [
-                '[분쟁·페널티] 분쟁 신고 방법',
-                '[분쟁·페널티] 페널티 정책',
-                '[분쟁·페널티] 중재 서비스 이용',
-                '[분쟁·페널티] 신고 처리 절차'
-            ]
-        };
-
-        // FAQ 목록 업데이트
-        const categoryFAQs = faqData[category] || [];
-        
-        faqList.innerHTML = '';
-        
-        categoryFAQs.forEach(faqTitle => {
-            const faqItem = document.createElement('a');
-            faqItem.href = '#'; // 실제 FAQ 페이지 링크로 변경 필요
-            faqItem.className = 'faq-item';
-            faqItem.target = '_blank';
-            faqItem.textContent = faqTitle;
-            
-            faqList.appendChild(faqItem);
-        });
-
-        // FAQ가 없는 경우 메시지 표시
-        if (categoryFAQs.length === 0) {
-            const noDataMessage = document.createElement('div');
-            noDataMessage.className = 'no-faq-message';
-            noDataMessage.textContent = '해당 카테고리의 FAQ가 없습니다.';
-            faqList.appendChild(noDataMessage);
-        }
-    }
-
     // 페이지 로드 시 기본적으로 서비스 소개 카테고리 표시
     filterFAQByCategory('service');
+
+// 카테고리별 FAQ 필터링 함수 수정
+    function filterFAQByCategory(category) {
+        const faqList = document.getElementById('faq-list');
+
+        // 매핑: 카테고리 버튼의 data-category 값을 실제 DB 카테고리 값으로 변환
+        const categoryMapping = {
+            'service': '서비스 소개',
+            'profile': '회원 정보',
+            'usage': '이용 방법',
+            'payment': '결제',
+            'refund': '취소·환불',
+            'dispute': '분쟁·페널티'
+        };
+
+        const dbCategory = categoryMapping[category] || category;
+
+        // 서버에서 카테고리별 FAQ 데이터 가져오기
+        fetch(`/customer-center/faq/data?category=${encodeURIComponent(dbCategory)}`)
+            .then(response => response.json())
+            .then(faqs => {
+                faqList.innerHTML = '';
+
+                faqs.forEach(faq => {
+                    const faqItem = document.createElement('a');
+                    faqItem.href = `/customer-center/faq-detail?id=${faq.id}`;
+                    faqItem.className = 'faq-item';
+                    faqItem.target = '_blank';
+                    faqItem.textContent = `[${faq.category}] ${faq.title}`;
+
+                    faqList.appendChild(faqItem);
+                });
+
+                if (faqs.length === 0) {
+                    const noDataMessage = document.createElement('div');
+                    noDataMessage.className = 'no-faq-message';
+                    noDataMessage.textContent = '해당 카테고리의 FAQ가 없습니다.';
+                    faqList.appendChild(noDataMessage);
+                }
+            })
+            .catch(error => {
+                console.error('FAQ 로드 오류:', error);
+                // 에러 시에도 빈 상태 표시
+                faqList.innerHTML = '<div class="no-faq-message">FAQ를 불러오는 중 오류가 발생했습니다.</div>';
+            });
+    }
 });
