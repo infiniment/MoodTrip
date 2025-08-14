@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>무드트립 고객센터</title>
+  <link rel="stylesheet" href="/css/customer-center/customer-center-search.css">
+</head>
+<body>
+<main class="support-main">
+  <div class="support-container">
+    <!-- 헤더 섹션 -->
+    <header class="support-header">
+      <div class="welcome-section">
+        <div class="welcome-message">
+          <h1>안녕하세요, 무드 트립 고객센터 입니다</h1>
+          <p>무엇을 도와드릴까요?</p>
+        </div>
+      </div>
+
+      <div class="search-section">
+        <div class="search-wrapper">
+          <input
+                  type="text"
+                  id="support-search-input"
+                  class="search-input"
+                  placeholder="도움이 필요하시거나 궁금한 점을 검색해주세요!"
+                  autocomplete="off"
+          >
+          <button type="button" class="search-button" id="search-button">검색</button>
+        </div>
+        <span class="search-error-message" id="search-error">에러상세 메시지</span>
+      </div>
+    </header>
+
+    <!-- 메인 컨텐츠 섹션 -->
+    <section class="support-content">
+      <!-- 검색 결과 헤더 -->
+      <div class="search-results-header">
+        <h2 id="search-query-display">검색 결과</h2>
+        <p id="search-count">총 0개의 결과</p>
+      </div>
+
+      <!-- 검색 결과 탭 -->
+      <nav class="search-result-tabs">
+        <button class="result-tab active" data-type="all">전체</button>
+        <button class="result-tab" data-type="faq">FAQ</button>
+        <button class="result-tab" data-type="notice">공지사항</button>
+      </nav>
+
+      <!-- FAQ 검색 결과 -->
+      <div class="search-result-section" id="faq-results">
+        <h3>FAQ 결과</h3>
+        <div class="faq-result-list" id="faq-result-list">
+          <!-- 검색 결과가 여기에 표시 -->
+        </div>
+      </div>
+
+      <!-- 공지사항 검색 결과 -->
+      <div class="search-result-section" id="notice-results">
+        <h3>공지사항 결과</h3>
+        <div class="notice-result-list" id="notice-result-list">
+          <!-- 검색 결과가 여기에 표시 -->
+        </div>
+      </div>
+
+      <!-- 검색 결과 없음 -->
+      <div class="no-results" id="no-results" style="display: none;">
+        <p>검색 결과가 없습니다.</p>
+        <a href="/customer-center">고객센터로 돌아가기</a>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script src="/js/customer-center/customer-center-search.js"></script>
+</body>
+</html>

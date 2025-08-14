@@ -766,19 +766,10 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr>
-                                <td>매칭은 어떻게 이루어지나요?</td>
-                                <td>매칭</td>
-                                <td>2024-07-01</td>
-                                <td>
-                                    <button class="btn-small" onclick="editFaq(this)">수정</button>
-                                    <button class="btn-small danger" onclick="deleteFaq(this)">삭제</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>회원 탈퇴는 어디서 하나요?</td>
-                                <td>회원</td>
-                                <td>2024-06-28</td>
+                            <tr th:each="faq : ${faqs}" th:data-faq-id="${faq.id}">
+                                <td th:text="${faq.title}">질문</td>
+                                <td th:text="${faq.category}">카테고리</td>
+                                <td th:text="${faq.createdAt != null ? #temporals.format(faq.createdAt, 'yyyy-MM-dd') : ''}">작성일</td>
                                 <td>
                                     <button class="btn-small" onclick="editFaq(this)">수정</button>
                                     <button class="btn-small danger" onclick="deleteFaq(this)">삭제</button>
@@ -788,7 +779,6 @@
                         </table>
                     </div>
                 </div>
-
 
                 <!-- FAQ 작성 폼 -->
                 <div class="faq-form" id="faq-form-view" style="display: none;">
