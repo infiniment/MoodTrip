@@ -59,7 +59,6 @@ function updateMonthSelectOptions(months) {
         const targetYear = months[0].year + Math.floor((targetMonth - 1) / 12);
         const adjustedMonth = ((targetMonth - 1) % 12) + 1;
         const monthValue = `${targetYear}-${String(adjustedMonth).padStart(2, '0')}`;
-
         optionsHTML += `<option value="${monthValue}">${targetYear}년 ${monthNames[adjustedMonth]}</option>`;
     }
 
@@ -97,45 +96,33 @@ function generateMonthCalendarHTML(monthInfo) {
     const prevMonthDays = prevMonth.getDate();
 
     let calendarHTML = `
-        <div class="calendar-month" data-month="${monthValue}">
-            <div class="calendar-header">${monthNames[month]}</div>
-            <div class="calendar-weekdays">
-                <div class="weekday">일</div>
-                <div class="weekday">월</div>
-                <div class="weekday">화</div>
-                <div class="weekday">수</div>
-                <div class="weekday">목</div>
-                <div class="weekday">금</div>
-                <div class="weekday">토</div>
-            </div>
-            <div class="calendar-days">
-    `;
+  <div class="calendar-month" data-month="${monthValue}">
+    <div class="calendar-header">${monthNames[month]}</div>
+    <div class="calendar-weekdays">
+      <div class="weekday">일</div><div class="weekday">월</div><div class="weekday">화</div>
+      <div class="weekday">수</div><div class="weekday">목</div><div class="weekday">금</div><div class="weekday">토</div>
+    </div>
+    <div class="calendar-days">
+`;
 
-    // 이전 달 날짜들 (회색)
     for (let i = startingDayOfWeek - 1; i >= 0; i--) {
         calendarHTML += `<div class="day prev-month">${prevMonthDays - i}</div>`;
     }
-
-    // 현재 달 날짜들
     for (let day = 1; day <= daysInMonth; day++) {
         calendarHTML += `<div class="day">${day}</div>`;
     }
-
-    // 다음 달 날짜들 (회색) - 총 42칸(6주)이 되도록
     const totalCells = 42;
     const usedCells = startingDayOfWeek + daysInMonth;
-    const remainingCells = totalCells - usedCells;
-
-    for (let day = 1; day <= remainingCells; day++) {
+    for (let day = 1; day <= totalCells - usedCells; day++) {
         calendarHTML += `<div class="day next-month">${day}</div>`;
     }
 
     calendarHTML += `
-            </div>
-        </div>
+    </div>
+  </div>
     `;
-
     return calendarHTML;
+
 }
 
 // 이전 페이지들에서 선택된 데이터 불러오기
@@ -252,10 +239,10 @@ function initializeAddDateButton() {
     const addButtonContainer = document.createElement('div');
     addButtonContainer.className = 'add-date-container';
     addButtonContainer.innerHTML = `
-        <button type="button" id="addDateRangeButton" class="btn btn-add-date" disabled>
-            선택한 날짜 추가
-        </button>
-        <p class="add-date-guide">날짜 범위를 선택한 후 '추가' 버튼을 눌러주세요</p>
+      <button type="button" id="addDateRangeButton" class="btn btn-add-date" disabled>
+        선택한 날짜 추가
+      </button>
+      <p class="add-date-guide">날짜 범위를 선택한 후 '추가' 버튼을 눌러주세요</p>
     `;
 
     // 달력 그리드 다음에 추가
@@ -264,22 +251,23 @@ function initializeAddDateButton() {
     // 추가 버튼 이벤트 리스너
     const addButton = document.getElementById('addDateRangeButton');
     addButton.addEventListener('click', function() {
-        if (selectedStartDate && selectedEndDate) {
-            addDateRange();
-        }
+        addDateRange();
     });
 }
 
 // 날짜 범위 추가
 function addDateRange() {
-    if (!selectedStartDate || !selectedEndDate) return;
+    // 시작일이 없으면 무시
+    if (!selectedStartDate) return;
 
-    // 중복 체크
+    // 종료일이 없으면 당일로 간주 (end = start)
+    const start = new Date(selectedStartDate);
+    const end   = selectedEndDate ? new Date(selectedEndDate) : new Date(selectedStartDate);
     const newRange = {
-        startDate: new Date(selectedStartDate),
-        endDate: new Date(selectedEndDate),
-        startDateFormatted: formatDate(selectedStartDate),
-        endDateFormatted: formatDate(selectedEndDate)
+        startDate: start,
+        endDate: end,
+        startDateFormatted: formatDate(start),
+        endDateFormatted: formatDate(end)
     };
 
     // 기존 범위와 겹치는지 확인
@@ -313,6 +301,7 @@ function addDateRange() {
 // 추가된 날짜들을 달력에 표시
 function markAddedDatesOnCalendar(dateRange) {
     const allDays = document.querySelectorAll('.day:not(.prev-month):not(.next-month)');
+    const isSingle = dateRange.startDate.getTime() === dateRange.endDate.getTime();
 
     allDays.forEach(day => {
         const dayNumber = parseInt(day.textContent);
@@ -327,7 +316,9 @@ function markAddedDatesOnCalendar(dateRange) {
             day.classList.remove('selected', 'in-range', 'range-start', 'range-end');
 
             // 추가된 날짜 스타일
-            if (dayDate.getTime() === dateRange.startDate.getTime()) {
+            if (isSingle) {
+                day.classList.add('added-single-day');  // 당일 표시
+            } else if (dayDate.getTime() === dateRange.startDate.getTime()) {
                 day.classList.add('added-range-start');
             } else if (dayDate.getTime() === dateRange.endDate.getTime()) {
                 day.classList.add('added-range-end');
@@ -353,9 +344,10 @@ function updateAddButton() {
         addButton.textContent = `${formatDate(selectedStartDate)} ~ ${formatDate(selectedEndDate)} 추가`;
         guideText.textContent = '선택한 날짜 범위를 추가하시려면 버튼을 눌러주세요';
     } else if (selectedStartDate) {
-        addButton.disabled = true;
-        addButton.textContent = '종료일을 선택해주세요';
-        guideText.textContent = '종료일을 선택한 후 추가할 수 있습니다';
+        // 종료일 선택 전에도 "당일"로 바로 추가 가능
+        addButton.disabled = false;
+        addButton.textContent = `${formatDate(selectedStartDate)} (당일) 추가`;
+        guideText.textContent = '종료일을 고르지 않으면 당일 일정으로 추가됩니다';
     } else {
         addButton.disabled = true;
         addButton.textContent = '선택한 날짜 추가';
@@ -365,49 +357,54 @@ function updateAddButton() {
 
 // 선택된 날짜 표시 업데이트 (다중 범위 표시)
 function updateSelectedDateDisplay() {
-    const selectedDateSection = document.getElementById('selectedDateSection');
+    const selectedDateSection   = document.getElementById('selectedDateSection');
     const selectedDateContainer = document.getElementById('selectedDateContainer');
+    if (!selectedDateSection || !selectedDateContainer) return;
 
-    if (selectedDateRanges.length > 0) {
-        // 선택된 날짜 섹션을 표시
-        selectedDateSection.style.display = 'block';
+    if (selectedDateRanges.length === 0) {
+        selectedDateSection.style.display = 'none';
+        selectedDateContainer.innerHTML = '';
+        return;
+    }
 
-        // 날짜 범위 아이템들을 생성
-        const rangeItemsHTML = selectedDateRanges.map((range, index) => {
-            const rangeText = range.startDateFormatted === range.endDateFormatted
+    // 선택된 날짜 섹션 표시
+    selectedDateSection.style.display = 'block';
+
+    // 범위 아이템 HTML
+    const rangeItemsHTML = selectedDateRanges.map((range, index) => {
+        const rangeText =
+            range.startDateFormatted === range.endDateFormatted
                 ? range.startDateFormatted
                 : `${range.startDateFormatted} ~ ${range.endDateFormatted}`;
 
-            return `
-                <div class="date-range-item">
-                    <span class="range-text">${rangeText}</span>
-                    <button type="button" class="delete-range-btn" data-index="${index}">삭제</button>
-                </div>
-            `;
-        }).join('');
+        return `
+      <div class="date-range-item">
+        <span class="range-text">${rangeText}</span>
+        <button type="button" class="delete-range-btn" data-index="${index}">삭제</button>
+      </div>
+    `;
+    }).join('');
 
-        const totalDays = calculateTotalDays();
+    // 총 일수는 먼저 계산
+    const totalDays = calculateTotalDays();
 
-        // 전체 컨테이너 HTML 업데이트
-        selectedDateContainer.innerHTML = `
-            <div class="date-range-display">
-                ${rangeItemsHTML}
-            </div>
-            <div class="date-info-text">
-                총 ${selectedDateRanges.length}개 구간, ${totalDays}일이 선택되었습니다!
-            </div>
-        `;
+    // 컨테이너 업데이트 (한 번만)
+    selectedDateContainer.innerHTML = `
+    <div class="date-range-display">
+      ${rangeItemsHTML}
+    </div>
+    <div class="date-info-text">
+      총 ${selectedDateRanges.length}개 구간, ${totalDays}일이 선택되었습니다!
+    </div>
+  `;
 
-        // 삭제 버튼 이벤트 리스너 추가
-        selectedDateContainer.querySelectorAll('.delete-range-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const index = parseInt(this.getAttribute('data-index'));
-                deleteDateRange(index);
-            });
+    // 삭제 버튼에 이벤트 연결
+    selectedDateContainer.querySelectorAll('.delete-range-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const index = Number(e.currentTarget.dataset.index);
+            deleteDateRange(index);
         });
-    } else {
-        selectedDateSection.style.display = 'none';
-    }
+    });
 }
 
 // 총 선택 일수 계산
@@ -503,48 +500,49 @@ function showSingleMonthView(monthValue) {
 
 // 단일 월 달력 생성
 function generateSingleMonthCalendar(monthValue, container) {
-    const [year, month] = monthValue.split('-');
+    const [yStr, mStr] = monthValue.split('-');  // 예: "2025-08"
+    const year  = Number(yStr);
+    const month = Number(mStr); // 1..12
+
     const monthNames = {
         '01': '1월', '02': '2월', '03': '3월', '04': '4월', '05': '5월', '06': '6월',
         '07': '7월', '08': '8월', '09': '9월', '10': '10월', '11': '11월', '12': '12월'
     };
 
-    // 해당 월의 정보 계산
+    // 해당 월 정보
     const firstDay = new Date(year, month - 1, 1);
-    const lastDay = new Date(year, month, 0);
-    const daysInMonth = lastDay.getDate();
+    const daysInMonth = new Date(year, month, 0).getDate();
     const startingDayOfWeek = firstDay.getDay();
 
-    // 이전 달 마지막 날들
-    const prevMonth = new Date(year, month - 2, 0);
-    const prevMonthDays = prevMonth.getDate();
+    // 이전 달 마지막 날짜 (✔️ month-1, day=0)
+    const prevMonthDays = new Date(year, month - 1, 0).getDate();
 
     let calendarHTML = `
-        <div class="calendar-month" data-month="${monthValue}">
-            <div class="calendar-header">${monthNames[month]}</div>
-            <div class="calendar-weekdays">
-                <div class="weekday">일</div>
-                <div class="weekday">월</div>
-                <div class="weekday">화</div>
-                <div class="weekday">수</div>
-                <div class="weekday">목</div>
-                <div class="weekday">금</div>
-                <div class="weekday">토</div>
-            </div>
-            <div class="calendar-days">
-    `;
+    <div class="calendar-month" data-month="${monthValue}">
+      <div class="calendar-header">${monthNames[mStr]}</div>
+      <div class="calendar-weekdays">
+        <div class="weekday">일</div>
+        <div class="weekday">월</div>
+        <div class="weekday">화</div>
+        <div class="weekday">수</div>
+        <div class="weekday">목</div>
+        <div class="weekday">금</div>
+        <div class="weekday">토</div>
+      </div>
+      <div class="calendar-days">
+  `;
 
-    // 이전 달 날짜들 (회색)
+    // 이전 달 날짜(회색)
     for (let i = startingDayOfWeek - 1; i >= 0; i--) {
         calendarHTML += `<div class="day prev-month">${prevMonthDays - i}</div>`;
     }
 
-    // 현재 달 날짜들
+    // 현재 달 날짜
     for (let day = 1; day <= daysInMonth; day++) {
         calendarHTML += `<div class="day">${day}</div>`;
     }
 
-    // 다음 달 날짜들 (회색) - 42칸 채우기
+    // 다음 달 날짜(회색) — 총 42칸(6주) 채우기
     const totalCells = 42;
     const filledCells = startingDayOfWeek + daysInMonth;
     const remainingCells = totalCells - filledCells;
@@ -554,17 +552,17 @@ function generateSingleMonthCalendar(monthValue, container) {
     }
 
     calendarHTML += `
-            </div>
-        </div>
-    `;
+      </div>
+    </div>
+  `;
 
     container.innerHTML = calendarHTML;
 
-    // 새로 생성된 달력에 이벤트 리스너 추가
+    // 새로 생성된 달력에 이벤트 연결 및 기존 추가 범위 복원
     setTimeout(() => {
         initializeDateSelection();
         restoreAddedDatesDisplay();
-    }, 100);
+    }, 0);
 }
 
 // 추가된 날짜들을 달력에 다시 표시

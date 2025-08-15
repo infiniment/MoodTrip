@@ -1,5 +1,6 @@
 package com.moodTrip.spring.domain.weather.entity;
 
+import com.moodTrip.spring.domain.attraction.entity.Attraction;
 import com.moodTrip.spring.domain.rooms.entity.Room;
 import jakarta.persistence.*;
 import lombok.*;
@@ -52,9 +53,9 @@ public class Weather {
     private double lat;   // 보존(백필/백업/디버깅용)
     private double lon;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "attraction_id", nullable = false)
-//    private Attraction attraction;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "attraction_id", nullable = false)
+    private Attraction attraction;
 
 
     @ManyToOne(fetch = FetchType.LAZY)

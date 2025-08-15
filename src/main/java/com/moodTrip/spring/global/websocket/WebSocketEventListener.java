@@ -30,19 +30,42 @@ public class WebSocketEventListener {
     @EventListener
     public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
-
         Map<String, Object> sessionAttributes = headerAccessor.getSessionAttributes();
 
         if (sessionAttributes == null) return;
 
-        Object roomIdObj = sessionAttributes.get("roomId");
+        // ChatService에서 put한 키 이름과 일치 시키기: "chattingRoomId", "nickname"
+        Object roomIdObj = sessionAttributes.get("chattingRoomId");
         Object nicknameObj = sessionAttributes.get("nickname");
 
-        if (roomIdObj instanceof Long roomId && nicknameObj instanceof String nickname) {
-            onlineUserTracker.removeUser(roomId, nickname);
+        Long chattingRoomId = toLong(roomIdObj);
+        String nickname = String.valueOf(nicknameObj);
+        if (chattingRoomId == null || nickname == null || nickname.isBlank()) return;
 
-            messagingTemplate.convertAndSend("/sub/chatroom/" + roomId + "/users",
-                    onlineUserTracker.getOnlineUsers(roomId));
-        }
+        // 1) 온라인 목록에서 제거 + 목록 브로드캐스트
+        onlineUserTracker.removeUser(chattingRoomId, nickname);
+        messagingTemplate.convertAndSend(
+                "/sub/chatroom/" + chattingRoomId + "/users",
+                onlineUserTracker.getOnlineUsers(chattingRoomId)
+        );
+
+        // 2) 퇴장 시스템 메시지 브로드캐스트
+        var payload = Map.of(
+                "chattingRoomId", chattingRoomId,
+                "sender", nickname,
+                "message", nickname + "님이 퇴장했습니다.",
+                "type", "LEAVE",
+                "sendTime", java.time.LocalDateTime.now().toString()
+        );
+
+        messagingTemplate.convertAndSend("/sub/chatroom/" + chattingRoomId, payload);
+
+        log.info("WebSocket 해제 처리: roomId={}, nickname={}", chattingRoomId, nickname);
+    }
+
+    private Long toLong(Object v) {
+        if (v instanceof Number n) return n.longValue();
+        try { return Long.parseLong(String.valueOf(v)); }
+        catch (Exception e) { return null; }
     }
 }

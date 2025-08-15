@@ -11,10 +11,22 @@ let connectedUsers = [];
 let travelStartDate = null;
 let travelEndDate = null;
 
+// 채팅 프로필
+const DEFAULT_AVATAR = '/image/fix/moodtrip.png';
+const AVATAR_CACHE = new Map();
+
+let prevUsers = new Set();
+
+const SEEN_JOIN_KEY  = (id) => `room:${id}:seenJoins`;
+const SEEN_LEAVE_KEY = (id) => `room:${id}:seenLeaves`;
+
 
 document.addEventListener('DOMContentLoaded', function () {
     const chatDataElement = document.getElementById('chatData');
     if (!chatDataElement) return;
+
+    if (window.__chatBooted) return;
+    window.__chatBooted = true;
 
     // 초기 변수 세팅
     const travelStartStr = chatDataElement.dataset.travelStart;
@@ -239,6 +251,30 @@ document.addEventListener('DOMContentLoaded', function () {
 //     }
 // }
 
+function loadSeenSet(key) {
+    try { return new Set(JSON.parse(localStorage.getItem(key) || '[]')); }
+    catch { return new Set(); }
+}
+function saveSeenSet(key, set) {
+    try { localStorage.setItem(key, JSON.stringify([...set])); } catch {}
+}
+
+function shouldShowOnce(kind, roomId, nickname) {
+    const key = kind === 'join' ? SEEN_JOIN_KEY(roomId) : SEEN_LEAVE_KEY(roomId);
+    const seen = loadSeenSet(key);
+    if (seen.has(nickname)) return false;
+    seen.add(nickname);
+    saveSeenSet(key, seen);
+    return true;
+}
+
+// “입장했습니다/퇴장했습니다” 메시지에서 닉네임 뽑기
+function parseSystemName(msg='') {
+    // 예) "jacyo님이 입장했습니다." / "수민님이 퇴장했습니다"
+    const m = msg.match(/^(.+?)님이\s*(입장했|퇴장했)/);
+    return m ? m[1] : null;
+}
+
 // 메신저 토글 기능
 function toggleMessenger() {
     const messengerWidget = document.getElementById('messengerWidget');
@@ -288,89 +324,61 @@ function sendMessage() {
 
 // 서버에서 받은 메시지 처리
 function addReceivedMessage(chatMessageResponse) {
+    const { sender, message, sendTime, senderProfileImage } = chatMessageResponse;
+    if (sender && senderProfileImage) AVATAR_CACHE.set(sender, senderProfileImage);
+
     const isCurrentUser = chatMessageResponse.sender === currentUser;
+    const timeString = new Date(sendTime).toLocaleTimeString('ko-KR', { hour:'2-digit', minute:'2-digit' });
 
-    // 시간 포맷팅 (LocalDateTime을 JavaScript Date로 변환)
-    const sendTime = new Date(chatMessageResponse.sendTime);
-    const timeString = sendTime.toLocaleTimeString('ko-KR', {
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-
-    // 입장/퇴장 메시지인지 확인
-    const message = chatMessageResponse.message;
+    // 시스템 메시지 필터링
     if (message.includes('입장했습니다') || message.includes('퇴장했습니다')) {
-        // 시스템 메시지로 처리
-        addSystemMessage(message);
-    } else {
-        // 일반 채팅 메시지로 처리
-        addMessageToUI(chatMessageResponse.sender, message, isCurrentUser, timeString);
-    }
-}
+        const name = parseSystemName(message);
+        if (!name) return; // 포맷 불일치 시 안전하게 무시
 
-// 메시지를 UI에 추가하는 함수
-function addMessageToUI(sender, content, isCurrentUser = false, timeString = null) {
-    const chatMessages = document.getElementById('chatMessages');
-
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `chat-message ${isCurrentUser ? 'user' : ''}`;
-
-    const currentTime = timeString || new Date().toLocaleTimeString('ko-KR', {
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-
-    if (isCurrentUser) {
-        messageDiv.innerHTML = `
-            <div class="message-content">
-                ${content}
-                <div class="message-time">${currentTime}</div>
-            </div>
-        `;
-    } else {
-        messageDiv.innerHTML = `
-            <div class="message-avatar">
-                <img th:src="@{/image/schedule-with-companion/label-logo.jpg}" alt="${sender}">
-            </div>
-            <div class="message-content">
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                    <strong>${sender}</strong>
-                    <span class="message-time" style="font-size: 11px; color: #999;">${currentTime}</span>
-                </div>
-                <div>${content}</div>
-            </div>
-        `;
+        // ▶ 닉네임당 1회만 노출 (방 별)
+        const kind = message.includes('입장') ? 'join' : 'leave';
+        if (shouldShowOnce(kind, chattingRoomId, name)) {
+            addSystemMessage(message);
+        }
+        return;
     }
 
-    chatMessages.appendChild(messageDiv);
-    scrollToBottom();
+    // 일반 메시지
+    addMessageToUI(chatMessageResponse.sender, message, isCurrentUser, timeString);
 }
 
-// 서버에서 기존 채팅 기록 불러오기
-function loadChatHistory() {
-    // 서버에서 채팅 기록 조회 API 호출
-    fetch(`/api/chat/history/${chattingRoomId}`)
-        .then(response => response.json())
-        .then(messages => {
-            // 기존 메시지들을 화면에 표시
-            messages.forEach(msg => {
-                const isCurrentUser = msg.sender === currentUser;
-                const timeString = new Date(msg.sendTime).toLocaleTimeString('ko-KR', {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-                addMessageToUI(msg.sender, msg.message, isCurrentUser, timeString);
-            });
-
-            // 스크롤을 최하단으로
-            setTimeout(() => {
-                scrollToBottom();
-            }, 100);
-        })
-        .catch(error => {
-            console.error('채팅 기록 로드 실패:', error);
-        });
-}
+// // 메시지를 UI에 추가하는 함수
+// async function addMessageToUI(sender, content, isCurrentUser = false, timeString = null) {
+//     const chatMessages = document.getElementById('chatMessages');
+//     const messageDiv = document.createElement('div');
+//     messageDiv.className = `chat-message ${isCurrentUser ? 'user' : ''}`;
+//
+//     const currentTime = timeString || new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+//
+//     if (isCurrentUser) {
+//         messageDiv.innerHTML = `
+//       <div class="message-content">
+//         ${content}
+//         <div class="message-time">${currentTime}</div>
+//       </div>`;
+//     } else {
+//         const avatarUrl = await getAvatar(sender);
+//         messageDiv.innerHTML = `
+//       <div class="message-avatar">
+//         <img src="${avatarUrl}" alt="${sender}" onerror="this.src='${DEFAULT_AVATAR}'">
+//       </div>
+//       <div class="message-content">
+//         <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+//           <strong>${sender}</strong>
+//           <span class="message-time" style="font-size:11px;color:#999;">${currentTime}</span>
+//         </div>
+//         <div>${content}</div>
+//       </div>`;
+//     }
+//
+//     chatMessages.appendChild(messageDiv);
+//     scrollToBottom();
+// }
 
 // 채팅 스크롤을 최하단으로
 function scrollToBottom() {
@@ -405,20 +413,22 @@ function userJoined(username) {
         connectedUsers.push(username);
         updateOnlineUsers();
 
-        // 시스템 메시지 추가
-        addSystemMessage(`${username}님이 접속했습니다.`);
+        if (shouldShowOnce('join', chattingRoomId, username)) {
+            addSystemMessage(`${username}님이 접속했습니다.`);
+        }
     }
 }
 
 // 사용자 나감
 function userLeft(username) {
-    const index = connectedUsers.indexOf(username);
-    if (index > -1) {
-        connectedUsers.splice(index, 1);
+    const idx = connectedUsers.indexOf(username);
+    if (idx > -1) {
+        connectedUsers.splice(idx, 1);
         updateOnlineUsers();
 
-        // 시스템 메시지 추가
-        addSystemMessage(`${username}님이 나갔습니다.`);
+        if (shouldShowOnce('leave', chattingRoomId, username)) {
+            addSystemMessage(`${username}님이 나갔습니다.`);
+        }
     }
 }
 
@@ -434,54 +444,166 @@ function addSystemMessage(content) {
     scrollToBottom();
 }
 
+let isConnecting = false;
+let closedByClient = false;
+
+// WebSocket 연결 설정
+// function connectWebSocket() {
+//     const socket = new SockJS('/ws/chat', null, { transports: ['websocket'] });
+//     stompClient = Stomp.over(socket);
+//
+//     stompClient.connect({}, function (frame) {
+//         console.log('WebSocket 연결 성공: ' + frame);
+//
+//         // 채팅방 메시지 구독
+//         stompClient.subscribe(`/sub/chatroom/${chattingRoomId}`, function (message) {
+//             const chatMessage = JSON.parse(message.body);
+//             addReceivedMessage(chatMessage);
+//         });
+//
+//         // 스케줄링 접속자 목록 구독
+//         stompClient.subscribe(`/sub/schedule/${roomId}`, function (message) {
+//             console.log("[서버에서 수신함]", message.body);
+//             const onlineUsers = JSON.parse(message.body);
+//             updateSchedulingOnlineUsers(onlineUsers);
+//         });
+//
+//         stompClient.subscribe(`/sub/schedule/room/${roomId}`, function (message) {
+//             const payload = JSON.parse(message.body);
+//             const type = payload.type;
+//             const data = payload.data;
+//
+//             switch (type) {
+//                 case 'CREATE':
+//                     addScheduleToUI(data);
+//                     break;
+//                 case 'UPDATE':
+//                     updateScheduleInUI(data);
+//                     break;
+//                 case 'DELETE':
+//                     removeScheduleFromUI(data);
+//                     break;
+//             }
+//         })
+//
+//         // 입장 메시지 전송
+//         sendEnterMessage();
+//         sendSchedulingEnterMessage();
+//
+//     }, function (error) {
+//         console.error('WebSocket 연결 실패:', error);
+//         setTimeout(connectWebSocket, 5000); // 재연결 시도
+//     });
+// }
+//
+// function renderHistory(items) {
+//     if (!Array.isArray(items) || items.length === 0) return;
+//
+//     for (const it of items) {
+//         const sender = it.sender ?? '';
+//         const content = it.message ?? '';
+//         // sentAt(epoch ms) 우선, 없으면 sendTime(ISO)
+//         const t = (typeof it.sentAt === 'number')
+//             ? new Date(it.sentAt)
+//             : (it.sendTime ? new Date(it.sendTime) : new Date());
+//         const timeString = t.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+//
+//         const isCurrentUser = sender === currentUser;
+//
+//         // 시스템(ENTER/LEAVE) 문구면 시스템 메시지로
+//         if (String(it.type).toUpperCase() === 'ENTER' || String(it.type).toUpperCase() === 'LEAVE' ||
+//             content.includes('입장했습니다') || content.includes('퇴장했습니다')) {
+//             addSystemMessage(content);
+//         } else {
+//             addMessageToUI(sender, content, isCurrentUser, timeString);
+//         }
+//     }
+//
+//     // 히스토리 그린 뒤 맨 아래로
+//     setTimeout(scrollToBottom, 50);
+// }
 
 // WebSocket 연결 설정
 function connectWebSocket() {
-    const socket = new SockJS('/ws/chat');
+    if (stompClient?.connected || isConnecting) return;
+    isConnecting = true; closedByClient = false;
+
+    const socket = new SockJS('/ws/chat', null, { transports: ['websocket'] });
     stompClient = Stomp.over(socket);
 
-    stompClient.connect({}, function (frame) {
-        console.log('WebSocket 연결 성공: ' + frame);
+    // 디버그 로그 끄기(원하면 남겨두세요)
+    stompClient.debug = () => {};
 
-        // 채팅방 메시지 구독
-        stompClient.subscribe(`/sub/chatroom/${chattingRoomId}`, function (message) {
-            const chatMessage = JSON.parse(message.body);
-            addReceivedMessage(chatMessage);
-        });
+    // 하트비트(브로커 설정과 맞추세요. 예: 10초)
+    stompClient.heartbeat.outgoing = 10000;
+    stompClient.heartbeat.incoming = 10000;
 
-        // 스케줄링 접속자 목록 구독
-        stompClient.subscribe(`/sub/schedule/${roomId}`, function (message) {
-            console.log("[서버에서 수신함]", message.body);
-            const onlineUsers = JSON.parse(message.body);
-            updateSchedulingOnlineUsers(onlineUsers);
-        });
+    stompClient.connect({},
+        () => {
+            isConnecting = false;
+            console.log('[WS] connected');
 
-        stompClient.subscribe(`/sub/schedule/room/${roomId}`, function (message) {
-            const payload = JSON.parse(message.body);
-            const type = payload.type;
-            const data = payload.data;
+            // 입장 직후 1회 내려오는 "개인 히스토리" 구독
+            stompClient.subscribe('/user/queue/chat-history', (frame) => {
+                const history = JSON.parse(frame.body); // 배열(오래된→최신)
+                renderHistory(history);
+            });
 
-            switch (type) {
-                case 'CREATE':
-                    addScheduleToUI(data);
-                    break;
-                case 'UPDATE':
-                    updateScheduleInUI(data);
-                    break;
-                case 'DELETE':
-                    removeScheduleFromUI(data);
-                    break;
-            }
-        })
+            // 채팅방 접속자 목록 브로드캐스트 구독
+            stompClient.subscribe(`/sub/chatroom/${chattingRoomId}/users`, (message) => {
+                const users = JSON.parse(message.body);       // ["닉1", "닉2", ...]
+                const current = new Set(users);
 
-        // 입장 메시지 전송
-        sendEnterMessage();
-        sendSchedulingEnterMessage();
+                // 1) 최초 스냅샷은 알림 없이 기준만 잡기
+                if (prevUsers.size === 0) {
+                    prevUsers = new Set(users);
+                    connectedUsers = users;
+                    updateOnlineUsers();
+                    return;
+                }
 
-    }, function (error) {
-        console.error('WebSocket 연결 실패:', error);
-        setTimeout(connectWebSocket, 5000); // 재연결 시도
-    });
+                // 2) diff 로 추가/퇴장 감지
+                const joined = users.filter(u => !prevUsers.has(u));
+                const left   = [...prevUsers].filter(u => !current.has(u));
+
+                // 3) 감지된 사용자에 대해 알림(once 필터는 userJoined/Left 내부에서 이미 적용)
+                joined.forEach(u => userJoined(u));
+                left.forEach(u => userLeft(u));
+
+                // 4) 스냅샷 업데이트
+                prevUsers = current;
+            });
+
+
+            // 구독은 여기서만 1회
+            stompClient.subscribe(`/sub/chatroom/${chattingRoomId}`, (msg) => {
+                addReceivedMessage(JSON.parse(msg.body));
+            });
+
+            // 접속자 목록(인터셉터 체크 없이 쓰는 공개 채널)
+            stompClient.subscribe(`/sub/schedule/${roomId}`, (message) => {
+                updateSchedulingOnlineUsers(JSON.parse(message.body));
+            });
+
+            // 일정 변경 브로드캐스트(인터셉터 대상: /sub/schedule/room/)
+            stompClient.subscribe(`/sub/schedule/room/${roomId}`, (message) => {
+                const { type, data } = JSON.parse(message.body);
+                if (type === 'CREATE') addScheduleToUI(data);
+                if (type === 'UPDATE') updateScheduleInUI(data);
+                if (type === 'DELETE') removeScheduleFromUI(data);
+            });
+
+            // 입장 알림은 연결 직후 1회만
+            sendEnterMessage();
+            sendSchedulingEnterMessage();
+        },
+        (error) => {
+            isConnecting = false;
+            console.warn('[WS] disconnected:', error);
+            // 사용자가 수동으로 끊은 경우가 아니면 재접속
+            if (!closedByClient) setTimeout(connectWebSocket, 4000);
+        }
+    );
 }
 
 function addScheduleToUI(data) {
@@ -546,6 +668,7 @@ function removeScheduleFromUI(scheduleId) {
 
 function updateSchedulingOnlineUsers(users) {
     connectedUsers = users; // 실제 리스트 업데이트
+    prefetchAvatars(users).catch(()=>{});
 
     const onlineUsersElement = document.getElementById('onlineUsers');
     const chatRoomElement = document.getElementById('chatRoomUsers');
@@ -590,31 +713,47 @@ function sendSchedulingEnterMessage() {
     }
 }
 // WebSocket 연결 해제
+// function disconnectWebSocket() {
+//     if (stompClient && stompClient.connected) {
+//         // 퇴장 메시지 전송
+//         const leaveMessage = {
+//             type: 'LEAVE',
+//             chattingRoomId: chattingRoomId,
+//             sender: currentUser,
+//             message: `${currentUser}님이 퇴장했습니다.`
+//         };
+//
+//         stompClient.send("/pub/chat/message", {}, JSON.stringify(leaveMessage));
+//         stompClient.disconnect();
+//         console.log('WebSocket 연결 해제');
+//     }
+//
+//     // 사용자 목록에서 제거
+//     const usedUsers = JSON.parse(localStorage.getItem('usedUsers') || '[]');
+//     const updatedUsers = usedUsers.filter(user => user !== currentUser);
+//     localStorage.setItem('usedUsers', JSON.stringify(updatedUsers));
+// }
+
 function disconnectWebSocket() {
-    if (stompClient && stompClient.connected) {
-        // 퇴장 메시지 전송
-        const leaveMessage = {
-            type: 'LEAVE',
-            chattingRoomId: chattingRoomId,
-            sender: currentUser,
-            message: `${currentUser}님이 퇴장했습니다.`
-        };
-
-        stompClient.send("/pub/chat/message", {}, JSON.stringify(leaveMessage));
-        stompClient.disconnect();
-        console.log('WebSocket 연결 해제');
+    try {
+        if (stompClient && stompClient.connected) {
+            stompClient.send("/pub/chat/message", {}, JSON.stringify({
+                type: 'LEAVE', chattingRoomId, sender: currentUser, message: `${currentUser}님이 퇴장했습니다.`
+            }));
+        }
+        navigator.sendBeacon?.('/api/chat/leave', JSON.stringify({
+            type: 'LEAVE', chattingRoomId, sender: currentUser, message: `${currentUser}님이 퇴장했습니다.`
+        }));
+    } catch {}
+    if (stompClient && (stompClient.connected || isConnecting)) {
+        closedByClient = true;
+        try { stompClient.disconnect(() => console.log('[WS] cleanly disconnected')); } catch (_) {}
     }
-
-    // 사용자 목록에서 제거
-    const usedUsers = JSON.parse(localStorage.getItem('usedUsers') || '[]');
-    const updatedUsers = usedUsers.filter(user => user !== currentUser);
-    localStorage.setItem('usedUsers', JSON.stringify(updatedUsers));
 }
 
 // 페이지 언로드시 WebSocket 연결 해제
-window.addEventListener('beforeunload', function() {
-    disconnectWebSocket();
-});
+window.addEventListener('pagehide', disconnectWebSocket);
+window.addEventListener('beforeunload', disconnectWebSocket);
 
 // 채팅방 설정 함수
 function setChattingRoomId(roomId) {
@@ -649,6 +788,122 @@ function handleResponsive() {
 }
 
 window.addEventListener('resize', handleResponsive);
+
+async function prefetchAvatars(nicknames = []) {
+    const need = nicknames.filter(n => n && !AVATAR_CACHE.has(n));
+    if (need.length === 0) return;
+
+    try {
+        const res = await fetch('/api/v1/profiles/avatars', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(need) // List<String>
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+
+        const data = await res.json(); // { nickname: imageUrl, ... }
+        Object.entries(data).forEach(([nick, url]) => {
+            AVATAR_CACHE.set(nick, url || DEFAULT_AVATAR);
+        });
+    } catch (e) {
+        need.forEach(n => AVATAR_CACHE.set(n, DEFAULT_AVATAR));
+        console.error('prefetchAvatars failed', e);
+    }
+}
+
+function renderHistory(items) {
+    if (!Array.isArray(items) || items.length === 0) return;
+
+    // 서버가 보낸 히스토리에 이미지가 들어있다면 캐시로 선반영
+    for (const it of items) {
+        if (it.sender && it.senderProfileImage) {
+            AVATAR_CACHE.set(it.sender, it.senderProfileImage);
+        }
+    }
+
+    // 그래도 비어있는 닉네임들은 배치 프리패치 호출
+    const need = [...new Set(items
+        .filter(it => it.sender && !AVATAR_CACHE.has(it.sender))
+        .map(it => it.sender))];
+    if (need.length) prefetchAvatars(need).catch(()=>{});
+
+    // 렌더
+    for (const it of items) {
+        const sender = it.sender ?? '';
+        const content = it.message ?? '';
+        const t = (typeof it.sentAt === 'number') ? new Date(it.sentAt)
+            : (it.sendTime ? new Date(it.sendTime) : new Date());
+        const timeString = t.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+
+        if (String(it.type).toUpperCase() === 'ENTER' || String(it.type).toUpperCase() === 'LEAVE' ||
+            content.includes('입장했습니다') || content.includes('퇴장했습니다')) {
+            addSystemMessage(content);
+        } else {
+            const isCurrentUser = sender === currentUser;
+            addMessageToUI(sender, content, isCurrentUser, timeString);
+        }
+    }
+    setTimeout(scrollToBottom, 50);
+}
+
+async function getAvatar(nickname) {
+    if (!nickname) return DEFAULT_AVATAR;
+    if (AVATAR_CACHE.has(nickname)) return AVATAR_CACHE.get(nickname);
+
+    try {
+        const res = await fetch('/api/v1/profiles/avatar?nickname=' + encodeURIComponent(nickname));
+        if (res.ok) {
+            const json = await res.json(); // { nickname, url }
+            const url = json.url || DEFAULT_AVATAR;
+            AVATAR_CACHE.set(nickname, url);
+            return url;
+        }
+    } catch (e) {
+        console.error('getAvatar failed', e);
+    }
+    AVATAR_CACHE.set(nickname, DEFAULT_AVATAR);
+    return DEFAULT_AVATAR;
+}
+
+function addMessageToUI(sender, content, isCurrentUser = false, timeString = null) {
+    const chatMessages = document.getElementById('chatMessages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `chat-message ${isCurrentUser ? 'user' : ''}`;
+
+    const currentTime = timeString || new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+
+    if (isCurrentUser) {
+        messageDiv.innerHTML = `
+      <div class="message-content">
+        ${content}
+        <div class="message-time">${currentTime}</div>
+      </div>`;
+    } else {
+        // 아바타는 일단 기본으로 넣고 비동기로 교체
+        const avatarUrlPromise = getAvatar(sender);
+
+        messageDiv.innerHTML = `
+      <div class="message-avatar">
+        <img alt="${sender}">
+      </div>
+      <div class="message-content">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <strong>${sender}</strong>
+          <span class="message-time" style="font-size:11px;color:#999;">${currentTime}</span>
+        </div>
+        <div>${content}</div>
+      </div>`;
+
+        const imgEl = messageDiv.querySelector('.message-avatar img');
+        imgEl.src = DEFAULT_AVATAR; // 기본값
+        avatarUrlPromise.then(url => { imgEl.src = url; });
+    }
+
+    chatMessages.appendChild(messageDiv);
+    scrollToBottom();
+}
+
+
 
 // 일정 추가 모달 열기
 function openScheduleModal() {

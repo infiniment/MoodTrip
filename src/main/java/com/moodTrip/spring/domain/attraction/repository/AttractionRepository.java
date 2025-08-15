@@ -117,6 +117,9 @@ public interface AttractionRepository extends JpaRepository<Attraction, Long> {
             Pageable pageable
     );
 
+    // 방의 목적지가 '육가대표 청라' 처럼 제목만 있을 때를 대비
+    Optional<Attraction> findFirstByTitle(String title);
+
     // 조회 조합별로 DB에서 바로 필터링
     List<Attraction> findAllByAreaCode(int areaCode);
     List<Attraction> findAllByAreaCodeAndSigunguCode(int areaCode, int sigunguCode);
