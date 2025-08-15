@@ -1,1727 +1,820 @@
-// 메신저 관련 전역 변수
-let isMessengerOpen = false;
-let stompClient = null;
-let chattingRoomId = null;
-let currentUser = null;
-let roomId = null;
-// 날짜 및 일정 관련 전역 변수
-let selectedDate = null; // 선택된 날짜
-let schedules = {}; // 일정 데이터 저장소 (날짜별)
-let connectedUsers = [];
-let travelStartDate = null;
-let travelEndDate = null;
+// 다중 날짜 범위를 저장할 배열
+let selectedDateRanges = [];
+let selectedStartDate = null;
+let selectedEndDate = null;
+let previousData = {};
 
-
-document.addEventListener('DOMContentLoaded', function () {
-    const chatDataElement = document.getElementById('chatData');
-    if (!chatDataElement) return;
-
-    // 초기 변수 세팅
-    const travelStartStr = chatDataElement.dataset.travelStart;
-    const travelEndStr = chatDataElement.dataset.travelEnd;
-    travelStartDate = new Date(travelStartStr);
-    travelEndDate = new Date(travelEndStr);
-    chattingRoomId = parseInt(chatDataElement.dataset.roomId);
-    currentUser = chatDataElement.dataset.currentUser;
-    roomId = chattingRoomId;
-
-    window.destName = chatDataElement.dataset.destName || '';
-
-    console.log('destName:', destName);
-
-
-    const wrapper = document.querySelector(".time-input-wrapper");
-    const timeInput = document.getElementById("scheduleTime");
-
-    if (wrapper && timeInput) {
-        wrapper.addEventListener("click", function () {
-            timeInput.showPicker(); // 최신 브라우저 지원
-        });
-    }
-
-    console.log("chattingRoomId:", chattingRoomId);
-    console.log("currentUser:", currentUser);
-
-    updateUserInterface();
-    connectWebSocket();
-
-    // 달력 렌더링 관련
-    const calendarGrid = document.getElementById("calendarGrid");
-    const calendarHeader = document.querySelector(".calendar-header h3");
-
-    let currentDate = new Date();
-    let currentYear = currentDate.getFullYear();
-    let currentMonth = currentDate.getMonth();
-
-    function getDayElement(year, month, day) {
-        const allDays = document.querySelectorAll(".calendar-day.date");
-        for (const d of allDays) {
-            if (
-                parseInt(d.textContent) === day &&
-                !d.classList.contains("empty") &&
-                !d.classList.contains("disabled")
-            ) {
-                return d;
-            }
-        }
-        return null;
-    }
-
-    function renderCalendar(year, month) {
-        const allDays = calendarGrid.querySelectorAll(".calendar-day.date");
-        allDays.forEach(day => day.remove());
-
-        calendarHeader.textContent = `${year}년 ${month + 1}월`;
-
-        const firstDay = new Date(year, month, 1).getDay();
-        const lastDate = new Date(year, month + 1, 0).getDate();
-
-        for (let i = 0; i < firstDay; i++) {
-            const emptyDiv = document.createElement("div");
-            emptyDiv.className = "calendar-day date empty";
-            calendarGrid.appendChild(emptyDiv);
-        }
-
-        for (let day = 1; day <= lastDate; day++) {
-            const dayDiv = document.createElement("div");
-            dayDiv.className = "calendar-day date";
-            dayDiv.textContent = day;
-
-            // 현재 날짜를 yyyy-MM-dd 형식 문자열로 변환
-            const currentDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-
-            if (travelStartStr && travelEndStr &&
-                (currentDateStr < travelStartStr || currentDateStr > travelEndStr)) {
-                // 날짜가 범위 밖이면 비활성화
-                dayDiv.classList.add("disabled");
-                dayDiv.style.pointerEvents = 'none';
-                dayDiv.style.opacity = 0.3;
-            } else {
-                // 선택 가능 날짜
-                if (travelStartStr && travelEndStr &&
-                    (currentDateStr < travelStartStr || currentDateStr > travelEndStr)) {
-                    // 날짜가 범위 밖이면 비활성화
-                    dayDiv.classList.add("disabled");
-                    dayDiv.style.pointerEvents = 'none';
-                    dayDiv.style.opacity = 0.3;
-                } else {
-                    // 선택 가능 날짜
-                    dayDiv.addEventListener("click", () => {
-                        handleDateClick(year, month, day, dayDiv);
-                    });
-                }
-
-
-            }
-
-            calendarGrid.appendChild(dayDiv);
-        }
-    }
-
-    renderCalendar(currentYear, currentMonth);
-
-    fetch(`/api/schedules/room/${roomId}`)
-        .then(response => response.json())
-        .then(data => {
-            data.forEach(schedule => {
-                const date = schedule.travelStartDate.split('T')[0];
-                if (!schedules[date]) schedules[date] = [];
-                schedules[date].push(schedule);
-            });
-
-            console.log('전체 일정 데이터:', schedules);
-            updateScheduleListAll();
-        })
-        .catch(error => {
-            console.error("일정 데이터 로드 실패:", error);
-        });
-
-    const [prevBtn, nextBtn] = document.querySelectorAll(".calendar-nav .nav-btn");
-    prevBtn.addEventListener("click", () => {
-        currentMonth--;
-        if (currentMonth < 0) {
-            currentMonth = 11;
-            currentYear--;
-        }
-        renderCalendar(currentYear, currentMonth);
-    });
-
-    nextBtn.addEventListener("click", () => {
-        currentMonth++;
-        if (currentMonth > 11) {
-            currentMonth = 0;
-            currentYear++;
-        }
-        renderCalendar(currentYear, currentMonth);
-    });
-
-    function setInitialSelectedDate() {
-        if (!travelStartDate) return;
-
-        const year = travelStartDate.getFullYear();
-        const month = travelStartDate.getMonth();
-        const day = travelStartDate.getDate();
-
-        currentYear = year;
-        currentMonth = month;
-
-        renderCalendar(year, month); // 초기 렌더링 다시
-
-        const initialElement = getDayElement(year, month, day);
-        handleDateClick(year, month, day, initialElement);
-        setTimeout(() => {
-            const allDays = document.querySelectorAll(".calendar-day.date");
-            allDays.forEach(d => {
-                if (
-                    parseInt(d.textContent) === day &&
-                    !d.classList.contains("empty") &&
-                    !d.classList.contains("disabled")
-                ) {
-                    d.classList.add("selected");
-                }
-            });
-        }, 0);
-    }
-
-    setInitialSelectedDate();
-
-
-    const fetchJSON = (url) =>
-        fetch(url).then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); });
-
-    fetchJSON(`/api/weather/current?roomId=${roomId}`)
-        .then(renderCurrentWeather)
-        .catch(err => console.error('현재 날씨 불러오기 실패:', err));
-
-    fetchJSON(`/api/weather/daily?roomId=${roomId}`)
-        .then(renderDailyForecast)
-        .catch(err => console.error('3일 예보 불러오기 실패:', err));
-
-    // // 현재 날씨
-    // fetch('/api/weather/current')
-    //     .then(res => res.json())
-    //     .then(renderCurrentWeather)
-    //     .catch(err => console.error('현재 날씨 불러오기 실패:', err));
-    //
-    // // 3일 예보
-    // fetch('/api/weather/daily')
-    //     .then(res => res.json())
-    //     .then(renderDailyForecast)
-    //     .catch(err => console.error('3일 예보 불러오기 실패:', err));
-
+// DOM 로드 후 실행
+document.addEventListener('DOMContentLoaded', function() {
+    loadPreviousData();
+    initializeCurrentMonthView(); // 현재 날짜 기준 3개월 표시
+    initializeDateSelection();
+    initializeMonthSelector();
+    initializeAddDateButton(); // 추가 버튼 초기화
+    initializeNextButton();
+    initializeBackButton();
 });
 
+// 현재 날짜 기준 3개월 표시 초기화
+function initializeCurrentMonthView() {
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth() + 1; // 0부터 시작하므로 +1
+    const currentYear = currentDate.getFullYear();
 
+    // 현재 월부터 3개월 계산 (예: 현재가 7월이면 7,8,9월)
+    const months = [];
+    for (let i = 0; i < 3; i++) {
+        const targetMonth = currentMonth + i;
+        const targetYear = currentYear + Math.floor((targetMonth - 1) / 12);
+        const adjustedMonth = ((targetMonth - 1) % 12) + 1;
 
-// 사용자 인터페이스 업데이트
-function updateUserInterface() {
-    // 채팅 헤더에 현재 사용자 표시
-    const profileInfo = document.querySelector('.profile-info h3');
-    if (profileInfo) {
-        profileInfo.textContent = `채팅방 - ${currentUser}`;
+        months.push({
+            year: targetYear,
+            month: adjustedMonth,
+            monthValue: `${targetYear}-${String(adjustedMonth).padStart(2, '0')}`
+        });
     }
+
+    // 드롭다운 옵션 업데이트
+    updateMonthSelectOptions(months);
+
+    // 달력 그리드 업데이트
+    updateCalendarGrid(months);
 }
 
-// // 메신저 초기화
-// function initializeMessenger() {
-//     const messengerWidget = document.getElementById('messengerWidget');
-//     const floatingBtn = document.getElementById('messengerFloatingBtn');
-//
-//     // 초기에는 메신저 숨김
-//     if (messengerWidget) {
-//         messengerWidget.style.display = 'none';
-//     }
-//
-//     // 플로팅 버튼 표시
-//     if (floatingBtn) {
-//         floatingBtn.style.display = 'flex';
-//     }
-//
-//     // 채팅 입력창 엔터키 이벤트
-//     const chatInput = document.getElementById('chatInput');
-//     if (chatInput) {
-//         chatInput.addEventListener('keypress', function(e) {
-//             if (e.key === 'Enter' && !e.shiftKey) {
-//                 e.preventDefault();
-//                 sendMessage();
-//             }
-//         });
-//     }
-// }
+// 월 선택 드롭다운 옵션 업데이트
+function updateMonthSelectOptions(months) {
+    const monthSelect = document.getElementById('monthSelect');
+    const monthNames = [
+        '', '1월', '2월', '3월', '4월', '5월', '6월',
+        '7월', '8월', '9월', '10월', '11월', '12월'
+    ];
 
-// 메신저 토글 기능
-function toggleMessenger() {
-    const messengerWidget = document.getElementById('messengerWidget');
-    const floatingBtn = document.getElementById('messengerFloatingBtn');
+    // 기본 옵션은 유지하고 현재 월 기준으로 추가
+    let optionsHTML = '<option value="">3개월 보기</option>';
 
-    if (!isMessengerOpen) {
-        // 메신저 열기
-        messengerWidget.style.display = 'flex';
-        messengerWidget.classList.add('show');
-        floatingBtn.style.display = 'none';
-        isMessengerOpen = true;
+    // 현재 월부터 6개월 정도 옵션 추가
+    for (let i = 0; i < 6; i++) {
+        const targetMonth = months[0].month + i;
+        const targetYear = months[0].year + Math.floor((targetMonth - 1) / 12);
+        const adjustedMonth = ((targetMonth - 1) % 12) + 1;
+        const monthValue = `${targetYear}-${String(adjustedMonth).padStart(2, '0')}`;
 
-        // 스크롤을 최하단으로
-        setTimeout(() => {
-            scrollToBottom();
-        }, 100);
-    } else {
-        // 메신저 닫기
-        messengerWidget.style.display = 'none';
-        messengerWidget.classList.remove('show');
-        floatingBtn.style.display = 'flex';
-        isMessengerOpen = false;
+        optionsHTML += `<option value="${monthValue}">${targetYear}년 ${monthNames[adjustedMonth]}</option>`;
     }
+
+    monthSelect.innerHTML = optionsHTML;
 }
 
-// 메시지 전송 기능
-function sendMessage() {
-    const chatInput = document.getElementById('chatInput');
-    const message = chatInput.value.trim();
+// 달력 그리드 업데이트 (현재 날짜 기준 3개월)
+function updateCalendarGrid(months) {
+    const calendarGrid = document.getElementById('calendarGrid');
+    let gridHTML = '';
 
-    if (message === '' || !stompClient || !stompClient.connected) return;
-
-    // Spring Boot ChatMessageRequest 형태로 메시지 전송
-    const chatMessage = {
-        type: 'TALK',
-        chattingRoomId: chattingRoomId,
-        sender: currentUser,
-        message: message
-    };
-
-    // 서버로 메시지 전송
-    stompClient.send("/pub/chat/message", {}, JSON.stringify(chatMessage));
-
-    // 입력창 초기화
-    chatInput.value = '';
-}
-
-// 서버에서 받은 메시지 처리
-function addReceivedMessage(chatMessageResponse) {
-    const isCurrentUser = chatMessageResponse.sender === currentUser;
-
-    // 시간 포맷팅 (LocalDateTime을 JavaScript Date로 변환)
-    const sendTime = new Date(chatMessageResponse.sendTime);
-    const timeString = sendTime.toLocaleTimeString('ko-KR', {
-        hour: '2-digit',
-        minute: '2-digit'
+    months.forEach(monthInfo => {
+        gridHTML += generateMonthCalendarHTML(monthInfo);
     });
 
-    // 입장/퇴장 메시지인지 확인
-    const message = chatMessageResponse.message;
-    if (message.includes('입장했습니다') || message.includes('퇴장했습니다')) {
-        // 시스템 메시지로 처리
-        addSystemMessage(message);
-    } else {
-        // 일반 채팅 메시지로 처리
-        addMessageToUI(chatMessageResponse.sender, message, isCurrentUser, timeString);
-    }
+    calendarGrid.innerHTML = gridHTML;
 }
 
-// 메시지를 UI에 추가하는 함수
-function addMessageToUI(sender, content, isCurrentUser = false, timeString = null) {
-    const chatMessages = document.getElementById('chatMessages');
+// 월별 달력 HTML 생성
+function generateMonthCalendarHTML(monthInfo) {
+    const { year, month, monthValue } = monthInfo;
+    const monthNames = [
+        '', '1월', '2월', '3월', '4월', '5월', '6월',
+        '7월', '8월', '9월', '10월', '11월', '12월'
+    ];
 
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `chat-message ${isCurrentUser ? 'user' : ''}`;
+    // 해당 월의 정보 계산
+    const firstDay = new Date(year, month - 1, 1);
+    const lastDay = new Date(year, month, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDayOfWeek = firstDay.getDay();
 
-    const currentTime = timeString || new Date().toLocaleTimeString('ko-KR', {
-        hour: '2-digit',
-        minute: '2-digit'
-    });
+    // 이전 달 마지막 날들
+    const prevMonth = new Date(year, month - 2, 0);
+    const prevMonthDays = prevMonth.getDate();
 
-    if (isCurrentUser) {
-        messageDiv.innerHTML = `
-            <div class="message-content">
-                ${content}
-                <div class="message-time">${currentTime}</div>
+    let calendarHTML = `
+        <div class="calendar-month" data-month="${monthValue}">
+            <div class="calendar-header">${monthNames[month]}</div>
+            <div class="calendar-weekdays">
+                <div class="weekday">일</div>
+                <div class="weekday">월</div>
+                <div class="weekday">화</div>
+                <div class="weekday">수</div>
+                <div class="weekday">목</div>
+                <div class="weekday">금</div>
+                <div class="weekday">토</div>
             </div>
-        `;
-    } else {
-        messageDiv.innerHTML = `
-            <div class="message-avatar">
-                <img th:src="@{/image/schedule-with-companion/label-logo.jpg}" alt="${sender}">
+            <div class="calendar-days">
+    `;
+
+    // 이전 달 날짜들 (회색)
+    for (let i = startingDayOfWeek - 1; i >= 0; i--) {
+        calendarHTML += `<div class="day prev-month">${prevMonthDays - i}</div>`;
+    }
+
+    // 현재 달 날짜들
+    for (let day = 1; day <= daysInMonth; day++) {
+        calendarHTML += `<div class="day">${day}</div>`;
+    }
+
+    // 다음 달 날짜들 (회색) - 총 42칸(6주)이 되도록
+    const totalCells = 42;
+    const usedCells = startingDayOfWeek + daysInMonth;
+    const remainingCells = totalCells - usedCells;
+
+    for (let day = 1; day <= remainingCells; day++) {
+        calendarHTML += `<div class="day next-month">${day}</div>`;
+    }
+
+    calendarHTML += `
             </div>
-            <div class="message-content">
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                    <strong>${sender}</strong>
-                    <span class="message-time" style="font-size: 11px; color: #999;">${currentTime}</span>
-                </div>
-                <div>${content}</div>
-            </div>
-        `;
-    }
+        </div>
+    `;
 
-    chatMessages.appendChild(messageDiv);
-    scrollToBottom();
+    return calendarHTML;
 }
 
-// 서버에서 기존 채팅 기록 불러오기
-function loadChatHistory() {
-    // 서버에서 채팅 기록 조회 API 호출
-    fetch(`/api/chat/history/${chattingRoomId}`)
-        .then(response => response.json())
-        .then(messages => {
-            // 기존 메시지들을 화면에 표시
-            messages.forEach(msg => {
-                const isCurrentUser = msg.sender === currentUser;
-                const timeString = new Date(msg.sendTime).toLocaleTimeString('ko-KR', {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-                addMessageToUI(msg.sender, msg.message, isCurrentUser, timeString);
-            });
-
-            // 스크롤을 최하단으로
-            setTimeout(() => {
-                scrollToBottom();
-            }, 100);
-        })
-        .catch(error => {
-            console.error('채팅 기록 로드 실패:', error);
-        });
-}
-
-// 채팅 스크롤을 최하단으로
-function scrollToBottom() {
-    const chatMessages = document.getElementById('chatMessages');
-    if (chatMessages) {
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-}
-
-// 온라인 사용자 업데이트
-function updateOnlineUsers() {
-    const onlineUsersElement = document.getElementById('onlineUsers');
-    const onlineCountElement = document.getElementById('onlineCount');
-    const chatRoomUsersElement = document.getElementById('chatRoomUsers');
-
-    if (onlineUsersElement) {
-        onlineUsersElement.textContent = connectedUsers.join(', ');
-    }
-
-    if (onlineCountElement) {
-        onlineCountElement.textContent = `${connectedUsers.length}명 온라인`;
-    }
-
-    if (chatRoomUsersElement) {
-        chatRoomUsersElement.textContent = `현재 접속자: ${connectedUsers.join(', ')}`;
-    }
-}
-
-// 새로운 사용자 접속
-function userJoined(username) {
-    if (!connectedUsers.includes(username)) {
-        connectedUsers.push(username);
-        updateOnlineUsers();
-
-        // 시스템 메시지 추가
-        addSystemMessage(`${username}님이 접속했습니다.`);
-    }
-}
-
-// 사용자 나감
-function userLeft(username) {
-    const index = connectedUsers.indexOf(username);
-    if (index > -1) {
-        connectedUsers.splice(index, 1);
-        updateOnlineUsers();
-
-        // 시스템 메시지 추가
-        addSystemMessage(`${username}님이 나갔습니다.`);
-    }
-}
-
-// 시스템 메시지 추가
-function addSystemMessage(content) {
-    const chatMessages = document.getElementById('chatMessages');
-
-    const systemDiv = document.createElement('div');
-    systemDiv.className = 'system-message';
-    systemDiv.textContent = content;
-
-    chatMessages.appendChild(systemDiv);
-    scrollToBottom();
-}
-
-
-// WebSocket 연결 설정
-function connectWebSocket() {
-    const socket = new SockJS('/ws/chat');
-    stompClient = Stomp.over(socket);
-
-    stompClient.connect({}, function (frame) {
-        console.log('WebSocket 연결 성공: ' + frame);
-
-        // 채팅방 메시지 구독
-        stompClient.subscribe(`/sub/chatroom/${chattingRoomId}`, function (message) {
-            const chatMessage = JSON.parse(message.body);
-            addReceivedMessage(chatMessage);
-        });
-
-        // 스케줄링 접속자 목록 구독
-        stompClient.subscribe(`/sub/schedule/${roomId}`, function (message) {
-            console.log("[서버에서 수신함]", message.body);
-            const onlineUsers = JSON.parse(message.body);
-            updateSchedulingOnlineUsers(onlineUsers);
-        });
-
-        stompClient.subscribe(`/sub/schedule/room/${roomId}`, function (message) {
-            const payload = JSON.parse(message.body);
-            const type = payload.type;
-            const data = payload.data;
-
-            switch (type) {
-                case 'CREATE':
-                    addScheduleToUI(data);
-                    break;
-                case 'UPDATE':
-                    updateScheduleInUI(data);
-                    break;
-                case 'DELETE':
-                    removeScheduleFromUI(data);
-                    break;
-            }
-        })
-
-        // 입장 메시지 전송
-        sendEnterMessage();
-        sendSchedulingEnterMessage();
-
-    }, function (error) {
-        console.error('WebSocket 연결 실패:', error);
-        setTimeout(connectWebSocket, 5000); // 재연결 시도
-    });
-}
-
-function addScheduleToUI(data) {
-    const date = data.travelStartDate.split('T')[0];
-
-    if (!schedules[date]) schedules[date] = [];
-
-    const isDuplicate = schedules[date].some(s => s.scheduleId === data.scheduleId);
-    if (!isDuplicate) {
-        schedules[date].push(data);
-        updateScheduleListAll();
-    }
-}
-
-function updateScheduleInUI(updatedSchedule) {
-    if (!updatedSchedule.travelStartDate) {
-        console.warn("travelStartDate가 없습니다. UI 업데이트 생략");
-        return;
-    }
-
-    const newDate = updatedSchedule.travelStartDate.split('T')[0];
-
-    // 모든 날짜 그룹을 순회하면서 일정 ID를 가진 항목을 찾음
-    for (const date in schedules) {
-        const index = schedules[date].findIndex(item => item.scheduleId === updatedSchedule.scheduleId);
-        if (index !== -1) {
-            // 날짜가 변경되었으면 기존에서 제거하고 새 날짜에 추가
-            if (date !== newDate) {
-                const removed = schedules[date].splice(index, 1)[0];
-                if (schedules[date].length === 0) delete schedules[date];
-
-                if (!schedules[newDate]) schedules[newDate] = [];
-                schedules[newDate].push(updatedSchedule);
-            } else {
-                // 같은 날짜라면 기존 데이터 교체
-                schedules[date][index] = updatedSchedule;
-            }
-
-            updateScheduleListAll();
+// 이전 페이지들에서 선택된 데이터 불러오기
+function loadPreviousData() {
+    try {
+        // 전체 방 생성 데이터 불러오기
+        let roomData = localStorage.getItem('room_creation_data');
+        if (roomData) {
+            previousData = JSON.parse(roomData);
+            console.log('이전 단계 데이터:', previousData);
             return;
         }
-    }
 
-    // 못 찾았으면 새로 추가 (예외 처리)
-    if (!schedules[newDate]) schedules[newDate] = [];
-    schedules[newDate].push(updatedSchedule);
-    updateScheduleListAll();
-}
+        // 개별 데이터 불러오기
+        const emotions = localStorage.getItem('selected_emotions');
+        const destination = localStorage.getItem('selected_destination');
 
-function removeScheduleFromUI(scheduleId) {
-    for (const date in schedules) {
-        const index = schedules[date].findIndex(s => s.scheduleId === scheduleId);
-        if (index !== -1) {
-            schedules[date].splice(index, 1);
-            if (schedules[date].length === 0) delete schedules[date];
-            break;
-        }
-    }
+        if (emotions) previousData.emotions = JSON.parse(emotions);
+        if (destination) previousData.destination = JSON.parse(destination);
 
-    updateScheduleListAll();
-}
-
-function updateSchedulingOnlineUsers(users) {
-    connectedUsers = users; // 실제 리스트 업데이트
-
-    const onlineUsersElement = document.getElementById('onlineUsers');
-    const chatRoomElement = document.getElementById('chatRoomUsers');
-    const onlineCountElement = document.getElementById('onlineCount');
-
-    if (onlineUsersElement) {
-        onlineUsersElement.textContent = users.join(', ');
-    }
-
-    if (onlineCountElement) {
-        onlineCountElement.textContent = `${users.length}명 온라인`;
-    }
-
-    if (chatRoomElement) {
-        chatRoomElement.textContent = `현재 접속자: ${users.join(', ')}`;
-    }
-
-}
-
-// 입장 메시지 전송
-function sendEnterMessage() {
-    if (stompClient && stompClient.connected) {
-        const enterMessage = {
-            type: 'ENTER',
-            chattingRoomId: chattingRoomId,
-            sender: currentUser,
-            message: `${currentUser}님이 입장했습니다.`
-        };
-
-        stompClient.send("/pub/chat/message", {}, JSON.stringify(enterMessage));
+        console.log('이전 단계 데이터 (개별):', previousData);
+    } catch (e) {
+        console.error('이전 데이터 불러오기 실패:', e);
     }
 }
 
-function sendSchedulingEnterMessage() {
-    if (stompClient && stompClient.connected) {
-        const schedulingEnterMsg = {
-            type: 'ENTER',
-            roomId: roomId,
-            sender: currentUser
-        };
-        stompClient.send("/pub/schedule/enter", {}, JSON.stringify(schedulingEnterMsg));
-    }
-}
-// WebSocket 연결 해제
-function disconnectWebSocket() {
-    if (stompClient && stompClient.connected) {
-        // 퇴장 메시지 전송
-        const leaveMessage = {
-            type: 'LEAVE',
-            chattingRoomId: chattingRoomId,
-            sender: currentUser,
-            message: `${currentUser}님이 퇴장했습니다.`
-        };
+// 날짜 선택 초기화
+function initializeDateSelection() {
+    const days = document.querySelectorAll('.day:not(.prev-month):not(.next-month)');
 
-        stompClient.send("/pub/chat/message", {}, JSON.stringify(leaveMessage));
-        stompClient.disconnect();
-        console.log('WebSocket 연결 해제');
-    }
+    days.forEach(day => {
+        day.addEventListener('click', function() {
+            // 이미 추가된 날짜는 클릭 무시
+            if (this.classList.contains('added-date')) return;
 
-    // 사용자 목록에서 제거
-    const usedUsers = JSON.parse(localStorage.getItem('usedUsers') || '[]');
-    const updatedUsers = usedUsers.filter(user => user !== currentUser);
-    localStorage.setItem('usedUsers', JSON.stringify(updatedUsers));
+            const dayNumber = parseInt(this.textContent);
+            const monthElement = this.closest('.calendar-month');
+            const monthValue = monthElement.getAttribute('data-month');
+            const [year, month] = monthValue.split('-');
+
+            const clickedDate = new Date(year, month - 1, dayNumber);
+
+            handleDateSelection(clickedDate, this);
+        });
+    });
 }
 
-// 페이지 언로드시 WebSocket 연결 해제
-window.addEventListener('beforeunload', function() {
-    disconnectWebSocket();
-});
-
-// 채팅방 설정 함수
-function setChattingRoomId(roomId) {
-    chattingRoomId = roomId;
-    console.log('채팅방 ID 설정:', chattingRoomId);
-}
-
-// 현재 사용자 설정 함수
-function setCurrentUser(username) {
-    currentUser = username;
-    console.log('현재 사용자 설정:', currentUser);
-}
-
-// 채팅창 반응형 처리
-function handleResponsive() {
-    const widget = document.getElementById('messengerWidget');
-    const isMobile = window.innerWidth <= 768;
-
-    if (widget && isMessengerOpen) {
-        if (isMobile) {
-            widget.style.width = 'calc(100vw - 20px)';
-            widget.style.height = 'calc(100vh - 40px)';
-            widget.style.bottom = '10px';
-            widget.style.right = '10px';
+// 날짜 선택 처리
+function handleDateSelection(clickedDate, dayElement) {
+    if (!selectedStartDate || (selectedStartDate && selectedEndDate)) {
+        // 새로운 선택 시작
+        clearCurrentSelection();
+        selectedStartDate = clickedDate;
+        selectedEndDate = null;
+        dayElement.classList.add('range-start', 'selected');
+    } else if (selectedStartDate && !selectedEndDate) {
+        // 종료 날짜 선택
+        if (clickedDate < selectedStartDate) {
+            // 시작일보다 이른 날짜를 선택한 경우 시작일로 설정
+            clearCurrentSelection();
+            selectedStartDate = clickedDate;
+            selectedEndDate = null;
+            dayElement.classList.add('range-start', 'selected');
         } else {
-            widget.style.width = '380px';
-            widget.style.height = '600px';
-            widget.style.bottom = '30px';
-            widget.style.right = '30px';
+            // 정상적인 종료일 선택
+            selectedEndDate = clickedDate;
+            dayElement.classList.add('range-end', 'selected');
+
+            // 범위 표시
+            highlightCurrentRange();
         }
     }
+
+    updateCurrentSelectionDisplay();
 }
 
-window.addEventListener('resize', handleResponsive);
-
-// 일정 추가 모달 열기
-function openScheduleModal() {
-    const modal = document.getElementById('scheduleModal');
-    if (modal) {
-        modal.style.display = 'flex';
-        // 모달 애니메이션을 위한 클래스 추가
-        setTimeout(() => {
-            modal.classList.add('show');
-        }, 10);
-    }
+// 현재 선택 초기화 (전체가 아닌 현재 선택만)
+function clearCurrentSelection() {
+    const allDays = document.querySelectorAll('.day');
+    allDays.forEach(day => {
+        // 이미 추가된 날짜는 유지하고 현재 선택만 제거
+        if (!day.classList.contains('added-date')) {
+            day.classList.remove('selected', 'in-range', 'range-start', 'range-end');
+        }
+    });
 }
 
-// 일정 추가 모달 닫기
-function closeScheduleModal() {
-    const modal = document.getElementById('scheduleModal');
-    if (modal) {
-        modal.classList.remove('show');
-        // 애니메이션 완료 후 모달 숨기기
-        setTimeout(() => {
-            modal.style.display = 'none';
-            // 입력 필드 초기화
-            clearModalInputs();
-        }, 300);
-    }
+// 현재 범위 하이라이트
+function highlightCurrentRange() {
+    if (!selectedStartDate || !selectedEndDate) return;
+
+    const allDays = document.querySelectorAll('.day:not(.prev-month):not(.next-month)');
+
+    allDays.forEach(day => {
+        if (day.classList.contains('added-date')) return; // 이미 추가된 날짜는 건드리지 않음
+
+        const dayNumber = parseInt(day.textContent);
+        const monthElement = day.closest('.calendar-month');
+        const monthValue = monthElement.getAttribute('data-month');
+        const [year, month] = monthValue.split('-');
+
+        const dayDate = new Date(year, month - 1, dayNumber);
+
+        if (dayDate > selectedStartDate && dayDate < selectedEndDate) {
+            day.classList.add('in-range');
+        }
+    });
 }
 
-// 모달 입력 필드 초기화
-function clearModalInputs() {
-    document.getElementById('scheduleTime').value = '';
-    document.getElementById('scheduleTitle').value = '';
-    document.getElementById('scheduleDescription').value = '';
+// 추가 버튼 초기화
+function initializeAddDateButton() {
+    // 추가 버튼을 달력 아래에 동적으로 생성
+    const calendarGrid = document.getElementById('calendarGrid');
+    const addButtonContainer = document.createElement('div');
+    addButtonContainer.className = 'add-date-container';
+    addButtonContainer.innerHTML = `
+        <button type="button" id="addDateRangeButton" class="btn btn-add-date" disabled>
+            선택한 날짜 추가
+        </button>
+        <p class="add-date-guide">날짜 범위를 선택한 후 '추가' 버튼을 눌러주세요</p>
+    `;
 
-    const modal = document.getElementById('scheduleModal');
-    modal.dataset.editMode = 'false';
-    modal.dataset.editId = '';
-    modal.dataset.editDate = '';
+    // 달력 그리드 다음에 추가
+    calendarGrid.parentNode.insertBefore(addButtonContainer, calendarGrid.nextSibling);
 
-    modal.querySelector('.modal-header h2').textContent = '새 일정 추가';
-    modal.querySelector('.btn-confirm').textContent = '일정 추가';
+    // 추가 버튼 이벤트 리스너
+    const addButton = document.getElementById('addDateRangeButton');
+    addButton.addEventListener('click', function() {
+        if (selectedStartDate && selectedEndDate) {
+            addDateRange();
+        }
+    });
 }
 
-// 모달에서 일정 추가하기
-function addScheduleFromModal() {
-    const time = document.getElementById('scheduleTime').value;
-    const title = document.getElementById('scheduleTitle').value;
-    const description = document.getElementById('scheduleDescription').value;
+// 날짜 범위 추가
+function addDateRange() {
+    if (!selectedStartDate || !selectedEndDate) return;
 
-    if (!time || !title.trim()) {
-        alert('시간과 일정 제목을 입력해주세요.');
-        return;
-    }
-
-    if (!selectedDate) {
-        const today = new Date();
-        selectedDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-    }
-
-    const modal = document.getElementById('scheduleModal');
-    const isEditMode = modal.dataset.editMode === 'true';
-
-    const scheduleData = {
-        roomId: roomId,
-        travelStartDate: `${selectedDate}T${time}`,
-        scheduleTitle: title.trim(),
-        scheduleDescription: description.trim()
+    // 중복 체크
+    const newRange = {
+        startDate: new Date(selectedStartDate),
+        endDate: new Date(selectedEndDate),
+        startDateFormatted: formatDate(selectedStartDate),
+        endDateFormatted: formatDate(selectedEndDate)
     };
 
-    if (isEditMode) {
-        const scheduleId = modal.dataset.editId;
-        updateScheduleToServer(scheduleId, scheduleData);
-    } else {
-        saveScheduleToServer(scheduleData);
-    }
+    // 기존 범위와 겹치는지 확인
+    const hasOverlap = selectedDateRanges.some(range => {
+        return (newRange.startDate <= range.endDate && newRange.endDate >= range.startDate);
+    });
 
-    // 모달 닫기 및 초기화
-    closeScheduleModal();
-}
-
-// 전체 일정 조회
-function updateScheduleListAll() {
-    const listContainer = document.querySelector('.schedule-list');
-    listContainer.innerHTML = '';
-
-    // 정렬된 날짜 기준 전체 일정 표시
-    const sortedDates = Object.keys(schedules).sort();
-
-    if (sortedDates.length === 0) {
-        listContainer.innerHTML = `
-            <h3 style="margin-bottom: 20px; color: #333;">등록된 일정이 없습니다</h3>
-            <button class="add-btn" onclick="openScheduleModal()">새 일정 추가</button>
-        `;
+    if (hasOverlap) {
+        alert('이미 선택된 날짜와 겹칩니다. 다른 날짜를 선택해주세요.');
         return;
     }
 
-    sortedDates.forEach(date => {
-        const dateSection = document.createElement('div');
-        dateSection.classList.add('date-section');
+    // 범위 추가
+    selectedDateRanges.push(newRange);
 
-        const dateHeader = document.createElement('h3');
-        dateHeader.textContent = formatDisplayDate(date);
-        dateSection.appendChild(dateHeader);
+    // 추가된 날짜들을 달력에 표시
+    markAddedDatesOnCalendar(newRange);
 
-        // ⬇️ 시간 기준으로 정렬 추가
-        const sortedSchedules = schedules[date].sort((a, b) => {
-            return new Date(a.travelStartDate) - new Date(b.travelStartDate);
-        });
+    // 현재 선택 초기화
+    clearCurrentSelection();
+    selectedStartDate = null;
+    selectedEndDate = null;
 
-        sortedSchedules.forEach(schedule => {
-            const scheduleItem = document.createElement('div');
-            scheduleItem.classList.add('schedule-item');
-            scheduleItem.innerHTML = `
-                <div class="time-box">${formatTime(schedule.travelStartDate)}</div>
-                <div class="schedule-main">
-                    <div class="schedule-header">
-                        <strong class="schedule-title">${schedule.scheduleTitle}</strong>
-                        <div class="actions">
-                            <button class="edit-btn" onclick="editSchedule(${schedule.scheduleId})">✏️</button>
-                            <button class="delete-btn" onclick="deleteSchedule(${schedule.scheduleId})">🗑️</button>
-                        </div>
-                    </div>
-                    <p class="schedule-description">${schedule.scheduleDescription || ''}</p>
+    // UI 업데이트
+    updateSelectedDateDisplay();
+    updateAddButton();
+
+    console.log('추가된 날짜 범위:', selectedDateRanges);
+}
+
+// 추가된 날짜들을 달력에 표시
+function markAddedDatesOnCalendar(dateRange) {
+    const allDays = document.querySelectorAll('.day:not(.prev-month):not(.next-month)');
+
+    allDays.forEach(day => {
+        const dayNumber = parseInt(day.textContent);
+        const monthElement = day.closest('.calendar-month');
+        const monthValue = monthElement.getAttribute('data-month');
+        const [year, month] = monthValue.split('-');
+
+        const dayDate = new Date(year, month - 1, dayNumber);
+
+        if (dayDate >= dateRange.startDate && dayDate <= dateRange.endDate) {
+            day.classList.add('added-date');
+            day.classList.remove('selected', 'in-range', 'range-start', 'range-end');
+
+            // 추가된 날짜 스타일
+            if (dayDate.getTime() === dateRange.startDate.getTime()) {
+                day.classList.add('added-range-start');
+            } else if (dayDate.getTime() === dateRange.endDate.getTime()) {
+                day.classList.add('added-range-end');
+            } else {
+                day.classList.add('added-in-range');
+            }
+        }
+    });
+}
+
+// 현재 선택 표시 업데이트 (추가 버튼 활성화/비활성화)
+function updateCurrentSelectionDisplay() {
+    updateAddButton();
+}
+
+// 추가 버튼 상태 업데이트
+function updateAddButton() {
+    const addButton = document.getElementById('addDateRangeButton');
+    const guideText = document.querySelector('.add-date-guide');
+
+    if (selectedStartDate && selectedEndDate) {
+        addButton.disabled = false;
+        addButton.textContent = `${formatDate(selectedStartDate)} ~ ${formatDate(selectedEndDate)} 추가`;
+        guideText.textContent = '선택한 날짜 범위를 추가하시려면 버튼을 눌러주세요';
+    } else if (selectedStartDate) {
+        addButton.disabled = true;
+        addButton.textContent = '종료일을 선택해주세요';
+        guideText.textContent = '종료일을 선택한 후 추가할 수 있습니다';
+    } else {
+        addButton.disabled = true;
+        addButton.textContent = '선택한 날짜 추가';
+        guideText.textContent = '날짜 범위를 선택한 후 \'추가\' 버튼을 눌러주세요';
+    }
+}
+
+// 선택된 날짜 표시 업데이트 (다중 범위 표시)
+function updateSelectedDateDisplay() {
+    const selectedDateSection = document.getElementById('selectedDateSection');
+    const selectedDateContainer = document.getElementById('selectedDateContainer');
+
+    if (selectedDateRanges.length > 0) {
+        // 선택된 날짜 섹션을 표시
+        selectedDateSection.style.display = 'block';
+
+        // 날짜 범위 아이템들을 생성
+        const rangeItemsHTML = selectedDateRanges.map((range, index) => {
+            const rangeText = range.startDateFormatted === range.endDateFormatted
+                ? range.startDateFormatted
+                : `${range.startDateFormatted} ~ ${range.endDateFormatted}`;
+
+            return `
+                <div class="date-range-item">
+                    <span class="range-text">${rangeText}</span>
+                    <button type="button" class="delete-range-btn" data-index="${index}">삭제</button>
                 </div>
             `;
-            dateSection.appendChild(scheduleItem);
-        });
+        }).join('');
 
-        listContainer.appendChild(dateSection);
-    });
+        const totalDays = calculateTotalDays();
 
-    // "새 일정 추가" 버튼은 맨 아래 고정
-    const addBtn = document.createElement('button');
-    addBtn.classList.add('add-btn');
-    addBtn.textContent = '새 일정 추가';
-    addBtn.onclick = openScheduleModal;
-    listContainer.appendChild(addBtn);
-}
+        // 전체 컨테이너 HTML 업데이트
+        selectedDateContainer.innerHTML = `
+            <div class="date-range-display">
+                ${rangeItemsHTML}
+            </div>
+            <div class="date-info-text">
+                총 ${selectedDateRanges.length}개 구간, ${totalDays}일이 선택되었습니다!
+            </div>
+        `;
 
-function fetchAndRenderAllSchedules() {
-    fetch(`/api/schedules/room/${roomId}`) // roomId는 전역에 선언되어 있어야 함
-        .then(response => response.json())
-        .then(data => {
-            // 기존 일정 초기화
-            schedules = {};
-
-            data.forEach(schedule => {
-                const date = schedule.travelStartDate.split('T')[0]; // yyyy-MM-dd 추출
-                if (!schedules[date]) schedules[date] = [];
-                schedules[date].push(schedule);
+        // 삭제 버튼 이벤트 리스너 추가
+        selectedDateContainer.querySelectorAll('.delete-range-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const index = parseInt(this.getAttribute('data-index'));
+                deleteDateRange(index);
             });
-
-            console.log('전체 일정 불러오기 성공:', schedules);
-            updateScheduleListAll(); // 렌더링 함수 호출
-        })
-        .catch(error => {
-            console.error("일정 데이터 로드 실패:", error);
         });
-}
-
-function handleScheduleCreated(newSchedule) {
-    const date = newSchedule.travelStartDate.split('T')[0];
-
-    if (!schedules[date]) {
-        schedules[date] = [];
-    }
-
-    schedules[date].push(newSchedule);
-
-    updateScheduleListAll(); // 전체 리스트 다시 렌더링
-}
-
-function formatTime(isoString) {
-    const time = new Date(isoString);
-    return time.toTimeString().slice(0, 5); // "HH:MM"
-}
-
-function formatDisplayDate(yyyyMMdd) {
-    const date = new Date(yyyyMMdd);
-    return date.toLocaleDateString('ko-KR', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        weekday: 'short'
-    }); // 예: 2025년 08월 08일 (금)
-}
-
-
-// 일정 수정
-function editSchedule(scheduleId) {
-    let targetSchedule = null;
-    let targetDate = null;
-
-    for (const date in schedules) {
-        const schedule = schedules[date].find(s => s.scheduleId === scheduleId);
-        if (schedule) {
-            targetSchedule = schedule;
-            targetDate = date;
-            break;
-        }
-    }
-
-    if (!targetSchedule) {
-        alert('일정을 찾을 수 없습니다.');
-        return;
-    }
-
-    const localTime = new Date(targetSchedule.travelStartDate);
-    const hours = String(localTime.getHours()).padStart(2, '0');
-    const minutes = String(localTime.getMinutes()).padStart(2, '0');
-    document.getElementById('scheduleTime').value = `${hours}:${minutes}`;
-    document.getElementById('scheduleTitle').value = targetSchedule.scheduleTitle;
-    document.getElementById('scheduleDescription').value = targetSchedule.scheduleDescription;
-
-    const modal = document.getElementById('scheduleModal');
-    modal.dataset.editMode = 'true';
-    modal.dataset.editId = scheduleId;
-    modal.dataset.editDate = targetDate;
-
-    modal.querySelector('.modal-header h2').textContent = '일정 수정';
-    modal.querySelector('.btn-confirm').textContent = '일정 수정';
-
-    openScheduleModal();
-}
-
-// 일정 삭제
-function deleteSchedule(scheduleId) {
-    if (!confirm('정말로 이 일정을 삭제하시겠습니까?')) return;
-
-    for (const date in schedules) {
-        const index = schedules[date].findIndex(s => s.scheduleId === scheduleId);
-        if (index !== -1) {
-            schedules[date].splice(index, 1);
-            if (schedules[date].length === 0) delete schedules[date]; // 해당 날짜도 삭제
-
-            deleteScheduleFromServer(scheduleId); // 실제 서버 요청
-            updateScheduleListAll(); // 다시 렌더링
-            showNotification('일정이 삭제되었습니다.');
-            break;
-        }
-    }
-}
-
-// 서버에 일정 저장
-function saveScheduleToServer(schedule) {
-    fetch(`/api/schedules/room/${roomId}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(schedule)
-    })
-        .then(response => {
-            if (!response.ok) throw new Error("서버 응답 실패");
-            return response.json();
-        })
-        .then(data => {
-            console.log('일정 저장 성공:', data);
-        })
-        .catch(error => {
-            console.error('일정 저장 실패:', error);
-            alert('일정 저장 중 오류가 발생했습니다.');
-        });
-
-}
-
-function updateScheduleToServer(scheduleId, updatedSchedule) {
-    fetch(`/api/schedules/${scheduleId}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updatedSchedule)
-    })
-        .then(response => {
-            if (!response.ok) throw new Error("서버 응답 실패");
-            return response.json();
-        })
-        .then(data => {
-            console.log('일정 수정 성공:', data);
-            fetchAndRenderAllSchedules(); // 전체 다시 불러오기
-            showNotification('일정이 수정되었습니다.');
-        })
-        .catch(error => {
-            console.error('일정 수정 실패:', error);
-            alert('일정 수정 중 오류가 발생했습니다.');
-        });
-}
-
-// 서버에서 일정 삭제
-function deleteScheduleFromServer(scheduleId) {
-    fetch(`/api/schedules/${scheduleId}`, {
-        method: 'DELETE'
-    })
-        .then(response => {
-            if (response.ok) {
-                console.log('일정 삭제 성공');
-            }
-        })
-        .catch(error => {
-            console.error('일정 삭제 실패:', error);
-        });
-}
-
-// 알림 메시지 표시
-function showNotification(message) {
-    // 기존 알림이 있으면 제거
-    const existingNotification = document.querySelector('.notification');
-    if (existingNotification) {
-        existingNotification.remove();
-    }
-
-    const notification = document.createElement('div');
-    notification.className = 'notification';
-    notification.textContent = message;
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #4CAF50;
-        color: white;
-        padding: 12px 20px;
-        border-radius: 6px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        z-index: 10000;
-        font-size: 14px;
-        opacity: 0;
-        transform: translateY(-20px);
-        transition: all 0.3s ease;
-    `;
-
-    document.body.appendChild(notification);
-
-    // 애니메이션
-    setTimeout(() => {
-        notification.style.opacity = '1';
-        notification.style.transform = 'translateY(0)';
-    }, 10);
-
-    // 3초 후 제거
-    setTimeout(() => {
-        notification.style.opacity = '0';
-        notification.style.transform = 'translateY(-20px)';
-        setTimeout(() => {
-            notification.remove();
-        }, 300);
-    }, 3000);
-}
-
-// 달력 날짜 클릭 이벤트 수정 (기존 함수 내용 대체)
-function handleDateClick(year, month, day, element) {
-    const previousSelected = document.querySelector('.calendar-day.selected');
-    if (previousSelected) {
-        previousSelected.classList.remove('selected');
-    }
-
-    element.classList.add('selected');
-
-    selectedDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-}
-
-// 모달 외부 클릭시 닫기
-document.addEventListener('click', function(event) {
-    const modal = document.getElementById('scheduleModal');
-    if (event.target === modal) {
-        closeScheduleModal();
-    }
-});
-
-// ESC 키로 모달 닫기
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') {
-        const modal = document.getElementById('scheduleModal');
-        if (modal && modal.style.display === 'flex') {
-            closeScheduleModal();
-        }
-    }
-});
-
-
-
-// 현재 날씨 랜더링
-function renderCurrentWeather(data) {
-    document.querySelector('.weather-icon').textContent = getWeatherEmoji(data.weather);
-    document.querySelector('.weather-temp').textContent = `${Math.round(data.temperature)}°C`;
-    document.querySelector('.weather-current p:nth-of-type(1)').textContent = data.description;
-
-    document.querySelector('.weather-current p:nth-of-type(2)').textContent =
-        `${destName || '여행지'} · ${formatDate(data.date)}`;
-
-    document.querySelector('.weather-current p:nth-of-type(3)').textContent =
-        `습도 ${data.humidity}% · 바람 ${data.windSpeed ?? 2}m/s`;
-}
-
-
-// 일일 날씨 랜더링
-function renderDailyForecast(forecasts) {
-    const forecastItems = document.querySelectorAll('.forecast-item');
-    forecasts.slice(0, 3).forEach((f, i) => {
-        const item = forecastItems[i];
-        item.querySelector('strong').textContent = formatDateWithWeekday(f.date); // 예: "8월 6일 (화)"
-        item.querySelector('p').textContent = f.description;
-        item.querySelector('span').textContent = getWeatherEmoji(f.weather);
-        item.querySelectorAll('p')[1].innerHTML = `<strong>${Math.round(f.maxTemp)}°C</strong> / ${Math.round(f.minTemp)}°C`;
-    });
-}
-
-function formatDate(dateStr) {
-    const date = new Date(dateStr);
-    return `${date.getMonth() + 1}월 ${date.getDate()}일`;
-}
-
-function formatDateWithWeekday(dateStr) {
-    const date = new Date(dateStr);
-    const days = ['일', '월', '화', '수', '목', '금', '토'];
-    return `${date.getMonth() + 1}월 ${date.getDate()}일 (${days[date.getDay()]})`;
-}
-
-function getWeatherEmoji(main) {
-    switch (main) {
-        case 'Clear': return '☀️';
-        case 'Clouds': return '⛅';
-        case 'Rain': return '🌧️';
-        case 'Snow': return '❄️';
-        case 'Thunderstorm': return '⛈️';
-        default: return '🌤️';
-    }
-}
-
-let map, marker;
-let mapInited = false;
-
-
-function escapeHtml(s = '') {
-    return String(s)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-}
-
-function showSection(id) {
-    // 1) 탭 active 토글
-    document.querySelectorAll('.section-tabs .tab').forEach(t => t.classList.remove('active'));
-    const tab = Array.from(document.querySelectorAll('.section-tabs .tab')).find(t => {
-        if (id === 'schedule')  return t.textContent.includes('일정');
-        if (id === 'weather')   return t.textContent.includes('날씨');
-        if (id === 'transport') return t.textContent.includes('교통');
-        return false;
-    });
-    if (tab) tab.classList.add('active');
-
-    // 2) 섹션 표시 토글
-    document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
-    const section = document.getElementById(id);
-    if (section) section.classList.add('active');
-
-    // 3) 교통(지도)
-    if (id === 'transport') {
-        kakao.maps.load(() => {
-            setupSearchUIOnce();
-            if (!mapInited) initKakaoMap(); else { map.relayout(); }
-            setupRouteUI();
-        });
-    }
-
-}
-
-window.addEventListener('load', () => {
-    const transportActive = document.getElementById('transport')?.classList.contains('active');
-    if (transportActive && typeof kakao !== 'undefined' && kakao.maps) {
-        kakao.maps.load(() => initKakaoMap());
-    }
-});
-
-function setupRouteUI() {
-    const sInput = document.getElementById('startInput');
-    const eInput = document.getElementById('endInput');
-    const sRes   = document.getElementById('startResults');
-    const eRes   = document.getElementById('endResults');
-    const btn    = document.getElementById('routeBtn');
-
-    if (!sInput || !eInput || !btn) return;
-    if (btn.dataset.bound === '1') return;  // 중복 방지
-    btn.dataset.bound = '1';
-
-    // 오토컴플리트(이미 만든 함수 재사용)
-    bindAutocomplete(sInput, sRes, (pick) => { startPick = pick; });
-    bindAutocomplete(eInput, eRes, (pick) => { endPick   = pick; });
-
-    // 버튼 클릭 바인딩
-    btn.addEventListener('click', onRouteClick);
-}
-
-function onRouteClick() {
-    const sName = document.getElementById('startInput').value.trim();
-    const eName = document.getElementById('endInput').value.trim();
-    if (!sName || !eName) { alert('출발지와 도착지를 입력해 주세요.'); return; }
-
-    // 좌표 찾아서 프리뷰/교통편 업데이트
-    if (!kakao?.maps?.services) return;
-    const places = new kakao.maps.services.Places();
-
-    places.keywordSearch(sName, (d1, st1) => {
-        if (st1 !== kakao.maps.services.Status.OK || !d1?.[0]) return;
-        const s = { name: d1[0].place_name, lon: +d1[0].x, lat: +d1[0].y };
-
-        places.keywordSearch(eName, (d2, st2) => {
-            if (st2 !== kakao.maps.services.Status.OK || !d2?.[0]) return;
-            const e = { name: d2[0].place_name, lon: +d2[0].x, lat: +d2[0].y };
-
-            startPick = s; endPick = e;
-            drawRoutePreview(s, e);
-            updateTransportCards(s, e);    // ← 여기만 남김
-        });
-    });
-}
-
-function initKakaoMap() {
-    const container = document.getElementById('map');
-    if (!container) return;
-
-    const defaultCenter = new kakao.maps.LatLng(37.5665, 126.9780);
-    map = new kakao.maps.Map(container, { center: defaultCenter, level: 4 });
-
-    const chatData = document.getElementById('chatData');
-    const destName = chatData?.dataset.destName || '';
-    const lat = parseFloat(chatData?.dataset.destLat);
-    const lon = parseFloat(chatData?.dataset.destLon);
-
-    if (!isNaN(lat) && !isNaN(lon)) {
-        setMap(lat, lon, destName);
-        mapInited = true;
-        setupRouteUI();           // ✅ 여기서 호출
-        return;
-    }
-
-    if (destName) {
-        const ps = new kakao.maps.services.Places();
-        ps.keywordSearch(destName, (data, status) => {
-            if (status === kakao.maps.services.Status.OK && data.length > 0) {
-                const f = data[0];
-                setMap(parseFloat(f.y), parseFloat(f.x), f.place_name || destName);
-            } else {
-                console.warn('장소 검색 실패 또는 결과 없음:', destName);
-            }
-            mapInited = true;
-            setupRouteUI();         // ✅ 비동기 분기에서도 호출
-        }, { size: 3 });
     } else {
-        mapInited = true;
-        setupRouteUI();           // ✅ 기본 분기에서도 호출
+        selectedDateSection.style.display = 'none';
     }
 }
 
-function setMap(lat, lon, title='') {
-    const pos = new kakao.maps.LatLng(lat, lon);
-    map.setCenter(pos);
-    if (marker) marker.setMap(null);
-    marker = new kakao.maps.Marker({
-        position: pos,
-        map,
-        title // 브라우저 기본 툴팁만 표시
+// 총 선택 일수 계산
+function calculateTotalDays() {
+    return selectedDateRanges.reduce((total, range) => {
+        const days = Math.ceil((range.endDate - range.startDate) / (1000 * 60 * 60 * 24)) + 1;
+        return total + days;
+    }, 0);
+}
+
+// 특정 날짜 범위 삭제
+function deleteDateRange(index) {
+    if (index < 0 || index >= selectedDateRanges.length) return;
+
+    const deletedRange = selectedDateRanges[index];
+
+    // 배열에서 제거
+    selectedDateRanges.splice(index, 1);
+
+    // 달력에서 해당 날짜 마크 제거
+    removeAddedDatesFromCalendar(deletedRange);
+
+    // UI 업데이트
+    updateSelectedDateDisplay();
+
+    console.log('삭제된 날짜 범위:', deletedRange);
+    console.log('남은 날짜 범위들:', selectedDateRanges);
+}
+
+// 달력에서 추가된 날짜 마크 제거
+function removeAddedDatesFromCalendar(dateRange) {
+    const allDays = document.querySelectorAll('.day');
+
+    allDays.forEach(day => {
+        const dayNumber = parseInt(day.textContent);
+        const monthElement = day.closest('.calendar-month');
+        if (!monthElement) return;
+
+        const monthValue = monthElement.getAttribute('data-month');
+        const [year, month] = monthValue.split('-');
+
+        const dayDate = new Date(year, month - 1, dayNumber);
+
+        if (dayDate >= dateRange.startDate && dayDate <= dateRange.endDate) {
+            day.classList.remove('added-date', 'added-range-start', 'added-range-end', 'added-in-range');
+        }
     });
-    setTimeout(() => map.relayout(), 0);
 }
 
-// 카카오 검색 결과를 일정으로 저장 (필요 필드 검증 + roomId fallback)
-function addFromKakaoResult(doc) {
-    const timeEl = document.getElementById('scheduleTime');
-    const titleEl = document.getElementById('scheduleTitle');
+// 월 선택 드롭다운 초기화
+function initializeMonthSelector() {
+    const monthSelect = document.getElementById('monthSelect');
 
-    const time = timeEl?.value || '';
-    const title = (titleEl?.value || '').trim();
+    monthSelect.addEventListener('change', function() {
+        const selectedMonth = this.value;
 
-    if (!selectedDate) {
-        alert('먼저 달력에서 날짜를 선택해주세요.');
-        return;
-    }
-    if (!time) {
-        alert('시간을 선택해주세요.');
-        return;
-    }
-    if (!title) {
-        alert('일정 제목을 입력해주세요.');
-        return;
-    }
-    if (!doc || !doc.place_name || !doc.x || !doc.y) {
-        alert('장소 정보를 확인할 수 없습니다.');
-        return;
-    }
+        if (selectedMonth === '' || selectedMonth === '3month') {
+            // 3개월 보기로 전환
+            showThreeMonthView();
+        } else {
+            // 단일 월 보기로 전환
+            showSingleMonthView(selectedMonth);
+        }
+    });
+}
 
-    // roomId 전역이 없으면 chatData에서 가져오기 (안전장치)
-    const rid = (typeof roomId !== 'undefined' && roomId)
-        ? roomId
-        : parseInt(document.getElementById('chatData')?.dataset.roomId);
+// 3개월 보기 표시
+function showThreeMonthView() {
+    const calendarGrid = document.getElementById('calendarGrid');
+    const singleCalendarContainer = document.getElementById('singleCalendarContainer');
 
-    if (!rid) {
-        console.error('roomId가 없습니다.');
-        alert('방 정보가 유효하지 않습니다.');
-        return;
-    }
+    calendarGrid.style.display = 'grid';
+    singleCalendarContainer.style.display = 'none';
 
-    const scheduleData = {
-        roomId: rid,
-        travelStartDate: `${selectedDate}T${time}`,
-        scheduleTitle: title,
-        scheduleDescription: '',
-        placeName: doc.place_name,
-        placeLat: parseFloat(doc.y), // 위도
-        placeLon: parseFloat(doc.x)  // 경도
+    // 기존 이벤트 리스너 재연결
+    setTimeout(() => {
+        initializeDateSelection();
+        restoreAddedDatesDisplay();
+    }, 100);
+}
+
+// 단일 월 보기 표시
+function showSingleMonthView(monthValue) {
+    const calendarGrid = document.getElementById('calendarGrid');
+    const singleCalendarContainer = document.getElementById('singleCalendarContainer');
+
+    calendarGrid.style.display = 'none';
+    singleCalendarContainer.style.display = 'block';
+
+    // 선택된 월의 달력 생성
+    generateSingleMonthCalendar(monthValue, singleCalendarContainer);
+}
+
+// 단일 월 달력 생성
+function generateSingleMonthCalendar(monthValue, container) {
+    const [year, month] = monthValue.split('-');
+    const monthNames = {
+        '01': '1월', '02': '2월', '03': '3월', '04': '4월', '05': '5월', '06': '6월',
+        '07': '7월', '08': '8월', '09': '9월', '10': '10월', '11': '11월', '12': '12월'
     };
 
-    saveScheduleToServer(scheduleData);
-}
+    // 해당 월의 정보 계산
+    const firstDay = new Date(year, month - 1, 1);
+    const lastDay = new Date(year, month, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDayOfWeek = firstDay.getDay();
 
+    // 이전 달 마지막 날들
+    const prevMonth = new Date(year, month - 2, 0);
+    const prevMonthDays = prevMonth.getDate();
 
-// ===== 장소 검색 UI/로직 =====
-let placesService = null;       // kakao.maps.services.Places
-let searchDebounceTimer = null; // 디바운스 타이머
-let suppressSearch = false;
-
-function ensurePlacesService() {
-    if (!placesService) {
-        placesService = new kakao.maps.services.Places();
-    }
-}
-
-function hidePlaceResults() {
-    const box = document.getElementById('placeResults');
-    if (box) { box.style.display = 'none'; box.innerHTML = ''; }
-}
-
-function setupSearchUIOnce() {
-    const input = document.getElementById('placeSearchInput');
-    const btn = document.getElementById('placeSearchBtn');
-    if (!input || !btn) return;
-    if (btn.dataset.bound === 'true') return;
-    btn.dataset.bound = 'true';
-
-    // 버튼/엔터 → 첫 결과에 포커스(지도 이동)
-    btn.addEventListener('click', () => doPlaceSearch(input.value.trim(), { focusFirst: true, hideList: true }));
-    input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') doPlaceSearch(input.value.trim(), { focusFirst: true, hideList: true });
-    });
-
-    // 입력 중엔 결과만 갱신(지도는 안 움직임)
-    input.addEventListener('input', () => {
-        clearTimeout(searchDebounceTimer);
-        searchDebounceTimer = setTimeout(() => {
-            doPlaceSearch(input.value.trim(), { focusFirst: false });
-        }, 400);
-    });
-}
-
-function ensureMapReady(cb) {
-    if (map) return cb();
-    if (typeof kakao === 'undefined' || !kakao.maps) return;
-    kakao.maps.load(() => {
-        setupSearchUIOnce();
-        if (!mapInited) initKakaoMap(); else { map.relayout(); }
-        setupRouteUI();
-    });
-}
-
-function doPlaceSearch(query, opts = { focusFirst: false, hideList: false }) {
-    const resBox = document.getElementById('placeResults');
-    if (!query) { if (resBox) resBox.style.display = 'none'; return; }
-    if (typeof kakao === 'undefined' || !kakao.maps) return;
-
-    ensurePlacesService();
-    const options = {};
-    if (map) options.location = map.getCenter();
-
-    placesService.keywordSearch(query, (data, status) => {
-        if (status !== kakao.maps.services.Status.OK || !Array.isArray(data) || data.length === 0) {
-            renderSearchResults([]);
-            return;
-        }
-
-        // 버튼/엔터일 때: 첫 결과 지도 이동 + 리스트 숨김
-        if (opts.focusFirst) {
-            const d = data[0];
-            ensureMapReady(() => setMap(parseFloat(d.y), parseFloat(d.x), d.place_name));
-            if (opts.hideList) { hidePlaceResults(); return; }  // ★ 여기서 끝
-        }
-
-        // 입력 중인 경우에만 리스트 렌더링
-        renderSearchResults(data.slice(0, 8));
-    }, options);
-}
-
-
-function renderSearchResults(list) {
-    const box = document.getElementById('placeResults');
-    if (!box) return;
-
-    if (!list.length) {
-        box.innerHTML = `<div style="padding:8px; color:#888;">검색 결과가 없습니다.</div>`;
-        box.style.display = 'block';
-        return;
-    }
-
-    box.innerHTML = list.map((doc, i) => {
-        const name = escapeHtml(doc.place_name || '');
-        const addr = escapeHtml(doc.road_address_name || doc.address_name || '');
-        return `
-      <div class="result-item" style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px; border-bottom:1px solid #f3f3f3;">
-        <div style="min-width:0;">
-          <div style="font-weight:600; margin-bottom:2px;">${i+1}. ${name}</div>
-          <div style="font-size:12px; color:#666; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:420px;">${addr}</div>
-        </div>
-        <div style="flex:0 0 auto; display:flex; gap:6px;">
-          <button type="button" class="add-btn" style="padding:6px 10px;" data-act="focus" data-idx="${i}">선택</button>
-        </div>
-      </div>
+    let calendarHTML = `
+        <div class="calendar-month" data-month="${monthValue}">
+            <div class="calendar-header">${monthNames[month]}</div>
+            <div class="calendar-weekdays">
+                <div class="weekday">일</div>
+                <div class="weekday">월</div>
+                <div class="weekday">화</div>
+                <div class="weekday">수</div>
+                <div class="weekday">목</div>
+                <div class="weekday">금</div>
+                <div class="weekday">토</div>
+            </div>
+            <div class="calendar-days">
     `;
-    }).join('');
-    box.style.display = 'block';
 
-    // 버튼 핸들링(이벤트 위임)
-    box.onclick = (e) => {
-        const btn = e.target.closest('button[data-act]');
-        if (!btn) return;
-        const idx = parseInt(btn.dataset.idx);
-        const act = btn.dataset.act;
-        const doc = list[idx];
-        if (!doc) return;
+    // 이전 달 날짜들 (회색)
+    for (let i = startingDayOfWeek - 1; i >= 0; i--) {
+        calendarHTML += `<div class="day prev-month">${prevMonthDays - i}</div>`;
+    }
 
-        if (act === 'focus') {
-            // 지도 이동/마커 표시
-            const lat = parseFloat(doc.y);
-            const lon = parseFloat(doc.x);
-            setMap(lat, lon, doc.place_name);
+    // 현재 달 날짜들
+    for (let day = 1; day <= daysInMonth; day++) {
+        calendarHTML += `<div class="day">${day}</div>`;
+    }
 
-            // 🔹 검색창에 선택한 장소명 넣기
-            const searchInput = document.getElementById('placeSearchInput');
-            if (searchInput) {
-                searchInput.value = doc.place_name || '';
-            }
+    // 다음 달 날짜들 (회색) - 42칸 채우기
+    const totalCells = 42;
+    const filledCells = startingDayOfWeek + daysInMonth;
+    const remainingCells = totalCells - filledCells;
 
-            // 🔹 리스트 숨기기
-            hidePlaceResults();
-        } else if (act === 'add') {
-            addFromKakaoResult(doc);
-            hidePlaceResults();
-        }
-    };
-}
+    for (let day = 1; day <= remainingCells; day++) {
+        calendarHTML += `<div class="day next-month">${day}</div>`;
+    }
 
-// ===== 길찾기 검색 상태 =====
-let startPick = null;   // {name, lat, lon}
-let endPick   = null;   // {name, lat, lon}
-let routeLine = null;   // 미니 프리뷰용 폴리라인
-
-let suppressUntil = 0;                 // 이 시간 전까지는 검색 무시
-const SUPPRESS_MS = 300;               // 0.3초면 충분
-
-// === 카카오맵 공용 버튼 제어(전역) ===
-let lastStart = null, lastEnd = null;
-
-function showKakaoBtn() {
-    const btn = document.getElementById('openKakaoMapBtn');
-    if (!btn) return;
-    btn.style.display = 'inline-block';
-    btn.disabled = false;
-    btn.style.opacity = '1';
-    btn.style.cursor = 'pointer';
-}
-function hideKakaoBtn() {
-    const btn = document.getElementById('openKakaoMapBtn');
-    if (!btn) return;
-    btn.style.display = 'none';
-}
-
-// 페이지 로드 후 한 번만 버튼 클릭 바인딩
-document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('openKakaoMapBtn')?.addEventListener('click', () => {
-        if (!lastStart || !lastEnd) return;
-        const url = buildKakaoRouteUrl(lastStart, lastEnd, 'transit');
-        window.open(url, '_blank', 'noopener');
-    });
-
-    // 출발/도착 변경 시 버튼 다시 숨김 (선택)
-    document.getElementById('startInput')?.addEventListener('input', hideKakaoBtn);
-    document.getElementById('endInput')?.addEventListener('input', hideKakaoBtn);
-    setupRouteUI();
-});
-
-function isSuppressed() {
-    return Date.now() < suppressUntil;
-}
-
-function bindAutocomplete(inputEl, resultsEl, onPick) {
-    if (!inputEl || !resultsEl) return;
-
-    // 한글 조합 여부를 따지지 않는다. (space 안 눌러도 바로 뜸)
-    // 단, '선택' 직후 억제 시간에는 무시
-    inputEl.addEventListener('input', (e) => {
-        if (isSuppressed()) return;
-
-        const q = inputEl.value.trim();
-        // 반대쪽 리스트 닫기
-        document.querySelectorAll('.route-results')?.forEach(bx => {
-            if (bx !== resultsEl) { bx.style.display = 'none'; bx.innerHTML = ''; }
-        });
-
-        if (!q || !kakao?.maps?.services) { resultsEl.style.display = 'none'; resultsEl.innerHTML=''; return; }
-
-        const places = new kakao.maps.services.Places();
-        const opts = (window.map ? { location: map.getCenter() } : {});
-        places.keywordSearch(q, (data, status) => {
-            if (status !== kakao.maps.services.Status.OK || !data?.length) {
-                resultsEl.style.display = 'none'; resultsEl.innerHTML = ''; return;
-            }
-            resultsEl.innerHTML = data.slice(0, 8).map(d => `
-        <div class="result-item" data-x="${d.x}" data-y="${d.y}" data-name="${escapeHtml(d.place_name||'')}">
-          <div class="name">${escapeHtml(d.place_name||'')}</div>
-          <div class="addr">${escapeHtml(d.road_address_name || d.address_name || '')}</div>
+    calendarHTML += `
+            </div>
         </div>
-      `).join('');
-            resultsEl.style.display = 'block';
-        }, opts);
-    });
+    `;
 
-    // pointerdown에서 값 세팅 + 리스트 닫기 + 잠깐 억제
-    resultsEl.addEventListener('pointerdown', (e) => {
-        const item = e.target.closest('.result-item');
-        if (!item) return;
-        e.preventDefault(); // blur 전에 값 세팅
+    container.innerHTML = calendarHTML;
 
-        const pick = {
-            name: item.dataset.name,
-            lon : parseFloat(item.dataset.x),
-            lat : parseFloat(item.dataset.y),
-        };
+    // 새로 생성된 달력에 이벤트 리스너 추가
+    setTimeout(() => {
+        initializeDateSelection();
+        restoreAddedDatesDisplay();
+    }, 100);
+}
 
-        suppressUntil = Date.now() + SUPPRESS_MS;   // 🔒 잠깐 검색 막기
-        inputEl.value = pick.name || '';
-        onPick(pick);
-        setMap(pick.lat, pick.lon, pick.name);
-
-        resultsEl.style.display = 'none';
-        resultsEl.innerHTML = '';
-    });
-
-    // blur 시 살짝 딜레이 후 닫기
-    inputEl.addEventListener('blur', () => {
-        setTimeout(() => { resultsEl.style.display = 'none'; }, 120);
+// 추가된 날짜들을 달력에 다시 표시
+function restoreAddedDatesDisplay() {
+    selectedDateRanges.forEach(range => {
+        markAddedDatesOnCalendar(range);
     });
 }
 
-// 간단 폴리라인 프리뷰 + 지도 맞춤
-function drawRoutePreview(a, b) {
-    if (!map || !a || !b) return;
-    if (routeLine) routeLine.setMap(null);
-    const path = [
-        new kakao.maps.LatLng(a.lat, a.lon),
-        new kakao.maps.LatLng(b.lat, b.lon)
-    ];
-    routeLine = new kakao.maps.Polyline({
-        path,
-        strokeWeight: 4,
-        strokeColor: '#0b6dbe',
-        strokeOpacity: 0.8,
-        strokeStyle: 'shortdash'
-    });
-    routeLine.setMap(map);
-
-    const bounds = new kakao.maps.LatLngBounds();
-    path.forEach(p => bounds.extend(p));
-    map.setBounds(bounds);
+// 날짜 포맷팅 (YYYY.MM.DD)
+function formatDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}.${month}.${day}`;
 }
 
-// 길찾기 버튼
-document.getElementById('routeBtn')?.addEventListener('click', () => {
-    const sInput = document.getElementById('startInput');
-    const eInput = document.getElementById('endInput');
+// 날짜 정보 포맷팅 (YY년 M월 D일)
+function formatDateInfo(date) {
+    const year = String(date.getFullYear()).slice(-2);
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    return `${year}년 ${month}월 ${day}일`;
+}
 
-    const ensurePicked = (text, setter, done) => {
-        if (!text) return done(false);
-        if (kakao?.maps?.services && (!startPick || !endPick)) {
-            const places = new kakao.maps.services.Places();
-            places.keywordSearch(text, (data, status) => {
-                if (status === kakao.maps.services.Status.OK && data[0]) {
-                    const d = data[0];
-                    setter({ name: d.place_name, lon: parseFloat(d.x), lat: parseFloat(d.y) });
-                    done(true);
-                } else done(false);
-            });
-        } else done(!!text);
-    };
+// 다음 버튼 초기화
+function initializeNextButton() {
+    const nextButton = document.getElementById('nextButton');
+    if (nextButton) {
+        nextButton.addEventListener('click', function(e) {
+            e.preventDefault();
 
-    ensurePicked(sInput.value.trim(), v => startPick = v, (ok1) => {
-        ensurePicked(eInput.value.trim(), v => endPick = v, (ok2) => {
-            if (!ok1 || !ok2 || !startPick || !endPick) {
-                alert('출발지와 도착지를 모두 선택해 주세요.');
+            // 유효성 검사 - 다중 범위 체크
+            if (selectedDateRanges.length === 0) {
+                alert('최소 하나 이상의 여행 날짜를 추가해주세요.');
                 return;
             }
 
-            // 지도 프리뷰
-            drawRoutePreview(startPick, endPick);
-
-            // 교통편 카드 갱신
-            updateTransportCards(startPick, endPick);
-
-            // 최신 경로 저장 + 버튼 보이기
-            lastStart = startPick;
-            lastEnd   = endPick;
-            showKakaoBtn();
-
-            // (자동 새 탭 열기는 원하면 유지/삭제)
-            // const url = buildKakaoRouteUrl(startPick, endPick, 'transit');
-            // window.open(url, '_blank', 'noopener');
+            // 데이터 저장 및 다음 페이지로 이동
+            saveScheduleForNextPage();
+            goToNextPage();
         });
-    });
-});
-
-// 출발/도착 스왑
-document.getElementById('swapRouteBtn')?.addEventListener('click', () => {
-    const sInput = document.getElementById('startInput');
-    const eInput = document.getElementById('endInput');
-    [sInput.value, eInput.value] = [eInput.value, sInput.value];
-    [startPick, endPick] = [endPick, startPick];
-    if (startPick && endPick) drawRoutePreview(startPick, endPick);
-    hideKakaoBtn(); // ← 선택
-});
-// 오토컴플리트 바인딩
-bindAutocomplete(
-    document.getElementById('startInput'),
-    document.getElementById('startResults'),
-    (pick) => { startPick = pick; }
-);
-bindAutocomplete(
-    document.getElementById('endInput'),
-    document.getElementById('endResults'),
-    (pick) => { endPick = pick; }
-);
-
-// 카카오맵 길찾기 URL (좌표·이름 함께 넘김)
-function buildKakaoRouteUrl(s, e, mode = 'car') {
-    // 좌표가 확실하면 넣고, 아니면 이름만으로도 길찾기 동작함
-    const params = new URLSearchParams({
-        sName: s.name, eName: e.name
-    });
-    if (!isNaN(s.lon) && !isNaN(s.lat)) { params.set('sx', s.lon); params.set('sy', s.lat); }
-    if (!isNaN(e.lon) && !isNaN(e.lat)) { params.set('ex', e.lon); params.set('ey', e.lat); }
-    if (mode === 'transit') params.set('target', 'transit'); // 자동차면 생략 가능
-    return `https://map.kakao.com/?${params.toString()}`;
-}
-
-// 도구: 거리(km) 계산
-function haversineKm(a, b) {
-    const R = 6371;
-    const dLat = (b.lat - a.lat) * Math.PI / 180;
-    const dLon = (b.lon - a.lon) * Math.PI / 180;
-    const la1 = a.lat * Math.PI / 180;
-    const la2 = b.lat * Math.PI / 180;
-    const h = Math.sin(dLat/2)**2 + Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;
-    return R * 2 * Math.asin(Math.sqrt(h));
-}
-
-// 포맷터
-const fmtMin = (m) => (m >= 60 ? `${Math.floor(m/60)}시간 ${m%60}분` : `${m}분`);
-const fmtWon = (n) => `₩ ${Number(n || 0).toLocaleString()}`;
-
-//경로 Summary에서 키워드로 추정
-function iconFor(r) {
-    const s = (r.routeSummary || '').toLowerCase();
-    if (s.includes('버스') && s.includes('지하철')) return '🚌';
-    if (s.includes('버스')) return '🚌';
-    if (s.includes('지하철') || s.includes('전철')) return '🚇';
-    return '🚶';
-}
-
-// 로딩/에러/빈상태
-function renderTransportState(container, type) {
-    if (type === 'loading') {
-        container.innerHTML = Array.from({length: 2}).map(() => `
-      <div class="transport-item" aria-busy="true" style="position:relative;">
-        <div class="transport-icon">⌛</div>
-        <div class="transport-info">
-          <h4 style="height:18px;width:180px;background:rgba(0,87,146,.08);border-radius:8px;margin-bottom:8px;"></h4>
-          <p style="height:14px;width:140px;background:rgba(0,87,146,.06);border-radius:6px;"></p>
-        </div>
-        <div style="position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(0,87,146,.08),transparent);animation:mapShimmer 1.8s linear infinite;"></div>
-      </div>
-    `).join('');
-        return;
-    }
-    if (type === 'empty') {
-        container.innerHTML = `
-      <div class="transport-item" style="justify-content:center;">
-        <div class="transport-info">
-          <h4 style="margin:0;color:#1E3A5F;">경로를 찾지 못했습니다.</h4>
-          <p style="margin-top:6px;color:#5a7a94;">검색어를 조금 바꾸거나 출발/도착을 다시 선택해 주세요.</p>
-        </div>
-      </div>`;
-        return;
-    }
-    if (type === 'error') {
-        container.innerHTML = `
-      <div class="transport-item" style="justify-content:center;border-color:#c33;">
-        <div class="transport-icon" style="background:linear-gradient(135deg,#c33,#7a1c1c)">!</div>
-        <div class="transport-info">
-          <h4 style="margin:0;color:#7a1c1c;">교통 경로 조회 중 오류가 발생했습니다.</h4>
-          <p style="margin-top:6px;color:#a54;">잠시 후 다시 시도해 주세요.</p>
-        </div>
-      </div>`;
     }
 }
 
-// 메인: 백엔드 호출 + 렌더
-async function updateTransportCards(s, e) {
-    const container = document.querySelector('#transport .transport-options #transportList');
-    if (!container) return;
+// 뒤로 가기 버튼 초기화
+function initializeBackButton() {
+    // 뒤로 가기 버튼은 HTML에서 onclick으로 처리됨
+}
 
-    renderTransportState(container, 'loading');
+// 뒤로 가기 함수
+function goToPreviousPage() {
+    // 현재 선택된 일정 임시 저장
+    if (selectedDateRanges.length > 0) {
+        localStorage.setItem('temp_selected_schedule', JSON.stringify(selectedDateRanges));
+    }
+
+    // 이전 페이지로 이동
+    window.location.href = "/companion-rooms/attraction";
+}
+
+// 다음 페이지로 전달할 일정 데이터 저장
+function saveScheduleForNextPage() {
+    const scheduleData = {
+        dateRanges: selectedDateRanges,
+        totalDays: calculateTotalDays(),
+        rangeCount: selectedDateRanges.length
+    };
+
+    const combinedData = {
+        ...previousData,
+        schedule: scheduleData,
+        timestamp: new Date().toISOString()
+    };
+
+    // 로컬 스토리지에 저장
+    localStorage.setItem('travel_date_ranges', JSON.stringify(scheduleData));
+    localStorage.setItem('room_creation_data', JSON.stringify(combinedData));
+
+    // 세션 스토리지에도 백업 저장
+    sessionStorage.setItem('travel_date_ranges', JSON.stringify(scheduleData));
+    sessionStorage.setItem('room_creation_data', JSON.stringify(combinedData));
+
+    console.log('최종 방 생성 데이터 저장 완료:', combinedData);
+}
+
+// 다음 페이지로 이동 (최종 완료 페이지)
+function goToNextPage() {
+    // 실제 완료 페이지 URL로 변경해주세요
+    window.location.href = "/companion-rooms/final";
+
+    // 또는 최종 등록 처리
+    // submitRoomCreation();
+}
+
+// 폼 유효성 검사 (HTML에서 onsubmit으로 호출됨)
+function validationPhase(form) {
+    if (selectedDateRanges.length === 0) {
+        alert('최소 하나 이상의 여행 날짜를 추가해주세요.');
+        return false;
+    }
+
+    // 폼 제출 준비
+    prepareFormSubmission();
+    saveScheduleForNextPage();
+
+    return true;
+}
+
+// 폼 제출 시 선택된 데이터를 hidden input에 추가
+function prepareFormSubmission() {
+    const form = document.getElementById('temporary_room_phase_4');
+
+    // 기존 hidden input들 제거
+    const existingInputs = form.querySelectorAll('input[name="selected_schedule"], input[name="room_creation_data"]');
+    existingInputs.forEach(input => input.remove());
+
+    // 선택된 일정을 hidden input으로 추가
+    if (selectedDateRanges.length > 0) {
+        const scheduleInput = document.createElement('input');
+        scheduleInput.type = 'hidden';
+        scheduleInput.name = 'selected_schedule';
+        scheduleInput.value = JSON.stringify({
+            dateRanges: selectedDateRanges,
+            totalDays: calculateTotalDays(),
+            rangeCount: selectedDateRanges.length
+        });
+        form.appendChild(scheduleInput);
+    }
+
+    // 전체 방 생성 데이터도 hidden input으로 추가
+    const roomDataInput = document.createElement('input');
+    roomDataInput.type = 'hidden';
+    roomDataInput.name = 'room_creation_data';
+    roomDataInput.value = JSON.stringify(previousData);
+    form.appendChild(roomDataInput);
+}
+
+// 다른 페이지에서 저장된 일정 데이터 불러오기
+function getSelectedScheduleFromPreviousPage() {
     try {
-        const q = new URLSearchParams({ sx:String(s.lon), sy:String(s.lat), ex:String(e.lon), ey:String(e.lat) });
-        const res = await fetch(`/api/v1/transport/routes?${q.toString()}`);
-        if (!res.ok) throw new Error('ODsay 요청 실패');
-        const routes = await res.json();
-
-        if (!Array.isArray(routes) || routes.length === 0) {
-            renderTransportState(container, 'empty');
-            return;
+        let schedule = localStorage.getItem('travel_date_ranges');
+        if (schedule) {
+            return JSON.parse(schedule);
         }
 
-        // 최신 경로 저장 + 버튼 표시
-        lastStart = s;
-        lastEnd   = e;
-        showKakaoBtn();
+        schedule = sessionStorage.getItem('travel_date_ranges');
+        if (schedule) {
+            return JSON.parse(schedule);
+        }
 
-        renderTransitOptions(container, routes, s, e);
-    } catch (err) {
-        console.error(err);
-        renderTransportState(container, 'error');
+        return null;
+    } catch (e) {
+        console.error('저장된 일정 데이터 불러오기 실패:', e);
+        return null;
     }
 }
 
+// 최종 방 생성 데이터 불러오기
+function getFinalRoomCreationData() {
+    try {
+        let data = localStorage.getItem('room_creation_data');
+        if (data) {
+            return JSON.parse(data);
+        }
 
-function renderTransitOptions(container, routes, s, e) {
-    container.innerHTML = routes.map((r, idx) => {
-        const segHtml = (r.segments || []).map(seg => `<li>${escapeHtml(seg)}</li>`).join('');
-        const transfers = (r.transferCount ?? 0) >= 0 ? `${r.transferCount}회` : '정보없음';
+        data = sessionStorage.getItem('room_creation_data');
+        if (data) {
+            return JSON.parse(data);
+        }
 
-        return `
-      <div class="transport-item">
-        <div class="transport-icon" style="flex-shrink:0;width:50px;height:50px;display:flex;align-items:center;justify-content:center;font-size:24px;">
-          ${iconFor(r)}
-        </div>
-        <div class="transport-info" style="flex:1;display:flex;flex-direction:column;gap:6px;">
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-            <h4 style="margin:0;font-size:16px;font-weight:700;">대중교통 경로 ${idx + 1}</h4>
-            <span style="font-size:12px;padding:2px 8px;border-radius:12px;background:rgba(0,87,146,.1);color:#005792;">
-              환승 ${transfers}
-            </span>
-          </div>
-          <p style="margin:0;color:#1E3A5F;font-size:14px;">${escapeHtml(r.routeSummary || '')}</p>
-          <p style="margin:0;color:#005792;font-weight:600;font-size:14px;">⏱ ${fmtMin(r.totalTime)} · ${fmtWon(r.fare)}</p>
-          ${segHtml ? `<ul style="margin:0;padding-left:18px;color:#0a263b;font-size:13px;">${segHtml}</ul>` : ''}
-        </div>
-      </div>`;
-    }).join('');
+        return null;
+    } catch (e) {
+        console.error('최종 방 생성 데이터 불러오기 실패:', e);
+        return null;
+    }
 }
+
+// 임시 저장된 일정 복원
+function restoreTemporarySchedule() {
+    const tempSchedule = localStorage.getItem('temp_selected_schedule');
+    if (tempSchedule) {
+        try {
+            const schedule = JSON.parse(tempSchedule);
+            selectedDateRanges = schedule;
+
+            // UI 업데이트
+            updateSelectedDateDisplay();
+            restoreAddedDatesDisplay();
+
+            localStorage.removeItem('temp_selected_schedule');
+        } catch (e) {
+            console.error('임시 저장된 일정 데이터 복원 실패:', e);
+        }
+    }
+}
+
+// 최종 방 생성 제출
+function submitRoomCreation() {
+    const finalData = getFinalRoomCreationData();
+
+    if (!finalData) {
+        alert('방 생성 데이터가 없습니다. 처음부터 다시 시작해주세요.');
+        return;
+    }
+
+    console.log('방 생성 제출:', finalData);
+
+    // 실제 서버 제출 로직
+    // fetch('/api/rooms/create', {
+    //     method: 'POST',
+    //     headers: { 'Content-Type': 'application/json' },
+    //     body: JSON.stringify(finalData)
+    // });
+
+    // 성공 후 데이터 정리
+    clearAllData();
+}
+
+// 모든 저장된 데이터 정리
+function clearAllData() {
+    localStorage.removeItem('selected_emotions');
+    localStorage.removeItem('selected_destination');
+    localStorage.removeItem('travel_date_ranges');
+    localStorage.removeItem('room_creation_data');
+    localStorage.removeItem('temp_selected_schedule');
+
+    sessionStorage.removeItem('selected_emotions');
+    sessionStorage.removeItem('selected_destination');
+    sessionStorage.removeItem('travel_date_ranges');
+    sessionStorage.removeItem('room_creation_data');
+}
+
+// 도움말 모달 열기
+function openHelpModal() {
+    const modal = document.getElementById('helpModal');
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+// 도움말 모달 닫기
+function closeHelpModal() {
+    const modal = document.getElementById('helpModal');
+    modal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+// ESC 키로 모달 닫기
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeHelpModal();
+    }
+});

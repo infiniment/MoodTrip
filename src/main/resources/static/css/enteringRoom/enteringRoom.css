@@ -360,6 +360,10 @@ main.room-list {
     background: #ef4444;
 }
 
+.room-status.completed {
+    background: #dc2626;  /* 또는 #ef4444 */
+}
+
 .room-content {
     flex: 1;
     padding: 16px;
