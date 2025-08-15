@@ -92,20 +92,42 @@ public class MypageRoomServiceImpl implements MypageRoomService {
     @Override
     @Transactional
     public void leaveRoom(Long roomId, Member currentMember) {
-        // 방 존재 확인
-        Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 방이 존재하지 않습니다."));
+        try {
+            // 방 존재 확인
+            Room room = roomRepository.findById(roomId)
+                    .orElseThrow(() -> new IllegalArgumentException("해당 방이 존재하지 않습니다."));
 
-        // 현재 사용자가 해당 방에 참여중인지 조회
-        RoomMember roomMember = roomMemberRepository.findByMemberAndRoom(currentMember, room)
-                .orElseThrow(() -> new IllegalArgumentException("이 방에 참여하지 않은 사용자입니다."));
+            // 현재 사용자가 해당 방에 참여중인지 조회
+            RoomMember roomMember = roomMemberRepository.findByMemberAndRoom(currentMember, room)
+                    .orElseThrow(() -> new IllegalArgumentException("이 방에 참여하지 않은 사용자입니다."));
 
-        // 방장이 나갈 수는 없게하고, 나갈거면 삭제하기
-        if ("LEADER".equalsIgnoreCase(roomMember.getRole())) {
-            throw new IllegalStateException("방장은 방을 나갈 수 없습니다. 방 삭제를 사용해주세요.");
+            // 방장이 나갈 수는 없게하고, 나갈거면 삭제하기
+            if ("LEADER".equalsIgnoreCase(roomMember.getRole())) {
+                throw new IllegalStateException("방장은 방을 나갈 수 없습니다. 방 삭제를 사용해주세요.");
+            }
+
+            // 이전 인원 수 로깅
+            int previousCount = room.getRoomCurrentCount();
+
+            // 1️⃣ 나가기 처리
+            roomMember.setIsActive(false);
+            roomMemberRepository.save(roomMember);
+
+            // 2️⃣ 🔥 새로 추가: Room의 현재 인원 수 업데이트
+            // 실제 활성 참여자 수 다시 계산
+            Long actualParticipantCount = roomMemberRepository.countByRoomAndIsActiveTrue(room);
+
+            // Room 엔티티의 현재 인원 수 업데이트
+            room.setRoomCurrentCount(actualParticipantCount.intValue());
+
+            // Room 저장
+            roomRepository.save(room);
+
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            throw e;  // 그대로 다시 던져서 컨트롤러에서 적절히 처리
+        } catch (Exception e) {
+            throw new RuntimeException("방 나가기 중 오류가 발생했습니다.");
         }
-        // 나가기 처리
-        roomMember.setIsActive(false);
     }
 
 
