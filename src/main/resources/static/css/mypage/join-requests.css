@@ -595,6 +595,7 @@
 
 /* 토스트 알림 */
 #toast-container {
+    margin: 55px auto;
     position: fixed;
     top: 20px;
     right: 20px;

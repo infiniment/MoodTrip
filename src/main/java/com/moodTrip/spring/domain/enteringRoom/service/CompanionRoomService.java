@@ -134,7 +134,7 @@ public class CompanionRoomService {
     private CompanionRoomListResponse convertToResponseWithActualViewCount(Room room) {
         try {
             // 실제 참여자 수 계산
-            Long actualParticipantCount = roomMemberRepository.countByRoom(room);
+            Long actualParticipantCount = roomMemberRepository.countByRoomAndIsActiveTrue(room);
 
             // 🔥 실제 DB의 조회수 사용
             Integer actualViewCount = room.getViewCount() != null ? room.getViewCount() : 0;
@@ -168,7 +168,7 @@ public class CompanionRoomService {
     private CompanionRoomListResponse convertToResponse(Room room) {
         try {
             // 실제 참여자 수 계산
-            Long actualParticipantCount = roomMemberRepository.countByRoom(room);
+            Long actualParticipantCount = roomMemberRepository.countByRoomAndIsActiveTrue(room);
 
             // 🔥 실제 조회수 사용 (증가시키지는 않음)
             Integer actualViewCount = room.getViewCount() != null ? room.getViewCount() : 0;

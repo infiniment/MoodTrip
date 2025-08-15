@@ -1,4 +1,3 @@
-// 📁 src/main/java/com/moodTrip/spring/domain/enteringRoom/controller/JoinRequestManagementViewController.java
 package com.moodTrip.spring.domain.enteringRoom.controller;
 
 import com.moodTrip.spring.domain.enteringRoom.dto.response.RoomWithRequestsResponse;

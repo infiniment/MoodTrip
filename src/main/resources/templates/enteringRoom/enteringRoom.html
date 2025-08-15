@@ -166,9 +166,7 @@
                 <img th:src="${room.image ?: '/image/fix/moodtrip.png'}"
                      th:alt="${room.title}"
                      onerror="this.src='/image/fix/moodtrip.png'">
-                <div class="room-status"
-                     th:classappend="${room.urgent} ? 'urgent' : (${room.status == '모집완료'} ? 'completed' : '')"
-                     th:text="${room.status ?: '모집중'}"></div>
+                <div class="room-status" th:text="${room.status ?: '모집중'}"></div>
             </div>
             <div class="room-content">
                 <div class="room-header">

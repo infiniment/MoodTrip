@@ -8,6 +8,7 @@ import com.moodTrip.spring.domain.enteringRoom.entity.EnteringRoom;
 import com.moodTrip.spring.domain.enteringRoom.repository.JoinRepository;
 import com.moodTrip.spring.domain.member.entity.Member;
 import com.moodTrip.spring.domain.rooms.entity.Room;
+import com.moodTrip.spring.domain.rooms.entity.RoomMember;
 import com.moodTrip.spring.domain.rooms.repository.RoomRepository;
 import com.moodTrip.spring.domain.rooms.repository.RoomMemberRepository;
 import com.moodTrip.spring.global.common.util.SecurityUtil;
@@ -228,11 +229,47 @@ public class JoinRequestManagementService {
     }
 
     private void addApprovedMemberToRoom(EnteringRoom request) {
-        // RoomMember 테이블에 실제 참여자로 추가하는 로직
-        // 이미 RoomMember 엔티티와 Repository가 있다면 사용
-        log.info("승인된 회원을 RoomMember에 추가 - 방: {}, 회원: {}",
+        log.info("🏠 승인된 회원을 방에 추가 시작 - 방: {}, 신청자: {}",
                 request.getRoom().getRoomName(), request.getApplicant().getNickname());
-        // TODO: RoomMember 추가 로직 구현
+
+        try {
+            // 1️⃣ RoomMember 테이블에 실제 참여자로 추가
+            RoomMember newMember = RoomMember.builder()
+                    .member(request.getApplicant())  // 신청자
+                    .room(request.getRoom())         // 방
+                    .joinedAt(LocalDateTime.now())   // 참여 시간
+                    .role("MEMBER")                  // 일반 참여자
+                    .isActive(true)                  // 활성 상태
+                    .build();
+
+            roomMemberRepository.save(newMember);
+            log.info("✅ RoomMember 추가 완료");
+
+            // 2️⃣ Room의 현재 인원 수 업데이트
+            Room room = request.getRoom();
+
+            // 실제 활성 참여자 수 다시 계산 (방장 포함)
+            Long actualParticipantCount = roomMemberRepository.countByRoomAndIsActiveTrue(room);
+
+            // 이전 인원 수 로깅
+            int previousCount = room.getRoomCurrentCount();
+
+            // Room 엔티티의 현재 인원 수 업데이트
+            room.setRoomCurrentCount(actualParticipantCount.intValue());
+
+            // Room 저장
+            roomRepository.save(room);
+
+            log.info("🔢 방 인원 수 업데이트 완료 - 방: {}, 이전: {}, 현재: {}/{}",
+                    room.getRoomName(),
+                    previousCount,
+                    actualParticipantCount,
+                    room.getRoomMaxCount());
+
+        } catch (Exception e) {
+            log.error("❌ 승인된 회원 추가 중 오류 발생", e);
+            throw new RuntimeException("참여자 추가 중 오류가 발생했습니다.");
+        }
     }
 
     private String processApproval(Long requestId) {

@@ -822,3 +822,83 @@ function applyFromDetailPage() {
         applyRoom(currentDetailRoomId);
     }
 }
+
+function updateRoomStatusColors() {
+    document.querySelectorAll('.room-status').forEach(status => {
+        const text = status.textContent.trim();
+
+        if (text === '모집완료' || text.includes('완료')) {
+            status.classList.add('completed');
+            status.style.background = '#dc2626 !important'; // !important 추가
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    updateRoomStatusColors();
+
+    // 0.5초마다 계속 실행
+    setInterval(updateRoomStatusColors, 5);
+});
+
+window.addEventListener('storage', function(e) {
+    if (e.key === 'roomDataUpdate') {
+        try {
+            const updateData = JSON.parse(e.newValue);
+            console.log('📢 다른 탭에서 방 데이터 변경 감지:', updateData);
+
+            if (updateData.type === 'MEMBER_LEFT') {
+                console.log(`🔄 방 ${updateData.roomTitle}에서 멤버 나가기 감지, 페이지 업데이트`);
+
+                // 🎯 방법 1: 즉시 페이지 새로고침
+                showNotification('info', '방 정보가 업데이트되었습니다.');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+
+                // 🎯 방법 2: 특정 방만 업데이트 (선택사항)
+                updateSpecificRoom(updateData.roomId);
+            }
+        } catch (error) {
+            console.error('방 데이터 업데이트 처리 오류:', error);
+        }
+    }
+});
+
+/**
+ * 🎯 선택사항: 특정 방만 업데이트하는 함수
+ */
+function updateSpecificRoom(roomId) {
+    const roomCard = document.querySelector(`[data-room-id="${roomId}"]`);
+    if (roomCard) {
+        // 해당 방의 인원 수 -1
+        const participantsElement = roomCard.querySelector('.participants-count');
+        if (participantsElement) {
+            const currentText = participantsElement.textContent; // "2 / 4"
+            const [current, max] = currentText.split(' / ').map(num => parseInt(num.trim()));
+            const newCurrent = Math.max(0, current - 1);
+
+            participantsElement.textContent = `${newCurrent} / ${max}`;
+
+            // 상태 업데이트
+            const statusElement = roomCard.querySelector('.room-status');
+            if (newCurrent < max && statusElement.textContent.includes('완료')) {
+                statusElement.textContent = '모집중';
+                statusElement.classList.remove('completed');
+                statusElement.style.background = '#10b981'; // 초록색으로 변경
+            }
+
+            console.log(`✅ 방 ${roomId} 인원 업데이트: ${current} → ${newCurrent}`);
+        }
+    }
+}
+
+// 🔥 페이지 로드 시 이벤트 리스너 등록
+document.addEventListener('DOMContentLoaded', function() {
+    // 기존 코드들...
+
+    console.log('📡 방 데이터 변경 감지 리스너 등록됨');
+});
+
+// 🔥 모든 리소스 로드 후에도 실행
+window.addEventListener('load', updateRoomStatusColors);
