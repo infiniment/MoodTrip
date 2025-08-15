@@ -5,6 +5,7 @@ import com.moodTrip.spring.domain.member.dto.request.ProfileImageUpdateRequest;
 import com.moodTrip.spring.domain.member.dto.response.ProfileResponse;
 import com.moodTrip.spring.domain.member.entity.Member;
 import com.moodTrip.spring.domain.member.entity.Profile;
+import com.moodTrip.spring.domain.member.repository.MemberRepository;
 import com.moodTrip.spring.domain.member.repository.ProfileRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,10 @@ import java.util.Optional;
 public class ProfileService {
 
     private final ProfileRepository profileRepository;
+    private final MemberRepository memberRepository;
+
+    private static final String DEFAULT_IMAGE = "/image/fix/moodtrip.png";
+
     // 프로필 조회
     public ProfileResponse getMyProfile(Member member) {
         log.info("프로필 조회 요청 - 회원ID: {}", member.getMemberId());
@@ -38,13 +43,31 @@ public class ProfileService {
             return createBasicProfileResponse(member);
         }
     }
+
+    /* member_pk로 프로필 조회 — 채팅 등에서 사용 */
+    public ProfileResponse getProfileByMemberId(Long memberPk) {
+        log.info("member_pk로 프로필 조회 - memberPk: {}", memberPk);
+
+        // 1) 프로필 존재 시 바로 반환(기본 이미지 처리)
+        Optional<Profile> profileOpt = profileRepository.findByMember_MemberPk(memberPk);
+        if (profileOpt.isPresent()) {
+            return toResponseWithDefaultImage(profileOpt.get());
+        }
+
+        // 2) 프로필 없으면 Member 로드 후 기본 응답
+        Member member = memberRepository.findById(memberPk)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다. memberPk=" + memberPk));
+
+        return createBasicProfileResponse(member);
+    }
+
     private ProfileResponse createBasicProfileResponse(Member member) {
         return ProfileResponse.builder()
                 .nickname(member.getNickname())
                 .email(member.getEmail())
                 .memberPhone(member.getMemberPhone())
                 .profileBio(null)
-                .profileImage(null)
+                .profileImage(DEFAULT_IMAGE) // ← 기본 이미지
                 .createdAt(member.getCreatedAt())
                 .build();
     }
@@ -172,4 +195,25 @@ public class ProfileService {
 
         return savedProfile;
     }
+
+
+    // 프로필 → 응답 변환 시 기본 이미지 보정
+    private ProfileResponse toResponseWithDefaultImage(Profile profile) {
+        ProfileResponse resp = ProfileResponse.from(profile);
+        String img = resp.getProfileImage();
+
+        if (img == null || img.isBlank()) {
+            return ProfileResponse.builder()
+                    .nickname(resp.getNickname())
+                    .profileBio(resp.getProfileBio())
+                    .profileImage(DEFAULT_IMAGE)   // 기본 이미지로 보정
+                    .email(resp.getEmail())
+                    .memberPhone(resp.getMemberPhone())
+                    .createdAt(resp.getCreatedAt())
+                    .build();
+        }
+        return resp;
+    }
+
+
 }

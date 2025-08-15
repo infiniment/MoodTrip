@@ -13,8 +13,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     // WebSocket 메시지 브로커 구성
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
-        config.enableSimpleBroker("/sub");        // 구독 경로 (메시지 받는 경로)
+        config.enableSimpleBroker("/sub", "/queue");        // 구독 경로 (메시지 받는 경로)
         config.setApplicationDestinationPrefixes("/pub"); // 발행 경로 (메시지 보내는 경로)
+        // ✅ user destination prefix (convertAndSendToUser(...) 에 필요)
+        config.setUserDestinationPrefix("/user");
     }
 
     //클라이언트의 엔드포인트를 등록하고 SockJS를 사용하도록 설정
