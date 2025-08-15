@@ -1,42 +1,55 @@
 // faq-detail.js
 
 document.addEventListener('DOMContentLoaded', function() {
-    
+
     // 도움됨/도움안됨 버튼 기능
     const helpfulYesButton = document.getElementById('helpful-yes');
     const helpfulNoButton = document.getElementById('helpful-no');
-    
+
     helpfulYesButton.addEventListener('click', function() {
         handleHelpfulClick('yes', this);
     });
-    
+
     helpfulNoButton.addEventListener('click', function() {
         handleHelpfulClick('no', this);
     });
-    
+
     function handleHelpfulClick(type, button) {
-        // 다른 버튼 비활성화
-        const otherButton = type === 'yes' ? helpfulNoButton : helpfulYesButton;
-        otherButton.classList.remove('active');
-        
-        // 현재 버튼 토글
-        button.classList.toggle('active');
-        
-        if (button.classList.contains('active')) {
-            // 버튼 애니메이션
-            button.style.transform = 'scale(1.05)';
-            setTimeout(() => {
-                button.style.transform = 'scale(1)';
-            }, 200);
-            
-            // 피드백 메시지
-            const message = type === 'yes' ? '피드백이 전송되었습니다.' : '피드백이 전송되었습니다. 더 나은 답변을 위해 노력하겠습니다.';
-            showToast(message);
-            
-            console.log(`도움됨 피드백: ${type}`);
-        }
+        const faqId = button.getAttribute('data-faq-id');
+
+        // 서버에 도움됨/도움안됨 전송
+        const endpoint = type === 'yes' ? `/customer-center/faq/helpful/${faqId}` : `/customer-center/faq/not-helpful/${faqId}`;
+
+        fetch(endpoint, {
+            method: 'POST'
+        })
+            .then(response => {
+                if (response.ok) {
+                    // 다른 버튼 비활성화
+                    const otherButton = type === 'yes' ? helpfulNoButton : helpfulYesButton;
+                    otherButton.classList.remove('active');
+
+                    // 현재 버튼 토글
+                    button.classList.toggle('active');
+
+                    if (button.classList.contains('active')) {
+                        // 버튼 애니메이션
+                        button.style.transform = 'scale(1.05)';
+                        setTimeout(() => {
+                            button.style.transform = 'scale(1)';
+                        }, 200);
+
+                        // 피드백 메시지
+                        const message = type === 'yes' ? '피드백이 전송되었습니다.' : '피드백이 전송되었습니다. 더 나은 답변을 위해 노력하겠습니다.';
+                        showToast(message);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('오류가 발생했습니다. 다시 시도해주세요.');
+            });
     }
-    
     // 토스트 메시지 표시
     function showToast(message) {
         // 기존 토스트 제거

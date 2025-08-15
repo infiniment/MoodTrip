@@ -1,302 +1,143 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>무드트립 - 자주 묻는 질문 상세</title>
+    <title th:text="|무드트립 - ${faq.title}|">무드트립 - 자주 묻는 질문 상세</title>
     <link rel="stylesheet" href="/css/customer-center/faq-detail.css">
 </head>
 <body>
-    <div class="faq-detail-layout">
-        <div class="faq-detail-main">
-            <main role="main">
-                <div class="section-page">
-                    <div class="faq-detail-container">
-                        
-                        <!-- 상단 네비게이션 -->
-                        <nav class="breadcrumb-nav">
-                            <div class="breadcrumb">
-                                <a href="/customer-center" class="breadcrumb-link">고객센터</a>
-                                <span class="breadcrumb-separator">&gt;</span>
-                                <a href="/faq" class="breadcrumb-link">자주 묻는 질문</a>
-                                <span class="breadcrumb-separator">&gt;</span>
-                                <span class="breadcrumb-current">상세</span>
-                            </div>
-                            
-                            <div class="nav-actions">
-                                <button class="back-button" onclick="history.back()">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                        <polyline points="15,18 9,12 15,6"></polyline>
-                                    </svg>
-                                    목록으로
-                                </button>
-                            </div>
-                        </nav>
+<div class="faq-detail-layout">
+    <div class="faq-detail-main">
+        <main role="main">
+            <div class="section-page">
+                <div class="faq-detail-container">
 
-                        <!-- FAQ 헤더 -->
-                        <header class="faq-header">
-                            <div class="faq-category-badge">서비스 소개</div>
-                            <h1 class="faq-title">
-                                무드매칭으로 동행자를 찾는 방법이 궁금해요.
-                            </h1>
-                            
-                            <div class="faq-meta">
-                                <div class="meta-left">
+                    <!-- 상단 네비게이션 -->
+                    <nav class="breadcrumb-nav">
+                        <div class="breadcrumb">
+                            <a href="/customer-center" class="breadcrumb-link">고객센터</a>
+                            <span class="breadcrumb-separator">&gt;</span>
+                            <a href="/customer-center/faq" class="breadcrumb-link">자주 묻는 질문</a>
+                            <span class="breadcrumb-separator">&gt;</span>
+                            <span class="breadcrumb-current">상세</span>
+                        </div>
+
+                        <div class="nav-actions">
+                            <button class="back-button" onclick="history.back()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <polyline points="15,18 9,12 15,6"></polyline>
+                                </svg>
+                                목록으로
+                            </button>
+                        </div>
+                    </nav>
+
+                    <!-- FAQ 헤더 -->
+                    <header class="faq-header">
+                        <div class="faq-category-badge" th:text="${faq.category}">서비스 소개</div>
+                        <h1 class="faq-title" th:text="${faq.title}">
+                            FAQ 제목
+                        </h1>
+
+                        <div class="faq-meta">
+                            <div class="meta-left">
                                     <span class="meta-item">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                             <circle cx="12" cy="12" r="3"></circle>
                                         </svg>
-                                        조회 1,432
+                                        <span th:text="|조회 ${faq.viewCount}|">조회 0</span>
                                     </span>
-                                    <span class="meta-item helpful-rate">
+                                <span class="meta-item helpful-rate">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                             <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
                                         </svg>
-                                        도움됨 94%
+                                        <span th:text="|도움됨 ${helpfulPercentage}%|">도움됨 0%</span>
                                     </span>
-                                </div>
-                                
-                                <div class="meta-right">
-                                    <div class="user-type-indicator">
-                                        <span class="user-type">관리자</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </header>
-
-                        <!-- FAQ 답변 내용 -->
-                        <article class="faq-content">
-                            <div class="content-summary">
-                                <h3>💡 간단 요약</h3>
-                                <p>무드매칭은 감정 태그를 통해 나와 비슷한 여행 취향을 가진 동행자를 찾아 안전하게 매칭해주는 무드트립만의 특별한 서비스입니다.</p>
                             </div>
 
-                            <div class="content-body">
-                                <h2>🔒 무드 매칭이란?</h2>
-                                <p>무드매칭(Mood Matching)은 무드트립의 핵심 기능으로, 사용자의 감정과 여행 취향을 태그로 분석하여 최적의 관광지와 동행자를 매칭해주는 감정 태그 기반 관광지 추천 서비스입니다. 단순한 지역 매칭이 아닌, 감정과 취향이 맞는 진짜 여행 동반자를 찾아드립니다.</p>
-
-                                <div class="process-flow">
-                                    <h3>📋 동행을 구하기까지의 흐름</h3>
-                                    <div class="flow-steps">
-                                        <div class="flow-step">
-                                            <div class="flow-number">1</div>
-                                            <div class="flow-content">
-                                                <h4>감정 태그 선택</h4>
-                                                <p>현재 나의 기분과 원하는 여행 스타일을 태그로 선택합니다</p>
-                                            </div>
-                                        </div>
-                                        
-                                        
-                                        <div class="flow-step">
-                                            <div class="flow-number">2</div>
-                                            <div class="flow-content">
-                                                <h4>관광지 추천</h4>
-                                                <p>감정 태그를 분석해 최적의 관광지를 추천합니다</p>
-                                            </div>
-                                        </div>
-                                        
-                                        
-                                        <div class="flow-step">
-                                            <div class="flow-number">3</div>
-                                            <div class="flow-content">
-                                                <h4>여행방 탐색</h4>
-                                                <p>추천받은 지역의 여행방 목록에서 마음에 드는 방을 찾습니다</p>
-                                            </div>
-                                        </div>
-
-                                        
-                                        <div class="flow-step">
-                                            <div class="flow-number">4</div>
-                                            <div class="flow-content">
-                                                <h4>입장 요청</h4>
-                                                <p>원하는 여행방에 입장 요청을 보내고 승인을 기다립니다</p>
-                                            </div>
-                                        </div>
-
-                                        
-                                        <div class="flow-step">
-                                            <div class="flow-number">5</div>
-                                            <div class="flow-content">
-                                                <h4>무드매칭 완료</h4>
-                                                <p>동행자들과 함께 감정을 공유하며 특별한 여행을 계획하세요</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <h2>✨ 무드매칭의 특별한 장점</h2>
-                                <div class="benefits-grid">
-                                    <div class="benefit-card">
-                                        <div class="benefit-icon">🛡️</div>
-                                        <h4>정확한 취향 매칭</h4>
-                                        <p>감정 태그 분석으로 나와 진짜 맞는 여행 동반자를 찾아드립니다</p>
-                                    </div>
-                                    
-                                    <div class="benefit-card">
-                                        <div class="benefit-icon">⚡</div>
-                                        <h4>안전한 만남</h4>
-                                        <p>철저한 사용자 인증과 신고 시스템으로 안전한 여행 환경을 보장합니다</p>
-                                    </div>
-                                    
-                                    <div class="benefit-card">
-                                        <div class="benefit-icon">⚡</div>
-                                        <h4>실시간 매칭</h4>
-                                        <p>AI 기반 빠른 분석으로 즉시 최적의 관광지와 동행자를 추천받습니다</p>
-                                    </div>
-                                    
-                                    <div class="benefit-card">
-                                        <div class="benefit-icon">🌈</div>
-                                        <h4>감정 공유</h4>
-                                        <p>같은 감정과 취향을 가진 사람들과 더 깊이 있는 여행 경험을 만들어보세요</p>
-                                    </div>
-                                </div>
-
-                                <h2>❓ 자주 묻는 추가 질문</h2>
-                                <div class="sub-faq-list">
-                                    <div class="sub-faq-item">
-                                        <div class="sub-faq-question">
-                                            <strong>Q.</strong> 감정 태그는 몇 개까지 선택할 수 있나요?
-                                        </div>
-                                        <div class="sub-faq-answer">
-                                            <strong>A.</strong> 한 번에 최대 3개의 감정 태그를 선택할 수 있습니다. 더 정확한 매칭을 위해 현재 기분과 가장 가까운 태그를 선택해주세요.
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="sub-faq-item">
-                                        <div class="sub-faq-question">
-                                            <strong>Q.</strong> 여행방에 입장 요청했는데 거절당하면 어떻게 하나요?
-                                        </div>
-                                        <div class="sub-faq-answer">
-                                            <strong>A.</strong> 다른 여행방에 다시 입장 요청을 보낼 수 있습니다. 거절 사유는 단순히 인원이 찼거나 여행 일정이 맞지 않을 수 있으니 걱정하지 마세요.
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="sub-faq-item">
-                                        <div class="sub-faq-question">
-                                            <strong>Q.</strong> 무드매칭 결과가 마음에 들지 않으면 다시 할 수 있나요?
-                                        </div>
-                                        <div class="sub-faq-answer">
-                                            <strong>A.</strong> 언제든지 감정 태그를 다시 선택해서 새로운 관광지 추천을 받을 수 있습니다. 하루에 제한 없이 이용 가능합니다.
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="help-section">
-                                    <h3>🆘 추가 도움이 필요하시나요?</h3>
-                                    <div class="help-options">
-                                        <a href="/faq?category=service" class="help-option">
-                                            <div class="help-icon">🎭</div>
-                                            <div class="help-text">
-                                                <strong>무드매칭 관련 FAQ</strong>
-                                                <span>무드매칭과 관련된 다른 질문들을 확인해보세요</span>
-                                            </div>
-                                        </a>
-                                        
-                                        <a href="/customer-center/contact" class="help-option">
-                                            <div class="help-icon">💬</div>
-                                            <div class="help-text">
-                                                <strong>1:1 문의하기</strong>
-                                                <span>개별 상황에 맞는 상담을 받아보세요</span>
-                                            </div>
-                                        </a>
-                                        
-                                        <a href="tel:1588-0000" class="help-option">
-                                            <div class="help-icon">📞</div>
-                                            <div class="help-text">
-                                                <strong>전화 상담</strong>
-                                                <span>1588-0000 (평일 09:00-18:00)</span>
-                                            </div>
-                                        </a>
-                                    </div>
+                            <div class="meta-right">
+                                <div class="user-type-indicator">
+                                    <span class="user-type">관리자</span>
                                 </div>
                             </div>
-                        </article>
+                        </div>
+                    </header>
 
-                        <!-- 하단 액션 버튼 -->
-                        <footer class="faq-footer">
-                            <div class="footer-actions">
-                                <div class="helpful-section">
-                                    <p class="helpful-question">이 답변이 도움이 되었나요?</p>
-                                    <div class="helpful-buttons">
-                                        <button class="helpful-button yes" id="helpful-yes">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                                <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
-                                            </svg>
-                                            도움됨
-                                        </button>
-                                        
-                                        <button class="helpful-button no" id="helpful-no">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                                <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"></path>
-                                            </svg>
-                                            도움안됨
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <div class="navigation-buttons">
-                                    <button class="nav-btn prev-btn">
+                    <!-- FAQ 답변 내용 -->
+                    <article class="faq-content">
+                        <div class="content-body">
+                            <div th:utext="${faq.content}">
+                                FAQ 내용이 여기에 표시됩니다.
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- 하단 액션 버튼 -->
+                    <footer class="faq-footer">
+                        <div class="footer-actions">
+                            <div class="helpful-section">
+                                <p class="helpful-question">이 답변이 도움이 되었나요?</p>
+                                <div class="helpful-buttons">
+                                    <button class="helpful-button yes" id="helpful-yes" th:data-faq-id="${faq.id}">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                            <polyline points="15,18 9,12 15,6"></polyline>
+                                            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
                                         </svg>
-                                        이전 FAQ
+                                        도움됨
                                     </button>
-                                    
-                                    <button class="nav-btn next-btn">
-                                        다음 FAQ
+
+                                    <button class="helpful-button no" id="helpful-no" th:data-faq-id="${faq.id}">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                            <polyline points="9,18 15,12 9,6"></polyline>
+                                            <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"></path>
                                         </svg>
+                                        도움안됨
                                     </button>
                                 </div>
                             </div>
-                        </footer>
 
-                        <!-- 관련 FAQ -->
-                        <section class="related-faqs">
-                            <h3 class="related-title">관련 FAQ</h3>
-                            <div class="related-list">
-                                <a href="#" class="related-faq-item">
-                                    <div class="related-category">서비스 소개</div>
-                                    <div class="related-content">
-                                        <div class="related-question">[서비스 소개] 감정 태그는 어떻게 선택하나요?</div>
-                                        <div class="related-meta">
-                                            <span class="related-views">조회 1,876</span>
-                                            <span class="related-helpful">도움됨 92%</span>
-                                        </div>
-                                    </div>
-                                </a>
-                                
-                                <a href="#" class="related-faq-item">
-                                    <div class="related-category">이용 방법</div>
-                                    <div class="related-content">
-                                        <div class="related-question">[이용 방법] 여행방 만들기 가이드</div>
-                                        <div class="related-meta">
-                                            <span class="related-views">조회 1,234</span>
-                                            <span class="related-helpful">도움됨 89%</span>
-                                        </div>
-                                    </div>
-                                </a>
-                                
-                                <a href="#" class="related-faq-item">
-                                    <div class="related-category">회원 정보</div>
-                                    <div class="related-content">
-                                        <div class="related-question">[회원 정보] 프로필 인증 방법</div>
-                                        <div class="related-meta">
-                                            <span class="related-views">조회 967</span>
-                                            <span class="related-helpful">도움됨 95%</span>
-                                        </div>
-                                    </div>
-                                </a>
+                            <div class="navigation-buttons">
+                                <button class="nav-btn prev-btn" th:if="${prevFaq}" th:onclick="|location.href='/customer-center/faq-detail?id=${prevFaq.id}'|">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <polyline points="15,18 9,12 15,6"></polyline>
+                                    </svg>
+                                    이전 FAQ
+                                </button>
+
+                                <button class="nav-btn next-btn" th:if="${nextFaq}" th:onclick="|location.href='/customer-center/faq-detail?id=${nextFaq.id}'|">
+                                    다음 FAQ
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <polyline points="9,18 15,12 9,6"></polyline>
+                                    </svg>
+                                </button>
                             </div>
-                        </section>
-                    </div>
+                        </div>
+                    </footer>
+
+                    <!-- 관련 FAQ -->
+                    <section class="related-faqs" th:if="${relatedFaqs != null and !relatedFaqs.isEmpty()}">
+                        <h3 class="related-title">관련 FAQ</h3>
+                        <div class="related-list">
+                            <a th:each="relatedFaq : ${relatedFaqs}"
+                               th:href="@{/customer-center/faq-detail(id=${relatedFaq.id})}"
+                               class="related-faq-item">
+                                <div class="related-category" th:text="${relatedFaq.category}">카테고리</div>
+                                <div class="related-content">
+                                    <div class="related-question" th:text="|[${relatedFaq.category}] ${relatedFaq.title}|">관련 질문</div>
+                                    <div class="related-meta">
+                                        <span class="related-views" th:text="|조회 ${relatedFaq.viewCount}|">조회 0</span>
+                                        <span class="related-helpful" th:text="|도움됨 ${relatedFaq.helpful}|">도움됨 0</span>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </section>
                 </div>
-            </main>
-        </div>
+            </div>
+        </main>
     </div>
+</div>
 
-    <script src="/js/customer-center/faq-detail.js"></script>
+<script src="/js/customer-center/faq-detail.js"></script>
 </body>
 </html>
