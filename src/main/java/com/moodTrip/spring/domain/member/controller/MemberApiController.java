@@ -16,6 +16,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -49,14 +51,9 @@ public class MemberApiController {
             HttpServletRequest request,
             HttpServletResponse response
     ) {
-        log.info("🚪 로그아웃 API 호출됨 - 완전한 로그아웃 처리 시작");
-
         try {
             // 현재 로그인된 사용자 확인 (JWT 토큰 검증)
             Member currentMember = securityUtil.getCurrentMember();
-
-            log.info("👤 로그아웃 처리 대상 사용자: {}, 닉네임: {}",
-                    currentMember.getMemberId(), currentMember.getNickname());
 
             // JWT 토큰 쿠키 삭제
             Cookie jwtCookie = new Cookie("jwtToken", null);
@@ -66,7 +63,6 @@ public class MemberApiController {
             jwtCookie.setSecure(false);      // 개발환경: false, 운영환경: true
             response.addCookie(jwtCookie);
 
-            log.info("🗑️ JWT 토큰(jwtToken) 쿠키 삭제 완료");
 
             // JSESSIONID 쿠키 삭제
             Cookie sessionCookie = new Cookie("JSESSIONID", null);
@@ -76,39 +72,29 @@ public class MemberApiController {
             sessionCookie.setSecure(false);  // 개발환경: false, 운영환경: true
             response.addCookie(sessionCookie);
 
-            log.info("🗑️ 세션(JSESSIONID) 쿠키 삭제 완료");
 
-            // 4️⃣ 🔥 서버 세션 무효화
+            // 서버 세션 무효화
             HttpSession session = request.getSession(false); // 기존 세션만 가져오기
             if (session != null) {
                 String sessionId = session.getId();
                 session.invalidate(); // 세션 무효화
-                log.info("🧹 서버 세션 무효화 완료 - SessionID: {}", sessionId);
             } else {
                 log.info("📭 무효화할 서버 세션이 없음");
             }
 
             // 보안 컨텍스트 클리어 (현재 요청에서 인증 정보 완전 제거)
             SecurityContextHolder.clearContext();
-            log.info("🧹 Spring Security 컨텍스트 클리어 완료");
 
             // 개인화된 성공 응답 생성
             LogoutResponse logoutResponse = LogoutResponse.success(
                     currentMember.getNickname() + "님, 안전하게 로그아웃되었습니다. 다음에 또 만나요! 👋"
             );
 
-            log.info("✅ 완전한 로그아웃 처리 성공 - 사용자: {}", currentMember.getMemberId());
-            log.info("🎯 삭제된 쿠키: jwtToken, JSESSIONID");
-            log.info("🎯 무효화된 세션: {}", session != null ? "완료" : "없음");
-
             return ResponseEntity.ok(logoutResponse);
 
         } catch (Exception e) {
-            log.warn("❌ 로그아웃 처리 중 오류 발생: {}", e.getMessage());
-            log.debug("🔍 오류 상세:", e);
 
             try {
-                log.info("🧹 오류 상황에서도 쿠키 정리 시작");
 
                 // JWT 토큰 삭제
                 Cookie jwtCookie = new Cookie("jwtToken", null);
@@ -131,13 +117,11 @@ public class MemberApiController {
                 // 보안 컨텍스트 클리어
                 SecurityContextHolder.clearContext();
 
-                log.info("🗑️ 오류 상황에서도 모든 인증 정보 정리 완료");
 
             } catch (Exception cleanupError) {
                 log.error("💥 쿠키 정리 중 추가 오류 발생: {}", cleanupError.getMessage());
             }
 
-            // 인증 관련 오류인지 확인하여 적절한 응답 코드 반환
             String errorMessage = e.getMessage().toLowerCase();
             if (errorMessage.contains("로그인") ||
                     errorMessage.contains("인증") ||
@@ -152,7 +136,7 @@ public class MemberApiController {
         }
     }
 
-    // 🔥 기존 회원 탈퇴 API (그대로 유지)
+    // 회원 탈퇴 로직
     @Operation(
             summary = "회원 탈퇴",
             description = "현재 로그인한 회원의 계정을 탈퇴 처리합니다."
@@ -164,25 +148,37 @@ public class MemberApiController {
             @ApiResponse(responseCode = "500", description = "서버 내부 오류")
     })
     @DeleteMapping("/me")
-    public ResponseEntity<WithdrawResponse> withdrawMember() {
-        log.info("🚀 회원 탈퇴 API 호출됨 - MemberApiController");
+    public ResponseEntity<WithdrawResponse> withdrawMember(HttpServletRequest request, HttpServletResponse response) {
 
         try {
-            // 🔥 SecurityUtil로 현재 사용자 가져오기 (테스트 코드 대신)
             Member currentMember = securityUtil.getCurrentMember();
+            WithdrawResponse withdrawResponse = memberService.withdrawMember(currentMember);
 
-            log.info("📝 탈퇴 요청 회원: {}", currentMember.getMemberId());
+            // 🔹 세션 무효화
+            request.getSession().invalidate();
 
-            // 탈퇴 처리
-            WithdrawResponse response = memberService.withdrawMember(currentMember);
+            // 🔹 SecurityContext 초기화
+            SecurityContextHolder.clearContext();
 
-            log.info("✅ 회원 탈퇴 성공 - 회원ID: {}", currentMember.getMemberId());
+            // 🔹 JWT 쿠키 삭제
+            ResponseCookie jwtClear = ResponseCookie.from("jwtToken", "")
+                    .httpOnly(true)
+                    .path("/")
+                    .maxAge(0)
+                    .build();
 
-            return ResponseEntity.ok(response);
+            // 🔹 JSESSIONID 쿠키 삭제
+            ResponseCookie jsessionClear = ResponseCookie.from("JSESSIONID", "")
+                    .path("/")
+                    .maxAge(0)
+                    .build();
+
+            response.addHeader(HttpHeaders.SET_COOKIE, jwtClear.toString());
+            response.addHeader(HttpHeaders.SET_COOKIE, jsessionClear.toString());
+
+            return ResponseEntity.ok(withdrawResponse);
 
         } catch (RuntimeException e) {
-            log.error("❌ 회원 탈퇴 실패 (비즈니스 로직 오류): {}", e.getMessage());
-
             WithdrawResponse errorResponse = WithdrawResponse.builder()
                     .success(false)
                     .message(e.getMessage())
@@ -192,8 +188,6 @@ public class MemberApiController {
             return ResponseEntity.badRequest().body(errorResponse);
 
         } catch (Exception e) {
-            log.error("💥 회원 탈퇴 중 예상치 못한 오류", e);
-
             WithdrawResponse errorResponse = WithdrawResponse.builder()
                     .success(false)
                     .message("탈퇴 처리 중 오류가 발생했습니다. 고객센터에 문의해 주세요.")
@@ -204,10 +198,4 @@ public class MemberApiController {
         }
     }
 
-    /**
-     * 🔥 테스트용 회원 생성 메서드 제거!
-     *
-     * 기존에 있던 createTestMember() 메서드는 더 이상 필요 없습니다.
-     * SecurityUtil.getCurrentMember()로 실제 로그인된 회원 정보를 가져오니까요!
-     */
 }

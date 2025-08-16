@@ -1,28 +1,44 @@
-    package com.moodTrip.spring.global.common.util;
+package com.moodTrip.spring.global.common.util;
 
-    import com.moodTrip.spring.domain.member.entity.Member;
-    import com.moodTrip.spring.global.common.util.SecurityUtil;
-    import lombok.RequiredArgsConstructor;
-    import org.springframework.ui.Model;
-    import org.springframework.web.bind.annotation.ControllerAdvice;
-    import org.springframework.web.bind.annotation.ModelAttribute;
+import com.moodTrip.spring.domain.member.entity.Member;
+import lombok.RequiredArgsConstructor;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ModelAttribute;
 
-    @ControllerAdvice
-    @RequiredArgsConstructor
-    public class GlobalMemberAdvice {
-        // header-after-login에서 사용되는 회원 정보
-        private final SecurityUtil securityUtil;
+@ControllerAdvice
+@RequiredArgsConstructor
+public class GlobalMemberAdvice {
 
-        @ModelAttribute
-        public void addMemberInfo(Model model) {
-            if (securityUtil.isAuthenticated()) {
-                Member member = securityUtil.getCurrentMember();
-                model.addAttribute("currentMember", member);
-                model.addAttribute("userNickname", member.getNickname());
-                model.addAttribute("userEmail", member.getEmail());
-                model.addAttribute("isLoggedIn", true);
+    private final SecurityUtil securityUtil;
+
+    @ModelAttribute
+    public void addMemberInfo(Model model) {
+        if (securityUtil.isAuthenticated()) {
+            Member member = securityUtil.getCurrentMember();
+
+            String loginType;
+            if (member.getProvider() == null || member.getProvider().isBlank()) {
+                loginType = "NORMAL";
             } else {
-                model.addAttribute("isLoggedIn", false);
+                loginType = member.getProvider().toUpperCase();
             }
+
+            // 🔹 이미지 경로 결정
+            String kakaoImagePath = "/image/mypage/kakao-logo-disabled.png";
+            String googleImagePath = (loginType.equals("GOOGLE"))
+                    ? "/image/mypage/google-logo.png"
+                    : "/image/mypage/google-logo-disabled.png";
+
+            model.addAttribute("currentMember", member);
+            model.addAttribute("userNickname", member.getNickname());
+            model.addAttribute("userEmail", member.getEmail());
+            model.addAttribute("loginType", loginType);
+            model.addAttribute("kakaoImagePath", kakaoImagePath);
+            model.addAttribute("googleImagePath", googleImagePath);
+            model.addAttribute("isLoggedIn", true);
+        } else {
+            model.addAttribute("isLoggedIn", false);
         }
     }
+}

@@ -35,4 +35,13 @@ public class ApiResponse<T> {
                 .data(null)
                 .build();
     }
+
+    public static <T> ApiResponse<T> errorMessage(String message) {
+        return ApiResponse.<T>builder()
+                .isSuccess(false)
+                .code("ERROR")  // 필요시 커스텀 코드 지정
+                .message(message)
+                .data(null)
+                .build();
+    }
 }

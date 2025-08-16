@@ -115,14 +115,16 @@
                                         <div class="email-info-wrapper">
                                             <div class="email-info-section">
                                                 <div class="email-info-placeholder-wrapper">
-                                                    <!-- ✅ Thymeleaf로 동적 이메일 표시 -->
                                                     <input disabled type="text" class="email-info"
-                                                           th:value="${profile != null ? profile.email : 'test@email.com'}">
-                                                    <div class="suffix-wrapper email-check-icon-wrapper">
-                                                        <span color="#303441" role="img" rotate="0" class="email-check-icon">
-                                                            <svg aria-hidden="true" fill="currentColor" focusable="false" height="24" preserv="xMidYMid meet" viewBox="0 0 24 24" width="24" class="email-svg-icon">
-                                                                <path clip-rule="evenodd" d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22ZM16.301 10.2319C16.6329 9.86186 16.6019 9.29285 16.2319 8.96099C15.8619 8.62913 15.2929 8.66008 14.961 9.03012L11.1606 13.2677L8.94642 11.0535C8.59494 10.7021 8.0251 10.7021 7.67362 11.0535C7.32215 11.405 7.32215 11.9749 7.67363 12.3263L10.5598 15.2125C10.7345 15.3873 10.9735 15.4825 11.2206 15.4757C11.4677 15.469 11.7011 15.361 11.8662 15.177L16.301 10.2319Z" fill-rule="evenodd"></path>
-                                                            </svg>
+                                                           th:value="${currentMember != null && currentMember.email != null ? currentMember.email : ''}">
+
+                                                    <div class="suffix-wrapper email-check-icon-wrapper"
+                                                         th:classappend="${currentMember != null && currentMember.email != null && !#strings.isEmpty(currentMember.email)}
+                                                    ? 'email-check-green': 'email-check-red'">
+                                                        <span role="img" rotate="0" class="email-check-icon">
+                                                        <svg aria-hidden="true" fill="currentColor" focusable="false" height="24" viewBox="0 0 24 24" width="24" class="email-svg-icon">
+                                                        <path clip-rule="evenodd" d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22ZM16.301 10.2319C16.6329 9.86186 16.6019 9.29285 16.2319 8.96099C15.8619 8.62913 15.2929 8.66008 14.961 9.03012L11.1606 13.2677L8.94642 11.0535C8.59494 10.7021 8.0251 10.7021 7.67362 11.0535C7.32215 11.405 7.32215 11.9749 7.67363 12.3263L10.5598 15.2125C10.7345 15.3873 10.9735 15.4825 11.2206 15.4757C11.4677 15.469 11.7011 15.361 11.8662 15.177L16.301 10.2319Z" fill-rule="evenodd"></path>
+                                                        </svg>
                                                         </span>
                                                     </div>
                                                 </div>
@@ -130,21 +132,26 @@
                                         </div>
                                     </div>
 
-                                    <!-- ✅ 연동된 계정 섹션 -->
                                     <div class="info-section-wrapper">
                                         <label class="info-text-label">
                                             <span class="linked-account-text">연동된 계정</span>
                                         </label>
                                         <ul class="linked-account-type">
-                                            <li aria-selected="true" style="background-color:#FEE500;border:none" class="kakao-logo-icon">
-                                                <img th:src="@{/image/mypage/kakao-logo_v2.png}" alt="카카오 계정 연동 상태" style="width:24px;height:24px; max-width: none;">
+                                            <!-- 카카오 -->
+                                            <li th:style="${loginType == 'KAKAO'} ? 'background-color:#FEE500;border:none' : 'background-color:#f2f3f7;border:none'"
+                                                class="kakao-logo-icon">
+                                                <img th:src="@{${kakaoImagePath}}" alt="카카오 계정 상태"
+                                                     style="width:24px;height:24px; max-width: none;">
                                             </li>
-                                            <li aria-selected="false" style="background-color:#f2f3f7;border:none" class="google-logo-disabled-icon">
-                                                <img th:src="@{/image/mypage/google-logo-disabled.png}" alt="구글 계정 미연동 상태" style="width:24px;height:24px; max-width: none;">
+
+                                            <!-- 구글 -->
+                                            <li th:style="${loginType == 'GOOGLE'} ? 'background-color:#ffffff;border:none' : 'background-color:#f2f3f7;border:none'"
+                                                class="google-logo-icon">
+                                                <img th:src="@{${googleImagePath}}" alt="구글 계정 상태"
+                                                     style="width:24px;height:24px; max-width: none;">
                                             </li>
                                         </ul>
                                     </div>
-
                                     <!-- ✅ 자기소개 섹션 -->
                                     <div class="info-section-wrapper self-introduction-wrapper">
                                         <label class="info-text-label">

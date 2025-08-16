@@ -361,15 +361,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ========================================
-    // 🎯 회원 탈퇴 모달 기능
-    // ========================================
+// 🎯 회원 탈퇴 모달 기능
+// ========================================
 
-    // 모달 관련 요소들
+// 모달 관련 요소들
     const withdrawModal = document.getElementById('withdrawModal');
     const cancelWithdrawBtn = document.getElementById('cancelWithdraw');
     const confirmWithdrawBtn = document.getElementById('confirmWithdraw');
 
-    // 모달 열기 함수
+// 모달 열기 함수
     function openWithdrawModal() {
         console.log('탈퇴 모달 열기');
         if (withdrawModal) {
@@ -382,7 +382,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // 모달 닫기 함수
+// 모달 닫기 함수
     function closeWithdrawModal() {
         console.log('탈퇴 모달 닫기');
         if (withdrawModal) {
@@ -393,11 +393,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 withdrawModal.classList.remove('hide');
                 withdrawModal.style.display = 'none';
                 document.body.style.overflow = '';
-            }, 300);
+            }, 300); // CSS 애니메이션과 맞춤
         }
     }
 
-    // 탈퇴하기 버튼 클릭 이벤트
+// 탈퇴하기 버튼 클릭 이벤트
     const withdrawBtn = document.querySelector('.withdraw-btn');
     if (withdrawBtn) {
         withdrawBtn.addEventListener('click', function (e) {
@@ -407,14 +407,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 취소 버튼 클릭 이벤트
+// 취소 버튼 클릭 이벤트
     if (cancelWithdrawBtn) {
         cancelWithdrawBtn.addEventListener('click', function () {
             closeWithdrawModal();
         });
     }
 
-    // ✅ 탈퇴 확인 버튼 클릭 이벤트 (완성 버전)
+// ✅ 탈퇴 확인 버튼 클릭 이벤트 (토큰 삭제 포함)
     if (confirmWithdrawBtn) {
         confirmWithdrawBtn.addEventListener('click', function () {
             console.log('🚀 탈퇴 확인 버튼 클릭됨');
@@ -424,7 +424,6 @@ document.addEventListener('DOMContentLoaded', function() {
             confirmWithdrawBtn.textContent = '탈퇴 처리 중...';
             confirmWithdrawBtn.disabled = true;
 
-            // ✅ 실제 백엔드 API 호출
             fetch('/api/v1/members/me', {
                 method: 'DELETE',
                 headers: {
@@ -433,7 +432,6 @@ document.addEventListener('DOMContentLoaded', function() {
             })
                 .then(response => {
                     console.log('📡 회원 탈퇴 응답 상태:', response.status);
-
                     if (response.ok) {
                         return response.json();
                     } else {
@@ -443,16 +441,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(data => {
                     console.log('✅ 회원 탈퇴 성공:', data);
 
-                    // 모달 닫기
+                    // 먼저 모달 닫기
                     closeWithdrawModal();
 
+                    // 모달 애니메이션 끝난 후 실행
                     setTimeout(() => {
-                        // 백엔드에서 받은 메시지 표시
                         const message = data.message || '탈퇴가 완료되었습니다. 그동안 이용해 주셔서 감사합니다.';
                         alert(message);
 
-                        // 사용자 데이터 정리
-                        clearUserData();
+                        // ✅ JWT 토큰, 세션, 로컬 스토리지 제거
+                        document.cookie = "jwtToken=; Max-Age=0; path=/;";
+                        document.cookie = "JSESSIONID=; Max-Age=0; path=/;";
+                        localStorage.removeItem('jwtToken');
+                        sessionStorage.removeItem('jwtToken');
+                        localStorage.clear();
+                        sessionStorage.clear();
 
                         // 메인 페이지로 이동
                         window.location.href = '/';
@@ -461,9 +464,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 .catch(error => {
                     console.error('❌ 회원 탈퇴 실패:', error);
 
-                    // 에러 메시지 표시
                     let errorMessage = '탈퇴 처리 중 오류가 발생했습니다. 고객센터에 문의해 주세요.';
-
                     if (error.message.includes('400')) {
                         errorMessage = '이미 탈퇴된 계정이거나 잘못된 요청입니다.';
                     } else if (error.message.includes('401')) {
@@ -476,16 +477,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     closeWithdrawModal();
                 })
                 .finally(() => {
-                    // 로딩 상태 해제 (성공/실패 관계없이)
                     confirmWithdrawBtn.textContent = originalBtnText;
                     confirmWithdrawBtn.disabled = false;
                 });
         });
     }
 
-    // 모달 오버레이 클릭 시 닫기 (배경 클릭 시)
+// 모달 오버레이 클릭 시 닫기 (배경 클릭 시)
     if (withdrawModal) {
-        withdrawModal.addEventListener('click', function(e) {
+        withdrawModal.addEventListener('click', function (e) {
             if (e.target === withdrawModal) {
                 closeWithdrawModal();
             }

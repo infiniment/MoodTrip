@@ -193,5 +193,10 @@ public class MemberService {
                 .success(true)  // 성공 여부 추가
                 .build();
     }
+    // 상우가 일반 로그인에서 회원 탈퇴 후 다시 재로그인할려는 경우 사용
+    public Member findByMemberId(String memberId) {
+        return memberRepository.findByMemberId(memberId)
+                .orElseThrow(() -> new RuntimeException("회원이 존재하지 않습니다."));
+    }
 }
 
