@@ -9,12 +9,14 @@ import com.moodTrip.spring.domain.attraction.entity.Attraction;
 import com.moodTrip.spring.domain.attraction.entity.AttractionIntro;
 import com.moodTrip.spring.domain.attraction.repository.AttractionIntroRepository;
 import com.moodTrip.spring.domain.attraction.repository.AttractionRepository;
+import com.moodTrip.spring.domain.emotion.dto.response.AttractionCardDTO;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -25,6 +27,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -35,6 +38,7 @@ public class AttractionServiceImpl implements AttractionService {
     private final AttractionRepository repository;
     private final AttractionIntroRepository introRepository;
     private final RestTemplate restTemplate;
+
 
     @Value("${attraction.apikey.decoding}")
     private String apiKey;
@@ -335,4 +339,40 @@ public class AttractionServiceImpl implements AttractionService {
         log.info("TourAPI key loaded. len={}, tail={}", apiKey.length(),
                 apiKey.length() > 4 ? apiKey.substring(apiKey.length() - 4) : "****");
     }
+
+    public List<AttractionCardDTO> findAttractionsByEmotionIds(List<Integer> emotionIds) {
+        List<Attraction> attractions = repository.findAttractionsByEmotionIds(emotionIds);
+
+        // 조회된 Attraction 엔터티 목록을 AttractionCardDTO 목록으로 변환
+        return attractions.stream()
+                .map(attraction -> AttractionCardDTO.builder()
+                        .title(attraction.getTitle())
+                        .addr1(attraction.getAddr1())
+                        .firstImage(attraction.getFirstImage())
+                        // DTO에 description이 필요하다면 여기에 추가 (예: attraction.getDescription())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+
+    // [추가] 초기 페이지 로딩 시 보여줄 여행지 조회 로직
+    public List<AttractionCardDTO> findInitialAttractions(int limit) {
+        Pageable pageable = PageRequest.of(0, limit);
+        List<Attraction> attractions = repository.findAll(pageable).getContent();
+
+        return attractions.stream()
+                .map(attraction -> AttractionCardDTO.builder()
+                        .id(attraction.getId()) // <-- 이 줄을 추가합니다.
+                        .title(attraction.getTitle())
+                        .addr1(attraction.getAddr1())
+                        .firstImage(attraction.getFirstImage())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true) // 읽기 전용 트랜잭션으로 설정 (선택 사항이지만 권장)
+    public List<Attraction> getAllAttractions() {
+        return repository.findAll(); // AttractionRepository를 사용하여 모든 Attraction 엔티티를 조회합니다.
+    }
+
 }

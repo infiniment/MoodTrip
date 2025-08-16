@@ -180,6 +180,7 @@ public class ODsayServiceImpl implements ODsayService {
                 .segments(segs)
                 .externalUrl(kakaoUrl)
                 .build();
+
     }
 
     /**
