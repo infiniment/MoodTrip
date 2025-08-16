@@ -347,7 +347,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // 검색 버튼 클릭 이벤트: 실제 API 호출 로직으로 변경
+    // 검색 버튼 클릭 이벤트(실질적인 로직 감정검색 -> 가중치 기반 관광지)
     const searchBtn = document.querySelector('.search-btn');
     if (searchBtn) {
         searchBtn.addEventListener('click', async function() {

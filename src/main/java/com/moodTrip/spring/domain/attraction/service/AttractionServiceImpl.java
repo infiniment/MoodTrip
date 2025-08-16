@@ -357,23 +357,22 @@ public class AttractionServiceImpl implements AttractionService {
 
     // [추가] 초기 페이지 로딩 시 보여줄 여행지 조회 로직
     public List<AttractionCardDTO> findInitialAttractions(int limit) {
-        // Pageable 객체를 사용하여 상위 'limit'개의 결과만 요청
         Pageable pageable = PageRequest.of(0, limit);
-
-        // findAll 메서드에 pageable을 전달하여 페이징된 결과 조회
         List<Attraction> attractions = repository.findAll(pageable).getContent();
 
-        // 조회된 Attraction 엔터티 목록을 AttractionCardDTO 목록으로 변환
         return attractions.stream()
                 .map(attraction -> AttractionCardDTO.builder()
+                        .id(attraction.getId()) // <-- 이 줄을 추가합니다.
                         .title(attraction.getTitle())
                         .addr1(attraction.getAddr1())
                         .firstImage(attraction.getFirstImage())
-                        // DTO에 description 필드가 있다면, 여기에서 값을 설정합니다.
-                        // 예: .description("기본 설명입니다.") 또는 attraction의 다른 필드 활용
                         .build())
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true) // 읽기 전용 트랜잭션으로 설정 (선택 사항이지만 권장)
+    public List<Attraction> getAllAttractions() {
+        return repository.findAll(); // AttractionRepository를 사용하여 모든 Attraction 엔티티를 조회합니다.
+    }
 
 }

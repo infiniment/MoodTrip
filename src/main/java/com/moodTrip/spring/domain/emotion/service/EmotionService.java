@@ -1,8 +1,11 @@
 package com.moodTrip.spring.domain.emotion.service;
 
+import com.moodTrip.spring.domain.attraction.repository.AttractionRepository;
 import com.moodTrip.spring.domain.emotion.dto.response.EmotionCategoryDto;
+import com.moodTrip.spring.domain.emotion.entity.Emotion;
 import com.moodTrip.spring.domain.emotion.entity.EmotionCategory;
 import com.moodTrip.spring.domain.emotion.repository.EmotionCategoryRepository;
+import com.moodTrip.spring.domain.emotion.repository.EmotionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +22,7 @@ import java.util.stream.Collectors;
 public class EmotionService {
 
     private final EmotionCategoryRepository emotionCategoryRepository;
+    private final EmotionRepository emotionRepository;
 
     public List<EmotionCategoryDto> getEmotionCategories() {
 
@@ -33,4 +37,10 @@ public class EmotionService {
                 .map(EmotionCategoryDto::from)
                 .collect(Collectors.toList());
     }
+
+
+    public List<Emotion> getAllEmotions() {
+        return emotionRepository.findAll(); // EmotionRepository를 사용하여 모든 Emotion 엔티티 조회
+    }
+
 }
