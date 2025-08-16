@@ -43,16 +43,16 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
             Map<String, Object> profile = kakaoAccount != null ? (Map<String, Object>) kakaoAccount.get("profile") : null;
             nickname = profile != null ? (String) profile.get("nickname") : "";
         } else if ("google".equals(provider)) {
-            providerId = (String) attributes.get("sub"); // 구글의 고유 식별자
+            providerId = (String) attributes.get("sub");
             email = (String) attributes.get("email");
-            nickname = (String) attributes.get("name"); // 구글은 "name"이 전체 이름, "given_name", "family_name" 등도 있음
+            nickname = (String) attributes.get("name");
         } else {
-            // 기타 프로바이더가 있다면 확장
             throw new IllegalArgumentException("지원하지 않는 소셜 로그인입니다.");
         }
 
-        // (아래는 기존 카카오 로직과 동일하게 재사용)
         boolean exists = memberService.existsByProviderAndProviderId(provider, providerId);
+
+        // 상우가 추가 여기서 flowType 체크 (명시적으로 로그인 요청한 경우만 JWT 발급)
         String flowType = null;
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
@@ -63,13 +63,20 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
             }
         }
 
+        // 상우가 추가flowType 없으면 (즉, 브라우저 세션으로 자동 로그인된 경우) 메인 페이지로만 이동, JWT는 발급하지 않음
+        if (flowType == null) {
+            log.info("🔹 OAuth2 자동 로그인 감지 - JWT 발급 없이 메인 페이지 이동");
+            response.sendRedirect("/");
+            return;
+        }
+
         if ("signup".equals(flowType)) {
             if (exists) {
                 response.sendRedirect("/signup?error=이미+회원가입+된+계정입니다");
                 return;
             } else {
                 String memberId = provider + "_" + providerId;
-                String memberPw = ""; // 소셜은 비번X
+                String memberPw = "";
                 String memberName = (nickname == null || nickname.isEmpty()) ? memberId : nickname;
                 String memberPhone = "010-0000-0000";
 
@@ -88,7 +95,6 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 
                 String token = jwtUtil.generateToken(member.getMemberId(), member.getMemberPk());
                 Cookie jwtCookie = new Cookie("jwtToken", token);
-
                 jwtCookie.setHttpOnly(true);
                 jwtCookie.setPath("/");
                 jwtCookie.setMaxAge(24 * 60 * 60);
@@ -96,25 +102,28 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
                 response.addCookie(jwtCookie);
                 response.sendRedirect("/signup/success");
             }
-        } else {
-            //회원가입 말고 소셜 로그인 할 떄
+        } else if ("login".equals(flowType)) {
             if (exists) {
-
                 Member member = memberService.findByProviderAndProviderId(provider, providerId);
+
+                // 상우가 추가 탈퇴 회원인지 체크
+                if (Boolean.TRUE.equals(member.getIsWithdraw())) {
+                    log.warn("❌ 탈퇴한 회원 로그인 시도 - memberId: {}", member.getMemberId());
+                    response.sendRedirect("/withdraw");
+                    return; // JWT 발급 안 하고 종료
+                }
+
+                // JWT 발급
                 String token = jwtUtil.generateToken(member.getMemberId(), member.getMemberPk());
                 Cookie jwtCookie = new Cookie("jwtToken", token);
                 jwtCookie.setHttpOnly(true);
                 jwtCookie.setPath("/");
-                jwtCookie.setHttpOnly(true);
                 jwtCookie.setMaxAge(24 * 60 * 60);
                 response.addCookie(jwtCookie);
                 response.sendRedirect("/mainpage/mainpage");
-
             } else {
                 response.sendRedirect("/signup?error=등록되지+않은+계정입니다.+회원가입이+필요합니다");
             }
         }
     }
-
-
 }

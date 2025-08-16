@@ -1,21 +1,18 @@
 package com.moodTrip.spring.domain.chat.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
 @Getter
-@Service
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class ChatMessageResponse {
     private String sender; // 보낸 사람 닉네임
-    private String message; // 메시지 내용
+    private String message; // 메시지 내용z
     private LocalDateTime sendTime; // 보낸 시간
 
     /*

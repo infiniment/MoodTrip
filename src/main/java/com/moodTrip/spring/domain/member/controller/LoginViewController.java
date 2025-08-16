@@ -44,9 +44,12 @@ public class LoginViewController {
 
     @Operation(summary = "로그인 처리", description = "회원 로그인 요청(폼 전송 방식)을 처리한다")
     @PostMapping("/login")
-    public String login(@ModelAttribute LoginRequest loginRequest, HttpServletResponse response , Model model) {
+    public String login(@ModelAttribute LoginRequest loginRequest,
+                        HttpServletResponse response, Model model) {
+
         log.info("로그인 요청: id={}, pw={}", loginRequest.getMemberId(), loginRequest.getMemberPw());
 
+        // 로그인 시도
         String token = loginService.login(loginRequest);
 
         if (token == null) {
@@ -56,18 +59,27 @@ public class LoginViewController {
             return "login/login"; // 로그인 폼 재출력
         }
 
-        // 쿠키 생성 (HttpOnly, Secure 옵션은 필요에 따라 설정)
+        // 🔹 로그인 성공했으니 회원 정보 조회
+        var member = memberService.findByMemberId(loginRequest.getMemberId());
+
+        // 🔹 탈퇴 회원이면 withdraw.html로 이동
+        if (member.getIsWithdraw() != null && member.getIsWithdraw()) {
+            log.info("🚫 탈퇴한 회원 로그인 시도: {}", loginRequest.getMemberId());
+            model.addAttribute("errorMessage", "이미 탈퇴하신 회원입니다.");
+            return "login/withdraw"; // templates/login/withdraw.html
+        }
+
+        // 정상 회원 → JWT 쿠키 발급
         Cookie jwtCookie = new Cookie("jwtToken", token);
         jwtCookie.setPath("/");
         jwtCookie.setHttpOnly(true);
-
-        jwtCookie.setMaxAge(24 * 60 * 60); // 1일 (단위: 초)
+        jwtCookie.setMaxAge(24 * 60 * 60); // 1일
         response.addCookie(jwtCookie);
 
-        // 해당 부분 김상우가 수정 메인페이지로 redirect 시 Member 테이블 정보 가져오기 위함
+        // 메인 페이지로 이동
         return "redirect:/";
-
     }
+
 
     //소셜 로그인 성공 시
     @GetMapping("/mainpage/mainpage")

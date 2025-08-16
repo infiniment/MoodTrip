@@ -32,4 +32,12 @@ public interface RoomMemberRepository extends JpaRepository<RoomMember, Long> {
 
     // 회원 기준 활성 참여 방 조회
     List<RoomMember> findByMemberAndIsActiveTrue(Member member);
+
+    // 상우가 만든 방 입장하기에서 마이페이지 매칭 정보에 넣기 전 정원 여부 확인
+    @Query("SELECT COUNT(rm) FROM RoomMember rm WHERE rm.room = :room AND rm.isActive = true")
+    Long countByRoomAndIsActiveTrue(@Param("room") Room room);
+
+    // 활성 멤버 여부만 체크 (가장 추천)
+    boolean existsByMember_MemberPkAndRoom_RoomIdAndIsActiveTrue(Long memberPk, Long roomId);
+
 }

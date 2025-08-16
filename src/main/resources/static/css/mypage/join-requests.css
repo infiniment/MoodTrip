@@ -113,46 +113,6 @@
     text-shadow: 0 2px 4px rgba(0, 26, 44, 0.1);
 }
 
-/* 대량 작업 버튼 */
-.bulk-actions {
-    display: flex;
-    gap: 1rem;
-}
-
-.btn-bulk {
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: none;
-}
-
-.btn-approve-all {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: white;
-}
-
-.btn-approve-all:hover {
-    background: linear-gradient(135deg, #059669 0%, #047857 100%);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-}
-
-.btn-reject-all {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.05) 100%);
-    color: #dc2626;
-    border: 1px solid rgba(239, 68, 68, 0.2);
-}
-
-.btn-reject-all:hover {
-    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-    color: white;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-}
-
 /* 통계 카드 */
 .requests-stats {
     display: flex;
@@ -635,6 +595,7 @@
 
 /* 토스트 알림 */
 #toast-container {
+    margin: 55px auto;
     position: fixed;
     top: 20px;
     right: 20px;
@@ -852,11 +813,6 @@
         align-items: flex-start;
         gap: 0.5rem;
         padding: 1rem;
-    }
-    
-    .bulk-actions {
-        flex-direction: column;
-        width: 100%;
     }
     
     .modal-content {

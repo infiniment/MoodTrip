@@ -29,38 +29,38 @@ public class MypageViewController {
     // 기본정보 프로필 페이지
     @GetMapping("/my-profile")
     public String viewMyProfile(Model model) {
-            Member currentMember = securityUtil.getCurrentMember();
-            ProfileResponse profile = profileService.getMyProfile(currentMember);
-            model.addAttribute("profile", profile);
-            model.addAttribute("currentMember", currentMember);
-            model.addAttribute("pageTitle", "내 정보");
-            model.addAttribute("isLoggedIn", true);
-            return "mypage/my-profile";
+        Member currentMember = securityUtil.getCurrentMember();
+        ProfileResponse profile = profileService.getMyProfile(currentMember);
+        model.addAttribute("profile", profile);
+        model.addAttribute("currentMember", currentMember);
+        model.addAttribute("pageTitle", "내 정보");
+        model.addAttribute("isLoggedIn", true);
+        return "mypage/my-profile";
     }
 
     // 마이페이지 매칭 정보 페이지 렌더링
     @GetMapping("/my-matching")
     public String myMatching(String tab, Model model) {
-            Member currentMember = securityUtil.getCurrentMember();
+        Member currentMember = securityUtil.getCurrentMember();
 
-            //  탭 파라미터 검증 및 정규화
-            String validatedTab = validateAndNormalizeTab(tab);
+        //  탭 파라미터 검증 및 정규화
+        String validatedTab = validateAndNormalizeTab(tab);
 
-            // 탭별 데이터 로딩
-            List<JoinedRoomResponse> joinedRooms = null;
-            List<CreatedRoomResponse> createdRooms = null;
+        // 탭별 데이터 로딩
+        List<JoinedRoomResponse> joinedRooms = null;
+        List<CreatedRoomResponse> createdRooms = null;
 
-            if ("received".equals(validatedTab)) {
-                // 내가 입장한 방 탭 데이터 로드하기
-                joinedRooms = mypageRoomService.getMyJoinedRooms(currentMember);
-            } else if ("created".equals(validatedTab)) {
-                // "내가 만든 방 탭 데이터 로드하기
-                createdRooms = mypageRoomService.getMyCreatedRooms(currentMember);
-            }
+        if ("received".equals(validatedTab)) {
+            // 내가 입장한 방 탭 데이터 로드하기
+            joinedRooms = mypageRoomService.getMyJoinedRooms(currentMember);
+        } else if ("created".equals(validatedTab)) {
+            // "내가 만든 방 탭 데이터 로드하기
+            createdRooms = mypageRoomService.getMyCreatedRooms(currentMember);
+        }
 
-            // 3. 템플릿에 렌더링할 데이터 준비
-            setupModelAttributes(model, validatedTab, currentMember, joinedRooms, createdRooms);
-            return "mypage/my-matching";
+        // 3. 템플릿에 렌더링할 데이터 준비
+        setupModelAttributes(model, validatedTab, currentMember, joinedRooms, createdRooms);
+        return "mypage/my-matching";
     }
 
     private String validateAndNormalizeTab(String tab) {
@@ -83,7 +83,7 @@ public class MypageViewController {
                 return "received";
         }
     }
-      // 템플릿에서 th:classappend="${activeTab == 'received' ? 'active' : ''}" 가 작동하도록 함
+    // 템플릿에서 th:classappend="${activeTab == 'received' ? 'active' : ''}" 가 작동하도록 함
     private void setupModelAttributes(Model model, String activeTab, Member currentMember,
                                       List<JoinedRoomResponse> joinedRooms,
                                       List<CreatedRoomResponse> createdRooms) {
