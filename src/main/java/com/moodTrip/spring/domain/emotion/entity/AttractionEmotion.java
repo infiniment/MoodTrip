@@ -1,6 +1,7 @@
-package com.moodTrip.spring.domain.attraction.entity;
+package com.moodTrip.spring.domain.emotion.entity;
 
-import com.moodTrip.spring.domain.emotion.entity.Emotion;
+import com.moodTrip.spring.domain.attraction.entity.Attraction;
+import com.moodTrip.spring.global.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
@@ -22,7 +23,7 @@ import java.time.LocalDateTime;
                         columnNames = {"attraction_id", "tag_id"}
                 )
         })
-public class AttractionEmotion {
+public class AttractionEmotion extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,21 +42,12 @@ public class AttractionEmotion {
     @Column(name = "weight", precision = 10, scale = 5)
     private BigDecimal weight;
 
-    // ERD의 created_at 필드
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
     // ERD의 is_active 필드
     @Builder.Default
     @Column(name = "is_active", nullable = false)
     @ColumnDefault("true")
     private boolean isActive = true;
 
-    // 생성자나 @PrePersist를 사용하여 createdAt 초기화
-    @PrePersist
-    public void prePersist() {
-        this.createdAt = LocalDateTime.now();
-    }
 
 
 }

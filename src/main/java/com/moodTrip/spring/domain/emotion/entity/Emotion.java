@@ -1,7 +1,6 @@
 package com.moodTrip.spring.domain.emotion.entity;
 
 
-import com.moodTrip.spring.domain.attraction.entity.AttractionEmotion;
 import com.moodTrip.spring.global.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;

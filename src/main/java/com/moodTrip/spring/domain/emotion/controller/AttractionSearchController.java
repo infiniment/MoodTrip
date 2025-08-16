@@ -26,4 +26,8 @@ public class AttractionSearchController {
         List<AttractionCardDTO> attractions = attractionSearchService.findAttractionsByEmotionIds(emotionIds);
         return ResponseEntity.ok(attractions);
     }
+
+
+
+
 }

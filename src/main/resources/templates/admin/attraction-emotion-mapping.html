@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>관광지 감정 매핑 관리</title>
+</head>
+<body>
+<h2>관광지별 소분류 감정 태그 매핑</h2>
+
+<table border="1">
+    <thead>
+    <tr>
+        <th>관광지명</th>
+        <th>감정 태그 및 가중치</th>
+        <th>수정</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="attraction : ${attractions}">
+        <td th:text="${attraction.title}">관광지명</td>
+        <td>
+            <form th:action="@{'/admin/attraction-emotions/update/' + ${attraction.id}}" method="post">
+                <div th:each="emotion : ${emotions}">
+                    <label>
+                        <!-- 체크박스 체크 여부: Map에서 관광지ID로 감정ID 리스트를 찾고 포함 여부 검사 -->
+                        <input type="checkbox" name="emotionId" th:value="${emotion.tagId}"
+                               th:checked="${attractionToEmotionIds[attraction.id] != null and attractionToEmotionIds[attraction.id].contains(emotion.tagId)}"/>
+                        <span th:text="${emotion.tagName}">감정태그</span>
+                    </label>
+                    <!-- 가중치 입력란: Map에서 관광지ID → 감정ID → weight로 조회, 없으면 빈 문자열 -->
+                    <input type="text" name="weight" size="5"
+                           th:value="${attractionToEmotionWeights[attraction.id] != null ? attractionToEmotionWeights[attraction.id][emotion.tagId] : ''}"/>
+                    <br/>
+                </div>
+                <button type="submit">저장</button>
+            </form>
+        </td>
+        <td></td>
+    </tr>
+
+    </tbody>
+</table>
+
+<!-- 추후 JavaScript 혹은 AJAX 활용 시 UX 개선 가능 -->
+
+</body>
+</html>
