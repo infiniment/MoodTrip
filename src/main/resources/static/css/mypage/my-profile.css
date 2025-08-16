@@ -408,9 +408,7 @@
     margin-bottom: 4px;
     line-height: 1.4;
 }
-
-.email-info-label-wrapper, 
-.phone-authentication-label-wrapper {
+.email-info-label-wrapper {
     justify-content: space-between;
     align-items: baseline;
     display: flex;
@@ -453,19 +451,22 @@
     vertical-align: -0.125em;
     text-rendering: optimizelegibility;
     -webkit-font-smoothing: antialiased;
-    color: #10b981;
 }
 
-.email-check-icon svg {
-    width: 22px;
-    height: 22px;
-    fill: #10b981;
+/* 기존 color/fill 하드코딩 삭제하고 상태별 색상 지정 */
+.email-check-green svg {
+    fill: #22c55e; /* 초록 */
+}
+
+.email-check-red svg {
+    fill: #ef4444; /* 빨강 */
 }
 
 .email-svg-icon {
     display: inline-block;
     vertical-align: middle;
 }
+
 
 /* 연동된 계정 */
 .linked-account-type {
@@ -476,7 +477,8 @@
     list-style: none;
 }
 
-.kakao-logo-icon, 
+.kakao-logo-icon,
+.google-logo-icon,
 .google-logo-disabled-icon {
     width: 48px;
     height: 48px;
@@ -491,6 +493,7 @@
 }
 
 .kakao-logo-icon:hover,
+.google-logo-icon,
 .google-logo-disabled-icon:hover {
     transform: scale(1.1);
     box-shadow: 0 8px 24px rgba(0, 26, 44, 0.15);

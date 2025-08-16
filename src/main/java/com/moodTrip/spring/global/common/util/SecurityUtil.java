@@ -3,6 +3,7 @@ package com.moodTrip.spring.global.common.util;
 import com.moodTrip.spring.domain.member.entity.Member;
 import com.moodTrip.spring.domain.member.entity.Profile;
 import com.moodTrip.spring.domain.member.repository.ProfileRepository;
+import com.moodTrip.spring.global.common.exception.WithdrawnMemberException;
 import com.moodTrip.spring.global.security.jwt.MyUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,7 +49,7 @@ public class SecurityUtil {
 
             if (member.getIsWithdraw() != null && member.getIsWithdraw()) {
                 log.warn("❌ 탈퇴한 회원 접근 시도 - memberId: {}", member.getMemberId());
-                throw new RuntimeException("탈퇴한 회원입니다.");
+                throw new WithdrawnMemberException("탈퇴하신 회원입니다.");
             }
 
             // ✅ 프로필 자동 생성 로직

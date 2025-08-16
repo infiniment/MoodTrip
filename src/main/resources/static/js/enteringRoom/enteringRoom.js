@@ -1,6 +1,7 @@
 // 🔥 서버 API 기본 URL
 const API_BASE_URL = '/api/v1/companion-rooms/search';
-const JOIN_API_BASE_URL = '/api/v1/companion-rooms'; // 🔥 방 입장 신청 API URL 추가
+const JOIN_API_BASE_URL = '/api/v1/companion-rooms'; // 🔥 방 입장 신청 API URL
+const FIRE_API_BASE_URL = '/api/v1/fires'; // 🔥 방 신고 API URL 추가
 
 // 방 데이터 (서버에서 가져온 데이터로 저장)
 let roomsData = [];
@@ -154,6 +155,16 @@ function initializeEventListeners() {
 
     // 페이지네이션
     initializePagination();
+
+    // 🔥 신고 사유 변경 감지
+    const reportReason = document.getElementById('reportReason');
+    if (reportReason) {
+        reportReason.addEventListener('change', validateReportForm);
+        // 초기 상태 설정
+        validateReportForm();
+    }
+
+    console.log('🔥 모든 이벤트 리스너 등록 완료 (신고 포함)');
 }
 
 // 🔍 검색 처리 (서버 API 호출)
@@ -651,6 +662,10 @@ async function submitApplication() {
     }
 }
 
+// 🔥 =========================
+// 🔥 방 신고 관련 함수들 (API 연동)
+// 🔥 =========================
+
 // 방 신고하기 (카드에서만)
 function reportRoomFromCard(roomId) {
     const room = roomsData.find(r => r.id === roomId);
@@ -695,35 +710,118 @@ function closeReportModal() {
     if (reportMessage) reportMessage.value = '';
 }
 
-// 신고 제출
-function submitReport() {
+// 🔥 수정된 신고 제출 함수 - 실제 API 호출
+async function submitReport() {
     const reasonElement = document.getElementById('reportReason');
     const messageElement = document.getElementById('reportMessage');
 
-    if (!reasonElement) return;
+    if (!reasonElement) {
+        alert('신고 사유를 선택해주세요.');
+        return;
+    }
 
     const reason = reasonElement.value;
     const message = messageElement ? messageElement.value.trim() : '';
 
-    if (!reason) {
+    // 🔥 유효성 검사
+    if (!reason || reason === '') {
         alert('신고 사유를 선택해주세요.');
         return;
     }
 
     const room = roomsData.find(r => r.id === currentReportRoomId);
-    if (!room) return;
+    if (!room) {
+        alert('방 정보를 찾을 수 없습니다.');
+        return;
+    }
 
-    // 🔥 TODO: 실제 서버에 신고 데이터 전송하는 API 구현 필요
-    console.log('신고 데이터:', {
-        roomId: currentReportRoomId,
-        roomTitle: room.title,
-        reason: reason,
-        message: message,
-        timestamp: new Date().toISOString()
-    });
+    // 🔥 버튼 비활성화 (중복 클릭 방지)
+    const modal = document.getElementById('reportModal');
+    const submitButton = modal.querySelector('.btn-danger');
+    if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = '신고 중...';
+    }
 
-    alert('신고가 접수되었습니다.\n검토 후 적절한 조치를 취하겠습니다.');
-    closeReportModal();
+    try {
+        console.log('🚀 방 신고 API 호출 시작 - roomId:', currentReportRoomId);
+        console.log('📋 신고 데이터:', {
+            roomId: currentReportRoomId,
+            reportReason: reason,
+            reportMessage: message
+        });
+
+        // 🔥 실제 Fire API 호출
+        const response = await fetch(`${FIRE_API_BASE_URL}/rooms/${currentReportRoomId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                reportReason: reason,    // "spam", "inappropriate" 등
+                reportMessage: message   // 상세 신고 내용
+            })
+        });
+
+        const result = await response.json();
+
+        console.log('✅ 방 신고 API 응답:', result);
+
+        if (response.ok && result.success) {
+            // 🎉 신고 성공
+            alert(`"${room.title}" 방 신고가 접수되었습니다.\n${result.message}`);
+            closeReportModal();
+
+            console.log('🔥 신고 완료 정보:', {
+                fireId: result.fireId,
+                roomTitle: result.roomTitle,
+                fireReason: result.fireReason,
+                firedAt: result.firedAt
+            });
+
+        } else {
+            // ❌ 신고 실패 (비즈니스 로직 오류)
+            alert(result.message || '신고 접수 중 오류가 발생했습니다.');
+
+            console.warn('⚠️ 신고 실패:', result);
+        }
+
+    } catch (error) {
+        console.error('❌ 방 신고 API 오류:', error);
+
+        // 🔍 네트워크 오류인지 서버 오류인지 구분
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            alert('네트워크 연결을 확인해주세요.');
+        } else {
+            alert('신고 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+        }
+
+    } finally {
+        // 🔄 버튼 복구
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.textContent = '신고하기';
+        }
+    }
+}
+
+// 🔥 신고 사유 변경 시 유효성 체크 (선택사항)
+function validateReportForm() {
+    const reasonElement = document.getElementById('reportReason');
+    const submitButton = document.querySelector('#reportModal .btn-danger');
+
+    if (reasonElement && submitButton) {
+        const reason = reasonElement.value;
+
+        // 신고 사유가 선택되면 버튼 활성화
+        if (reason && reason !== '') {
+            submitButton.disabled = false;
+            submitButton.style.opacity = '1';
+        } else {
+            submitButton.disabled = true;
+            submitButton.style.opacity = '0.6';
+        }
+    }
 }
 
 // ESC 키로 모달 닫기
@@ -892,13 +990,6 @@ function updateSpecificRoom(roomId) {
         }
     }
 }
-
-// 🔥 페이지 로드 시 이벤트 리스너 등록
-document.addEventListener('DOMContentLoaded', function() {
-    // 기존 코드들...
-
-    console.log('📡 방 데이터 변경 감지 리스너 등록됨');
-});
 
 // 🔥 모든 리소스 로드 후에도 실행
 window.addEventListener('load', updateRoomStatusColors);
