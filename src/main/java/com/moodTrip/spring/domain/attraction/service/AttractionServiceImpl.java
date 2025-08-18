@@ -166,7 +166,7 @@ public class AttractionServiceImpl implements AttractionService {
 
         Attraction a = repository.findByContentId(contentId)
                 .orElseGet(() -> Attraction.builder().contentId(contentId).build());
-        boolean isNew = (a.getId() == null);
+        boolean isNew = (a.getAttractionId() == null);
 
         a.setContentTypeId(asInt(it, "contenttypeid"));
         a.setTitle(asText(it, "title"));
@@ -318,7 +318,7 @@ public class AttractionServiceImpl implements AttractionService {
         introRepository.save(intro);
     }
 
-    // ===== 조회 =====
+    // ===== 조회(단순 필터 리스트용) =====
     @Transactional(readOnly = true)
     @Override
     public List<Attraction> find(int areaCode, Integer sigunguCode, Integer contentTypeId) {
@@ -405,16 +405,6 @@ public class AttractionServiceImpl implements AttractionService {
                 apiKey.length() > 4 ? apiKey.substring(apiKey.length() - 4) : "****");
     }
 
-    @Override
-    public AttractionResponse create(AttractionInsertRequest req) {
-        var contentId = req.getContentId();
-        var entity = (contentId != null)
-                ? repository.findByContentId(contentId).orElseGet(req::toEntity)
-                : req.toEntity();
-        var saved = repository.save(entity);
-        return AttractionResponse.from(saved);
-    }
-
 
     final class RegionCodeMapper {
         private static final Map<String, Integer> KR_TO_AREA = new HashMap<>();
@@ -482,4 +472,40 @@ public class AttractionServiceImpl implements AttractionService {
                 // .map(a -> new AttractionResponse(a.getId(), a.getTitle(), RegionCodeMapper.areaCodeToName(a.getAreaCode()), a.getFirstImage(), /*rating*/ null, /*tags*/ List.of()))
                 .collect(Collectors.toList());
     }
+
+    public List<AttractionCardDTO> findAttractionsByEmotionIds(List<Integer> emotionIds) {
+        List<Attraction> attractions = repository.findAttractionsByEmotionIds(emotionIds);
+
+        // 조회된 Attraction 엔터티 목록을 AttractionCardDTO 목록으로 변환
+        return attractions.stream()
+                .map(attraction -> AttractionCardDTO.builder()
+                        .title(attraction.getTitle())
+                        .addr1(attraction.getAddr1())
+                        .firstImage(attraction.getFirstImage())
+                        // DTO에 description이 필요하다면 여기에 추가 (예: attraction.getDescription())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+
+    // 초기 페이지 로딩 시 보여줄 여행지 조회 로직
+    public List<AttractionCardDTO> findInitialAttractions(int limit) {
+        Pageable pageable = PageRequest.of(0, limit);
+        List<Attraction> attractions = repository.findAll(pageable).getContent();
+
+        return attractions.stream()
+                .map(attraction -> AttractionCardDTO.builder()
+                        .id(attraction.getAttractionId()) // <-- 이 줄을 추가합니다.
+                        .title(attraction.getTitle())
+                        .addr1(attraction.getAddr1())
+                        .firstImage(attraction.getFirstImage())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true) // 읽기 전용 트랜잭션으로 설정 (선택 사항이지만 권장)
+    public List<Attraction> getAllAttractions() {
+        return repository.findAll(); // AttractionRepository를 사용하여 모든 Attraction 엔티티를 조회합니다.
+    }
+
 }
