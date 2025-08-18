@@ -22,6 +22,9 @@ public class RoomResponse {
     @Schema(description = "방 설명", example = "함께 힐링 여행 떠날 동행자를 구합니다")
     private String roomDescription;
 
+    @Schema(description = "관광지 ID", example = "101")
+    private Long attractionId;
+
     @Schema(description = "여행 목적지 카테고리", example = "강원도")
     private String destinationCategory;
 
@@ -50,19 +53,44 @@ public class RoomResponse {
     private Boolean isDeleted;
 
     public static RoomResponse from(Room room) {
-        return RoomResponse.builder()
+        RoomResponseBuilder builder = RoomResponse.builder()
                 .roomId(room.getRoomId())
                 .roomName(room.getRoomName())
                 .roomDescription(room.getRoomDescription())
-                .destinationCategory(room.getDestinationCategory())
-                .destinationName(room.getDestinationName())
-                .destinationLat(room.getDestinationLat())
-                .destinationLon(room.getDestinationLon())
                 .maxParticipants(room.getRoomMaxCount())
                 .currentParticipants(room.getRoomCurrentCount())
                 .travelStartDate(room.getTravelStartDate() != null ? room.getTravelStartDate().toString() : null)
                 .travelEndDate(room.getTravelEndDate() != null ? room.getTravelEndDate().toString() : null)
-                .isDeleted(room.getIsDeleteRoom())
-                .build();
+                .isDeleted(room.getIsDeleteRoom());
+
+        // Attraction 우선 채움
+        if (room.getAttraction() != null) {
+            builder.attractionId(room.getAttraction().getAttractionId());
+
+            // 이름
+            String title = room.getAttraction().getTitle();
+            if (title != null && !title.isEmpty()) {
+                builder.destinationName(title);
+            } else {
+                builder.destinationName(room.getDestinationName());
+            }
+
+            // 위도(mapY), 경도(mapX) → BigDecimal 변환
+            Double lat = room.getAttraction().getMapY(); // 위도
+            Double lon = room.getAttraction().getMapX(); // 경도
+            builder.destinationLat(lat != null ? BigDecimal.valueOf(lat) : room.getDestinationLat());
+            builder.destinationLon(lon != null ? BigDecimal.valueOf(lon) : room.getDestinationLon());
+
+            // 카테고리는 Attraction에 직접 매핑 필드가 없으므로, 기존 값 유지
+            builder.destinationCategory(room.getDestinationCategory());
+        } else {
+            // ⬇️ 레거시 fallback
+            builder.destinationCategory(room.getDestinationCategory())
+                    .destinationName(room.getDestinationName())
+                    .destinationLat(room.getDestinationLat())
+                    .destinationLon(room.getDestinationLon());
+        }
+
+        return builder.build();
     }
 }
