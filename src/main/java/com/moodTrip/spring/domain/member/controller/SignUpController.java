@@ -23,8 +23,6 @@ public class SignUpController {
     private final MemberService memberService;
 
 
-
-
     @Operation(summary = "회원가입 폼", description = "회원가입 화면을 반환한다.")
     @GetMapping("/signup")
     public String signupForm(@RequestParam(value = "error", required = false) String error, Model model) {
