@@ -256,7 +256,7 @@ public class AttractionServiceImpl implements AttractionService {
 
     private URI buildDetailIntroUri(long contentId, Integer contentTypeId) {
         boolean alreadyEncoded = apiKey != null && apiKey.contains("%");
-        var b = UriComponentsBuilder.fromUriString(BASE + "/detailIntro2")
+        UriComponentsBuilder b = UriComponentsBuilder.fromUriString(BASE + "/detailIntro2")
                 .queryParam("serviceKey", apiKey)
                 .queryParam("MobileOS", "ETC")
                 .queryParam("MobileApp", "moodTrip")
