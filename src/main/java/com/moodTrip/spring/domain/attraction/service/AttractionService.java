@@ -12,7 +12,7 @@ public interface AttractionService {
     int syncDetailIntro(long contentId, Integer contentTypeId);
     int syncDetailIntroByArea(int areaCode, Integer sigunguCode, Integer contentTypeId, long pauseMillis);
 
-
+    List<AttractionResponse> findByRegionCodes(List<String> regionCodes, String sort);
     List<Attraction> find(int areaCode, Integer sigunguCode, Integer contentTypeId);
 
     AttractionResponse create(AttractionInsertRequest req);

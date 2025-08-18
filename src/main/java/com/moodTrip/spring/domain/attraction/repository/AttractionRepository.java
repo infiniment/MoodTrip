@@ -15,4 +15,6 @@ public interface AttractionRepository extends JpaRepository<Attraction, Long> {
     List<Attraction> findAllByAreaCodeAndSigunguCode(int areaCode, int sigunguCode);
     List<Attraction> findAllByAreaCodeAndContentTypeId(int areaCode, int contentTypeId);
     List<Attraction> findAllByAreaCodeAndSigunguCodeAndContentTypeId(int areaCode, int sigunguCode, int contentTypeId);
+
+    List<Attraction> findByAreaCodeIn(List<Integer> areaCodes);
 }

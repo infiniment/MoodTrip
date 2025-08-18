@@ -9,13 +9,13 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
@@ -26,7 +26,7 @@ import static java.util.stream.Collectors.toList;
 public class AttractionController {
 
     private final AttractionService service;
-
+    private final AttractionService attractionService;
 
     @PostMapping("/add")
     public ResponseEntity<AttractionResponse> createByParams(@ModelAttribute AttractionInsertRequest req) {
@@ -173,4 +173,27 @@ public class AttractionController {
             String message, Integer contentTypeId, int createdTotal) {}
     public record SyncAreaCodesResponse(
             String message, List<Integer> areaCodes, Integer contentTypeId, int createdTotal) {}
+
+    @GetMapping("/regions")
+    public String regionPage(Model model) {
+        model.addAttribute("initialAttractions", List.of());
+        return "region-tourist-attractions/region-page";
+    }
+
+    @GetMapping("/api/attractions")
+    @ResponseBody
+    public ResponseEntity<List<AttractionResponse>> list(
+            @RequestParam(name = "regions", required = false) List<String> regionCodes,
+            @RequestParam(name = "areaCode", required = false) Integer areaCode,
+            @RequestParam(name = "sigunguCode", required = false) Integer sigunguCode,
+            @RequestParam(name = "sort", defaultValue = "default") String sort
+    ) {
+        if (regionCodes != null && !regionCodes.isEmpty()) {
+            return ResponseEntity.ok(attractionService.findByRegionCodes(regionCodes, sort));
+        }
+        if (areaCode != null) {
+            return ResponseEntity.ok(Collections.emptyList());
+        }
+        return ResponseEntity.ok(Collections.emptyList());
+    }
 }

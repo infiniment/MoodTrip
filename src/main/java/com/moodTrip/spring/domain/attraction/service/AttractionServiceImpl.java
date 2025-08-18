@@ -19,9 +19,11 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.text.Collator;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -386,5 +388,73 @@ public class AttractionServiceImpl implements AttractionService {
                 : req.toEntity();
         var saved = repository.save(entity);
         return AttractionResponse.from(saved);
+    }
+
+
+    final class RegionCodeMapper {
+        private static final Map<String, Integer> KR_TO_AREA = new HashMap<>();
+        private static final Map<Integer, String> AREA_TO_NAME = new HashMap<>();
+        static {
+            // ⚠️ 프로젝트에서 쓰는 실제 areaCode에 맞게 채워줘
+            // 예시(필요값만 우선): 서울, 인천, 대전, 대구, 광주, 부산, 울산, 세종, 경기, 강원, 충북, 충남, 경북, 경남, 전북, 전남, 제주
+            KR_TO_AREA.put("KR11", 1);  AREA_TO_NAME.put(1,  "서울");
+            KR_TO_AREA.put("KR28", 2);  AREA_TO_NAME.put(2,  "인천");
+            KR_TO_AREA.put("KR30", 3);  AREA_TO_NAME.put(3,  "대전");
+            KR_TO_AREA.put("KR27", 4);  AREA_TO_NAME.put(4,  "대구");
+            KR_TO_AREA.put("KR29", 5);  AREA_TO_NAME.put(5,  "광주");
+            KR_TO_AREA.put("KR26", 6);  AREA_TO_NAME.put(6,  "부산");
+            KR_TO_AREA.put("KR31", 7);  AREA_TO_NAME.put(7,  "울산");
+            KR_TO_AREA.put("KR50", 8);  AREA_TO_NAME.put(8,  "세종");
+            KR_TO_AREA.put("KR41", 31); AREA_TO_NAME.put(31, "경기");
+            KR_TO_AREA.put("KR42", 32); AREA_TO_NAME.put(32, "강원");
+            KR_TO_AREA.put("KR43", 33); AREA_TO_NAME.put(33, "충북");
+            KR_TO_AREA.put("KR44", 34); AREA_TO_NAME.put(34, "충남");
+            KR_TO_AREA.put("KR47", 35); AREA_TO_NAME.put(35, "경북");
+            KR_TO_AREA.put("KR48", 36); AREA_TO_NAME.put(36, "경남");
+            KR_TO_AREA.put("KR45", 37); AREA_TO_NAME.put(37, "전북");
+            KR_TO_AREA.put("KR46", 38); AREA_TO_NAME.put(38, "전남");
+            KR_TO_AREA.put("KR49", 39); AREA_TO_NAME.put(39, "제주");
+        }
+        static Integer krToAreaCode(String kr) { return KR_TO_AREA.get(kr); }
+        static String areaCodeToName(Integer area) { return AREA_TO_NAME.get(area); }
+        private RegionCodeMapper() {}
+    }
+
+
+    @Override
+    public List<AttractionResponse> findByRegionCodes(List<String> regionCodes, String sort) {
+        if (regionCodes == null || regionCodes.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // ✅ KR코드 → areaCode(Integer) 변환 (아래 mapper 참고)
+        List<Integer> areaCodes = regionCodes.stream()
+                .map(RegionCodeMapper::krToAreaCode)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+
+        if (areaCodes.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // ✅ 엔티티 조회 (엔티티엔 regionCode가 없고 areaCode만 있으므로!)
+        List<Attraction> list = repository.findByAreaCodeIn(areaCodes);
+
+        // ✅ 정렬: 이름(= title)만 지원. (portfolio/name → 모두 이름 정렬로 인식)
+        String s = (sort == null) ? "default" : sort.trim().toLowerCase(Locale.ROOT);
+        if ("name".equals(s) || "portfolio".equals(s)) {
+            list = list.stream()
+                    .sorted(Comparator.comparing(Attraction::getTitle,
+                            Collator.getInstance(Locale.KOREAN)))
+                    .collect(Collectors.toList());
+        }
+        // s가 default면 정렬 하지 않음
+
+        // ✅ 응답 매핑 (from() 없으면 아래 new로 매핑)
+        return list.stream()
+                .map(AttractionResponse::from)
+                // .map(a -> new AttractionResponse(a.getId(), a.getTitle(), RegionCodeMapper.areaCodeToName(a.getAreaCode()), a.getFirstImage(), /*rating*/ null, /*tags*/ List.of()))
+                .collect(Collectors.toList());
     }
 }
