@@ -2,7 +2,6 @@ package com.moodTrip.spring.domain.emotion.controller;
 
 import com.moodTrip.spring.domain.attraction.entity.Attraction;
 import com.moodTrip.spring.domain.attraction.service.AttractionService; // 인터페이스로 받기
-import com.moodTrip.spring.domain.attraction.service.AttractionServiceImpl;
 import com.moodTrip.spring.domain.emotion.dto.request.EmotionWeightDto;
 import com.moodTrip.spring.domain.emotion.service.AttractionEmotionService;
 import com.moodTrip.spring.domain.emotion.service.EmotionService;
