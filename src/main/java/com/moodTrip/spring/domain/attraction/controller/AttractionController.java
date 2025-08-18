@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
@@ -35,6 +36,7 @@ public class AttractionController {
                 .created(URI.create("/api/attractions/content/" + created.getContentId()))
                 .body(created);
     }
+
 
     // =============== 목록 동기화  ===============
     @PostMapping("/sync/area")
@@ -188,26 +190,13 @@ public class AttractionController {
     public record SyncAreaCodesResponse(
             String message, List<Integer> areaCodes, Integer contentTypeId, int createdTotal) {}
 
-    @GetMapping("/regions")
-    public String regionPage(Model model) {
-        model.addAttribute("initialAttractions", List.of());
-        return "region-tourist-attractions/region-page";
-    }
 
-    @GetMapping("/api/attractions")
-    @ResponseBody
-    public ResponseEntity<List<AttractionResponse>> list(
-            @RequestParam(name = "regions", required = false) List<String> regionCodes,
-            @RequestParam(name = "areaCode", required = false) Integer areaCode,
-            @RequestParam(name = "sigunguCode", required = false) Integer sigunguCode,
+    @GetMapping("/detail-regions")
+    public ResponseEntity<List<AttractionResponse>> listByRegions(
+            @RequestParam("regions") List<String> regionCodes,
             @RequestParam(name = "sort", defaultValue = "default") String sort
     ) {
-        if (regionCodes != null && !regionCodes.isEmpty()) {
-            return ResponseEntity.ok(attractionService.findByRegionCodes(regionCodes, sort));
-        }
-        if (areaCode != null) {
-            return ResponseEntity.ok(Collections.emptyList());
-        }
-        return ResponseEntity.ok(Collections.emptyList());
+        return ResponseEntity.ok(service.findByRegionCodes(regionCodes, sort));
     }
+
 }

@@ -107,7 +107,7 @@ async function fetchAttractionsByRegions(regionCodes, sortValue) {
   (regionCodes || []).forEach(c => params.append("regions", c));
   if (sortValue && sortValue !== "default") params.append("sort", sortValue);
 
-  const res = await fetch(`/api/attractions?${params.toString()}`, {
+  const res = await fetch(`/api/attractions/detail-regions?${params.toString()}`, {
     headers: { "Accept": "application/json" }
   });
   if (!res.ok) throw new Error("failed to fetch attractions");

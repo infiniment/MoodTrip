@@ -411,8 +411,7 @@ public class AttractionServiceImpl implements AttractionService {
         private static final Map<String, Integer> KR_TO_AREA = new HashMap<>();
         private static final Map<Integer, String> AREA_TO_NAME = new HashMap<>();
         static {
-            // ⚠️ 프로젝트에서 쓰는 실제 areaCode에 맞게 채워줘
-            // 예시(필요값만 우선): 서울, 인천, 대전, 대구, 광주, 부산, 울산, 세종, 경기, 강원, 충북, 충남, 경북, 경남, 전북, 전남, 제주
+
             KR_TO_AREA.put("KR11", 1);  AREA_TO_NAME.put(1,  "서울");
             KR_TO_AREA.put("KR28", 2);  AREA_TO_NAME.put(2,  "인천");
             KR_TO_AREA.put("KR30", 3);  AREA_TO_NAME.put(3,  "대전");
