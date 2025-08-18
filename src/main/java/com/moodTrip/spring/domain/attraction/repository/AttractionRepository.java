@@ -128,6 +128,8 @@ public interface AttractionRepository extends JpaRepository<Attraction, Long> {
     List<Attraction> findAllByAreaCodeAndContentTypeId(int areaCode, int contentTypeId);
     List<Attraction> findAllByAreaCodeAndSigunguCodeAndContentTypeId(int areaCode, int sigunguCode, int contentTypeId);
 
+    List<Attraction> findByAreaCodeIn(List<Integer> areaCodes);
+
     //  선택된 감정 ID 목록을 기반으로 관련 여행지를 조회하는 쿼리
     // 쿼리문 가지고 구현 JPQL  가중치와 isActive로
     @Query("SELECT ae.attraction " +
