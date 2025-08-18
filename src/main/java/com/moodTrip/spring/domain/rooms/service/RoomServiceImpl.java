@@ -1,6 +1,7 @@
 package com.moodTrip.spring.domain.rooms.service;
 
-import com.moodTrip.spring.domain.emotion.entity.Emotion;
+import com.moodTrip.spring.domain.attraction.entity.Attraction;
+import com.moodTrip.spring.domain.attraction.repository.AttractionRepository;
 import com.moodTrip.spring.domain.emotion.repository.EmotionRepository;
 import com.moodTrip.spring.domain.member.entity.Member;
 import com.moodTrip.spring.domain.member.repository.MemberRepository;
@@ -10,29 +11,25 @@ import com.moodTrip.spring.domain.rooms.dto.request.UpdateRoomRequest;
 import com.moodTrip.spring.domain.rooms.dto.response.RoomCardDto;
 import com.moodTrip.spring.domain.rooms.dto.response.RoomMemberResponse;
 import com.moodTrip.spring.domain.rooms.dto.response.RoomResponse;
-import com.moodTrip.spring.domain.rooms.entity.EmotionRoom;
 import com.moodTrip.spring.domain.rooms.entity.Room;
 import com.moodTrip.spring.domain.rooms.entity.RoomMember;
 import com.moodTrip.spring.domain.rooms.repository.EmotionRoomRepository;
 import com.moodTrip.spring.domain.rooms.repository.RoomMemberRepository;
 import com.moodTrip.spring.domain.rooms.repository.RoomRepository;
-import com.moodTrip.spring.global.common.code.status.ErrorStatus;
 import com.moodTrip.spring.global.common.exception.CustomException;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
+
 import java.util.Comparator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
-import static com.moodTrip.spring.domain.rooms.dto.request.RoomRequest.*;
 import static com.moodTrip.spring.global.common.code.status.ErrorStatus.*;
 
 @Service
@@ -41,11 +38,17 @@ import static com.moodTrip.spring.global.common.code.status.ErrorStatus.*;
 public class RoomServiceImpl implements RoomService {
     private final RoomRepository roomRepository;
     private final EmotionRoomRepository emotionRoomRepository;
-    // private final EmotionRepository emotionRepository; // 추후 활성화
     private final RoomMemberRepository roomMemberRepository;
     private final MemberRepository memberRepository;
     private final EmotionRepository emotionRepository;
+    private final AttractionRepository attractionRepository;
 
+    @Transactional(readOnly = true)
+    @Override
+    public Room getRoomWithAttraction(Long roomId) {
+        return roomRepository.findWithAttractionByRoomId(roomId)
+                .orElseThrow(() -> new NoSuchElementException("Room not found: " + roomId));
+    }
 
     // 방 생성 로직
     @Override
@@ -76,13 +79,24 @@ public class RoomServiceImpl implements RoomService {
                 .travelEndDate(travelEndDate)
                 .creator(creator)
                 .isDeleteRoom(false)
-                .destinationCategory(request.getDestination() != null ? request.getDestination().getCategory() : null)
-                .destinationName(request.getDestination() != null ? request.getDestination().getName() : null)
-                .destinationLat(request.getDestination() != null && request.getDestination().getLat() != null
-                        ? java.math.BigDecimal.valueOf(request.getDestination().getLat()) : null)
-                .destinationLon(request.getDestination() != null && request.getDestination().getLon() != null
-                        ? java.math.BigDecimal.valueOf(request.getDestination().getLon()) : null)
                 .build();
+
+        log.info("createRoom: attractionId={}", request.getAttractionId());
+        if (request.getAttractionId() == null) {
+            throw new CustomException(ATTRACTION_NOT_FOUND);
+        }
+
+        // 4) Attraction 필수 연동 (@NotNull 이므로 무조건 옴)
+        Attraction attr = attractionRepository.findById(request.getAttractionId())
+                .orElseGet(() -> attractionRepository.findByContentId(request.getAttractionId())
+                        .orElseThrow(() -> new CustomException(ATTRACTION_NOT_FOUND)));
+        room.setAttraction(attr);
+
+
+        // 5) 하위호환용 레거시 필드 동기화 (나중에 필드 제거 전까지 유지)
+        room.setDestinationName(attr.getTitle());
+        if (attr.getMapY() != null) room.setDestinationLat(java.math.BigDecimal.valueOf(attr.getMapY())); // 위도
+        if (attr.getMapX() != null) room.setDestinationLon(java.math.BigDecimal.valueOf(attr.getMapX())); // 경도
 
         Room savedRoom = roomRepository.save(room);
 
@@ -238,21 +252,8 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     public RoomResponse toResponseDto(Room room) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        return RoomResponse.builder()
-                .roomId(room.getRoomId())
-                .roomName(room.getRoomName())
-                .roomDescription(room.getRoomDescription())
-                .maxParticipants(room.getRoomMaxCount())
-                .currentParticipants(room.getRoomCurrentCount())
-                .travelStartDate(room.getTravelStartDate().format(formatter))
-                .travelEndDate(room.getTravelEndDate().format(formatter))
-                .destinationName(room.getDestinationName())
-                .destinationLat(room.getDestinationLat())
-                .destinationLon(room.getDestinationLon())
-                .build();
+        return RoomResponse.from(room);
     }
-
 
 
     // 방 목록을 RoomCardDto로 변환해 반환

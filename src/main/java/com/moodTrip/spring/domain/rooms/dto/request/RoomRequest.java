@@ -1,5 +1,6 @@
 package com.moodTrip.spring.domain.rooms.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
@@ -17,9 +18,13 @@ import java.util.List;
 @Schema(description = "방 생성 요청 DTO")
 public class RoomRequest {
 
-    @NotNull
-    @Schema(description = "여행 목적지 정보", requiredMode = Schema.RequiredMode.REQUIRED)
-    private DestinationDto destination;
+//    @NotNull
+//    @Schema(description = "여행 목적지 정보", requiredMode = Schema.RequiredMode.REQUIRED)
+//    private DestinationDto destination;
+
+    @NotNull(message = "attractionId is required")
+    @JsonAlias({"attraction_id", "contentId", "content_id"})
+    private Long attractionId;
 
     @Size(min = 1)
     @Schema(description = "선택된 감정 리스트", requiredMode = Schema.RequiredMode.REQUIRED)
