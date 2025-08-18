@@ -115,7 +115,7 @@ public class AttractionServiceImpl implements AttractionService {
 
         Attraction a = repository.findByContentId(contentId)
                 .orElseGet(() -> Attraction.builder().contentId(contentId).build());
-        boolean isNew = (a.getId() == null);
+        boolean isNew = (a.getAttractionId() == null);
 
         a.setContentTypeId(asInt(it, "contenttypeid"));
         a.setTitle(asText(it, "title"));
@@ -355,14 +355,14 @@ public class AttractionServiceImpl implements AttractionService {
     }
 
 
-    // [추가] 초기 페이지 로딩 시 보여줄 여행지 조회 로직
+    // 초기 페이지 로딩 시 보여줄 여행지 조회 로직
     public List<AttractionCardDTO> findInitialAttractions(int limit) {
         Pageable pageable = PageRequest.of(0, limit);
         List<Attraction> attractions = repository.findAll(pageable).getContent();
 
         return attractions.stream()
                 .map(attraction -> AttractionCardDTO.builder()
-                        .id(attraction.getId()) // <-- 이 줄을 추가합니다.
+                        .id(attraction.getAttractionId()) // <-- 이 줄을 추가합니다.
                         .title(attraction.getTitle())
                         .addr1(attraction.getAddr1())
                         .firstImage(attraction.getFirstImage())

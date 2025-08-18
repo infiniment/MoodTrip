@@ -35,7 +35,7 @@ public class AttractionEmotionService {
     @Transactional
     public void updateAttractionEmotionWeight(Long attractionId, Long emotionId, BigDecimal weight) {
         // 기존 로직 유지
-        Optional<AttractionEmotion> existingMapping = attractionEmotionRepository.findByAttractionIdAndEmotion_TagId(attractionId, emotionId);
+        Optional<AttractionEmotion> existingMapping = attractionEmotionRepository.findByAttraction_AttractionIdAndEmotion_TagId(attractionId, emotionId);
         if (existingMapping.isPresent()) {
             AttractionEmotion mapping = existingMapping.get();
             mapping.setWeight(weight);
@@ -48,7 +48,7 @@ public class AttractionEmotionService {
     @Transactional
     public void updateAttractionEmotions(Long attractionId, List<EmotionWeightDto> emotionWeights) {
         // 1) 기존 매핑을 모두 비활성화합니다.
-        List<AttractionEmotion> existingActiveMappings = attractionEmotionRepository.findByAttractionIdAndIsActiveTrue(attractionId);
+        List<AttractionEmotion> existingActiveMappings = attractionEmotionRepository.findByAttraction_AttractionIdAndIsActiveTrue(attractionId);
         for (AttractionEmotion mapping : existingActiveMappings) {
             mapping.setActive(false);
         }
@@ -56,7 +56,7 @@ public class AttractionEmotionService {
 
         // 2) 클라이언트에서 전달된 emotionWeights 기반으로 매핑을 갱신하거나 새로 생성합니다.
         for (EmotionWeightDto ew : emotionWeights) {
-            Optional<AttractionEmotion> existing = attractionEmotionRepository.findByAttractionIdAndEmotion_TagId(attractionId, ew.getEmotionId());
+            Optional<AttractionEmotion> existing = attractionEmotionRepository.findByAttraction_AttractionIdAndEmotion_TagId(attractionId, ew.getEmotionId());
             AttractionEmotion mapping;
 
             if (existing.isPresent()) {
@@ -86,7 +86,7 @@ public class AttractionEmotionService {
         List<AttractionEmotion> allActiveMappings = attractionEmotionRepository.findByIsActiveTrue();
 
         for (AttractionEmotion mapping : allActiveMappings) {
-            Long attractionId = mapping.getAttraction().getId();
+            Long attractionId = mapping.getAttraction().getAttractionId();
             // Integer 타입인 tagId를 Long으로 변환
             Long emotionId = mapping.getEmotion().getTagId().longValue(); // <--- 수정된 부분
 
@@ -100,7 +100,7 @@ public class AttractionEmotionService {
         List<AttractionEmotion> allActiveMappings = attractionEmotionRepository.findByIsActiveTrue();
 
         for (AttractionEmotion mapping : allActiveMappings) {
-            Long attractionId = mapping.getAttraction().getId();
+            Long attractionId = mapping.getAttraction().getAttractionId();
             // Integer 타입인 tagId를 Long으로 변환
             Long emotionId = mapping.getEmotion().getTagId().longValue(); // <--- 수정된 부분
             BigDecimal weight = mapping.getWeight();

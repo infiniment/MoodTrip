@@ -1,5 +1,6 @@
 package com.moodTrip.spring.domain.rooms.entity;
 
+import com.moodTrip.spring.domain.attraction.entity.Attraction;
 import com.moodTrip.spring.domain.member.entity.Member;
 import com.moodTrip.spring.global.common.entity.BaseEntity;
 import jakarta.persistence.*;
@@ -40,14 +41,17 @@ public class Room extends BaseEntity {
     @Column(name = "travel_end_date")
     private LocalDate travelEndDate; // 여행 종료 날짜
 
-    //    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "attraction_id")
-//    private Attraction attraction;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "attraction_id", nullable = false)   // PK와 FK 이름 동일
+    private Attraction attraction;
 
+    // === 기존 임시 목적지 필드들은 당장 지우지 말고 @Deprecated로 표시 ===
     // 나중에 Attraction 완료되면 교체 예정
+    @Deprecated
     @Column(name = "destination_category")
     private String destinationCategory;
 
+    @Deprecated
     @Column(name = "destination_name")
     private String destinationName;
 
@@ -56,14 +60,14 @@ public class Room extends BaseEntity {
 
 
     // Attraction 사용하면 이거 대신 attraction
+    @Deprecated
     @Column(name = "destination_lat", precision = 10, scale = 7) // 예: 37.5665357
     private BigDecimal destinationLat;
 
+    @Deprecated
     @Column(name = "destination_lon", precision = 10, scale = 7) // 예: 126.9779692
     private BigDecimal destinationLon;
 
-//    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<EmotionRoom> emotionRooms = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "creator_id")

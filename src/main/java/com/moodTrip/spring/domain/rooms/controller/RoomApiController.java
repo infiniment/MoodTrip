@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -31,7 +32,7 @@ public class RoomApiController { // CRUD 담당 Controller
     @Operation(summary = "방 생성", description = "새로운 동행 방을 생성합니다.")
     @ApiResponse(responseCode = "201", description = "방 생성 성공")
     @PostMapping
-    public ResponseEntity<RoomResponse> createRoom(@RequestBody final RoomRequest request,
+    public ResponseEntity<RoomResponse> createRoom(@Valid @RequestBody final RoomRequest request,
                                                    @AuthenticationPrincipal final MyUserDetails userDetails) {
         Member member = userDetails.getMember();
         Long memberPk = member.getMemberPk();
