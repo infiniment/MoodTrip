@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 public class AttractionResponse {
+    private Long attractionId;
     private Long contentId;
     private Integer contentTypeId;
     private String title;
@@ -32,6 +33,7 @@ public class AttractionResponse {
 
     public static AttractionResponse from(Attraction a) {
         return AttractionResponse.builder()
+                .attractionId(a.getAttractionId())
                 .contentId(a.getContentId())
                 .contentTypeId(a.getContentTypeId())
                 .title(a.getTitle())

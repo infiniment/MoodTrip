@@ -50,8 +50,8 @@ public class SchedulingViewController  {
 
 
         // 1. 방 정보 조회
-        Room room = roomService.getRoomEntityById(roomId);
-        RoomResponse roomResponse = roomService.toResponseDto(room);
+        Room room = roomService.getRoomWithAttraction(roomId);
+        RoomResponse roomResponse = RoomResponse.from(room);
 
         // 2. 참여자 목록
         List<RoomMemberResponse> members = roomService.getActiveMembers(room);

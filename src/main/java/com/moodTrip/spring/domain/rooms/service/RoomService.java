@@ -26,4 +26,6 @@ public interface RoomService {
     Room getRoomEntityById(Long roomId);
     RoomResponse toResponseDto(Room room);
     List<RoomCardDto> getRoomCards();
+
+    Room getRoomWithAttraction(Long roomId);
 }

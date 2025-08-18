@@ -167,7 +167,7 @@ public class AttractionServiceImpl implements AttractionService {
 
         Attraction a = repository.findByContentId(contentId)
                 .orElseGet(() -> Attraction.builder().contentId(contentId).build());
-        boolean isNew = (a.getId() == null);
+        boolean isNew = (a.getAttractionId() == null);
 
         a.setContentTypeId(asInt(it, "contenttypeid"));
         a.setTitle(asText(it, "title"));
@@ -201,6 +201,7 @@ public class AttractionServiceImpl implements AttractionService {
 
         URI uri = buildDetailIntroUri(contentId, ctid);
         log.info("TourAPI GET {}", uri.toString().replaceAll("serviceKey=[^&]+", "serviceKey=***"));
+
 
         String body = restTemplate.getForObject(uri, String.class);
         String preview = body == null ? "null" : body.substring(0, Math.min(body.length(), 400));
@@ -341,16 +342,6 @@ public class AttractionServiceImpl implements AttractionService {
         return repository.searchKeywordPrefTitleStarts(q, area, si, type, PageRequest.of(page, size));
     }
 
-    // ===== 수동 등록 =====
-    @Override
-    public AttractionResponse create(AttractionInsertRequest req) {
-        var contentId = req.getContentId();
-        var entity = (contentId != null)
-                ? repository.findByContentId(contentId).orElseGet(req::toEntity)
-                : req.toEntity();
-        var saved = repository.save(entity);
-        return AttractionResponse.from(saved);
-    }
 
     // ===== 공통 유틸 =====
     private JsonNode parseJson(String body) {
@@ -403,6 +394,16 @@ public class AttractionServiceImpl implements AttractionService {
         apiKey = apiKey.trim();
         log.info("TourAPI key loaded. len={}, tail={}", apiKey.length(),
                 apiKey.length() > 4 ? apiKey.substring(apiKey.length() - 4) : "****");
+    }
+
+    @Override
+    public AttractionResponse create(AttractionInsertRequest req) {
+        var contentId = req.getContentId();
+        var entity = (contentId != null)
+                ? repository.findByContentId(contentId).orElseGet(req::toEntity)
+                : req.toEntity();
+        var saved = repository.save(entity);
+        return AttractionResponse.from(saved);
     }
 
 
@@ -486,6 +487,9 @@ public class AttractionServiceImpl implements AttractionService {
                 .collect(Collectors.toList());
     }
 
+
+
+
     public List<AttractionCardDTO> findAttractionsByEmotionIds(List<Integer> emotionIds) {
         List<Attraction> attractions = repository.findAttractionsByEmotionIds(emotionIds);
 
@@ -508,7 +512,7 @@ public class AttractionServiceImpl implements AttractionService {
 
         return attractions.stream()
                 .map(attraction -> AttractionCardDTO.builder()
-                        .id(attraction.getId()) // <-- 이 줄을 추가합니다.
+                        .id(attraction.getAttractionId()) // <-- 이 줄을 추가합니다.
                         .title(attraction.getTitle())
                         .addr1(attraction.getAddr1())
                         .firstImage(attraction.getFirstImage())
@@ -530,3 +534,4 @@ public class AttractionServiceImpl implements AttractionService {
     }
 
 }
+

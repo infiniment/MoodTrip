@@ -14,12 +14,11 @@ import lombok.*;
 @Table(
         name = "weather",
         uniqueConstraints = {
-                // 같은 관광지 + 같은 시각 데이터 중복 방지
-                @UniqueConstraint(name = "uk_weather_attraction_dt", columnNames = {"attraction_id","date_time"})
+                @UniqueConstraint(name = "uk_weather_room_dt", columnNames = {"room_id","date_time"})
         },
         indexes = {
-                @Index(name = "idx_weather_attraction_date", columnList = "attraction_id,date"),
-                @Index(name = "idx_weather_attraction_datetime", columnList = "attraction_id,date_time")
+                @Index(name = "idx_weather_room_date", columnList = "room_id,date"),
+                @Index(name = "idx_weather_attraction_date", columnList = "attraction_id,date") // 조회용 인덱스는 유지 가능
         }
 )
 public class Weather {
@@ -57,8 +56,7 @@ public class Weather {
     @JoinColumn(name = "attraction_id", nullable = false)
     private Attraction attraction;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "room_id", nullable = false) // 임시 키
+    @JoinColumn(name = "room_id", nullable = false)
     private Room room;
 }

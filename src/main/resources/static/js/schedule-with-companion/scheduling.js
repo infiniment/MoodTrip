@@ -197,16 +197,34 @@ document.addEventListener('DOMContentLoaded', function () {
 
     setInitialSelectedDate();
 
+    console.log('[weather] roomId =', roomId);
 
     const fetchJSON = (url) =>
-        fetch(url).then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); });
+        fetch(url).then(async (r) => {
+            const text = await r.text();
+            if (!r.ok) {
+                console.error('[weather] HTTP', r.status, '->', text);
+                throw new Error(`HTTP ${r.status}`);
+            }
+            try { return JSON.parse(text); }
+            catch (e) {
+                console.error('[weather] JSON parse error:', text);
+                throw e;
+            }
+        });
 
     fetchJSON(`/api/weather/current?roomId=${roomId}`)
-        .then(renderCurrentWeather)
+        .then(data => {
+            console.log('[weather][current] ↩︎', data);
+            renderCurrentWeather(data);
+        })
         .catch(err => console.error('현재 날씨 불러오기 실패:', err));
 
     fetchJSON(`/api/weather/daily?roomId=${roomId}`)
-        .then(renderDailyForecast)
+        .then(list => {
+            console.log('[weather][daily] ↩︎', list);
+            renderDailyForecast(list);
+        })
         .catch(err => console.error('3일 예보 불러오기 실패:', err));
 
     // // 현재 날씨
@@ -1286,30 +1304,43 @@ document.addEventListener('keydown', function(event) {
 
 // 현재 날씨 랜더링
 function renderCurrentWeather(data) {
-    document.querySelector('.weather-icon').textContent = getWeatherEmoji(data.weather);
-    document.querySelector('.weather-temp').textContent = `${Math.round(data.temperature)}°C`;
-    document.querySelector('.weather-current p:nth-of-type(1)').textContent = data.description;
+    if (!data) { console.warn('[weather][current] empty'); return; }
 
-    document.querySelector('.weather-current p:nth-of-type(2)').textContent =
-        `${destName || '여행지'} · ${formatDate(data.date)}`;
+    const iconEl = document.querySelector('.weather-icon');
+    const tempEl = document.querySelector('.weather-temp');
+    const p1 = document.querySelector('.weather-current p:nth-of-type(1)');
+    const p2 = document.querySelector('.weather-current p:nth-of-type(2)');
+    const p3 = document.querySelector('.weather-current p:nth-of-type(3)');
 
-    document.querySelector('.weather-current p:nth-of-type(3)').textContent =
-        `습도 ${data.humidity}% · 바람 ${data.windSpeed ?? 2}m/s`;
+    if (!iconEl || !tempEl || !p1 || !p2 || !p3) {
+        console.warn('[weather][current] elements not found');
+        return;
+    }
+
+    iconEl.textContent = getWeatherEmoji(data.weather);
+    tempEl.textContent = `${Math.round(data.temperature)}°C`;
+    p1.textContent = data.description ?? '';
+    p2.textContent = `${destName || '여행지'} · ${formatDate(data.date)}`;
+    p3.textContent = `습도 ${data.humidity}% · 바람 ${data.windSpeed ?? 2}m/s`; // windSpeed 없으면 2
 }
+
 
 
 // 일일 날씨 랜더링
-function renderDailyForecast(forecasts) {
-    const forecastItems = document.querySelectorAll('.forecast-item');
-    forecasts.slice(0, 3).forEach((f, i) => {
-        const item = forecastItems[i];
-        item.querySelector('strong').textContent = formatDateWithWeekday(f.date); // 예: "8월 6일 (화)"
-        item.querySelector('p').textContent = f.description;
+function renderDailyForecast(forecasts = []) {
+    const items = document.querySelectorAll('.forecast-item');
+    if (!items.length) { console.warn('[weather][daily] .forecast-item not found'); return; }
+    if (!forecasts.length) { console.warn('[weather][daily] empty'); return; }
+
+    forecasts.slice(0, Math.min(3, items.length)).forEach((f, i) => {
+        const item = items[i];
+        item.querySelector('strong').textContent = formatDateWithWeekday(f.date);
+        item.querySelector('p').textContent = f.description ?? '';
         item.querySelector('span').textContent = getWeatherEmoji(f.weather);
-        item.querySelectorAll('p')[1].innerHTML = `<strong>${Math.round(f.maxTemp)}°C</strong> / ${Math.round(f.minTemp)}°C`;
+        const pm = item.querySelectorAll('p')[1];
+        if (pm) pm.innerHTML = `<strong>${Math.round(f.maxTemp)}°C</strong> / ${Math.round(f.minTemp)}°C`;
     });
 }
-
 function formatDate(dateStr) {
     const date = new Date(dateStr);
     return `${date.getMonth() + 1}월 ${date.getDate()}일`;
