@@ -31,6 +31,7 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
     private final ProfileRepository profileRepository;
 
+    // 회원가입 등록
     public void register(MemberRequest request) {
 
 
@@ -74,12 +75,12 @@ public class MemberService {
         }
     }
 
-    //소셜로그인 서비스 로직
+    // 소셜 로그인 회원가입
     public void save(Member member) {
         memberRepository.save(member);
     }
 
-    //소셜아이디ㅣ 유효성 검사
+    //소셜 아이디ㅣ 유효성 검사
     public boolean existsByProviderAndProviderId(String provider, String providerId) {
         return memberRepository.existsByProviderAndProviderId(provider, providerId);
     }

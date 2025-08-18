@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -318,7 +319,7 @@ public class AttractionServiceImpl implements AttractionService {
         introRepository.save(intro);
     }
 
-    // ===== 조회(단순 필터 리스트용) =====
+    // ===== 조회 =====
     @Transactional(readOnly = true)
     @Override
     public List<Attraction> find(int areaCode, Integer sigunguCode, Integer contentTypeId) {
@@ -341,16 +342,6 @@ public class AttractionServiceImpl implements AttractionService {
         return repository.searchKeywordPrefTitleStarts(q, area, si, type, PageRequest.of(page, size));
     }
 
-    // ===== 수동 등록 =====
-    @Override
-    public AttractionResponse create(AttractionInsertRequest req) {
-        var contentId = req.getContentId();
-        var entity = (contentId != null)
-                ? repository.findByContentId(contentId).orElseGet(req::toEntity)
-                : req.toEntity();
-        var saved = repository.save(entity);
-        return AttractionResponse.from(saved);
-    }
 
     // ===== 공통 유틸 =====
     private JsonNode parseJson(String body) {
@@ -405,6 +396,16 @@ public class AttractionServiceImpl implements AttractionService {
                 apiKey.length() > 4 ? apiKey.substring(apiKey.length() - 4) : "****");
     }
 
+    @Override
+    public AttractionResponse create(AttractionInsertRequest req) {
+        var contentId = req.getContentId();
+        var entity = (contentId != null)
+                ? repository.findByContentId(contentId).orElseGet(req::toEntity)
+                : req.toEntity();
+        var saved = repository.save(entity);
+        return AttractionResponse.from(saved);
+    }
+
 
     final class RegionCodeMapper {
         private static final Map<String, Integer> KR_TO_AREA = new HashMap<>();
@@ -435,6 +436,19 @@ public class AttractionServiceImpl implements AttractionService {
         private RegionCodeMapper() {}
     }
 
+    //    // ✅ 페이징 전체 조회
+//    public Page<Attraction> findAttractions(int page, int size) {
+//        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id"));
+//        return repository.findAll(pageable);
+//    }
+
+
+    @Override                                                   // ✅ 꼭 붙이기
+    @Transactional(readOnly = true)                             // (선택) 읽기 전용
+    public Page<Attraction> findAttractions(int page, int size) { // ✅ 시그니처 100% 동일
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "attractionId"));
+        return repository.findAll(pageable);
+    }
 
     @Override
     public List<AttractionResponse> findByRegionCodes(List<String> regionCodes, String sort) {
@@ -473,6 +487,9 @@ public class AttractionServiceImpl implements AttractionService {
                 .collect(Collectors.toList());
     }
 
+
+
+
     public List<AttractionCardDTO> findAttractionsByEmotionIds(List<Integer> emotionIds) {
         List<Attraction> attractions = repository.findAttractionsByEmotionIds(emotionIds);
 
@@ -488,14 +505,14 @@ public class AttractionServiceImpl implements AttractionService {
     }
 
 
-    // 초기 페이지 로딩 시 보여줄 여행지 조회 로직
+    // [추가] 초기 페이지 로딩 시 보여줄 여행지 조회 로직
     public List<AttractionCardDTO> findInitialAttractions(int limit) {
         Pageable pageable = PageRequest.of(0, limit);
         List<Attraction> attractions = repository.findAll(pageable).getContent();
 
         return attractions.stream()
                 .map(attraction -> AttractionCardDTO.builder()
-                        .id(attraction.getAttractionId()) // <-- 이 줄을 추가합니다.
+                        .attractionId(attraction.getAttractionId()) // <-- 이 줄을 추가합니다.
                         .title(attraction.getTitle())
                         .addr1(attraction.getAddr1())
                         .firstImage(attraction.getFirstImage())
@@ -508,4 +525,13 @@ public class AttractionServiceImpl implements AttractionService {
         return repository.findAll(); // AttractionRepository를 사용하여 모든 Attraction 엔티티를 조회합니다.
     }
 
+
+    @Override
+    public Page<Attraction> searchAttractions(String keyword, int page, int size) {
+        return repository.findByTitleContainingIgnoreCase(
+                keyword, PageRequest.of(page, size)
+        );
+    }
+
 }
+
