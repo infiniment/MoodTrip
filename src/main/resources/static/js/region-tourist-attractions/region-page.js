@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
     svgRoot.querySelectorAll("text").forEach((text) => {
       const regionName = text.getAttribute("data-region");
       const matchingCode = Object.keys(regionCodeMap).find(
-        (key) => regionCodeMap[key] === regionName
+          (key) => regionCodeMap[key] === regionName
       );
       text.classList.toggle("selected", selectedRegionCodes.has(matchingCode));
     });
@@ -49,7 +49,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
     }
-    
+
     updateTourCardsVisibility(); // ← 이거 꼭 필요!
   }
 
@@ -87,7 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
   svgRoot.querySelectorAll("text").forEach((text) => {
     const regionName = text.getAttribute("data-region");
     const code = Object.keys(regionCodeMap).find(
-      (key) => regionCodeMap[key] === regionName
+        (key) => regionCodeMap[key] === regionName
     );
     if (code) {
       text.addEventListener("click", () => {
@@ -101,51 +101,95 @@ document.addEventListener("DOMContentLoaded", () => {
   populateReviewSlider();
 });
 
+// [ADDED] 서버에서 지역별 관광지 목록을 가져오는 함수
+async function fetchAttractionsByRegions(regionCodes, sortValue) {
+  const params = new URLSearchParams();
+  (regionCodes || []).forEach(c => params.append("regions", c));
+  if (sortValue && sortValue !== "default") params.append("sort", sortValue);
+
+  const res = await fetch(`/api/attractions?${params.toString()}`, {
+    headers: { "Accept": "application/json" }
+  });
+  if (!res.ok) throw new Error("failed to fetch attractions");
+  return res.json(); // -> Array<AttractionResponse>
+}
+
+// [ADDED] 받아온 목록을 카드로 렌더링 (상세 이동은 아직 제외)
+function renderAttractionCards(list) {
+  const container = document.querySelector(".tour-card-list");
+  if (!container) return;
+  container.innerHTML = "";
+
+  if (!list || !list.length) {
+    container.innerHTML = `<div class="empty">선택한 지역의 관광지가 없습니다.</div>`;
+    return;
+  }
+
+  list.forEach(item => {
+    const rating = typeof item.rating === "number" ? item.rating.toFixed(2) : "-";
+    const card = document.createElement("div");
+    card.className = "tour-card";
+    // 데이터-속성은 기존 정렬/필터 로직과 호환되도록 유지
+    card.dataset.region = item.regionName || "";
+    card.dataset.rating = item.rating ?? 0;
+
+    card.innerHTML = `
+      <div class="card-image-wrapper">
+        <img class="card-image" src="${item.imageUrl || '/static/image/region-tourist-attractions/사려니숲길.png'}" alt="${item.name || ''}">
+      </div>
+      <div class="card-content">
+        <div class="card-meta">
+          <span class="category">${item.regionName || ''}</span>
+        </div>
+        <h3 class="card-title">${item.name || ''}</h3>
+        <div class="card-tags">
+          ${(item.tags || []).map(t => `<span class="tag">#${t}</span>`).join('')}
+        </div>
+        <div class="card-rating">
+          <img class="star-icon" src="/static/image/region-tourist-attractions/star.png" alt="rating">
+          <span class="rate-text">${rating}</span>
+        </div>
+        <!-- 상세 이동은 추후 연결 예정 -->
+        <button class="btn-details" type="button" disabled title="추후 연결 예정">자세히 보기 →</button>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+// ✅ 선택/정렬에 따라 카드 표시 갱신
 function updateTourCardsVisibility() {
-  const allCards = document.querySelectorAll(".tour-card");
+  // [CHANGED] 기존: DOM에 이미 있는 .tour-card들을 필터/정렬
+  // → 변경: 선택된 지역으로 서버 호출 후 목록 렌더링
+
   const container = document.querySelector(".tour-card-list");
   const sortSelect = document.querySelector(".sort-select");
   const sortValue = sortSelect?.value || "default";
 
-  const selectedRegionNames = [...selectedRegionCodes].map(code => regionCodeMap[code]);
+  // 선택된 지역 코드들(KR11 등)을 한글명으로 바꾸던 기존 로직 대신, 서버는 코드 그대로 받도록 함
+  const selectedCodes = [...selectedRegionCodes];
 
   const noSelection = document.getElementById("no-selection");
-  if (selectedRegionNames.length === 0) {
+  if (selectedCodes.length === 0) {
     if (noSelection) noSelection.style.display = "block";
-    allCards.forEach(card => card.style.display = "none");
+    if (container) container.innerHTML = "";
     return;
   } else {
     if (noSelection) noSelection.style.display = "none";
   }
 
-  // 선택된 지역 카드만 필터링
-  let visibleCards = Array.from(allCards).filter(card =>
-    selectedRegionNames.includes(card.dataset.region)
-  );
-
-  // 정렬
-  if (sortValue === "rating") {
-    visibleCards.sort((a, b) => {
-      const rA = parseFloat(a.dataset.rating || 0);
-      const rB = parseFloat(b.dataset.rating || 0);
-      return rB - rA;
-    });
-  } else if (sortValue === "portfolio") {
-    visibleCards.sort((a, b) => {
-      const nameA = a.querySelector(".card-title")?.textContent.trim() || "";
-      const nameB = b.querySelector(".card-title")?.textContent.trim() || "";
-      return nameA.localeCompare(nameB, "ko");
-    });
-  }
-
-  // 전체 숨기고, 정렬된 카드만 다시 append
-  allCards.forEach(card => card.style.display = "none");
-  visibleCards.forEach(card => {
-    card.style.display = "inline-block";
-    container.appendChild(card);
-  });
+  // 서버 호출 → 렌더
+  fetchAttractionsByRegions(selectedCodes, sortValue)
+      .then(list => {
+        renderAttractionCards(list);
+      })
+      .catch(err => {
+        console.error(err);
+        if (container) {
+          container.innerHTML = `<div class="error">목록을 불러오지 못했습니다.</div>`;
+        }
+      });
 }
-
 
 // ✅ 드롭다운 전용 핸들러 (별도로 선택 시 사용)
 function handleRegionChange(value) {
@@ -162,7 +206,7 @@ function handleRegionChange(value) {
   }
 }
 document.querySelector(".sort-select").addEventListener("change", () => {
-  updateTourCardsVisibility();
+  updateTourCardsVisibility(); // [UNCHANGED] 정렬 바뀌면 새로 불러오기
 });
 
 const places = [
@@ -243,7 +287,6 @@ const places = [
   }
 ];
 
-
 function populateReviewSlider() {
   const slider = document.querySelector(".slider");
   const indicatorContainer = document.querySelector(".slider-button");
@@ -299,5 +342,3 @@ function populateReviewSlider() {
     });
   }
 }
-
-
