@@ -47,11 +47,11 @@ public class Room extends BaseEntity {
 
     // === 기존 임시 목적지 필드들은 당장 지우지 말고 @Deprecated로 표시 ===
     // 나중에 Attraction 완료되면 교체 예정
-    @Deprecated
+//    @Deprecated
     @Column(name = "destination_category")
     private String destinationCategory;
 
-    @Deprecated
+//    @Deprecated
     @Column(name = "destination_name")
     private String destinationName;
 
