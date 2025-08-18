@@ -1,123 +1,82 @@
 package com.moodTrip.spring.domain.emotion.controller;
-
-import com.moodTrip.spring.domain.attraction.entity.Attraction;
-import com.moodTrip.spring.domain.attraction.service.AttractionService; // 인터페이스로 받기
 import com.moodTrip.spring.domain.attraction.service.AttractionServiceImpl;
 import com.moodTrip.spring.domain.emotion.dto.request.EmotionWeightDto;
 import com.moodTrip.spring.domain.emotion.service.AttractionEmotionService;
-import com.moodTrip.spring.domain.emotion.service.EmotionService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
+import com.moodTrip.spring.domain.emotion.service.EmotionService; // EmotionService import 추가
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
+import java.util.Map; // Map 사용을 위해 추가
 
 @Controller
 @RequestMapping("/admin/attraction-emotions")
-@RequiredArgsConstructor
 public class AttractionEmotionController {
 
-    private final AttractionEmotionService attractionEmotionService;
-    private final AttractionService attractionService;
-    private final EmotionService emotionService;
+    @Autowired
+    private AttractionEmotionService attractionEmotionService;
 
+    @Autowired
+    private AttractionServiceImpl AttractionServiceImpl; // AttractionService 주입
+
+    @Autowired
+    private  EmotionService emotionService; // EmotionService 주입
+
+    // 매핑 페이지를 보여주는 GET 요청
     @GetMapping
-    public String showMappingPage(@RequestParam(defaultValue = "0") int page,
-                                  @RequestParam(defaultValue = "10") int size,
-                                  Model model) {
-        Page<Attraction> attractionPage = attractionService.findAttractions(page, size);
+    public String showMappingPage(Model model) {
+        // 모든 관광지 목록을 가져와 모델에 추가
 
-        int currentPage = attractionPage.getNumber();
-        int totalPages  = attractionPage.getTotalPages();
-        int window      = 10; // 페이지 버튼 10개만 보이도록
 
-        int startPage = Math.max(0, currentPage - window / 2);
-        int endPage   = Math.min(totalPages - 1, startPage + window - 1);
-        if (endPage - startPage < window - 1) {
-            startPage = Math.max(0, endPage - window + 1);
-        }
+        model.addAttribute("attractions", AttractionServiceImpl.findInitialAttractions(5));
 
-        // ✅ 관광지 목록 (페이징된 10개)
-        model.addAttribute("attractions", attractionPage.getContent());
-        model.addAttribute("currentPage", currentPage);
-        model.addAttribute("totalPages", totalPages);
-        model.addAttribute("size", size);
-        model.addAttribute("startPage", startPage);
-        model.addAttribute("endPage", endPage);
 
-        // ✅ 감정 카테고리 목록
+        //model.addAttribute("attractions", AttractionServiceImpl.getAllAttractions());
+
+        // 모든 감정 태그 목록을 가져와 모델에 추가
         model.addAttribute("emotions", emotionService.getAllEmotions());
 
-        // ✅ 관광지별 감정 매핑 정보 (체크박스/가중치 초기화용)
+        // 각 관광지별로 매핑된 감정 태그 ID 목록을 가져와 모델에 추가 (UI 체크박스 초기화용)
+        // 이 메서드는 AttractionEmotionService에 구현되어 있어야 합니다.
         Map<Long, List<Long>> attractionToEmotionIds = attractionEmotionService.getAttractionToEmotionIdsMap();
         model.addAttribute("attractionToEmotionIds", attractionToEmotionIds);
 
-        Map<Long, Map<Long, BigDecimal>> attractionToEmotionWeights =
-                attractionEmotionService.getAttractionToEmotionWeightsMap();
+        // 각 관광지별, 감정 태그별 가중치 맵을 가져와 모델에 추가 (UI 가중치 입력란 초기화용)
+        // 이 메서드 또한 AttractionEmotionService에 구현되어 있어야 합니다.
+        Map<Long, Map<Long, BigDecimal>> attractionToEmotionWeights = attractionEmotionService.getAttractionToEmotionWeightsMap();
         model.addAttribute("attractionToEmotionWeights", attractionToEmotionWeights);
 
-        return "admin/attraction-emotion-mapping";
+        return "admin/attraction-emotion-mapping";   // Thymeleaf 템플릿 이름
     }
 
-    // 검색 목록
-    @GetMapping("/search")
-    public String search(@RequestParam(defaultValue = "0") int page,
-                         @RequestParam(defaultValue = "10") int size,
-                         @RequestParam String keyword,
-                         Model model) {
-        Page<Attraction> p = attractionService.searchAttractions(keyword.trim(), page, size);
-        return buildModelAndView(p, page, size, keyword, model);
-    }
-
-    private String buildModelAndView(Page<Attraction> attractionPage,
-                                     int page, int size, String keyword, Model model) {
-        int currentPage = attractionPage.getNumber();
-        int totalPages  = attractionPage.getTotalPages();
-        int window = 10;
-
-        int startPage = Math.max(0, currentPage - window / 2);
-        int endPage   = Math.min(totalPages - 1, startPage + window - 1);
-        if (endPage - startPage < window - 1) {
-            startPage = Math.max(0, endPage - window + 1);
-        }
-
-        model.addAttribute("attractions", attractionPage.getContent());
-        model.addAttribute("currentPage", currentPage);
-        model.addAttribute("totalPages", totalPages);
-        model.addAttribute("size", size);
-        model.addAttribute("startPage", startPage);
-        model.addAttribute("endPage", endPage);
-
-        // 🔑 검색어 유지(검색 화면일 때만 값이 존재)
-        model.addAttribute("keyword", keyword == null ? "" : keyword);
-
-        // 감정/가중치 초기화용
-        model.addAttribute("emotions", emotionService.getAllEmotions());
-        model.addAttribute("attractionToEmotionIds", attractionEmotionService.getAttractionToEmotionIdsMap());
-        model.addAttribute("attractionToEmotionWeights", attractionEmotionService.getAttractionToEmotionWeightsMap());
-
-        return "admin/attraction-emotion-mapping";
-    }
+    // 한 관광지의 감정 매핑 업데이트 요청 처리
     @PostMapping("/update/{attractionId}")
-    @ResponseBody
-    public ResponseEntity<?> updateAttractionEmotion(
-            @PathVariable Long attractionId,
-            @RequestBody List<EmotionWeightDto> emotionWeights
-    ) {
+    @ResponseBody // 이 어노테이션이 있어야 메서드의 반환 값이 HTTP 응답 본문에 직접 쓰여집니다 (JSON).
+    public ResponseEntity<String> updateAttractionEmotion(@PathVariable Long attractionId,
+                                                          @RequestBody List<EmotionWeightDto> emotionWeights) {
         try {
+            // 서비스 계층으로 업데이트 요청 전달
             attractionEmotionService.updateAttractionEmotions(attractionId, emotionWeights);
-            return ResponseEntity.ok(Map.of("message", "Attraction emotions updated successfully")); // ✅ JSON 안전
+            // 성공 시 200 OK와 메시지 반환
+            return ResponseEntity.ok("{\"message\": \"Attraction emotions updated successfully\"}");
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));              // ✅ JSON 안전
+            // 유효하지 않은 attractionId 또는 emotionId 등의 경우 400 Bad Request와 메시지 반환
+            return ResponseEntity.badRequest().body("{\"message\": \"" + e.getMessage() + "\\\"}");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "Internal server error"));                               // ✅ 상세 메시지는 로그로
+            // 기타 서버 오류 발생 시 500 Internal Server Error와 메시지 반환
+            // 실제 서비스에서는 e.getMessage() 대신 일반적인 오류 메시지를 반환하고,
+            // 자세한 오류 내용은 서버 로그에 기록하는 것이 좋습니다.
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"message\": \"Internal server error: " + e.getMessage() + "\\\"}");
         }
     }
 }
