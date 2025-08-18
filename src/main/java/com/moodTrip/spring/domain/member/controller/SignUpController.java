@@ -22,15 +22,17 @@ public class SignUpController {
 
     private final MemberService memberService;
 
-
+    // 회원가입 폼 조회
     @Operation(summary = "회원가입 폼", description = "회원가입 화면을 반환한다.")
     @GetMapping("/signup")
     public String signupForm(@RequestParam(value = "error", required = false) String error, Model model) {
         if (error != null) model.addAttribute("errorMessage", error);
         model.addAttribute("memberRequest", new MemberRequest());
-        return "signup/signup"; // templates/signup/signup.html
+        return "signup/signup";
     }
 
+
+    // 회원가입 요청 처리
     @Operation(summary = "회원가입 처리", description = "회원정보를 받아서 가입 처리한다.")
     @PostMapping("/signup")
     public String signupSubmit(@ModelAttribute("memberRequest") MemberRequest memberRequest,Model model) {
@@ -48,9 +50,10 @@ public class SignUpController {
     }
 
 
+    // 회원가입 성공 화면
     @GetMapping("/signup/success")
     public String signupSuccess() {
-        return "signup/success"; // templates/signup/success.html이 렌더링됨
+        return "signup/success";
     }
 
 }

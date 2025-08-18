@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -340,6 +341,22 @@ public class AttractionServiceImpl implements AttractionService {
                 apiKey.length() > 4 ? apiKey.substring(apiKey.length() - 4) : "****");
     }
 
+
+//    // ✅ 페이징 전체 조회
+//    public Page<Attraction> findAttractions(int page, int size) {
+//        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id"));
+//        return repository.findAll(pageable);
+//    }
+
+
+    @Override                                                   // ✅ 꼭 붙이기
+    @Transactional(readOnly = true)                             // (선택) 읽기 전용
+    public Page<Attraction> findAttractions(int page, int size) { // ✅ 시그니처 100% 동일
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id"));
+        return repository.findAll(pageable);
+    }
+
+
     public List<AttractionCardDTO> findAttractionsByEmotionIds(List<Integer> emotionIds) {
         List<Attraction> attractions = repository.findAttractionsByEmotionIds(emotionIds);
 
@@ -373,6 +390,14 @@ public class AttractionServiceImpl implements AttractionService {
     @Transactional(readOnly = true) // 읽기 전용 트랜잭션으로 설정 (선택 사항이지만 권장)
     public List<Attraction> getAllAttractions() {
         return repository.findAll(); // AttractionRepository를 사용하여 모든 Attraction 엔티티를 조회합니다.
+    }
+
+
+    @Override
+    public Page<Attraction> searchAttractions(String keyword, int page, int size) {
+        return repository.findByTitleContainingIgnoreCase(
+                keyword, PageRequest.of(page, size)
+        );
     }
 
 }

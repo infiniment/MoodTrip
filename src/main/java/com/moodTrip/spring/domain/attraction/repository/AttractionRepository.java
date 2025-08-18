@@ -156,5 +156,7 @@ public interface AttractionRepository extends JpaRepository<Attraction, Long> {
 
     List<Attraction> findTop10ByOrderByCreatedTimeDesc();
 
+    Page<Attraction> findByTitleContainingIgnoreCase(String title, Pageable pageable);
+
 
 }
