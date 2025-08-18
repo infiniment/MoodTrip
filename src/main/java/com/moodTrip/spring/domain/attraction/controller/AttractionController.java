@@ -3,6 +3,7 @@ package com.moodTrip.spring.domain.attraction.controller;
 import com.moodTrip.spring.domain.attraction.dto.request.AttractionInsertRequest;
 import com.moodTrip.spring.domain.attraction.dto.response.AttractionResponse;
 import com.moodTrip.spring.domain.attraction.service.AttractionService;
+import com.moodTrip.spring.global.common.util.PageResult;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -81,49 +82,6 @@ public class AttractionController {
         );
     }
 
-    // ============== 전 지역 일괄 동기화 (숙박시설 제외)  ===============
-    @PostMapping("/sync/area/all")
-    public ResponseEntity<SyncAreaAllResponse> syncAreaAll(
-            @RequestParam(value = "contentTypeId", required = false) @Min(12) @Max(99) Integer contentTypeId,
-            @RequestParam(value = "pageSize", defaultValue = "500") @Min(1) @Max(1000) int pageSize,
-            @RequestParam(value = "pauseMillis", defaultValue = "0") @Min(0) long pauseMillis,
-            @RequestParam(value = "excludeLodging", defaultValue = "true") boolean excludeLodging,
-            @RequestParam(value = "excludeContentTypeIds", required = false) List<@Min(12) @Max(99) Integer> excludeContentTypeIds
-    ) {
-        Set<Integer> excludes = new HashSet<>();
-        if (excludeLodging) excludes.add(12);
-        if (excludeContentTypeIds != null) excludes.addAll(excludeContentTypeIds);
-        int totalCreated = 0;
-        for (int area = 1; area <= 99; area++) {
-            totalCreated += service.syncAreaBasedListExcluding(area, null, contentTypeId, pageSize, pauseMillis, excludes);
-        }
-        return ResponseEntity.accepted().body(
-                new SyncAreaAllResponse("area sync all done", contentTypeId, totalCreated)
-        );
-    }
-
-    // =============== 지정한 여러 지역 동기화 ===============
-    @PostMapping("/sync/area/codes")
-    public ResponseEntity<SyncAreaCodesResponse> syncAreaCodes(
-            @RequestParam("areaCodes") List<@Min(1) @Max(99) Integer> areaCodes,
-            @RequestParam(value = "contentTypeId", required = false) @Min(12) @Max(99) Integer contentTypeId,
-            @RequestParam(value = "pageSize", defaultValue = "500") @Min(1) @Max(1000) int pageSize,
-            @RequestParam(value = "pauseMillis", defaultValue = "0") @Min(0) long pauseMillis,
-            @RequestParam(value = "excludeLodging", defaultValue = "true") boolean excludeLodging,
-            @RequestParam(value = "excludeContentTypeIds", required = false) List<@Min(12) @Max(99) Integer> excludeContentTypeIds
-    ) {
-        Set<Integer> excludes = new HashSet<>();
-        if (excludeLodging) excludes.add(12);
-        if (excludeContentTypeIds != null) excludes.addAll(excludeContentTypeIds);
-        int totalCreated = 0;
-        for (Integer area : areaCodes) {
-            totalCreated += service.syncAreaBasedListExcluding(area, null, contentTypeId, pageSize, pauseMillis, excludes);
-        }
-        return ResponseEntity.accepted().body(
-                new SyncAreaCodesResponse("area sync codes done", areaCodes, contentTypeId, totalCreated)
-        );
-    }
-
     // =============== 조회 API ===============
     @GetMapping
     public ResponseEntity<List<AttractionResponse>> list(
@@ -158,6 +116,20 @@ public class AttractionController {
         return ResponseEntity
                 .created(URI.create("/api/attractions/content/" + created.getContentId()))
                 .body(created);
+    }
+
+    @GetMapping("/search-paged")
+    public ResponseEntity<PageResult<AttractionResponse>> searchPaged(
+            @RequestParam(name = "q", required = false) String q,
+            @RequestParam(name = "areaCode", required = false) Integer areaCode,
+            @RequestParam(name = "sigunguCode", required = false) Integer sigunguCode,
+            @RequestParam(name = "contentTypeId", required = false) Integer contentTypeId,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "9") int size
+    ) {
+        var p = service.searchKeywordPrefTitleStarts(q, areaCode, sigunguCode, contentTypeId, page, size)
+                .map(AttractionResponse::from);
+        return ResponseEntity.ok(PageResult.of(p));
     }
 
     // --- 응답 DTO들 (record로 간단하게) ---

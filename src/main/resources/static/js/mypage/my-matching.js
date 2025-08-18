@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeTabs();
     initializeButtons();
     initializeModals();
+    checkAndDisableLeaderButtons(); // 🔥 새로 추가: 페이지 로드 시 방장 버튼 체크
 });
 
 // 입장한 방과 만든 방 탭 전환 시 사용
@@ -27,6 +28,19 @@ function initializeButtons() {
 
         // 방 나가기 버튼
         if (e.target.matches('.btn-exit-room')) {
+            // 🔥 새로 추가: 방장 체크
+            if (e.target.disabled) {
+                const userRole = e.target.getAttribute('data-user-role') ||
+                    e.target.closest('.matching-item')?.getAttribute('data-user-role');
+
+                if (userRole === 'LEADER') {
+                    showNotification('info', '방장은 방을 나갈 수 없습니다. 방 삭제를 이용해주세요.');
+                } else {
+                    showNotification('error', '현재 이 기능을 사용할 수 없습니다.');
+                }
+                return;
+            }
+
             const matchingItem = e.target.closest('.matching-item');
             const roomTitle = matchingItem.querySelector('.matching-title').textContent;
             const roomId = e.target.getAttribute('data-room-id');
@@ -68,6 +82,79 @@ function initializeButtons() {
     });
 }
 
+/**
+ * 🔥 새로 추가: 방장인 경우 나가기 버튼 비활성화
+ */
+function checkAndDisableLeaderButtons() {
+    console.log('🔍 방장 권한 체크 시작');
+
+    const exitButtons = document.querySelectorAll('.btn-exit-room');
+
+    exitButtons.forEach(button => {
+        const matchingItem = button.closest('.matching-item');
+
+        // HTML에서 역할 정보 가져오기 (data-user-role 속성으로)
+        const userRole = matchingItem?.getAttribute('data-user-role') ||
+            button.getAttribute('data-user-role');
+
+        if (userRole === 'LEADER') {
+            console.log('🚫 방장 계정 - 나가기 버튼 비활성화');
+
+            // 버튼 비활성화
+            button.disabled = true;
+
+            // 텍스트 변경
+            button.innerHTML = `
+                <svg width="16" height="16" fill="currentColor" class="opacity-50">
+                    <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/>
+                </svg>
+                방장은 나가기 불가
+            `;
+
+            // CSS 클래스 추가
+            button.classList.add('btn-disabled');
+            button.classList.remove('btn-secondary');
+
+            // 툴팁 추가
+            button.title = '방장은 방을 나갈 수 없습니다. 방 삭제를 이용해주세요.';
+
+            // 커서 스타일 변경
+            button.style.cursor = 'not-allowed';
+
+            console.log('✅ 방장 나가기 버튼 비활성화 완료');
+        } else {
+            console.log('👤 일반 멤버 - 나가기 버튼 활성 상태 유지');
+        }
+    });
+
+    // 🔥 추가: 방장인 경우 삭제 버튼에 특별한 스타일 적용
+    const deleteButtons = document.querySelectorAll('.btn-delete-room');
+    deleteButtons.forEach(button => {
+        const matchingItem = button.closest('.matching-item');
+        const userRole = matchingItem?.getAttribute('data-user-role');
+
+        if (userRole === 'LEADER') {
+            // 방장임을 표시하는 배지 추가
+            if (!button.querySelector('.leader-badge')) {
+                const badge = document.createElement('span');
+                badge.className = 'leader-badge';
+                badge.textContent = '방장';
+                badge.style.cssText = `
+                    background: #059669;
+                    color: white;
+                    font-size: 0.75rem;
+                    padding: 2px 6px;
+                    border-radius: 4px;
+                    margin-left: 0.5rem;
+                `;
+                button.appendChild(badge);
+            }
+        }
+    });
+
+    console.log('🎯 방장 권한 체크 완료');
+}
+
 // 스케줄짜기 버튼 클릭 시
 function handleChatButtonClick(roomId, roomTitle, hostName) {
     console.log(`💬 스케줄 버튼 클릭 - 방: ${roomTitle}, 방장: ${hostName}, ID: ${roomId}`);
@@ -88,8 +175,23 @@ async function exitRoomApi(roomTitle, roomId, matchingItem) {
         });
 
         if (!response.ok) {
-            throw new Error('방 나가기 실패');
+            // 서버에서 방장 나가기 시도 시 에러 메시지 처리
+            const errorText = await response.text();
+            if (response.status === 400 && errorText.includes('방장')) {
+                throw new Error('방장은 방을 나갈 수 없습니다. 방 삭제를 이용해주세요.');
+            }
+            throw new Error('방 나가기에 실패했습니다.');
         }
+
+        // 🔥 새로 추가: 다른 탭에 방 데이터 업데이트 알림
+        const updateData = {
+            type: 'MEMBER_LEFT',
+            roomId: roomId,
+            roomTitle: roomTitle,
+            timestamp: Date.now()
+        };
+        localStorage.setItem('roomDataUpdate', JSON.stringify(updateData));
+        console.log('📢 다른 탭에 방 나가기 알림 전송:', updateData);
 
         showNotification('success', `"${roomTitle}" 방에서 나갔습니다.`);
 
@@ -100,7 +202,7 @@ async function exitRoomApi(roomTitle, roomId, matchingItem) {
     } catch (error) {
         matchingItem.style.opacity = '1';
         matchingItem.style.pointerEvents = 'auto';
-        showNotification('error', '방 나가기에 실패했습니다. 다시 시도해주세요.');
+        showNotification('error', error.message || '방 나가기에 실패했습니다. 다시 시도해주세요.');
     }
 }
 
@@ -123,7 +225,7 @@ async function deleteRoomApi(roomTitle, roomId, matchingItem) {
             method: 'DELETE',
             credentials: 'include',
             headers: {
-                'Content-Type': 'application/json',  // 🔥 헤더 추가
+                'Content-Type': 'application/json',
                 'Accept': 'application/json'
             }
         });
@@ -155,19 +257,45 @@ function handleDeleteRoomClick(roomTitle, roomId, matchingItem) {
     });
 }
 
+// ==========================================
+// 🔥 입장 요청 관리 기능
+// ==========================================
 
 /**
- * 입장 요청 관리 모달
+ * 🎛️ 입장 요청 관리 모달 - 실제 API 호출로 업데이트
  */
-function handleManageRequestsClick(roomId, roomTitle) {
+async function handleManageRequestsClick(roomId, roomTitle) {
     console.log(`🎛️ 입장 요청 관리 클릭 - 방ID: ${roomId}, 방제목: ${roomTitle}`);
 
-    // 임시로 빈 요청 상태 표시
-    showRequestsModal(roomId, roomTitle, []);
+    try {
+        // 🔥 실제 API 호출로 해당 방의 신청 목록 가져오기
+        const response = await fetch(`/api/v1/join-requests/rooms/${roomId}`, {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('신청 목록 조회 실패');
+        }
+
+        const requests = await response.json();
+        console.log('📋 신청 목록:', requests);
+
+        // 모달에 실제 데이터 표시
+        showRequestsModal(roomId, roomTitle, requests);
+
+    } catch (error) {
+        console.error('신청 목록 조회 에러:', error);
+        showNotification('error', '입장 요청을 불러올 수 없습니다.');
+    }
 }
 
 /**
- * 입장 요청 관리 모달 표시
+ * 🔥 업데이트된 입장 요청 관리 모달 표시
  */
 function showRequestsModal(roomId, roomTitle, requests) {
     const modal = document.getElementById('manageRequestsModal');
@@ -190,11 +318,165 @@ function showRequestsModal(roomId, roomTitle, requests) {
                 <p>새로운 참가 요청이 오면 여기에 표시됩니다.</p>
             </div>
         `;
+    } else {
+        // 🔥 실제 신청 목록 렌더링
+        requestsList.innerHTML = requests.map(request => `
+            <div class="request-item" data-request-id="${request.joinRequestId}">
+                <div class="request-header">
+                    <div class="applicant-info">
+                        <img src="${request.applicantProfileImage || '/image/fix/moodtrip.png'}" 
+                             alt="프로필" class="applicant-avatar">
+                        <div class="applicant-details">
+                            <h4 class="applicant-name">${request.applicantNickname}</h4>
+                            <span class="applied-time">${request.timeAgo}</span>
+                        </div>
+                    </div>
+                    <div class="request-priority ${request.priority.toLowerCase()}">
+                        ${request.priority === 'HIGH' ? '긴급' : '일반'}
+                    </div>
+                </div>
+                <div class="request-message">
+                    <p>${request.message}</p>
+                </div>
+                <div class="request-actions">
+                    <button class="btn btn-approve" onclick="approveRequest(${request.joinRequestId}, '${request.applicantNickname}')">
+                        승인
+                    </button>
+                    <button class="btn btn-reject" onclick="rejectRequest(${request.joinRequestId}, '${request.applicantNickname}')">
+                        거절
+                    </button>
+                </div>
+            </div>
+        `).join('');
     }
 
     // 모달 표시
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
+}
+
+/**
+ * 🎯 신청 승인 처리
+ */
+async function approveRequest(requestId, applicantName) {
+    console.log(`✅ 신청 승인 - requestId: ${requestId}, 신청자: ${applicantName}`);
+
+    try {
+        const response = await fetch(`/api/v1/join-requests/${requestId}/approve`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('승인 처리 실패');
+        }
+
+        const result = await response.json();
+
+        if (result.success) {
+            showNotification('success', `${applicantName}님의 입장을 승인했습니다.`);
+
+            // 해당 요청 항목을 UI에서 제거
+            const requestItem = document.querySelector(`[data-request-id="${requestId}"]`);
+            if (requestItem) {
+                requestItem.style.opacity = '0.5';
+                requestItem.innerHTML = `
+                    <div style="text-align: center; padding: 1rem; color: #10b981;">
+                        ✅ ${applicantName}님의 입장이 승인되었습니다.
+                    </div>
+                `;
+
+                // 2초 후 요청 항목 제거
+                setTimeout(() => {
+                    requestItem.remove();
+
+                    // 더 이상 요청이 없으면 빈 상태 표시
+                    const remainingRequests = document.querySelectorAll('.request-item');
+                    if (remainingRequests.length === 0) {
+                        const requestsList = document.querySelector('.requests-list');
+                        requestsList.innerHTML = `
+                            <div class="empty-requests" style="text-align: center; padding: 2rem; color: #64748b;">
+                                <h4>모든 요청을 처리했습니다!</h4>
+                                <p>새로운 참가 요청이 오면 여기에 표시됩니다.</p>
+                            </div>
+                        `;
+                    }
+                }, 2000);
+            }
+        } else {
+            showNotification('error', result.message || '승인 처리에 실패했습니다.');
+        }
+
+    } catch (error) {
+        console.error('승인 처리 에러:', error);
+        showNotification('error', '승인 처리 중 오류가 발생했습니다.');
+    }
+}
+
+/**
+ * 🎯 신청 거절 처리
+ */
+async function rejectRequest(requestId, applicantName) {
+    console.log(`❌ 신청 거절 - requestId: ${requestId}, 신청자: ${applicantName}`);
+
+    try {
+        const response = await fetch(`/api/v1/join-requests/${requestId}/reject`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('거절 처리 실패');
+        }
+
+        const result = await response.json();
+
+        if (result.success) {
+            showNotification('info', `${applicantName}님의 입장을 거절했습니다.`);
+
+            // 해당 요청 항목을 UI에서 제거
+            const requestItem = document.querySelector(`[data-request-id="${requestId}"]`);
+            if (requestItem) {
+                requestItem.style.opacity = '0.5';
+                requestItem.innerHTML = `
+                    <div style="text-align: center; padding: 1rem; color: #dc2626;">
+                        ❌ ${applicantName}님의 입장이 거절되었습니다.
+                    </div>
+                `;
+
+                // 2초 후 요청 항목 제거
+                setTimeout(() => {
+                    requestItem.remove();
+
+                    // 더 이상 요청이 없으면 빈 상태 표시
+                    const remainingRequests = document.querySelectorAll('.request-item');
+                    if (remainingRequests.length === 0) {
+                        const requestsList = document.querySelector('.requests-list');
+                        requestsList.innerHTML = `
+                            <div class="empty-requests" style="text-align: center; padding: 2rem; color: #64748b;">
+                                <h4>모든 요청을 처리했습니다!</h4>
+                                <p>새로운 참가 요청이 오면 여기에 표시됩니다.</p>
+                            </div>
+                        `;
+                    }
+                }, 2000);
+            }
+        } else {
+            showNotification('error', result.message || '거절 처리에 실패했습니다.');
+        }
+
+    } catch (error) {
+        console.error('거절 처리 에러:', error);
+        showNotification('error', '거절 처리 중 오류가 발생했습니다.');
+    }
 }
 
 // ==========================================
@@ -242,6 +524,21 @@ function showNotification(type, message) {
             background: linear-gradient(135deg, #005792 0%, #001A2C 100%);
         }
 
+        .btn-disabled {
+            background-color: #e5e7eb !important;
+            color: #9ca3af !important;
+            cursor: not-allowed !important;
+            opacity: 0.6 !important;
+            border-color: #d1d5db !important;
+        }
+
+        .btn-disabled:hover {
+            background-color: #e5e7eb !important;
+            color: #9ca3af !important;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
         @keyframes slideDown {
             from { transform: translateY(-20px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
@@ -263,7 +560,6 @@ function showNotification(type, message) {
         }
     }, 3000);
 }
-
 
 // ==========================================
 // 🎭 모달 관리
@@ -332,6 +628,9 @@ function hideModal(modalId) {
 // 🌐 전역 함수 노출 (HTML에서 직접 호출용)
 // ==========================================
 window.handleChatButtonClick = handleChatButtonClick;
+window.approveRequest = approveRequest;
+window.rejectRequest = rejectRequest;
+window.checkAndDisableLeaderButtons = checkAndDisableLeaderButtons; // 🔥 새로 추가
 
 // ==========================================
 // 🎯 키보드 단축키
@@ -351,4 +650,4 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-console.log('🎉 MoodTrip 매칭 정보 페이지 JavaScript 로드 완료! (SSR 방식)');
+console.log('🎉 MoodTrip 매칭 정보 페이지 JavaScript 로드 완료! (방장 권한 체크 포함)');

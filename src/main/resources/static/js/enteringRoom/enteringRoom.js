@@ -1,81 +1,42 @@
-// // 방 데이터 (실제로는 서버에서 가져올 데이터)
-// let roomsData = [
-//     {
-//         id: 1,
-//         title: "한성대학교 캠퍼스 투어!!!",
-//         location: "서울",
-//         date: "7월 셋째주",
-//         dateValue: new Date('2025-07-21'),
-//         views: "3명이 봄",
-//         viewCount: 3,
-//         description: "안녕하세요! 저희는 세상 최고 멋쟁이 김상우가 다니고 있는 한성대학교 캠퍼스 투어로 떠납니다!!",
-//         tags: ["설렘", "역사", "야경"],
-//         currentParticipants: 2,
-//         maxParticipants: 8,
-//         createdDate: "25/07/21 ~ 25/07/25",
-//         image: "/static/image/enteringRoom/hansung.png",
-//         category: "학교",
-//         urgent: false
-//     },
-//     {
-//         id: 2,
-//         title: "고양 종합 운동장",
-//         location: "경기",
-//         date: "11월 둘째주",
-//         dateValue: new Date('2025-11-10'),
-//         views: "11명이 봄",
-//         viewCount: 11,
-//         description: "최근에 방탄소년단이 전부 전역했다는 소식 다 들었죠!!! 방탄소년단 콘서트가 11월 둘쨰주에 있다고 해요! 저랑 떠나실 분들 떠나요!!",
-//         tags: ["행복", "떨림", "설렘"],
-//         currentParticipants: 3,
-//         maxParticipants: 4,
-//         createdDate: "25/11/21 ~ 25/11/27",
-//         image: "/static/image/enteringRoom/stadium.png",
-//         category: "스타디움",
-//         urgent: false
-//     },
-//     {
-//         id: 3,
-//         title: "고양 킨텍스",
-//         location: "경기",
-//         date: "9월 첫째주",
-//         dateValue: new Date('2025-09-01'),
-//         views: "31명이 봄",
-//         viewCount: 31,
-//         description: "킨텍스에서 싸이 워터밤이 열립니다!!!!!!!!!!!!!시원하게 노실 분 구해요!",
-//         tags: ["힐링", "행복", "설렘"],
-//         currentParticipants: 1,
-//         maxParticipants: 2,
-//         createdDate: "25/09/01 ~ 25/09/07",
-//         image: "/static/image/enteringRoom/kintex.png",
-//         category: "스타디움",
-//         urgent: true
-//     }
-// ];
-//
-// // 현재 날짜
-// const currentDate = new Date('2025-07-02');
-//
-// // 현재 필터 및 정렬 상태
-// let currentFilter = 'all';
-// let currentSort = 'default';
-// let currentPage = 1;
-// let currentPeopleFilter = 'all';
-// let currentRegionFilter = 'all';
-// let filteredRooms = [...roomsData];
-// let currentDetailRoomId = null;
-// let currentReportRoomId = null;
-//
-// // 방 상태 계산 함수
-// function calculateRoomStatus(room) {
-//     const occupancyRate = room.currentParticipants / room.maxParticipants;
-//     if (occupancyRate >= 0.5) {
-//         return { status: '마감임박', urgent: true };
-//     } else {
-//         return { status: '모집중', urgent: false };
-//     }
-// }
+// 🔥 서버 API 기본 URL
+const API_BASE_URL = '/api/v1/companion-rooms/search';
+const JOIN_API_BASE_URL = '/api/v1/companion-rooms'; // 🔥 방 입장 신청 API URL
+const FIRE_API_BASE_URL = '/api/v1/fires'; // 🔥 방 신고 API URL 추가
 
+// 방 데이터 (서버에서 가져온 데이터로 저장)
+let roomsData = [];
+let filteredRooms = [];
+
+// 현재 상태 변수들
+const currentDate = new Date('2025-07-02');
+let currentFilter = 'all';
+let currentSort = 'default';
+let currentPage = 1;
+let currentPeopleFilter = 'all';
+let currentRegionFilter = 'all';
+let currentDetailRoomId = null;
+let currentReportRoomId = null;
+
+// 🚀 서버에서 방 목록 가져오기
+async function fetchRoomsFromServer(params = {}) {
+    console.log('🔍 서버에서 방 목록 가져오는 중...', params);
+
+    // URL 파라미터 생성
+    const urlParams = new URLSearchParams();
+    if (params.search) urlParams.append('search', params.search);
+    if (params.region) urlParams.append('region', params.region);
+    if (params.maxParticipants) urlParams.append('maxParticipants', params.maxParticipants);
+    if (params.urgent) urlParams.append('urgent', params.urgent);
+
+    const url = `${API_BASE_URL}${urlParams.toString() ? '?' + urlParams.toString() : ''}`;
+    console.log('📡 API 호출 URL:', url);
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    console.log('✅ 서버에서 받은 데이터:', data);
+    return data;
+}
 
 // 🔄 데이터 로드 및 화면 업데이트
 async function loadRoomsData(params = {}) {
@@ -194,6 +155,16 @@ function initializeEventListeners() {
 
     // 페이지네이션
     initializePagination();
+
+    // 🔥 신고 사유 변경 감지
+    const reportReason = document.getElementById('reportReason');
+    if (reportReason) {
+        reportReason.addEventListener('change', validateReportForm);
+        // 초기 상태 설정
+        validateReportForm();
+    }
+
+    console.log('🔥 모든 이벤트 리스너 등록 완료 (신고 포함)');
 }
 
 // 🔍 검색 처리 (서버 API 호출)
@@ -620,8 +591,8 @@ function closeApplicationModal() {
     if (applicationMessage) applicationMessage.value = '';
 }
 
-// 신청 제출
-function submitApplication() {
+// 🔥 수정된 신청 제출 함수 - 실제 API 호출
+async function submitApplication() {
     const modal = document.getElementById('applicationModal');
     if (!modal) return;
 
@@ -640,17 +611,60 @@ function submitApplication() {
     const room = roomsData.find(r => r.id === roomId);
     if (!room) return;
 
-    // 🔥 TODO: 실제 서버에 신청 데이터 전송하는 API 구현 필요
-    console.log('신청 데이터:', {
-        roomId: roomId,
-        roomTitle: room.title,
-        message: message,
-        timestamp: new Date().toISOString()
-    });
+    // 🔥 버튼 비활성화 (중복 클릭 방지)
+    const submitButton = modal.querySelector('.btn-primary');
+    if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = '신청 중...';
+    }
 
-    alert(`"${room.title}" 방에 입장 신청이 완료되었습니다!\n방장의 승인을 기다려주세요.`);
-    closeApplicationModal();
+    try {
+        console.log('🚀 방 입장 신청 API 호출 시작 - roomId:', roomId);
+
+        // 🔥 실제 API 호출
+        const response = await fetch(`${JOIN_API_BASE_URL}/${roomId}/join-requests`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                message: message
+            })
+        });
+
+        const result = await response.json();
+
+        console.log('✅ 방 입장 신청 API 응답:', result);
+
+        if (response.ok && result.success) {
+            // 🎉 성공 시
+            alert(`"${room.title}" 방에 입장 신청이 완료되었습니다!\n${result.resultMessage}`);
+            closeApplicationModal();
+
+            // 🔄 방 목록 새로고침 (참여자 수 업데이트 등)
+            await loadRoomsData();
+
+        } else {
+            // ❌ 실패 시 (비즈니스 로직 오류)
+            alert(result.resultMessage || '입장 신청 중 오류가 발생했습니다.');
+        }
+
+    } catch (error) {
+        console.error('❌ 방 입장 신청 API 오류:', error);
+        alert('네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+
+    } finally {
+        // 🔄 버튼 복구
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.textContent = '신청하기';
+        }
+    }
 }
+
+// 🔥 =========================
+// 🔥 방 신고 관련 함수들 (API 연동)
+// 🔥 =========================
 
 // 방 신고하기 (카드에서만)
 function reportRoomFromCard(roomId) {
@@ -696,35 +710,118 @@ function closeReportModal() {
     if (reportMessage) reportMessage.value = '';
 }
 
-// 신고 제출
-function submitReport() {
+// 🔥 수정된 신고 제출 함수 - 실제 API 호출
+async function submitReport() {
     const reasonElement = document.getElementById('reportReason');
     const messageElement = document.getElementById('reportMessage');
 
-    if (!reasonElement) return;
+    if (!reasonElement) {
+        alert('신고 사유를 선택해주세요.');
+        return;
+    }
 
     const reason = reasonElement.value;
     const message = messageElement ? messageElement.value.trim() : '';
 
-    if (!reason) {
+    // 🔥 유효성 검사
+    if (!reason || reason === '') {
         alert('신고 사유를 선택해주세요.');
         return;
     }
 
     const room = roomsData.find(r => r.id === currentReportRoomId);
-    if (!room) return;
+    if (!room) {
+        alert('방 정보를 찾을 수 없습니다.');
+        return;
+    }
 
-    // 🔥 TODO: 실제 서버에 신고 데이터 전송하는 API 구현 필요
-    console.log('신고 데이터:', {
-        roomId: currentReportRoomId,
-        roomTitle: room.title,
-        reason: reason,
-        message: message,
-        timestamp: new Date().toISOString()
-    });
+    // 🔥 버튼 비활성화 (중복 클릭 방지)
+    const modal = document.getElementById('reportModal');
+    const submitButton = modal.querySelector('.btn-danger');
+    if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = '신고 중...';
+    }
 
-    alert('신고가 접수되었습니다.\n검토 후 적절한 조치를 취하겠습니다.');
-    closeReportModal();
+    try {
+        console.log('🚀 방 신고 API 호출 시작 - roomId:', currentReportRoomId);
+        console.log('📋 신고 데이터:', {
+            roomId: currentReportRoomId,
+            reportReason: reason,
+            reportMessage: message
+        });
+
+        // 🔥 실제 Fire API 호출
+        const response = await fetch(`${FIRE_API_BASE_URL}/rooms/${currentReportRoomId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                reportReason: reason,    // "spam", "inappropriate" 등
+                reportMessage: message   // 상세 신고 내용
+            })
+        });
+
+        const result = await response.json();
+
+        console.log('✅ 방 신고 API 응답:', result);
+
+        if (response.ok && result.success) {
+            // 🎉 신고 성공
+            alert(`"${room.title}" 방 신고가 접수되었습니다.\n${result.message}`);
+            closeReportModal();
+
+            console.log('🔥 신고 완료 정보:', {
+                fireId: result.fireId,
+                roomTitle: result.roomTitle,
+                fireReason: result.fireReason,
+                firedAt: result.firedAt
+            });
+
+        } else {
+            // ❌ 신고 실패 (비즈니스 로직 오류)
+            alert(result.message || '신고 접수 중 오류가 발생했습니다.');
+
+            console.warn('⚠️ 신고 실패:', result);
+        }
+
+    } catch (error) {
+        console.error('❌ 방 신고 API 오류:', error);
+
+        // 🔍 네트워크 오류인지 서버 오류인지 구분
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            alert('네트워크 연결을 확인해주세요.');
+        } else {
+            alert('신고 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+        }
+
+    } finally {
+        // 🔄 버튼 복구
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.textContent = '신고하기';
+        }
+    }
+}
+
+// 🔥 신고 사유 변경 시 유효성 체크 (선택사항)
+function validateReportForm() {
+    const reasonElement = document.getElementById('reportReason');
+    const submitButton = document.querySelector('#reportModal .btn-danger');
+
+    if (reasonElement && submitButton) {
+        const reason = reasonElement.value;
+
+        // 신고 사유가 선택되면 버튼 활성화
+        if (reason && reason !== '') {
+            submitButton.disabled = false;
+            submitButton.style.opacity = '1';
+        } else {
+            submitButton.disabled = true;
+            submitButton.style.opacity = '0.6';
+        }
+    }
 }
 
 // ESC 키로 모달 닫기
@@ -823,3 +920,76 @@ function applyFromDetailPage() {
         applyRoom(currentDetailRoomId);
     }
 }
+
+function updateRoomStatusColors() {
+    document.querySelectorAll('.room-status').forEach(status => {
+        const text = status.textContent.trim();
+
+        if (text === '모집완료' || text.includes('완료')) {
+            status.classList.add('completed');
+            status.style.background = '#dc2626 !important'; // !important 추가
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    updateRoomStatusColors();
+
+    // 0.5초마다 계속 실행
+    setInterval(updateRoomStatusColors, 5);
+});
+
+window.addEventListener('storage', function(e) {
+    if (e.key === 'roomDataUpdate') {
+        try {
+            const updateData = JSON.parse(e.newValue);
+            console.log('📢 다른 탭에서 방 데이터 변경 감지:', updateData);
+
+            if (updateData.type === 'MEMBER_LEFT') {
+                console.log(`🔄 방 ${updateData.roomTitle}에서 멤버 나가기 감지, 페이지 업데이트`);
+
+                // 🎯 방법 1: 즉시 페이지 새로고침
+                showNotification('info', '방 정보가 업데이트되었습니다.');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+
+                // 🎯 방법 2: 특정 방만 업데이트 (선택사항)
+                updateSpecificRoom(updateData.roomId);
+            }
+        } catch (error) {
+            console.error('방 데이터 업데이트 처리 오류:', error);
+        }
+    }
+});
+
+/**
+ * 🎯 선택사항: 특정 방만 업데이트하는 함수
+ */
+function updateSpecificRoom(roomId) {
+    const roomCard = document.querySelector(`[data-room-id="${roomId}"]`);
+    if (roomCard) {
+        // 해당 방의 인원 수 -1
+        const participantsElement = roomCard.querySelector('.participants-count');
+        if (participantsElement) {
+            const currentText = participantsElement.textContent; // "2 / 4"
+            const [current, max] = currentText.split(' / ').map(num => parseInt(num.trim()));
+            const newCurrent = Math.max(0, current - 1);
+
+            participantsElement.textContent = `${newCurrent} / ${max}`;
+
+            // 상태 업데이트
+            const statusElement = roomCard.querySelector('.room-status');
+            if (newCurrent < max && statusElement.textContent.includes('완료')) {
+                statusElement.textContent = '모집중';
+                statusElement.classList.remove('completed');
+                statusElement.style.background = '#10b981'; // 초록색으로 변경
+            }
+
+            console.log(`✅ 방 ${roomId} 인원 업데이트: ${current} → ${newCurrent}`);
+        }
+    }
+}
+
+// 🔥 모든 리소스 로드 후에도 실행
+window.addEventListener('load', updateRoomStatusColors);

@@ -33,11 +33,6 @@ public class MemberService {
 
     public void register(MemberRequest request) {
 
-        // 유효성 검증
-        // 중복 확인
-        // 비번 암호화
-        log.info("회원가입 요청 처리 시작 - {}", request.getUserId());
-        log.info("이메일 들어왔는지 확인 - {}", request.getEmail());
 
         // 엔티티 변환 및 저장
         if (!request.isTerms()) {
@@ -159,6 +154,11 @@ public class MemberService {
         return ProfileResponse.from(profile);
     }
 
+
+    public Optional<Member> findByNickname(String nickname) {
+        return memberRepository.findByNickname(nickname);
+    }
+
     @Transactional
     public WithdrawResponse withdrawMember(Member member) {
 
@@ -187,6 +187,11 @@ public class MemberService {
                 .message("탈퇴가 완료되었습니다. 그동안 이용해 주셔서 감사합니다.")
                 .success(true)  // 성공 여부 추가
                 .build();
+    }
+    // 상우가 일반 로그인에서 회원 탈퇴 후 다시 재로그인할려는 경우 사용
+    public Member findByMemberId(String memberId) {
+        return memberRepository.findByMemberId(memberId)
+                .orElseThrow(() -> new RuntimeException("회원이 존재하지 않습니다."));
     }
 }
 

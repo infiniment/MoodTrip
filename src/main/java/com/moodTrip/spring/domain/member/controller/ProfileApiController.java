@@ -19,6 +19,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * ✅ REST API 전용 프로필 컨트롤러 - JWT 인증 적용
  *
@@ -37,6 +40,8 @@ public class ProfileApiController {
     private final ProfileService profileService;
     private final MemberService memberService;
     private final SecurityUtil securityUtil; // 🔥 SecurityUtil 주입!
+
+    private static final String DEFAULT_IMG = "/image/fix/moodtrip.png";
 
     @Operation(
             summary = "내 프로필 조회",
@@ -191,6 +196,59 @@ public class ProfileApiController {
         return "mypage/change-password"; // templates/mypage/change-password.html
     }
 
+
+    /**
+     * 단건 아바타 조회: GET /api/v1/profiles/avatar?nickname=유저
+     * 응답 예: { "nickname": "유저1", "url": "/uploads/...png" }
+     */
+    @GetMapping("/avatar")
+    public ResponseEntity<Map<String, Object>> getAvatar(@RequestParam String nickname) {
+        try {
+            var memberOpt = memberService.findByNickname(nickname);
+            String url = DEFAULT_IMG;
+
+            if (memberOpt.isPresent()) {
+                var prof = profileService.getProfileByMemberId(memberOpt.get().getMemberPk());
+                if (prof != null && prof.getProfileImage() != null && !prof.getProfileImage().isBlank()) {
+                    url = prof.getProfileImage();
+                }
+            }
+            return ResponseEntity.ok(Map.of("nickname", nickname, "url", url));
+        } catch (Exception e) {
+            log.warn("아바타 단건 조회 실패 - nickname={}", nickname, e);
+            return ResponseEntity.ok(Map.of("nickname", nickname, "url", DEFAULT_IMG));
+        }
+    }
+
+    /**
+     * 배치 아바타 조회: POST /api/v1/profiles/avatars
+     * 요청 바디: ["유저1","유저2",...]
+     * 응답 예: { "유저1": "/uploads/a.png", "유저2": "/image/fix/moodtrip.png" }
+     */
+    @PostMapping("/avatars")
+    public ResponseEntity<Map<String, String>> getAvatars(@org.springframework.web.bind.annotation.RequestBody List<String> nicknames) {
+        Map<String, String> out = new java.util.HashMap<>();
+        if (nicknames == null || nicknames.isEmpty()) return ResponseEntity.ok(out);
+
+        for (String nick : new java.util.HashSet<>(nicknames)) { // 중복 제거
+            try {
+                var memberOpt = memberService.findByNickname(nick);
+                String url = DEFAULT_IMG;
+
+                if (memberOpt.isPresent()) {
+                    var prof = profileService.getProfileByMemberId(memberOpt.get().getMemberPk());
+                    if (prof != null && prof.getProfileImage() != null && !prof.getProfileImage().isBlank()) {
+                        url = prof.getProfileImage();
+                    }
+                }
+                out.put(nick, url);
+            } catch (Exception e) {
+                log.warn("아바타 배치 조회 실패 - nickname={}", nick, e);
+                out.put(nick, DEFAULT_IMG);
+            }
+        }
+        return ResponseEntity.ok(out);
+    }
 
 
 

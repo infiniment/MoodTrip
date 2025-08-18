@@ -9,10 +9,14 @@ import com.moodTrip.spring.domain.attraction.entity.Attraction;
 import com.moodTrip.spring.domain.attraction.entity.AttractionIntro;
 import com.moodTrip.spring.domain.attraction.repository.AttractionIntroRepository;
 import com.moodTrip.spring.domain.attraction.repository.AttractionRepository;
+import com.moodTrip.spring.domain.emotion.dto.response.AttractionCardDTO;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -34,6 +38,7 @@ public class AttractionServiceImpl implements AttractionService {
     private final AttractionRepository repository;
     private final AttractionIntroRepository introRepository;
     private final RestTemplate restTemplate;
+
 
     @Value("${attraction.apikey.decoding}")
     private String apiKey;
@@ -186,6 +191,7 @@ public class AttractionServiceImpl implements AttractionService {
     // ===== 소개(detailIntro2) =====
     @Override
     public int syncDetailIntro(long contentId, Integer contentTypeId) {
+        // 파라미터를 직접 바꾸지 말고 ctid 로컬 변수에 담기
         Integer ctid = (contentTypeId != null)
                 ? contentTypeId
                 : repository.findByContentId(contentId)
@@ -194,6 +200,7 @@ public class AttractionServiceImpl implements AttractionService {
 
         URI uri = buildDetailIntroUri(contentId, ctid);
         log.info("TourAPI GET {}", uri.toString().replaceAll("serviceKey=[^&]+", "serviceKey=***"));
+
 
         String body = restTemplate.getForObject(uri, String.class);
         String preview = body == null ? "null" : body.substring(0, Math.min(body.length(), 400));
@@ -325,6 +332,24 @@ public class AttractionServiceImpl implements AttractionService {
             return repository.findAllByAreaCodeAndSigunguCode(areaCode, sigunguCode);
         }
         return repository.findAllByAreaCodeAndSigunguCodeAndContentTypeId(areaCode, sigunguCode, contentTypeId);
+    }
+
+    // ===== 통합 검색 (키워드+필터, 제목 앞글자 우선, 페이지네이션) =====
+    @Transactional(readOnly = true)
+    @Override
+    public Page<Attraction> searchKeywordPrefTitleStarts(String q, Integer area, Integer si, Integer type, int page, int size) {
+        return repository.searchKeywordPrefTitleStarts(q, area, si, type, PageRequest.of(page, size));
+    }
+
+    // ===== 수동 등록 =====
+    @Override
+    public AttractionResponse create(AttractionInsertRequest req) {
+        var contentId = req.getContentId();
+        var entity = (contentId != null)
+                ? repository.findByContentId(contentId).orElseGet(req::toEntity)
+                : req.toEntity();
+        var saved = repository.save(entity);
+        return AttractionResponse.from(saved);
     }
 
     // ===== 공통 유틸 =====

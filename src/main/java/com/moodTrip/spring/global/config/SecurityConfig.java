@@ -59,10 +59,10 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/login", "/api/login", "/signup", "/api/signup",
+                                "/login", "/api/login", "/signup",
                                 "/css/**", "/js/**", "/image/**","/uploads/**",
                                 "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/api-docs/**",
-                                "/error", "/api/v1/room-online/**"
+                                "/error", "/api/v1/room-online/**", "/api/v1/profiles/**", "/image/**", "/uploads/**"
                         ).permitAll()
                         .requestMatchers("/mypage/**").authenticated()
                         .anyRequest().permitAll()

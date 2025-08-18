@@ -331,6 +331,12 @@ body.room-create .room-create-form-section .form-input-section {
     padding: 3px 0;
 }
 
+.added-single-day {
+    background: #1e88e5 !important;
+    color: #fff !important;
+    border-radius: 6px;
+}
+
 .calendar-days {
     display: grid;
     grid-template-columns: repeat(7, 1fr);

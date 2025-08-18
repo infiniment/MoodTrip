@@ -5,10 +5,14 @@ import com.moodTrip.spring.global.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @Setter
 @Builder
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "M_emotion")
@@ -28,5 +32,10 @@ public class Emotion extends BaseEntity {
 
     @Column(name = "display_order")
     private Integer displayOrder; // 표시순서
+
+
+    @Builder.Default
+    @OneToMany(mappedBy = "emotion", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AttractionEmotion> attractionEmotions = new ArrayList<>();
 
 }

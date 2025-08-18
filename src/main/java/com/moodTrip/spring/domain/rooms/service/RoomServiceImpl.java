@@ -76,6 +76,12 @@ public class RoomServiceImpl implements RoomService {
                 .travelEndDate(travelEndDate)
                 .creator(creator)
                 .isDeleteRoom(false)
+                .destinationCategory(request.getDestination() != null ? request.getDestination().getCategory() : null)
+                .destinationName(request.getDestination() != null ? request.getDestination().getName() : null)
+                .destinationLat(request.getDestination() != null && request.getDestination().getLat() != null
+                        ? java.math.BigDecimal.valueOf(request.getDestination().getLat()) : null)
+                .destinationLon(request.getDestination() != null && request.getDestination().getLon() != null
+                        ? java.math.BigDecimal.valueOf(request.getDestination().getLon()) : null)
                 .build();
 
         Room savedRoom = roomRepository.save(room);

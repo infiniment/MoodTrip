@@ -28,5 +28,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     //비밀번호 찾기 할 때 유효 이메일 인증
     Optional<Member> findByEmail(String email);
 
+    Optional<Member> findByNickname(String nickname);
+
 
 }

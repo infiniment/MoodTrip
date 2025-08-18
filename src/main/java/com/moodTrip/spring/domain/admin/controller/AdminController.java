@@ -1,6 +1,6 @@
 package com.moodTrip.spring.domain.admin.controller;
 
-import com.moodTrip.spring.domain.admin.dto.response.NotificationResponse;
+import com.moodTrip.spring.domain.admin.service.FaqService;
 import com.moodTrip.spring.domain.admin.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.ArrayList;
-import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
@@ -17,14 +16,23 @@ import java.util.List;
 public class AdminController {
 
     private final NotificationService notificationService;
+    private final FaqService faqService;
 
     @GetMapping
     public String adminPage(Model model) {
         // 공지사항 목록 가져오기
         model.addAttribute("notices", new ArrayList<>());
-//        List<NotificationResponse> notices = notificationService.findAll();
-//        model.addAttribute("notices", notices);
+
+        // FAQ 목록 가져오기
+        model.addAttribute("faqs", faqService.findAll());
 
         return "admin/admin";
     }
+
+
+
+
+
+
+
 }

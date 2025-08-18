@@ -24,6 +24,12 @@ public class AttractionResponse {
     private LocalDateTime createdTime;
     private LocalDateTime modifiedTime;
 
+    private static String normalizeTel(String tel) {
+        if (tel == null) return null;
+        // <br>, <br/>, <br /> 모두 처리(대소문자 무시)
+        return tel.replaceAll("(?i)<\\s*br\\s*/?>", "\n").trim();
+    }
+
     public static AttractionResponse from(Attraction a) {
         return AttractionResponse.builder()
                 .contentId(a.getContentId())
@@ -31,7 +37,7 @@ public class AttractionResponse {
                 .title(a.getTitle())
                 .addr1(a.getAddr1())
                 .addr2(a.getAddr2())
-                .tel(a.getTel())
+                .tel(normalizeTel(a.getTel()))
                 .firstImage(a.getFirstImage())
                 .firstImage2(a.getFirstImage2())
                 .mapX(a.getMapX())
