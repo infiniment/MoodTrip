@@ -10,11 +10,13 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
@@ -25,23 +27,37 @@ import static java.util.stream.Collectors.toList;
 public class AttractionController {
 
     private final AttractionService service;
+    private final AttractionService attractionService;
 
-    // ===== 동기화 =====
+    @PostMapping("/add")
+    public ResponseEntity<AttractionResponse> createByParams(@ModelAttribute AttractionInsertRequest req) {
+        var created = service.create(req);
+        return ResponseEntity
+                .created(URI.create("/api/attractions/content/" + created.getContentId()))
+                .body(created);
+    }
+
+    // =============== 목록 동기화  ===============
     @PostMapping("/sync/area")
     public ResponseEntity<SyncAreaResponse> syncArea(
             @RequestParam("areaCode") @Min(1) @Max(99) int areaCode,
             @RequestParam(value = "sigunguCode", required = false) @Min(1) Integer sigunguCode,
             @RequestParam(value = "contentTypeId", required = false) @Min(12) @Max(99) Integer contentTypeId,
             @RequestParam(value = "pageSize", defaultValue = "500") @Min(1) @Max(1000) int pageSize,
-            @RequestParam(value = "pauseMillis", defaultValue = "0") @Min(0) long pauseMillis
+            @RequestParam(value = "pauseMillis", defaultValue = "0") @Min(0) long pauseMillis,
+            @RequestParam(value = "excludeLodging", defaultValue = "true") boolean excludeLodging,
+            @RequestParam(value = "excludeContentTypeIds", required = false) List<@Min(12) @Max(99) Integer> excludeContentTypeIds
     ) {
-        int created = service.syncAreaBasedList(areaCode, sigunguCode, contentTypeId, pageSize, pauseMillis);
+        Set<Integer> excludes = new HashSet<>();
+        if (excludeLodging) excludes.add(12);
+        if (excludeContentTypeIds != null) excludes.addAll(excludeContentTypeIds);
+        int created = service.syncAreaBasedListExcluding(areaCode, sigunguCode, contentTypeId, pageSize, pauseMillis, excludes);
         return ResponseEntity.accepted().body(
                 new SyncAreaResponse("area sync done", areaCode, sigunguCode, contentTypeId, created)
         );
     }
 
-    // =============== 소개(detailIntro2) ===============
+    // =============== 소개 ===============
     @PostMapping("/sync/intro")
     public ResponseEntity<SyncIntroResponse> syncIntro(
             @RequestParam("contentId") @Positive long contentId,
@@ -66,7 +82,7 @@ public class AttractionController {
         );
     }
 
-    // ===== 단순 필터 리스트 — 다른 곳에서 안 쓰면 삭제해도 됨 =====
+    // =============== 조회 API ===============
     @GetMapping
     public ResponseEntity<List<AttractionResponse>> list(
             @RequestParam("areaCode") @Min(1) @Max(99) int areaCode,
@@ -77,6 +93,20 @@ public class AttractionController {
                 service.find(areaCode, sigunguCode, contentTypeId)
                         .stream().map(AttractionResponse::from).collect(toList())
         );
+    }
+
+    // =============== 다중 지역 조회 ===============
+    @GetMapping("/bulk")
+    public ResponseEntity<List<AttractionResponse>> listByAreas(
+            @RequestParam("areaCodes") List<@Min(1) @Max(99) Integer> areaCodes,
+            @RequestParam(value = "sigunguCode", required = false) @Min(1) Integer sigunguCode,
+            @RequestParam(value = "contentTypeId", required = false) @Min(12) @Max(99) Integer contentTypeId
+    ) {
+        var list = areaCodes.stream()
+                .flatMap(area -> service.find(area, sigunguCode, contentTypeId).stream())
+                .map(AttractionResponse::from)
+                .toList();
+        return ResponseEntity.ok(list);
     }
 
     // =============== 수동 등록 ===============
@@ -109,4 +139,33 @@ public class AttractionController {
             String message, long contentId, Integer contentTypeId, int saved) {}
     public record SyncIntroByAreaResponse(
             String message, int areaCode, Integer sigunguCode, Integer contentTypeId, int saved) {}
+
+
+    public record SyncAreaAllResponse(
+            String message, Integer contentTypeId, int createdTotal) {}
+    public record SyncAreaCodesResponse(
+            String message, List<Integer> areaCodes, Integer contentTypeId, int createdTotal) {}
+
+    @GetMapping("/regions")
+    public String regionPage(Model model) {
+        model.addAttribute("initialAttractions", List.of());
+        return "region-tourist-attractions/region-page";
+    }
+
+    @GetMapping("/api/attractions")
+    @ResponseBody
+    public ResponseEntity<List<AttractionResponse>> list(
+            @RequestParam(name = "regions", required = false) List<String> regionCodes,
+            @RequestParam(name = "areaCode", required = false) Integer areaCode,
+            @RequestParam(name = "sigunguCode", required = false) Integer sigunguCode,
+            @RequestParam(name = "sort", defaultValue = "default") String sort
+    ) {
+        if (regionCodes != null && !regionCodes.isEmpty()) {
+            return ResponseEntity.ok(attractionService.findByRegionCodes(regionCodes, sort));
+        }
+        if (areaCode != null) {
+            return ResponseEntity.ok(Collections.emptyList());
+        }
+        return ResponseEntity.ok(Collections.emptyList());
+    }
 }
