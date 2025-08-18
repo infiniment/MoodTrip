@@ -34,7 +34,7 @@
 
         <td>
             <form class="attraction-emotion-form"
-                  th:data-attraction-id="${attraction.id}"
+                  th:data-attraction-id="${attraction.attractionId}"
                   onsubmit="return submitForm(this);">
                 <div class="emotion-grid">
                     <div th:each="emotion : ${emotions}" class="emotion-item">

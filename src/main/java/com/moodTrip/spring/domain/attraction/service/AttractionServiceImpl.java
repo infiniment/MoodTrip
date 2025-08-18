@@ -446,7 +446,7 @@ public class AttractionServiceImpl implements AttractionService {
     @Override                                                   // ✅ 꼭 붙이기
     @Transactional(readOnly = true)                             // (선택) 읽기 전용
     public Page<Attraction> findAttractions(int page, int size) { // ✅ 시그니처 100% 동일
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id"));
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "attractionId"));
         return repository.findAll(pageable);
     }
 
@@ -512,7 +512,7 @@ public class AttractionServiceImpl implements AttractionService {
 
         return attractions.stream()
                 .map(attraction -> AttractionCardDTO.builder()
-                        .id(attraction.getAttractionId()) // <-- 이 줄을 추가합니다.
+                        .attractionId(attraction.getAttractionId()) // <-- 이 줄을 추가합니다.
                         .title(attraction.getTitle())
                         .addr1(attraction.getAddr1())
                         .firstImage(attraction.getFirstImage())
