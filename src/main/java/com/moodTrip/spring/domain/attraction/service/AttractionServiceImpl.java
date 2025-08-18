@@ -405,17 +405,6 @@ public class AttractionServiceImpl implements AttractionService {
                 apiKey.length() > 4 ? apiKey.substring(apiKey.length() - 4) : "****");
     }
 
-    @Override
-    public AttractionResponse create(AttractionInsertRequest req) {
-        var contentId = req.getContentId();
-        var entity = (contentId != null)
-                ? repository.findByContentId(contentId).orElseGet(req::toEntity)
-                : req.toEntity();
-        var saved = repository.save(entity);
-        return AttractionResponse.from(saved);
-    }
-
-
     final class RegionCodeMapper {
         private static final Map<String, Integer> KR_TO_AREA = new HashMap<>();
         private static final Map<Integer, String> AREA_TO_NAME = new HashMap<>();
