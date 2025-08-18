@@ -13,6 +13,16 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeAddDateButton(); // 추가 버튼 초기화
     initializeNextButton();
     initializeBackButton();
+
+    const rawDest = localStorage.getItem('selected_destination')
+        || sessionStorage.getItem('selected_destination');
+    if (rawDest) {
+        const destination = JSON.parse(rawDest);
+        console.log('[로드됨] selected_destination:', destination);
+        console.log('[로드됨] attractionId:', destination.attractionId);
+    } else {
+        console.warn('선택된 관광지 데이터가 없습니다.');
+    }
 });
 
 // 현재 날짜 기준 3개월 표시 초기화

@@ -17,7 +17,7 @@ import java.util.List;      // 추가
 public class Attraction {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long attractionId;
 
     // TourAPI 고유 ID
     @Column(nullable = false)

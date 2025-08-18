@@ -35,7 +35,7 @@ function getActiveFilters() {
 // hidden 필드 레퍼런스
 function hiddenRefs() {
     return {
-        id:  document.getElementById('destContentId'),
+        id:  document.getElementById('destAttractionId'),
         ttl: document.getElementById('destTitle'),
         addr:document.getElementById('destAddr'),
         img: document.getElementById('destImage'),
@@ -51,7 +51,7 @@ function fillHiddenFromMeta(meta) {
     if (!meta || !h.id) return;
 
     const d = meta.dataset; // <div class="hidden" ... data-*> 에서 가져옴
-    h.id.value  = d.contentId || '';
+    h.id.value  = d.attractionId || '';
     h.ttl.value = d.title || '';
     h.addr.value= ((d.addr1 || '') + ' ' + (d.addr2 || '')).trim();
     h.img.value = d.img || '';
@@ -109,6 +109,8 @@ function initializeDestinationSelection() {
                 const meta = destinationCard.querySelector('.hidden'); // ← 타임리프로 심어둔 data-*
 
                 selectedDestination = {
+                    attractionId: meta?.dataset.attractionId
+                        ? Number(meta.dataset.attractionId) : null,
                     // 화면 표시용
                     name: this.value,
                     category: destinationInfo.querySelector('.destination-category')?.textContent || '',
@@ -339,6 +341,7 @@ function renderAttractions(items) {
           </div>
         </label>
         <div class="hidden"
+             data-attraction-id="${a.attractionId || ''}"
              data-content-id="${a.contentId || ''}"
              data-title="${a.title || ''}"
              data-addr1="${a.addr1 || ''}"
@@ -481,7 +484,9 @@ function saveDestinationForNextPage() {
     // 세션 스토리지에도 백업 저장
     sessionStorage.setItem('selected_destination', JSON.stringify(selectedDestination));
     sessionStorage.setItem('room_creation_data', JSON.stringify(combinedData));
-    
+
+    console.log('[저장 완료] selectedDestination:', selectedDestination);
+    console.log('[저장 완료] room_creation_data:', combinedData);
     console.log('다음 페이지로 전달할 데이터 저장 완료:', combinedData);
 }
 

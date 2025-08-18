@@ -17,7 +17,6 @@ function loadAllPreviousData() {
         if (roomCreationData) {
             finalRoomData = JSON.parse(roomCreationData);
         } else {
-            // 개별 데이터 수집
             finalRoomData = {
                 emotions: getEmotionsData(),
                 destination: getDestinationData(),
@@ -26,6 +25,12 @@ function loadAllPreviousData() {
                 roomName: getRoomNameData(),
                 roomIntro: getRoomDescriptionData()
             };
+        }
+
+        // 정규화
+        if (finalRoomData?.destination) {
+            finalRoomData.destination = normalizeDestination(finalRoomData.destination);
+            console.log('[정규화 완료] destination:', finalRoomData.destination);
         }
 
         // UI에 데이터 표시
@@ -292,7 +297,7 @@ function initializeSubmitButton() {
 }
 
 // 방 등록 제출
-function submitRoom() {
+async function submitRoom() {
     const submitButton = document.getElementById('submitButton');
 
     if (submitButton && (submitButton.disabled || submitButton.classList.contains('loading'))) {
@@ -337,6 +342,7 @@ function submitRoom() {
 function validateFinalData() {
     const roomName = document.getElementById('roomNameInput').value.trim();
     const roomIntro = document.getElementById('roomIntroTextarea').value.trim();
+    const dest = finalRoomData.destination || getDestinationData();
 
     if (!roomName) {
         alert('방 이름을 입력해주세요.');
@@ -368,10 +374,16 @@ function validateFinalData() {
         return false;
     }
 
-    if (!finalRoomData.destination) {
+    if (!dest) {
         alert('여행지가 선택되지 않았습니다. 이전 단계로 돌아가서 선택해주세요.');
         return false;
     }
+
+    if (!dest.attractionId) {
+        alert('여행지 정보에 오류가 있습니다. 목록에서 다시 선택해 주세요.');
+        return false;
+    }
+
 
     if (!finalRoomData.schedule || !finalRoomData.schedule.dateRanges || finalRoomData.schedule.dateRanges.length === 0) {
         alert('일정이 선택되지 않았습니다. 이전 단계로 돌아가서 선택해주세요.');
@@ -386,20 +398,51 @@ function prepareFinalSubmitData() {
     // DOM에서 직접 가져온 최신 값 사용
     const roomName = document.getElementById('roomNameInput').value.trim();
     const roomIntro = document.getElementById('roomIntroTextarea').value.trim();
-    const people = localStorage.getItem('selected_people') || finalRoomData.people || '2명';
+
+    const peopleRaw = localStorage.getItem('selected_people') || finalRoomData.people || '2명';
+    const maxParticipants = parseInt(String(peopleRaw).replace(/\D/g, ''), 10) || 2;
+
+    // 저장된 목적지에서 attractionId 꺼내기 (localStorage/메모리 양쪽 대비)
+    const dest = finalRoomData.destination || getDestinationData();
+    const attractionId = dest && dest.attractionId ? Number(dest.attractionId) : null;
+
+    // 감정 리스트를 서버 DTO에 맞게 정규화 (tagId/text)
+    const emotions = (finalRoomData.emotions || []).map(e => {
+        if (typeof e === 'object') {
+            return {
+                tagId: e.tagId ?? e.id ?? null,
+                text: e.text ?? e.name ?? ''
+            };
+        }
+        return { tagId: null, text: String(e) };
+    });
 
     const submitData = {
-        destination: {
-            category: finalRoomData.destination?.category || null,
-            name: finalRoomData.destination?.name || null
-        },
-        emotions: finalRoomData.emotions || [],
+        attractionId,                 // ✅ 필수
+        emotions,                     // [{tagId,text}]
         schedule: finalRoomData.schedule || null,
-        maxParticipants: parseInt(people),
-        roomName: roomName,
+        maxParticipants,              // 정수
+        roomName,
         roomDescription: roomIntro,
         version: '1.0'
     };
+
+    // const submitData = {
+    //     attractionId,
+    //     destination: {
+    //         category: finalRoomData.destination?.category || null,
+    //         name: finalRoomData.destination?.name || null
+    //     },
+    //     emotions: finalRoomData.emotions || [],
+    //     schedule: finalRoomData.schedule || null,
+    //     maxParticipants: parseInt(people),
+    //     roomName: roomName,
+    //     roomDescription: roomIntro,
+    //     version: '1.0'
+    // };
+
+    console.log("🚀 최종 submitData 객체:", submitData);
+    console.log("🚀 최종 JSON 문자열:", JSON.stringify(submitData, null, 2));
 
     const jsonData = JSON.stringify(submitData, null, 2);
     localStorage.setItem('final_room_submission', jsonData);
@@ -445,9 +488,8 @@ function setSubmitButtonLoading(isLoading) {
 function handleSubmitClick(e) {
     e.preventDefault();
 
-    if (submitButton.disabled || submitButton.classList.contains('loading')) {
-        return;
-    }
+    const btn = document.getElementById('submitButton');
+    if (btn && (btn.disabled || btn.classList.contains('loading'))) return;
 
     submitRoom();
 }
@@ -1057,6 +1099,10 @@ function validateDataIntegrity() {
         issues.push('감정 태그 데이터가 없습니다.');
     }
 
+    finalRoomData.emotions = finalRoomData.emotions.map(e => (
+        typeof e === 'object' ? e : ({ tagId: null, text: String(e) })
+    ));
+
     if (!finalRoomData.destination) {
         issues.push('여행지 데이터가 없습니다.');
     }
@@ -1086,6 +1132,26 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 100);
 });
+
+function normalizeDestination(dest) {
+    if (!dest) return null;
+    const attractionId = dest.attractionId ?? dest.contentId ?? dest.id ?? null;
+    const mapX = dest.mapX ?? dest.mapx ?? dest.lon ?? null; // 경도
+    const mapY = dest.mapY ?? dest.mapy ?? dest.lat ?? null; // 위도
+
+    return {
+        attractionId,
+        name: dest.name ?? dest.title ?? '',
+        category: dest.category ?? '',
+        description: dest.description ?? '',
+        image: dest.image ?? '',
+        addr1: dest.addr1 ?? '',
+        addr2: dest.addr2 ?? '',
+        mapX,
+        mapY,
+        contentTypeId: dest.contentTypeId ?? dest.type ?? null,
+    };
+}
 
 /*
 // 실제 서버 연동 시 에러 처리
