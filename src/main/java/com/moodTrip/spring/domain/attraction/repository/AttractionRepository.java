@@ -135,8 +135,8 @@ public interface AttractionRepository extends JpaRepository<Attraction, Long> {
     @Query("SELECT ae.attraction " +
             "FROM AttractionEmotion ae " +
             "WHERE ae.isActive = true AND ae.emotion.tagId IN :emotionIds " +
-            "GROUP BY ae.attraction.id " +
-            "ORDER BY COUNT(ae.attraction.id) DESC, SUM(ae.weight) DESC")
+            "GROUP BY ae.attraction.attractionId " +
+            "ORDER BY COUNT(ae.attraction.attractionId) DESC, SUM(ae.weight) DESC")
     List<Attraction> findAttractionsByEmotionIds(@Param("emotionIds") List<Integer> emotionIds);
 
 
