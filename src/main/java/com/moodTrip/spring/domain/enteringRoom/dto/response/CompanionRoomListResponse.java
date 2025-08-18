@@ -21,6 +21,7 @@ public class CompanionRoomListResponse {
     private String views;
     private Integer viewCount;
     private String description;
+    private String category;
     //private List<String> emotions; // 감정은 나중에 로직 구현 시 수정!!!
     private Integer currentParticipants;
     private Integer maxParticipants;
@@ -41,6 +42,7 @@ public class CompanionRoomListResponse {
                 .id(room.getRoomId())
                 .title(room.getRoomName())
                 .location(room.getDestinationName())
+                .category(room.getDestinationCategory())
                 .date(formatTravelDate(room))
                 .views(formatViews(viewCount))
                 .viewCount(viewCount)

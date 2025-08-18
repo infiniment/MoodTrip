@@ -22,6 +22,7 @@ public class CompanionRoomViewController {
             @RequestParam(required = false) String region,
             @RequestParam(required = false) String maxParticipants,
             @RequestParam(required = false, defaultValue = "false") Boolean urgent,
+            @RequestParam(required = false, defaultValue = "default") String sort,  // 🔥 이 줄 추가!
             Model model
     ) {
         try {
@@ -38,8 +39,8 @@ public class CompanionRoomViewController {
                 rooms = companionRoomService.getRoomsByMaxParticipants(maxParticipants);
                 model.addAttribute("currentMaxParticipants", maxParticipants);
             } else {
-                rooms = companionRoomService.getAllRooms();
-            }
+            rooms = companionRoomService.getAllRoomsSorted(sort);
+        }
 
             // 마감 임박 필터 적용
             if (urgent != null && urgent) {
@@ -59,6 +60,7 @@ public class CompanionRoomViewController {
             model.addAttribute("totalCount", totalCount);
             model.addAttribute("recruitingCount", recruitingCount);
             model.addAttribute("currentUrgent", urgent);
+            model.addAttribute("currentSort", sort);
 
             // 검색/필터 상태 유지를 위한 데이터
             model.addAttribute("hasFilters",
@@ -124,6 +126,7 @@ public class CompanionRoomViewController {
             @RequestParam(required = false) String region,
             @RequestParam(required = false) String maxParticipants,
             @RequestParam(required = false, defaultValue = "false") Boolean urgent,
+            @RequestParam(required = false, defaultValue = "default") String sort,  // 🔥 이 줄 추가!
             Model model
     ) {
         // 동일한 데이터 로딩 로직 (위 roomListPage와 같음)
@@ -137,7 +140,7 @@ public class CompanionRoomViewController {
             } else if (maxParticipants != null && !maxParticipants.trim().isEmpty()) {
                 rooms = companionRoomService.getRoomsByMaxParticipants(maxParticipants);
             } else {
-                rooms = companionRoomService.getAllRooms();
+                rooms = companionRoomService.getAllRoomsSorted(sort);
             }
 
             if (urgent != null && urgent) {

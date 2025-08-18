@@ -214,29 +214,29 @@ async function applyFilters() {
 }
 
 // 🔧 수정된 방 상세보기 함수
-async function viewRoomDetail(roomId) {
-    try {
-        console.log('🔍 방 상세보기 요청 - roomId:', roomId);
-        currentDetailRoomId = roomId;
+function viewRoomDetail(roomId) {
+    console.log('방 상세보기 요청 - roomId:', roomId);
 
-        // 🔥 올바른 엔드포인트로 수정 (조회수 증가 포함)
-        const response = await fetch(`/entering-room/${roomId}/modal-data`);
+    fetch(`/entering-room/${roomId}/modal-data`)
+        .then(response => response.json())
+        .then(roomData => {
+            // 모달에 데이터 채우기
+            document.getElementById('detailRoomTitle').textContent = roomData.title;
+            document.getElementById('detailRoomLocation').textContent = roomData.category;
+            document.getElementById('detailRoomDate').textContent = roomData.date;
+            document.getElementById('detailRoomParticipants').textContent =
+                `${roomData.currentParticipants}/${roomData.maxParticipants}명`;
+            document.getElementById('detailRoomViews').textContent = roomData.views;
+            document.getElementById('detailRoomPeriod').textContent = roomData.createdDate;
+            document.getElementById('detailRoomDesc').textContent = roomData.description;
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const room = await response.json();
-
-        console.log('✅ 방 상세보기 데이터 (조회수 증가됨):', room);
-        console.log('🔥 현재 조회수:', room.viewCount, '- 표시:', room.views);
-
-        openDetailModal(room);
-
-    } catch (error) {
-        console.error('❌ 방 상세보기 실패:', error);
-        alert('방 정보를 불러올 수 없습니다.');
-    }
+            // 🔥 여기가 핵심! block → flex로 변경
+            document.getElementById('detailModal').style.display = 'flex';
+        })
+        .catch(error => {
+            console.error('방 상세 정보 조회 실패:', error);
+            alert('방 정보를 불러올 수 없습니다.');
+        });
 }
 
 // 상세보기 모달 열기
