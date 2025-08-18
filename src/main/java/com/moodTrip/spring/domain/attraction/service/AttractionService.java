@@ -26,4 +26,11 @@ public interface AttractionService {
                                            int pageSize, long pauseMillis, Set<Integer> excludeContentTypeIds) {
         return syncAreaBasedList(areaCode, sigunguCode, contentTypeId, pageSize, pauseMillis);
     }
+
+    //페이징
+
+    Page<Attraction> findAttractions(int page, int size);
+
+    //관리자 감정 매핑 검색
+    Page<Attraction> searchAttractions(String keyword, int page, int size);
 }

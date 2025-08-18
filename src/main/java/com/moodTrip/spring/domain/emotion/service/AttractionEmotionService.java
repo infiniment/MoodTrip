@@ -67,7 +67,7 @@ public class AttractionEmotionService {
                 Emotion emotion = emotionRepository.findById(ew.getEmotionId())
                         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 감정입니다: " + ew.getEmotionId()));
 
-                Attraction attraction = attractionRepository.findById(attractionId)
+                Attraction attraction = attractionRepository.findByAttractionId(attractionId)
                         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 관광지입니다: " + attractionId));
 
                 mapping = AttractionEmotion.builder()

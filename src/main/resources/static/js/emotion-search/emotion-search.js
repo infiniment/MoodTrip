@@ -380,8 +380,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // clearAllTags 함수를 호출하는 버튼이 있다면 여기에 이벤트 리스너 추가
-    // 예: const clearBtn = document.getElementById('clearAllTagsBtn');
-    // if (clearBtn) { clearBtn.addEventListener('click', clearAllTags); }
+
 
 });

@@ -36,6 +36,7 @@ public class LoginViewController {
         return "login/login";
     }
 
+
     @GetMapping("/login")
     public String loginPage(Model model) {
         model.addAttribute("loginRequest", new LoginRequest());
