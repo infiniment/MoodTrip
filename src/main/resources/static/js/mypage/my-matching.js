@@ -28,7 +28,6 @@ function initializeButtons() {
 
         // 방 나가기 버튼
         if (e.target.matches('.btn-exit-room')) {
-            // 🔥 새로 추가: 방장 체크
             if (e.target.disabled) {
                 const userRole = e.target.getAttribute('data-user-role') ||
                     e.target.closest('.matching-item')?.getAttribute('data-user-role');
@@ -59,14 +58,13 @@ function initializeButtons() {
 
         // 입장 요청 관리 버튼
         if (e.target.matches('.btn-manage-requests')) {
-            if (!e.target.disabled) {
-                const roomId = e.target.getAttribute('data-room-id');
-                const matchingItem = e.target.closest('.matching-item');
-                const roomTitle = matchingItem.querySelector('.matching-title').textContent;
+            const roomId = e.target.getAttribute('data-room-id');
+            const matchingItem = e.target.closest('.matching-item');
+            const roomTitle = matchingItem.querySelector('.matching-title').textContent;
 
-                handleManageRequestsClick(roomId, roomTitle);
-            }
+            handleManageRequestsClick(roomId, roomTitle);
         }
+
         // 스케줄 짜기 버튼
         if (e.target.matches('.btn-chat')) {
             const matchingItem = e.target.closest('.matching-item');
@@ -306,58 +304,38 @@ function showRequestsModal(roomId, roomTitle, requests) {
     // 모달 제목 업데이트
     modal.querySelector('.modal-header h3').textContent = `${roomTitle} - 입장 요청 관리`;
 
-    // 요청 리스트 렌더링
     if (requests.length === 0) {
+        // 요청 없을 때
         requestsList.innerHTML = `
-            <div class="empty-requests" style="text-align: center; padding: 2rem; color: #64748b;">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 64px; height: 64px; margin-bottom: 1rem; opacity: 0.5;">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                </svg>
-                <h4>대기 중인 요청이 없습니다</h4>
-                <p>새로운 참가 요청이 오면 여기에 표시됩니다.</p>
-            </div>
-        `;
+        <div class="empty-requests" style="text-align: center; padding: 2rem; color: #64748b;">
+            <h4>대기 중인 요청이 없습니다</h4>
+            <p>새로운 참가 요청이 오면 여기에 표시됩니다.</p>
+        </div>
+    `;
     } else {
-        // 🔥 실제 신청 목록 렌더링
-        requestsList.innerHTML = requests.map(request => `
-            <div class="request-item" data-request-id="${request.joinRequestId}">
-                <div class="request-header">
-                    <div class="applicant-info">
-                        <img src="${request.applicantProfileImage || '/image/fix/moodtrip.png'}" 
-                             alt="프로필" class="applicant-avatar">
-                        <div class="applicant-details">
-                            <h4 class="applicant-name">${request.applicantNickname}</h4>
-                            <span class="applied-time">${request.timeAgo}</span>
-                        </div>
-                    </div>
-                    <div class="request-priority ${request.priority.toLowerCase()}">
-                        ${request.priority === 'HIGH' ? '긴급' : '일반'}
-                    </div>
-                </div>
-                <div class="request-message">
-                    <p>${request.message}</p>
-                </div>
-                <div class="request-actions">
-                    <button class="btn btn-approve" onclick="approveRequest(${request.joinRequestId}, '${request.applicantNickname}')">
-                        승인
-                    </button>
-                    <button class="btn btn-reject" onclick="rejectRequest(${request.joinRequestId}, '${request.applicantNickname}')">
-                        거절
-                    </button>
-                </div>
-            </div>
-        `).join('');
+        // ✅ 요청 있을 때: 안내 문구 + 확인 버튼
+        requestsList.innerHTML = `
+        <div class="request-summary" style="text-align: center; padding: 2rem;">
+            <h4>📢 ${requests.length}건의 신청이 있습니다.</h4>
+            <button class="btn btn-primary btn-go-requests" style="margin-top: 1rem;">
+                확인하러 가기
+            </button>
+        </div>
+    `;
+
+        // 버튼 클릭 시 join-requests 페이지로 이동
+        const goBtn = requestsList.querySelector('.btn-go-requests');
+        goBtn.addEventListener('click', () => {
+            window.location.href = '/mypage/join-requests';
+        });
     }
+
 
     // 모달 표시
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
 }
 
-/**
- * 🎯 신청 승인 처리
- */
 async function approveRequest(requestId, applicantName) {
     console.log(`✅ 신청 승인 - requestId: ${requestId}, 신청자: ${applicantName}`);
 

@@ -171,15 +171,11 @@
                                                             <span th:text="${#temporals.format(room.travelEndDate, 'yy/MM/dd')}">종료일</span>
                                                         </span>
                                                         </div>
-                                                        <div class="join-requests-info">
-                                                            <span class="label">대기 중인 요청</span>
-                                                            <span class="count pending-requests" th:attr="data-room-id=${room.roomId}">0건</span>
-                                                        </div>
                                                     </div>
                                                     <!-- 🔥 중요: 방장용 버튼들 -->
                                                     <div class="action-buttons">
                                                         <button class="btn-chat" th:attr="data-room-id=${room.roomId}">스케줄 짜러 가기</button>
-                                                        <button class="btn-manage-requests" th:attr="data-room-id=${room.roomId}" disabled>입장 요청 관리</button>
+                                                        <button class="btn-manage-requests" th:attr="data-room-id=${room.roomId}">입장 요청 관리</button>
                                                         <button class="btn-delete-room" data-room-type="host"
                                                                 th:attr="data-room-id=${room.roomId}">방 삭제하기</button>
                                                     </div>

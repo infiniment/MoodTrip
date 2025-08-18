@@ -5,15 +5,15 @@ import com.moodTrip.spring.domain.rooms.entity.Room;
 import com.moodTrip.spring.domain.rooms.repository.RoomRepository;
 import com.moodTrip.spring.domain.rooms.repository.RoomMemberRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
 // 방 입장하기 관련 서비스
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -24,7 +24,6 @@ public class CompanionRoomService {
 
     // 전체 방 목록 조회
     public List<CompanionRoomListResponse> getAllRooms() {
-
         try {
             List<Room> rooms = roomRepository.findByIsDeleteRoomFalse();
 
@@ -39,8 +38,8 @@ public class CompanionRoomService {
         }
     }
 
+    // 키워드 검색
     public List<CompanionRoomListResponse> searchRooms(String keyword) {
-
         if (keyword == null || keyword.trim().isEmpty()) {
             return getAllRooms();
         }
@@ -62,7 +61,7 @@ public class CompanionRoomService {
         }
     }
 
-    // 지역별 방 필터링 - destination_category 사용
+    // 지역별 방 필터링
     public List<CompanionRoomListResponse> getRoomsByRegion(String region) {
         if (region == null || region.trim().isEmpty()) {
             return getAllRooms();
@@ -81,6 +80,119 @@ public class CompanionRoomService {
 
         } catch (Exception e) {
             throw new RuntimeException("지역별 방 조회 중 오류가 발생했습니다.", e);
+        }
+    }
+
+    // 최대 인원별 방 필터링
+    public List<CompanionRoomListResponse> getRoomsByMaxParticipants(String maxParticipantsFilter) {
+        if (maxParticipantsFilter == null || maxParticipantsFilter.trim().isEmpty()) {
+            return getAllRooms();
+        }
+
+        try {
+            List<Room> allRooms = roomRepository.findByIsDeleteRoomFalse();
+
+            List<Room> filteredRooms = allRooms.stream()
+                    .filter(room -> matchesParticipantFilter(room, maxParticipantsFilter))
+                    .collect(Collectors.toList());
+
+            return filteredRooms.stream()
+                    .map(this::convertToResponse)
+                    .collect(Collectors.toList());
+
+        } catch (Exception e) {
+            throw new RuntimeException("인원별 방 조회 중 오류가 발생했습니다.", e);
+        }
+    }
+
+    // 조회수 증가 포함 방 상세 조회 메서드
+    @Transactional
+    public CompanionRoomListResponse getRoomDetailWithViewCount(Long roomId) {
+        try {
+            // 방 조회
+            Room room = roomRepository.findById(roomId)
+                    .orElseThrow(() -> new RuntimeException("존재하지 않는 방입니다."));
+
+            // 조회수 증가
+            room.incrementViewCount();
+            Room updatedRoom = roomRepository.save(room);
+
+            log.info("조회수 증가! 방ID: {}, 현재 조회수: {}", roomId, updatedRoom.getViewCount());
+
+            // Response 반환 (증가된 조회수 포함)
+            return convertToResponseWithActualViewCount(updatedRoom);
+
+        } catch (Exception e) {
+            throw new RuntimeException("방 상세 조회 중 오류가 발생했습니다.", e);
+        }
+    }
+
+    // 실제 조회수를 사용하는 변환 메서드
+    private CompanionRoomListResponse convertToResponseWithActualViewCount(Room room) {
+        try {
+            // 실제 참여자 수 계산
+            Long actualParticipantCount = roomMemberRepository.countByRoomAndIsActiveTrue(room);
+
+            // 실제 DB의 조회수 사용
+            Integer actualViewCount = room.getViewCount() != null ? room.getViewCount() : 0;
+
+            // 기본 DTO 생성 (실제 조회수로)
+            CompanionRoomListResponse response = CompanionRoomListResponse.from(room, actualViewCount);
+
+            // 실제 참여자 수와 조회수로 업데이트
+            return CompanionRoomListResponse.builder()
+                    .id(response.getId())
+                    .title(response.getTitle())
+                    .location(response.getLocation())
+                    .category(room.getDestinationCategory())
+                    .date(response.getDate())
+                    .views(response.getViews())
+                    .viewCount(actualViewCount)
+                    .description(response.getDescription())
+                    .currentParticipants(actualParticipantCount.intValue())
+                    .maxParticipants(response.getMaxParticipants())
+                    .createdDate(response.getCreatedDate())
+                    .image(response.getImage())
+                    .urgent(response.getUrgent())
+                    .status(response.getStatus())
+                    .build();
+
+        } catch (Exception e) {
+            return CompanionRoomListResponse.from(room, 0);
+        }
+    }
+
+    // 기존 엔티티 => dto 변환 (목록 조회용 - 조회수 증가 안함)
+    private CompanionRoomListResponse convertToResponse(Room room) {
+        try {
+            // 실제 참여자 수 계산
+            Long actualParticipantCount = roomMemberRepository.countByRoomAndIsActiveTrue(room);
+
+            // 실제 조회수 사용 (증가시키지는 않음)
+            Integer actualViewCount = room.getViewCount() != null ? room.getViewCount() : 0;
+
+            // 기본 DTO 생성 (실제 조회수로)
+            CompanionRoomListResponse response = CompanionRoomListResponse.from(room, actualViewCount);
+
+            // 실제 참여자 수와 정확한 상태로 업데이트
+            return CompanionRoomListResponse.builder()
+                    .id(response.getId())
+                    .title(response.getTitle())
+                    .location(response.getLocation())
+                    .date(response.getDate())
+                    .views(response.getViews())
+                    .viewCount(actualViewCount)
+                    .description(response.getDescription())
+                    .currentParticipants(actualParticipantCount.intValue())
+                    .maxParticipants(response.getMaxParticipants())
+                    .createdDate(response.getCreatedDate())
+                    .image(response.getImage())
+                    .urgent(response.getUrgent())
+                    .status(response.getStatus())
+                    .build();
+
+        } catch (Exception e) {
+            return CompanionRoomListResponse.from(room, 0);
         }
     }
 
@@ -129,156 +241,6 @@ public class CompanionRoomService {
             default:
                 // 기본: 단순 포함 검색
                 return category.contains(region);
-        }
-    }
-
-    // CompanionRoomService.java에 추가
-
-    // 정렬된 방 목록 조회
-    public List<CompanionRoomListResponse> getAllRoomsSorted(String sortType) {
-        try {
-            List<Room> rooms = roomRepository.findByIsDeleteRoomFalse();
-
-            // 정렬 적용
-            List<Room> sortedRooms = applySorting(rooms, sortType);
-
-            return sortedRooms.stream()
-                    .map(this::convertToResponse)
-                    .collect(Collectors.toList());
-
-        } catch (Exception e) {
-            throw new RuntimeException("정렬된 방 목록 조회 중 오류가 발생했습니다.", e);
-        }
-    }
-
-    private List<Room> applySorting(List<Room> rooms, String sortType) {
-        if ("popular".equals(sortType)) {
-            // 인기순 (조회수 높은 순)
-            return rooms.stream()
-                    .sorted((r1, r2) -> {
-                        Integer views1 = r1.getViewCount() != null ? r1.getViewCount() : 0;
-                        Integer views2 = r2.getViewCount() != null ? r2.getViewCount() : 0;
-                        return views2.compareTo(views1);
-                    })
-                    .collect(Collectors.toList());
-        }
-
-        // 기본 정렬 (default든 null이든 상관없이) - 원본 순서 그대로
-        return rooms;
-    }
-
-    // 최대 인원별 방 필터링
-    public List<CompanionRoomListResponse> getRoomsByMaxParticipants(String maxParticipantsFilter) {
-
-        if (maxParticipantsFilter == null || maxParticipantsFilter.trim().isEmpty()) {
-            return getAllRooms();
-        }
-
-        try {
-            List<Room> allRooms = roomRepository.findByIsDeleteRoomFalse();
-
-            List<Room> filteredRooms = allRooms.stream()
-                    .filter(room -> matchesParticipantFilter(room, maxParticipantsFilter))
-                    .collect(Collectors.toList());
-
-            return filteredRooms.stream()
-                    .map(this::convertToResponse)
-                    .collect(Collectors.toList());
-
-        } catch (Exception e) {
-            throw new RuntimeException("인원별 방 조회 중 오류가 발생했습니다.", e);
-        }
-    }
-
-    // 조회수 증가 포함 방 상세 조회 메서드
-    @Transactional  // 쓰기 작업이므로 @Transactional 필요
-    public CompanionRoomListResponse getRoomDetailWithViewCount(Long roomId) {
-        try {
-            // 방 조회
-            Room room = roomRepository.findById(roomId)
-                    .orElseThrow(() -> new RuntimeException("존재하지 않는 방입니다."));
-
-            // 조회수 증가
-            room.incrementViewCount();
-            Room updatedRoom = roomRepository.save(room);
-
-            // 로그 출력 (확인용)
-            System.out.println("조회수 증가! 방ID: " + roomId + ", 현재 조회수: " + updatedRoom.getViewCount());
-
-            // Response 반환 (증가된 조회수 포함)
-            return convertToResponseWithActualViewCount(updatedRoom);
-
-        } catch (Exception e) {
-            throw new RuntimeException("방 상세 조회 중 오류가 발생했습니다.", e);
-        }
-    }
-
-    // 실제 조회수를 사용하는 변환 메서드
-    private CompanionRoomListResponse convertToResponseWithActualViewCount(Room room) {
-        try {
-            // 실제 참여자 수 계산
-            Long actualParticipantCount = roomMemberRepository.countByRoomAndIsActiveTrue(room);
-
-            // 실제 DB의 조회수 사용
-            Integer actualViewCount = room.getViewCount() != null ? room.getViewCount() : 0;
-
-            // 기본 DTO 생성 (실제 조회수로)
-            CompanionRoomListResponse response = CompanionRoomListResponse.from(room, actualViewCount);
-
-            // 실제 참여자 수와 조회수로 업데이트
-            return CompanionRoomListResponse.builder()
-                    .id(response.getId())
-                    .title(response.getTitle())
-                    .location(response.getLocation())
-                    .category(room.getDestinationCategory())
-                    .date(response.getDate())
-                    .views(response.getViews())  // "5명이 봄" 형식으로 표시
-                    .viewCount(actualViewCount)  // 실제 조회수 숫자
-                    .description(response.getDescription())
-                    .currentParticipants(actualParticipantCount.intValue())
-                    .maxParticipants(response.getMaxParticipants())
-                    .createdDate(response.getCreatedDate())
-                    .image(response.getImage())
-                    .urgent(response.getUrgent())
-                    .status(response.getStatus())
-                    .build();
-
-        } catch (Exception e) {
-            return CompanionRoomListResponse.from(room, 0);
-        }
-    }
-
-    // 기존 엔티티 => dto 변환 (목록 조회용 - 조회수 증가 안함)
-    private CompanionRoomListResponse convertToResponse(Room room) {
-        try {
-            // 실제 참여자 수 계산
-            Long actualParticipantCount = roomMemberRepository.countByRoomAndIsActiveTrue(room);
-
-            // 실제 조회수 사용 (증가시키지는 않음)
-            Integer actualViewCount = room.getViewCount() != null ? room.getViewCount() : 0;
-
-            // 기본 DTO 생성 (실제 조회수로)
-            CompanionRoomListResponse response = CompanionRoomListResponse.from(room, actualViewCount);
-
-            // 실제 참여자 수와 정확한 상태로 업데이트
-            return CompanionRoomListResponse.builder()
-                    .id(response.getId())
-                    .title(response.getTitle())
-                    .location(response.getLocation())
-                    .date(response.getDate())
-                    .views(response.getViews())  // 실제 조회수로 "X명이 봄" 표시
-                    .viewCount(actualViewCount)  // 실제 조회수
-                    .description(response.getDescription())
-                    .currentParticipants(actualParticipantCount.intValue())
-                    .maxParticipants(response.getMaxParticipants())
-                    .createdDate(response.getCreatedDate())
-                    .image(response.getImage())
-                    .urgent(response.getUrgent())
-                    .status(response.getStatus())  // DTO에서 계산한 status 그대로 사용!
-                    .build();
-
-        } catch (Exception e) {
-            return CompanionRoomListResponse.from(room, 0);
         }
     }
 

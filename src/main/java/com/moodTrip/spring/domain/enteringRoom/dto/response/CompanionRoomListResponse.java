@@ -119,19 +119,29 @@ public class CompanionRoomListResponse {
 
     // 방 상태 모집중, 모집 완료 나타내기
     private static String calculateStatus(Room room) {
-        boolean isFull = room.getRoomCurrentCount() >= room.getRoomMaxCount();
+        // 여행 날짜가 지났으면 "날짜조율"
+        if (room.getTravelStartDate() != null) {
+            java.time.LocalDate today = java.time.LocalDate.now();
+            java.time.LocalDate travelDate = room.getTravelStartDate();
 
-        // 가득 찬 경우
+            if (travelDate.isBefore(today)) {
+                return "날짜조율";
+            }
+        }
+
+        // 정원이 가득 찬 경우
+        boolean isFull = room.getRoomCurrentCount() >= room.getRoomMaxCount();
         if (isFull) {
             return "모집완료";
         }
-        boolean isUrgent = calculateUrgent(room);
 
         // 마감임박인 경우
+        boolean isUrgent = calculateUrgent(room);
         if (isUrgent) {
             return "마감임박";
         }
-        // 평소
+
+        // 일반 모집중
         return "모집중";
     }
 }

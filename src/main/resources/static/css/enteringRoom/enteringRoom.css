@@ -238,68 +238,6 @@ main.room-list {
     margin-right: 8px;
 }
 
-/* 정렬 드롭다운 */
-.sort-dropdown {
-    position: relative;
-}
-
-.sort-button {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    font-size: 14px;
-    color: #374151;
-    cursor: pointer;
-    transition: border-color 0.2s ease;
-}
-
-.sort-button:hover {
-    border-color: #005792;
-}
-
-.sort-menu {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    z-index: 10;
-    min-width: 150px;
-    display: none;
-}
-
-.sort-menu.show {
-    display: block;
-}
-
-.sort-option {
-    display: block;
-    width: 100%;
-    padding: 10px 16px;
-    background: none;
-    border: none;
-    text-align: left;
-    font-size: 14px;
-    color: #374151;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-
-.sort-option:hover {
-    background-color: #f8fafc;
-}
-
-.sort-option.active {
-    background-color: #005792;
-    color: white;
-}
-
 /* 방 목록 */
 .room-list {
     display: flex;
@@ -349,7 +287,7 @@ main.room-list {
     top: 8px;
     left: 8px;
     padding: 2px 8px;
-    background: #10b981;
+    background: #10b981;  /* 기본 모집중 색상 */
     color: white;
     font-size: 11px;
     font-weight: 500;
@@ -361,7 +299,29 @@ main.room-list {
 }
 
 .room-status.completed {
-    background: #dc2626;  /* 또는 #ef4444 */
+    background: #dc2626;
+}
+
+.room-status.date-adjustment {
+    background: #f59e0b;  /* 주황색 */
+}
+
+/* 🔥 모든 상태별 테두리 */
+.room-card.urgent {
+    border-left: 4px solid #ef4444;
+}
+
+.room-card.completed {
+    border-left: 4px solid #dc2626;
+}
+
+.room-card.date-adjustment {
+    border-left: 4px solid #f59e0b;
+}
+
+/* 🔥 모집중 테두리 추가 */
+.room-card.recruiting {
+    border-left: 4px solid #10b981;  /* 초록색 테두리 */
 }
 
 .room-content {

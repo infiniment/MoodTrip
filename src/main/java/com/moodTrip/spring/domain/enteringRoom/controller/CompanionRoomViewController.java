@@ -3,12 +3,14 @@ package com.moodTrip.spring.domain.enteringRoom.controller;
 import com.moodTrip.spring.domain.enteringRoom.dto.response.CompanionRoomListResponse;
 import com.moodTrip.spring.domain.enteringRoom.service.CompanionRoomService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @Controller
 @RequestMapping("/entering-room")
 @RequiredArgsConstructor
@@ -22,31 +24,43 @@ public class CompanionRoomViewController {
             @RequestParam(required = false) String region,
             @RequestParam(required = false) String maxParticipants,
             @RequestParam(required = false, defaultValue = "false") Boolean urgent,
-            @RequestParam(required = false, defaultValue = "default") String sort,  // 🔥 이 줄 추가!
             Model model
     ) {
         try {
-            // Service에서 데이터 가져오기 (API Controller와 동일한 로직)
+            log.info("방 목록 페이지 요청 - search: {}, region: {}, maxParticipants: {}, urgent: {}",
+                    search, region, maxParticipants, urgent);
+
+            // Service에서 데이터 가져오기
             List<CompanionRoomListResponse> rooms;
 
             if (search != null && !search.trim().isEmpty()) {
                 rooms = companionRoomService.searchRooms(search);
                 model.addAttribute("currentSearch", search);
+                log.debug("검색 결과 - 키워드: {}, 결과수: {}", search, rooms.size());
+
             } else if (region != null && !region.trim().isEmpty()) {
                 rooms = companionRoomService.getRoomsByRegion(region);
                 model.addAttribute("currentRegion", region);
+                log.debug("지역 필터 결과 - 지역: {}, 결과수: {}", region, rooms.size());
+
             } else if (maxParticipants != null && !maxParticipants.trim().isEmpty()) {
                 rooms = companionRoomService.getRoomsByMaxParticipants(maxParticipants);
                 model.addAttribute("currentMaxParticipants", maxParticipants);
+                log.debug("인원 필터 결과 - 인원: {}, 결과수: {}", maxParticipants, rooms.size());
+
             } else {
-            rooms = companionRoomService.getAllRoomsSorted(sort);
-        }
+                // 🔥 수정: 기본 메서드 호출
+                rooms = companionRoomService.getAllRooms();
+                log.debug("전체 목록 조회 - 결과수: {}", rooms.size());
+            }
 
             // 마감 임박 필터 적용
             if (urgent != null && urgent) {
+                int beforeFilterCount = rooms.size();
                 rooms = rooms.stream()
                         .filter(room -> room.getUrgent())
                         .collect(java.util.stream.Collectors.toList());
+                log.debug("마감임박 필터 적용 - 필터 전: {}, 필터 후: {}", beforeFilterCount, rooms.size());
             }
 
             // 통계 정보 계산
@@ -60,7 +74,6 @@ public class CompanionRoomViewController {
             model.addAttribute("totalCount", totalCount);
             model.addAttribute("recruitingCount", recruitingCount);
             model.addAttribute("currentUrgent", urgent);
-            model.addAttribute("currentSort", sort);
 
             // 검색/필터 상태 유지를 위한 데이터
             model.addAttribute("hasFilters",
@@ -69,10 +82,16 @@ public class CompanionRoomViewController {
                             (maxParticipants != null && !maxParticipants.trim().isEmpty()) ||
                             urgent
             );
+
+            log.info("방 목록 페이지 로드 완료 - 총 {}개 방, 모집중 {}개", totalCount, recruitingCount);
             return "enteringRoom/enteringRoom";
+
         } catch (Exception e) {
+            log.error("방 목록 페이지 로드 실패", e);
+
             model.addAttribute("rooms", java.util.Collections.emptyList());
             model.addAttribute("totalCount", 0);
+            model.addAttribute("recruitingCount", 0);
             model.addAttribute("error", "방 목록을 불러오는 중 오류가 발생했습니다.");
 
             return "enteringRoom/enteringRoom";
@@ -85,9 +104,15 @@ public class CompanionRoomViewController {
             @PathVariable("roomId") Long roomId
     ) {
         try {
-            return companionRoomService.getRoomDetailWithViewCount(roomId);
+            log.info("방 상세 모달 데이터 요청 - roomId: {}", roomId);
+
+            CompanionRoomListResponse response = companionRoomService.getRoomDetailWithViewCount(roomId);
+
+            log.info("방 상세 모달 데이터 반환 완료 - roomId: {}, title: {}", roomId, response.getTitle());
+            return response;
 
         } catch (Exception e) {
+            log.error("방 상세 데이터 조회 실패 - roomId: {}", roomId, e);
             throw new RuntimeException("존재하지 않는 방입니다.");
         }
     }
@@ -102,15 +127,20 @@ public class CompanionRoomViewController {
         }
 
         try {
+            log.info("검색 결과 페이지 요청 - query: {}", query);
+
             List<CompanionRoomListResponse> searchResults = companionRoomService.searchRooms(query);
 
             model.addAttribute("rooms", searchResults);
             model.addAttribute("query", query);
             model.addAttribute("resultCount", searchResults.size());
 
+            log.info("검색 결과 - 키워드: {}, 결과수: {}", query, searchResults.size());
             return "enteringRoom/searchResults";
 
         } catch (Exception e) {
+            log.error("검색 실패 - query: {}", query, e);
+
             model.addAttribute("rooms", java.util.Collections.emptyList());
             model.addAttribute("query", query);
             model.addAttribute("resultCount", 0);
@@ -126,23 +156,29 @@ public class CompanionRoomViewController {
             @RequestParam(required = false) String region,
             @RequestParam(required = false) String maxParticipants,
             @RequestParam(required = false, defaultValue = "false") Boolean urgent,
-            @RequestParam(required = false, defaultValue = "default") String sort,  // 🔥 이 줄 추가!
             Model model
     ) {
-        // 동일한 데이터 로딩 로직 (위 roomListPage와 같음)
         try {
+            log.debug("부분 렌더링 요청 - search: {}, region: {}, maxParticipants: {}, urgent: {}",
+                    search, region, maxParticipants, urgent);
+
             List<CompanionRoomListResponse> rooms;
 
             if (search != null && !search.trim().isEmpty()) {
                 rooms = companionRoomService.searchRooms(search);
+
             } else if (region != null && !region.trim().isEmpty()) {
                 rooms = companionRoomService.getRoomsByRegion(region);
+
             } else if (maxParticipants != null && !maxParticipants.trim().isEmpty()) {
                 rooms = companionRoomService.getRoomsByMaxParticipants(maxParticipants);
+
             } else {
-                rooms = companionRoomService.getAllRoomsSorted(sort);
+                // 🔥 수정: 기본 메서드 호출
+                rooms = companionRoomService.getAllRooms();
             }
 
+            // 마감 임박 필터 적용
             if (urgent != null && urgent) {
                 rooms = rooms.stream()
                         .filter(room -> room.getUrgent())
@@ -151,12 +187,14 @@ public class CompanionRoomViewController {
 
             model.addAttribute("rooms", rooms);
 
+            log.debug("부분 렌더링 완료 - 결과수: {}", rooms.size());
             return "enteringRoom/fragments/roomList :: roomList";
+
         } catch (Exception e) {
+            log.error("부분 렌더링 실패", e);
+
             model.addAttribute("rooms", java.util.Collections.emptyList());
             return "enteringRoom/fragments/roomList :: roomList";
         }
     }
-
-
 }
