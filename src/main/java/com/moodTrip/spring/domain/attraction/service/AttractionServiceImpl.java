@@ -41,6 +41,57 @@ public class AttractionServiceImpl implements AttractionService {
     private static final String BASE = "https://apis.data.go.kr/B551011/KorWithService2";
     private static final DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
+    // ===== 특정 타입 제외 동기화 =====
+    @Override
+    public int syncAreaBasedListExcluding(int areaCode, Integer sigunguCode, Integer contentTypeId,
+                                          int pageSize, long pauseMillis, Set<Integer> excludes) {
+        int created = 0, pageNo = 1, total = Integer.MAX_VALUE;
+        final Set<Integer> excludeSet = (excludes == null) ? Collections.emptySet() : excludes;
+
+        while ((pageNo - 1) * pageSize < total) {
+            URI uri = buildAreaBasedListUri(areaCode, sigunguCode, contentTypeId, pageSize, pageNo);
+            log.info("TourAPI GET {}", uri.toString().replaceAll("serviceKey=[^&]+", "serviceKey=***"));
+
+            String body = restTemplate.getForObject(uri, String.class);
+            String preview = body == null ? "null" : body.substring(0, Math.min(body.length(), 300));
+            log.info("areaBasedList2 preview: {}", preview);
+
+            String trimmed = body == null ? "" : body.trim();
+            if (!trimmed.isEmpty() && trimmed.charAt(0) == '<') {
+                throw new IllegalStateException("TourAPI가 JSON 대신 XML 에러를 반환. preview=" + preview);
+            }
+
+            JsonNode root = safe(parseJson(body));
+            JsonNode header = root.path("response").path("header");
+            String resultCode = header.path("resultCode").asText("");
+            if (!"0000".equals(resultCode)) {
+                String msg = header.path("resultMsg").asText("");
+                throw new IllegalStateException("TourAPI 오류: " + resultCode + " / " + msg);
+            }
+
+            JsonNode bodyNode = root.path("response").path("body");
+            total = bodyNode.path("totalCount").asInt(0);
+            JsonNode items = bodyNode.path("items").path("item");
+
+            if (items.isArray()) {
+                for (JsonNode it : items) {
+                    Integer typeId = asInt(it, "contenttypeid");
+                    if (typeId != null && excludeSet.contains(typeId)) continue; // ★ 제외
+                    created += upsertAttraction(it);
+                }
+            } else if (!items.isMissingNode() && !items.isNull()) {
+                Integer typeId = asInt(items, "contenttypeid");
+                if (typeId == null || !excludeSet.contains(typeId)) {
+                    created += upsertAttraction(items);
+                }
+            }
+
+            pageNo++;
+            sleep(pauseMillis);
+        }
+        return created;
+    }
+
     // ===== 목록(areaBasedList2) =====
     @Override
     public int syncAreaBasedList(int areaCode, Integer sigunguCode, Integer contentTypeId,
@@ -133,7 +184,6 @@ public class AttractionServiceImpl implements AttractionService {
     // ===== 소개(detailIntro2) =====
     @Override
     public int syncDetailIntro(long contentId, Integer contentTypeId) {
-        // 파라미터를 직접 바꾸지 말고 ctid 로컬 변수에 담기
         Integer ctid = (contentTypeId != null)
                 ? contentTypeId
                 : repository.findByContentId(contentId)
@@ -142,7 +192,6 @@ public class AttractionServiceImpl implements AttractionService {
 
         URI uri = buildDetailIntroUri(contentId, ctid);
         log.info("TourAPI GET {}", uri.toString().replaceAll("serviceKey=[^&]+", "serviceKey=***"));
-
 
         String body = restTemplate.getForObject(uri, String.class);
         String preview = body == null ? "null" : body.substring(0, Math.min(body.length(), 400));
@@ -338,5 +387,4 @@ public class AttractionServiceImpl implements AttractionService {
         var saved = repository.save(entity);
         return AttractionResponse.from(saved);
     }
-
 }
