@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 public class AttractionResponse {
-    private Long attractionId;
+    private Long id;
     private Long contentId;
     private Integer contentTypeId;
     private String title;
@@ -33,13 +33,13 @@ public class AttractionResponse {
 
     public static AttractionResponse from(Attraction a) {
         return AttractionResponse.builder()
-                .attractionId(a.getAttractionId())
+                .id(a.getId())
                 .contentId(a.getContentId())
                 .contentTypeId(a.getContentTypeId())
                 .title(a.getTitle())
                 .addr1(a.getAddr1())
                 .addr2(a.getAddr2())
-                .tel(normalizeTel(a.getTel()))
+                .tel(a.getTel())
                 .firstImage(a.getFirstImage())
                 .firstImage2(a.getFirstImage2())
                 .mapX(a.getMapX())

@@ -40,7 +40,6 @@ public class AttractionServiceImpl implements AttractionService {
     private final AttractionIntroRepository introRepository;
     private final RestTemplate restTemplate;
 
-
     @Value("${attraction.apikey.decoding}")
     private String apiKey;
 
@@ -192,7 +191,6 @@ public class AttractionServiceImpl implements AttractionService {
     // ===== 소개(detailIntro2) =====
     @Override
     public int syncDetailIntro(long contentId, Integer contentTypeId) {
-        // 파라미터를 직접 바꾸지 말고 ctid 로컬 변수에 담기
         Integer ctid = (contentTypeId != null)
                 ? contentTypeId
                 : repository.findByContentId(contentId)
@@ -201,7 +199,6 @@ public class AttractionServiceImpl implements AttractionService {
 
         URI uri = buildDetailIntroUri(contentId, ctid);
         log.info("TourAPI GET {}", uri.toString().replaceAll("serviceKey=[^&]+", "serviceKey=***"));
-
 
         String body = restTemplate.getForObject(uri, String.class);
         String preview = body == null ? "null" : body.substring(0, Math.min(body.length(), 400));
@@ -335,14 +332,6 @@ public class AttractionServiceImpl implements AttractionService {
         return repository.findAllByAreaCodeAndSigunguCodeAndContentTypeId(areaCode, sigunguCode, contentTypeId);
     }
 
-    // ===== 통합 검색 (키워드+필터, 제목 앞글자 우선, 페이지네이션) =====
-    @Transactional(readOnly = true)
-    @Override
-    public Page<Attraction> searchKeywordPrefTitleStarts(String q, Integer area, Integer si, Integer type, int page, int size) {
-        return repository.searchKeywordPrefTitleStarts(q, area, si, type, PageRequest.of(page, size));
-    }
-
-
     // ===== 공통 유틸 =====
     private JsonNode parseJson(String body) {
         try { return om.readTree(body == null ? "{}" : body); }
@@ -411,7 +400,6 @@ public class AttractionServiceImpl implements AttractionService {
         private static final Map<String, Integer> KR_TO_AREA = new HashMap<>();
         private static final Map<Integer, String> AREA_TO_NAME = new HashMap<>();
         static {
-
             KR_TO_AREA.put("KR11", 1);  AREA_TO_NAME.put(1,  "서울");
             KR_TO_AREA.put("KR28", 2);  AREA_TO_NAME.put(2,  "인천");
             KR_TO_AREA.put("KR30", 3);  AREA_TO_NAME.put(3,  "대전");
@@ -449,6 +437,7 @@ public class AttractionServiceImpl implements AttractionService {
         return repository.findAll(pageable);
     }
 
+
     @Override
     public List<AttractionResponse> findByRegionCodes(List<String> regionCodes, String sort) {
         if (regionCodes == null || regionCodes.isEmpty()) {
@@ -482,7 +471,6 @@ public class AttractionServiceImpl implements AttractionService {
         // ✅ 응답 매핑 (from() 없으면 아래 new로 매핑)
         return list.stream()
                 .map(AttractionResponse::from)
-                // .map(a -> new AttractionResponse(a.getId(), a.getTitle(), RegionCodeMapper.areaCodeToName(a.getAreaCode()), a.getFirstImage(), /*rating*/ null, /*tags*/ List.of()))
                 .collect(Collectors.toList());
     }
 
@@ -533,4 +521,3 @@ public class AttractionServiceImpl implements AttractionService {
     }
 
 }
-

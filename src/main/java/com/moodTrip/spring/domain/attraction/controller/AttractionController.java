@@ -37,7 +37,6 @@ public class AttractionController {
                 .body(created);
     }
 
-
     // =============== 목록 동기화  ===============
     @PostMapping("/sync/area")
     public ResponseEntity<SyncAreaResponse> syncArea(
@@ -198,5 +197,4 @@ public class AttractionController {
     ) {
         return ResponseEntity.ok(service.findByRegionCodes(regionCodes, sort));
     }
-
 }

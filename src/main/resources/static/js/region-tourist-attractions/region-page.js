@@ -6,6 +6,13 @@ const regionCodeMap = {
   "KR41": "경기",  "KR42": "강원",  "KR43": "충북",  "KR44": "충남",
   "KR47": "경북",  "KR48": "경남",  "KR45": "전북",  "KR46": "전남",  "KR49": "제주"
 };
+const areaCodeNameMap = {
+  1: "서울", 2: "인천", 3: "대전", 4: "대구", 5: "광주", 6: "부산", 7: "울산", 8: "세종",
+  31: "경기", 32: "강원", 33: "충북", 34: "충남", 35: "경북", 36: "경남", 37: "전북", 38: "전남", 39: "제주"
+};
+function areaCodeToName(areaCode) {
+  return areaCodeNameMap[Number(areaCode)] || "";
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   const buttons = document.querySelectorAll(".r-button");
@@ -117,40 +124,21 @@ async function fetchAttractionsByRegions(regionCodes, sortValue) {
 // [ADDED] 받아온 목록을 카드로 렌더링 (상세 이동은 아직 제외)
 function renderAttractionCards(list) {
   const container = document.querySelector(".tour-card-list");
-  if (!container) return;
   container.innerHTML = "";
-
-  if (!list || !list.length) {
-    container.innerHTML = `<div class="empty">선택한 지역의 관광지가 없습니다.</div>`;
-    return;
-  }
+  if (!list?.length) { container.innerHTML = `<div class="empty">선택한 지역의 관광지가 없습니다.</div>`; return; }
 
   list.forEach(item => {
-    const rating = typeof item.rating === "number" ? item.rating.toFixed(2) : "-";
+    const regionName = areaCodeToName(item.areaCode);
     const card = document.createElement("div");
     card.className = "tour-card";
-    // 데이터-속성은 기존 정렬/필터 로직과 호환되도록 유지
-    card.dataset.region = item.regionName || "";
-    card.dataset.rating = item.rating ?? 0;
-
+    card.dataset.region = regionName;
     card.innerHTML = `
       <div class="card-image-wrapper">
-        <img class="card-image" src="${item.imageUrl || '/static/image/region-tourist-attractions/사려니숲길.png'}" alt="${item.name || ''}">
+        <img class="card-image" src="${item.firstImage || '/static/image/region-tourist-attractions/사려니숲길.png'}" alt="${item.title || ''}">
       </div>
       <div class="card-content">
-        <div class="card-meta">
-          <span class="category">${item.regionName || ''}</span>
-        </div>
-        <h3 class="card-title">${item.name || ''}</h3>
-        <div class="card-tags">
-          ${(item.tags || []).map(t => `<span class="tag">#${t}</span>`).join('')}
-        </div>
-        <div class="card-rating">
-          <img class="star-icon" src="/static/image/region-tourist-attractions/star.png" alt="rating">
-          <span class="rate-text">${rating}</span>
-        </div>
-        <!-- 상세 이동은 추후 연결 예정 -->
-        <button class="btn-details" type="button" disabled title="추후 연결 예정">자세히 보기 →</button>
+        <div class="card-meta"><span class="category">${regionName}</span></div>
+        <h3 class="card-title">${item.title || ''}</h3>
       </div>
     `;
     container.appendChild(card);
