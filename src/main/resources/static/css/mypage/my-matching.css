@@ -525,90 +525,69 @@
     opacity: 0.5;
 }
 
-/* 페이지네이션 */
-.pagination-wrapper {
+/* 🔥 매칭 정보 페이지 페이징 스타일 추가 */
+.pagination-controls {
     display: flex;
     justify-content: center;
-    margin-top: 2rem;
-    margin-bottom: 2rem;
-}
-
-.pagination {
-    display: flex;
     align-items: center;
     gap: 8px;
+    margin: 2rem 0;
+    padding: 1rem;
+    flex-wrap: wrap;
 }
 
-/* 페이지네이션 */
-.page-btn {
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid rgba(0, 87, 146, 0.15);
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%);
-    color: rgb(100, 116, 139);
-    font-size: 14px;
-    border-radius: 10px;
+.pagination-btn {
+    padding: 8px 16px;
+    border: 1px solid #e5e7eb;
+    background: white;
+    color: #374151;
+    border-radius: 6px;
     cursor: pointer;
-    transition: all 0.3s ease;
-    outline: none;
-    -webkit-appearance: button;
-    text-transform: none;
-    font-family: inherit;
+    transition: all 0.2s ease;
     font-weight: 500;
-    backdrop-filter: blur(5px);
+    min-width: 40px;
 }
 
-.page-btn svg {
-    width: 18px;
-    height: 18px;
-    fill: currentColor;
-    flex-shrink: 0;
-}
-
-.page-btn:hover:not(:disabled) {
-    background: linear-gradient(135deg, rgba(0, 87, 146, 0.05) 0%, rgba(0, 26, 44, 0.02) 100%);
-    border-color: rgba(0, 87, 146, 0.3);
-    color: #005792;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 87, 146, 0.2);
-}
-
-.page-btn.active {
-    background: linear-gradient(135deg, #005792 0%, #001A2C 100%);
+.pagination-btn:hover:not(:disabled) {
+    background: #f3f4f6;
     border-color: #005792;
-    color: rgb(255, 255, 255);
-    font-weight: 600;
-    box-shadow: 0 6px 16px rgba(0, 87, 146, 0.4);
+    transform: translateY(-1px);
 }
 
-.page-btn:disabled {
-    background-color: rgb(250, 250, 252);
-    border-color: rgb(228, 229, 237);
-    color: rgb(200, 202, 210);
+.pagination-btn:disabled {
+    opacity: 0.5;
     cursor: not-allowed;
 }
 
-.page-btn:disabled svg {
-    fill: rgb(200, 202, 210);
+.page-number-btn.active {
+    background: #005792 !important;
+    color: white !important;
+    border-color: #005792 !important;
 }
 
-/* 애니메이션 */
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+.page-info {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: #64748b;
+    font-size: 0.875rem;
 }
 
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
+.page-info strong {
+    color: #374151;
+    font-weight: 600;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .pagination-controls {
+        gap: 4px;
+        margin: 1.5rem 0;
+        padding: 0.5rem;
     }
-    to {
-        opacity: 1;
-        transform: translateY(0);
+
+    .pagination-btn {
+        padding: 6px 10px;
+        font-size: 14px;
     }
 }
 

@@ -1,9 +1,471 @@
+let currentPage = 1;
+const itemsPerPage = 3; // 매칭 카드는 크므로 3개씩 표시
+let totalItems = 0;
+let totalPages = 0;
+let currentTabData = []; // 현재 탭의 데이터를 저장
+let activeTab = 'received'; // 현재 활성 탭
+
 document.addEventListener('DOMContentLoaded', function() {
     initializeTabs();
     initializeButtons();
     initializeModals();
-    checkAndDisableLeaderButtons(); // 🔥 새로 추가: 페이지 로드 시 방장 버튼 체크
+    checkAndDisableLeaderButtons();
+
+    // 🔥 새로 추가: 페이징 초기화
+    initializePagination();
 });
+
+function initializePagination() {
+    console.log('📄 매칭 정보 페이징 시스템 초기화 시작');
+
+    // 현재 활성 탭 확인
+    const activeTabElement = document.querySelector('.tab-content.active');
+    if (!activeTabElement) return;
+
+    // 탭 ID로 activeTab 설정
+    activeTab = activeTabElement.id.includes('received') ? 'received' : 'created';
+
+    // 현재 탭의 모든 매칭 아이템 가져오기
+    const allItems = activeTabElement.querySelectorAll('.matching-item');
+    currentTabData = Array.from(allItems);
+    totalItems = currentTabData.length;
+    totalPages = Math.ceil(totalItems / itemsPerPage);
+
+    console.log(`📊 ${activeTab} 탭: 총 ${totalItems}개 방, ${totalPages}페이지`);
+
+    if (totalItems > 0) {
+        // 첫 페이지 표시
+        showPage(1);
+
+        // 페이징 네비게이션 생성
+        createPaginationControls();
+
+        // 키보드 네비게이션 활성화
+        enableKeyboardNavigation();
+    }
+}
+
+/**
+ * 특정 페이지의 매칭 아이템들만 표시
+ */
+function showPage(pageNumber) {
+    console.log(`📄 ${activeTab} 탭 ${pageNumber}페이지 표시`);
+
+    currentPage = pageNumber;
+
+    // 모든 매칭 아이템 숨기기
+    currentTabData.forEach(item => {
+        item.style.display = 'none';
+    });
+
+    // 현재 페이지에 해당하는 아이템들만 표시
+    const startIndex = (pageNumber - 1) * itemsPerPage;
+    const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+
+    for (let i = startIndex; i < endIndex; i++) {
+        if (currentTabData[i]) {
+            currentTabData[i].style.display = 'block';
+
+            // 🎨 부드러운 애니메이션 효과
+            currentTabData[i].style.opacity = '0';
+            currentTabData[i].style.transform = 'translateY(20px)';
+
+            setTimeout(() => {
+                currentTabData[i].style.transition = 'all 0.3s ease';
+                currentTabData[i].style.opacity = '1';
+                currentTabData[i].style.transform = 'translateY(0)';
+            }, i * 50); // 순차적으로 나타나는 효과
+        }
+    }
+
+    // 페이징 버튼 상태 업데이트
+    updatePaginationButtons();
+
+    // 현재 페이지 정보 표시
+    updatePageInfo();
+}
+
+/**
+ * 페이징 네비게이션 컨트롤 생성
+ */
+function createPaginationControls() {
+    const activeTabElement = document.querySelector('.tab-content.active');
+    if (!activeTabElement) return;
+
+    // 기존 페이징 컨트롤 제거
+    const existingPagination = activeTabElement.querySelector('.pagination-controls');
+    if (existingPagination) {
+        existingPagination.remove();
+    }
+
+    // 페이징이 필요없으면 (총 페이지가 1개 이하) 생성하지 않음
+    if (totalPages <= 1) return;
+
+    const paginationHtml = `
+        <div class="pagination-controls" style="
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            gap: 8px; 
+            margin: 2rem 0; 
+            padding: 1rem;
+        ">
+            <button class="pagination-btn prev-btn" onclick="goToPrevPage()" style="
+                padding: 8px 16px;
+                border: 1px solid #e5e7eb;
+                background: white;
+                border-radius: 6px;
+                cursor: pointer;
+                transition: all 0.2s;
+                color: #374151;
+                font-weight: 500;
+            ">
+                ‹ 이전
+            </button>
+            
+            <div class="page-numbers" style="display: flex; gap: 4px;">
+                <!-- 페이지 번호들이 여기에 동적으로 생성됩니다 -->
+            </div>
+            
+            <button class="pagination-btn next-btn" onclick="goToNextPage()" style="
+                padding: 8px 16px;
+                border: 1px solid #e5e7eb;
+                background: white;
+                border-radius: 6px;
+                cursor: pointer;
+                transition: all 0.2s;
+                color: #374151;
+                font-weight: 500;
+            ">
+                다음 ›
+            </button>
+        </div>
+        
+        <div class="page-info" style="
+            text-align: center; 
+            margin-bottom: 2rem; 
+            color: #64748b; 
+            font-size: 0.875rem;
+        ">
+            <!-- 페이지 정보가 여기에 표시됩니다 -->
+        </div>
+    `;
+
+    // 매칭 리스트 래퍼 다음에 페이징 컨트롤 추가
+    const matchingWrapper = activeTabElement.querySelector('.matching-list-wrapper');
+    if (matchingWrapper) {
+        matchingWrapper.insertAdjacentHTML('afterend', paginationHtml);
+
+        // 호버 효과 추가
+        addHoverEffects();
+    }
+
+    // 페이지 번호 버튼들 생성
+    createPageNumbers();
+
+    console.log('🎯 페이징 컨트롤 생성 완료');
+}
+
+/**
+ * 호버 효과 추가
+ */
+function addHoverEffects() {
+    const paginationButtons = document.querySelectorAll('.pagination-btn');
+
+    paginationButtons.forEach(button => {
+        button.addEventListener('mouseenter', function() {
+            if (!this.disabled && !this.classList.contains('active')) {
+                this.style.backgroundColor = '#f3f4f6';
+                this.style.borderColor = '#005792';
+                this.style.transform = 'translateY(-1px)';
+            }
+        });
+
+        button.addEventListener('mouseleave', function() {
+            if (!this.disabled && !this.classList.contains('active')) {
+                this.style.backgroundColor = 'white';
+                this.style.borderColor = '#e5e7eb';
+                this.style.transform = 'translateY(0)';
+            }
+        });
+    });
+}
+
+/**
+ * 페이지 번호 버튼들 생성
+ */
+function createPageNumbers() {
+    const pageNumbersContainer = document.querySelector('.page-numbers');
+    if (!pageNumbersContainer) return;
+
+    pageNumbersContainer.innerHTML = '';
+
+    // 표시할 페이지 번호 범위 계산 (최대 5개 버튼)
+    const maxButtons = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+    let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+
+    // 끝 페이지가 조정되면 시작 페이지도 다시 조정
+    if (endPage - startPage + 1 < maxButtons) {
+        startPage = Math.max(1, endPage - maxButtons + 1);
+    }
+
+    // 페이지 번호 버튼 생성
+    for (let i = startPage; i <= endPage; i++) {
+        const isActive = i === currentPage;
+        const pageButton = document.createElement('button');
+        pageButton.className = `page-number-btn ${isActive ? 'active' : ''}`;
+        pageButton.textContent = i;
+        pageButton.onclick = () => goToPage(i);
+
+        pageButton.style.cssText = `
+            padding: 8px 12px;
+            border: 1px solid ${isActive ? '#005792' : '#e5e7eb'};
+            background: ${isActive ? '#005792' : 'white'};
+            color: ${isActive ? 'white' : '#374151'};
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 40px;
+            font-weight: 500;
+        `;
+
+        // 호버 효과
+        if (!isActive) {
+            pageButton.addEventListener('mouseenter', function() {
+                this.style.backgroundColor = '#f3f4f6';
+                this.style.borderColor = '#005792';
+            });
+
+            pageButton.addEventListener('mouseleave', function() {
+                this.style.backgroundColor = 'white';
+                this.style.borderColor = '#e5e7eb';
+            });
+        }
+
+        pageNumbersContainer.appendChild(pageButton);
+    }
+}
+
+/**
+ * 페이징 버튼 상태 업데이트
+ */
+function updatePaginationButtons() {
+    const prevBtn = document.querySelector('.prev-btn');
+    const nextBtn = document.querySelector('.next-btn');
+
+    if (prevBtn) {
+        prevBtn.disabled = currentPage === 1;
+        prevBtn.style.opacity = currentPage === 1 ? '0.5' : '1';
+        prevBtn.style.cursor = currentPage === 1 ? 'not-allowed' : 'pointer';
+    }
+
+    if (nextBtn) {
+        nextBtn.disabled = currentPage === totalPages;
+        nextBtn.style.opacity = currentPage === totalPages ? '0.5' : '1';
+        nextBtn.style.cursor = currentPage === totalPages ? 'not-allowed' : 'pointer';
+    }
+
+    // 페이지 번호 버튼들 다시 생성 (활성 상태 반영)
+    createPageNumbers();
+}
+
+/**
+ * 현재 페이지 정보 업데이트
+ */
+function updatePageInfo() {
+    const pageInfo = document.querySelector('.page-info');
+    if (!pageInfo) return;
+
+    const startItem = (currentPage - 1) * itemsPerPage + 1;
+    const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+
+    const tabName = activeTab === 'received' ? '입장한 방' : '만든 방';
+
+    pageInfo.innerHTML = `
+        총 <strong>${totalItems}</strong>개 ${tabName} 중 
+        <strong>${startItem} - ${endItem}</strong>번째 표시 
+        (${currentPage} / ${totalPages} 페이지)
+    `;
+}
+
+// ==========================================
+// 🔥 페이징 네비게이션 함수들 (전역 함수로 노출)
+// ==========================================
+
+/**
+ * 특정 페이지로 이동
+ */
+function goToPage(pageNumber) {
+    if (pageNumber < 1 || pageNumber > totalPages) return;
+
+    console.log(`🎯 ${activeTab} 탭 ${pageNumber}페이지로 이동`);
+    showPage(pageNumber);
+
+    // 부드러운 스크롤 효과
+    const activeTabElement = document.querySelector('.tab-content.active');
+    if (activeTabElement) {
+        activeTabElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+    }
+}
+
+/**
+ * 이전 페이지로 이동
+ */
+function goToPrevPage() {
+    if (currentPage > 1) {
+        goToPage(currentPage - 1);
+    }
+}
+
+/**
+ * 다음 페이지로 이동
+ */
+function goToNextPage() {
+    if (currentPage < totalPages) {
+        goToPage(currentPage + 1);
+    }
+}
+
+/**
+ * 키보드 네비게이션 활성화
+ */
+function enableKeyboardNavigation() {
+    // 기존 키보드 이벤트 핸들러에 페이징 기능 추가
+    document.addEventListener('keydown', function(e) {
+        // 입력 필드에서는 단축키 비활성화
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+            return;
+        }
+
+        // 모달이 열려있으면 단축키 비활성화
+        const visibleModals = document.querySelectorAll('.modal[style*="flex"]');
+        if (visibleModals.length > 0) {
+            return;
+        }
+
+        // 페이징 키보드 단축키
+        if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            goToPrevPage();
+        } else if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            goToNextPage();
+        }
+
+        // 숫자 키로 직접 페이지 이동 (1-9)
+        if (e.key >= '1' && e.key <= '9') {
+            const pageNum = parseInt(e.key);
+            if (pageNum <= totalPages) {
+                e.preventDefault();
+                goToPage(pageNum);
+            }
+        }
+    });
+
+    console.log('⌨️ 키보드 네비게이션 활성화 (← → 화살표, 1-9 숫자키)');
+}
+
+// ==========================================
+// 🔄 기존 탭 전환 함수 수정 (페이징 초기화 추가)
+// ==========================================
+
+// 기존 initializeTabs 함수 수정
+function initializeTabs() {
+    const tabButtons = document.querySelectorAll('.tab-btn');
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const targetTab = this.textContent.trim();
+
+            if (targetTab === '내가 입장한 방') {
+                window.location.href = '/mypage/my-matching?tab=received';
+            } else if (targetTab === '내가 만든 방') {
+                window.location.href = '/mypage/my-matching?tab=created';
+            }
+        });
+    });
+
+    // 🔥 페이지 로드 후 1초 뒤에 페이징 초기화 (DOM이 완전히 로드된 후)
+    setTimeout(() => {
+        initializePagination();
+    }, 1000);
+}
+
+// ==========================================
+// 🌐 전역 함수 노출 (HTML에서 직접 호출용) - 기존에 추가
+// ==========================================
+window.handleChatButtonClick = handleChatButtonClick;
+window.approveRequest = approveRequest;
+window.rejectRequest = rejectRequest;
+window.checkAndDisableLeaderButtons = checkAndDisableLeaderButtons;
+
+// 🔥 새로 추가: 페이징 관련 전역 함수들
+window.goToPage = goToPage;
+window.goToPrevPage = goToPrevPage;
+window.goToNextPage = goToNextPage;
+window.initializePagination = initializePagination;
+
+// SSR 방식 사용 시 타임리프 사용을 위한 버튼 초기화
+function initializeButtons() {
+    document.addEventListener('click', function(e) {
+
+        // 방 나가기 버튼
+        if (e.target.matches('.btn-exit-room')) {
+            if (e.target.disabled) {
+                const userRole = e.target.getAttribute('data-user-role') ||
+                    e.target.closest('.matching-item')?.getAttribute('data-user-role');
+
+                if (userRole === 'LEADER') {
+                    showNotification('info', '방장은 방을 나갈 수 없습니다. 방 삭제를 이용해주세요.');
+                } else {
+                    showNotification('error', '현재 이 기능을 사용할 수 없습니다.');
+                }
+                return;
+            }
+
+            const matchingItem = e.target.closest('.matching-item');
+            const roomTitle = matchingItem.querySelector('.matching-title').textContent;
+            const roomId = e.target.getAttribute('data-room-id');
+
+            handleExitRoomClick(roomTitle, roomId, matchingItem);
+        }
+
+        // 방 삭제 버튼
+        if (e.target.matches('.btn-delete-room')) {
+            const matchingItem = e.target.closest('.matching-item');
+            const roomTitle = matchingItem.querySelector('.matching-title').textContent;
+            const roomId = e.target.getAttribute('data-room-id');
+
+            handleDeleteRoomClick(roomTitle, roomId, matchingItem);
+        }
+
+        // 입장 요청 관리 버튼
+        if (e.target.matches('.btn-manage-requests')) {
+            const roomId = e.target.getAttribute('data-room-id');
+            const matchingItem = e.target.closest('.matching-item');
+            const roomTitle = matchingItem.querySelector('.matching-title').textContent;
+
+            handleManageRequestsClick(roomId, roomTitle);
+        }
+
+        // 스케줄 짜기 버튼
+        if (e.target.matches('.btn-chat')) {
+            const matchingItem = e.target.closest('.matching-item');
+            const roomId = matchingItem.getAttribute('data-room-id');
+
+            if (roomId) {
+                window.location.href = `/scheduling/${roomId}`;
+            } else {
+                showNotification('error', '방 정보를 찾을 수 없습니다.', 'under-header');
+            }
+        }
+
+    });
+}
 
 // 입장한 방과 만든 방 탭 전환 시 사용
 function initializeTabs() {
