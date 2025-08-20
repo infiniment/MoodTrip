@@ -38,6 +38,8 @@ document.addEventListener('DOMContentLoaded', function () {
     roomId = chattingRoomId;
 
     window.destName = chatDataElement.dataset.destName || '';
+    const destLat = parseFloat(chatDataElement.dataset.destLat);
+    const destLon = parseFloat(chatDataElement.dataset.destLon);
 
     console.log('destName:', destName);
 
@@ -213,14 +215,19 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-    fetchJSON(`/api/weather/current?roomId=${roomId}`)
+    const coordQuery = (!isNaN(destLat) && !isNaN(destLon))
+        ? `lat=${destLat}&lon=${destLon}`
+        : `roomId=${roomId}`;
+
+    fetchJSON(`/api/weather/current?${coordQuery}`)
         .then(data => {
             console.log('[weather][current] ↩︎', data);
             renderCurrentWeather(data);
         })
         .catch(err => console.error('현재 날씨 불러오기 실패:', err));
 
-    fetchJSON(`/api/weather/daily?roomId=${roomId}`)
+
+    fetchJSON(`/api/weather/daily?${coordQuery}`)
         .then(list => {
             console.log('[weather][daily] ↩︎', list);
             renderDailyForecast(list);

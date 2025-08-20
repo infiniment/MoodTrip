@@ -15,6 +15,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -26,6 +28,7 @@ public class WeatherServiceImpl implements WeatherService {
     private final WeatherRepository weatherRepository;
     private final RestTemplate restTemplate = new RestTemplate();
     private final RoomRepository roomRepository;
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private double toDouble(BigDecimal bd, String field) {
         if (bd == null) {
@@ -71,11 +74,12 @@ public class WeatherServiceImpl implements WeatherService {
 
         for (JsonNode node : forecastArray) {
             String dtTxt = node.get("dt_txt").asText();
+            LocalDateTime dt = LocalDateTime.parse(dtTxt, formatter);
             String date = dtTxt.split(" ")[0];
             String time = dtTxt.split(" ")[1];
 
             WeatherResponse wr = WeatherResponse.builder()
-                    .dateTime(dtTxt)
+                    .dateTime(dt.format(formatter))
                     .date(date)
                     .time(time)
                     .temperature(node.get("main").get("temp").asDouble())
@@ -89,7 +93,7 @@ public class WeatherServiceImpl implements WeatherService {
                     .build();
 
             Weather entity = Weather.builder()
-                    .dateTime(dtTxt)
+                    .dateTime(dt)
                     .date(date)
                     .time(time)
                     .temperature(wr.getTemperature())
@@ -134,12 +138,13 @@ public class WeatherServiceImpl implements WeatherService {
 
         for (JsonNode node : list)  {
             String dtTxt = node.get("dt_txt").asText();
+            LocalDateTime dt = LocalDateTime.parse(dtTxt, formatter);
             String date = dtTxt.split(" ")[0];
             String time = dtTxt.split(" ")[1];
 
             if (date.equals(dateStr)) {
                 WeatherResponse wr = WeatherResponse.builder()
-                        .dateTime(dtTxt)
+                        .dateTime(dt.format(formatter))
                         .date(date)
                         .time(time)
                         .temperature(node.get("main").get("temp").asDouble())
@@ -153,7 +158,7 @@ public class WeatherServiceImpl implements WeatherService {
                         .build();
 
                 Weather entity = Weather.builder()
-                        .dateTime(dtTxt)
+                        .dateTime(dt)
                         .date(date)
                         .time(time)
                         .temperature(wr.getTemperature())
@@ -186,7 +191,8 @@ public class WeatherServiceImpl implements WeatherService {
         JsonNode node = root.get("list").get(0);
 
 
-        String dtTxt = node.get("dt_txt").asText(); // 첫 번째 시간대의 데이터
+        String dtTxt = node.get("dt_txt").asText();
+        LocalDateTime dt = LocalDateTime.parse(dtTxt, formatter);
         String date = dtTxt.split(" ")[0];
         String time = dtTxt.split(" ")[1];
 
@@ -195,7 +201,7 @@ public class WeatherServiceImpl implements WeatherService {
         }
 
         Weather entity = Weather.builder()
-                .dateTime(dtTxt)
+                .dateTime(dt)
                 .date(date)
                 .time(time)
                 .temperature(node.get("main").get("temp").asDouble())
@@ -221,16 +227,24 @@ public class WeatherServiceImpl implements WeatherService {
         if (!root.has("list") || !root.get("list").isArray()) return List.of();
 
         // 이미 저장된 dateTime(중복 방지)
-        Set<String> existing = weatherRepository.findAllDateTimesByRoomId(room.getRoomId());
+        Set<LocalDateTime> existing = weatherRepository.findAllDateTimesByRoomId(room.getRoomId());
+
+        log.info("[weather] existing dateTimes: {}", existing);
 
         List<Weather> batch = new ArrayList<>();
         for (JsonNode node : root.get("list")) {
-            String dtTxt = node.get("dt_txt").asText();
-            if (existing.contains(dtTxt)) continue;
+            String dtTxtRaw = node.get("dt_txt").asText();
+            LocalDateTime dt = LocalDateTime.parse(dtTxtRaw, formatter); // 문자열을 LocalDateTime으로 파싱
 
-            String[] p = dtTxt.split(" ");
+            if (existing.contains(dt)) {   // LocalDateTime 그대로 비교
+                log.info("[weather] 중복된 데이터 건너뜀: {}", dt);
+                continue;
+            }
+
+            String[] p = dtTxtRaw.split(" ");
+
             batch.add(Weather.builder()
-                    .dateTime(dtTxt).date(p[0]).time(p[1])
+                    .dateTime(dt).date(p[0]).time(p[1])
                     .temperature(node.get("main").get("temp").asDouble())
                     .feelsLike(node.get("main").get("feels_like").asDouble())
                     .humidity(node.get("main").get("humidity").asInt())
