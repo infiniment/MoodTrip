@@ -2,6 +2,8 @@ package com.moodTrip.spring.domain.rooms.controller;
 
 import com.moodTrip.spring.domain.attraction.dto.response.AttractionResponse;
 import com.moodTrip.spring.domain.attraction.service.AttractionService;
+import com.moodTrip.spring.domain.emotion.dto.response.EmotionCategoryDto;
+import com.moodTrip.spring.domain.emotion.service.EmotionService;
 import com.moodTrip.spring.domain.rooms.dto.response.RoomCardDto;
 import com.moodTrip.spring.domain.rooms.service.RoomService;
 import com.moodTrip.spring.global.security.jwt.MyUserDetails;
@@ -26,6 +28,7 @@ public class RoomViewController {
 
     private final RoomService roomService;
     private final AttractionService attractionService;
+    private final EmotionService emotionService;
 
 
     // 렌더링 시작
@@ -55,8 +58,13 @@ public class RoomViewController {
 
     // 방 만들 때 감정 선택하는 곳 렌더링
     @GetMapping("/emotion")
-    public String showEmotionPage(@AuthenticationPrincipal MyUserDetails user) {
+    public String showEmotionPage(@AuthenticationPrincipal MyUserDetails user, Model model) {
         if (user == null) return "redirect:/login?redirect=" + url("/companion-rooms/emotion");
+
+        // EmotionService 통해 감정 데이터 가져오기
+        List<EmotionCategoryDto> emotionCategories = emotionService.getEmotionCategories();
+        model.addAttribute("emotionCategories", emotionCategories);
+
         return "creatingRoom/choosing-emotion";
     }
 

@@ -3,6 +3,8 @@ package com.moodTrip.spring.domain.weather.dto.response;
 import com.moodTrip.spring.domain.weather.entity.Weather;
 import lombok.*;
 
+import java.time.format.DateTimeFormatter;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -26,7 +28,7 @@ public class WeatherResponse {
     private Double minTemp;
 
     public WeatherResponse(Weather weather) {
-        this.dateTime = weather.getDateTime();
+        this.dateTime = weather.getDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         this.date = weather.getDate();
         this.time = weather.getTime();
         this.temperature = weather.getTemperature();
