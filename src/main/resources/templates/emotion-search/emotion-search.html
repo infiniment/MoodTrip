@@ -5,9 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>감정별 여행지 검색</title>
     <link rel="stylesheet" href="/css/emotion-search/emotion-search.css">
-    <!-- <link rel="stylesheet" href="/static/css/default-common/default-common.css"> -->
+    <link rel="stylesheet" th:href="@{/css/fix/header.css}">
+    <link rel="stylesheet" th:href="@{/css/fix/footer.css}">
+    <link rel="stylesheet" th:href="@{/css/fix/header-after.css}">
 </head>
-<body>
+<body><!-- 로그인 상태에 따른 조건부 헤더 렌더링 -->
+<div th:if="${isLoggedIn}">
+    <th:block th:replace="~{fix/header-after-login :: header}"></th:block>
+</div>
+<div th:unless="${isLoggedIn}">
+    <th:block th:replace="~{fix/header :: header}"></th:block>
+</div>
+
 <div class="emotion-search-main">
     <div class="emotion-search-block">
         <section class="search-container">
@@ -153,5 +162,9 @@
     </div>
 </div>
 <script src="/js/emotion-search/emotion-search.js"></script>
+<th:block th:replace="~{fix/footer :: footer}"></th:block>
+
+<script th:src="@{/js/fix/header.js}"></script>
+<script th:src="@{/js/fix/header-after.js}"></script>
 </body>
 </html>

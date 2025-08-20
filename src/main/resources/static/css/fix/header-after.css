@@ -172,7 +172,7 @@ header.header .header-nav .right-nav .log-in-section {
   align-items: center;
 }
 
-.search-input {
+.hedaer-search-input {
   width: 100%;
   height: 36px;
   border: 1px solid #ccc;
@@ -184,7 +184,7 @@ header.header .header-nav .right-nav .log-in-section {
   outline: none;
 }
 
-.search-btn {
+.header-search-btn {
   position: absolute;
   right: 8px;
   top: 50%;

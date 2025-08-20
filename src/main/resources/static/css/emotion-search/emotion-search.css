@@ -16,9 +16,9 @@ body {
 .emotion-search-main {
     background: linear-gradient(135deg, #005792 0%, #001A2C 100%);
     min-height: 70vh;
+    min-width: 100vh;
     padding: 80px 20px 100px;
     position: relative;
-    overflow: hidden;
 }
 
 .emotion-search-main::before {
