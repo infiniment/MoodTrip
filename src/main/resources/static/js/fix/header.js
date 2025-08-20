@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 });
 
-// 감정 선택기 기능
+// 헤더 전용 감정 선택기 기능 (다른 페이지와 충돌 방지)
 document.addEventListener('DOMContentLoaded', function () {
   const emotionCategories = [
     { name: '평온 & 힐링', emotions: ['평온', '안정', '휴식', '치유', '명상', '고요', '위안', '여유'] },
@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function createRecentSection(onClick) {
     const section = document.createElement('div');
-    section.id = 'recent-emotion-section';
+    section.id = 'header-recent-emotion-section';
     section.style.marginBottom = '12px';
     section.style.display = 'flex';
     section.style.flexWrap = 'wrap';
@@ -210,9 +210,9 @@ document.addEventListener('DOMContentLoaded', function () {
     return section;
   }
 
-  function createEmotionSelector() {
+  function createHeaderEmotionSelector() {
     const container = document.createElement('div');
-    container.id = 'emotion-selector';
+    container.id = 'header-emotion-selector';
     container.style.position = 'absolute';
     container.style.background = '#fff';
     container.style.border = '1.5px solid #bbb';
@@ -230,7 +230,7 @@ document.addEventListener('DOMContentLoaded', function () {
     container.style.fontSize = '18px';
     container.style.transition = 'width 0.2s, height 0.2s';
 
-    const input = document.querySelector('.search-input');
+    const input = document.querySelector('.header-emotion-search-input');
     const recentSection = createRecentSection(function(emotion) {
       selectedEmotions.clear();
       selectedEmotions.add(emotion);
@@ -419,7 +419,7 @@ document.addEventListener('DOMContentLoaded', function () {
     container.style.msOverflowStyle = 'none';
     container.style.scrollbarWidth = 'none';
     const style = document.createElement('style');
-    style.textContent = `#emotion-selector::-webkit-scrollbar { display: none; }`;
+    style.textContent = `#header-emotion-selector::-webkit-scrollbar { display: none; }`;
     document.head.appendChild(style);
 
     mainRow.appendChild(catList);
@@ -446,43 +446,43 @@ document.addEventListener('DOMContentLoaded', function () {
     return container;
   }
 
-  // 검색 input이 존재할 때만 감정 선택기 초기화
-  const input = document.querySelector('.search-input');
-  if (input) {
-    const emotionSelector = createEmotionSelector();
-    document.body.appendChild(emotionSelector);
-    emotionSelector.style.display = 'none';
+  // 헤더 전용 검색 input이 존재할 때만 감정 선택기 초기화
+  const headerInput = document.querySelector('.header-emotion-search-input');
+  if (headerInput) {
+    const headerEmotionSelector = createHeaderEmotionSelector();
+    document.body.appendChild(headerEmotionSelector);
+    headerEmotionSelector.style.display = 'none';
 
-    input.addEventListener('focus', () => {
-      const rect = input.getBoundingClientRect();
-      emotionSelector.style.top = rect.bottom + window.scrollY + 4 + 'px';
-      emotionSelector.style.left = rect.left + window.scrollX + 'px';
-      emotionSelector.style.display = 'flex';
+    headerInput.addEventListener('focus', () => {
+      const rect = headerInput.getBoundingClientRect();
+      headerEmotionSelector.style.top = rect.bottom + window.scrollY + 4 + 'px';
+      headerEmotionSelector.style.left = rect.left + window.scrollX + 'px';
+      headerEmotionSelector.style.display = 'flex';
       const newRecent = createRecentSection(function(emotion) {
         selectedEmotions.clear();
         selectedEmotions.add(emotion);
-        emotionSelector.updateAllEmotionBtnStyles();
-        input.value = Array.from(selectedEmotions).join(', ');
+        headerEmotionSelector.updateAllEmotionBtnStyles();
+        headerInput.value = Array.from(selectedEmotions).join(', ');
       });
-      emotionSelector.replaceChild(newRecent, emotionSelector.firstChild);
-      emotionSelector.updateAllEmotionBtnStyles();
+      headerEmotionSelector.replaceChild(newRecent, headerEmotionSelector.firstChild);
+      headerEmotionSelector.updateAllEmotionBtnStyles();
     });
 
     // 외부 클릭 시 닫기
     document.addEventListener('mousedown', function(e) {
       if (
-          emotionSelector.style.display !== 'none' &&
-          !e.target.closest('#emotion-selector') &&
-          e.target !== input
+          headerEmotionSelector.style.display !== 'none' &&
+          !e.target.closest('#header-emotion-selector') &&
+          e.target !== headerInput
       ) {
-        emotionSelector.style.display = 'none';
+        headerEmotionSelector.style.display = 'none';
       }
     }, true);
 
-    input.addEventListener('blur', (e) => {
+    headerInput.addEventListener('blur', (e) => {
       setTimeout(() => {
-        if (!emotionSelector.contains(document.activeElement)) {
-          emotionSelector.style.display = 'none';
+        if (!headerEmotionSelector.contains(document.activeElement)) {
+          headerEmotionSelector.style.display = 'none';
         }
       }, 200);
     });

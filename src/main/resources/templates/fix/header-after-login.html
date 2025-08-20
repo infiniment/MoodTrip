@@ -29,21 +29,32 @@
             </a>
 
             <div class="left-nav">
-                <a th:href="@{/emotions}" class="left-nav-menu" data-menu="emotions">
+                <div class="left-nav-menu" data-menu="emotions">
                     <div class="main-header text-header">감정여행</div>
-                </a>
-                <a th:href="@{~/entering-room}" class="left-nav-menu" data-menu="companion">
+                </div>
+
+                <!-- 동행매칭 -->
+                <div class="left-nav-menu" data-menu="companion">
                     <div class="main-header text-header">동행매칭</div>
-                </a>
-                <a th:href="@{/notifications}" class="left-nav-menu" data-menu="notice">
+                </div>
+
+                <!-- 공지사항 -->
+                <div class="left-nav-menu" data-menu="notice">
                     <div class="main-header text-header">공지사항</div>
-                </a>
-                <!-- 검색바 -->
-                <div class="left-nav-menu pr-12 main-header text-header search-bar-wrapper" style="margin-left: 100px;">
-                    <form class="search-bar" th:action="@{/emotions}" method="get">
-                        <input type="text" name="q" placeholder="감정을 입력하세요" class="header-search-input"/>
-                        <button type="submit" class="header-search-btn" aria-label="검색">
-                            <img th:src="@{/image/default-common/search.png}" alt="검색" class="search-icon"/>
+                </div>
+
+                <!-- 로그인 후 헤더 전용 검색바 (클래스명 변경됨) -->
+                <div class="left-nav-menu pr-12 main-header text-header logged-in-header-search-wrapper" style="margin-left: 100px;">
+                    <form class="logged-in-header-search-form" th:action="@{/emotions}" method="get">
+                        <input
+                                type="text"
+                                name="q"
+                                placeholder="감정을 입력하세요"
+                                class="logged-in-header-emotion-search-input"
+                                id="loggedInHeaderEmotionSearchInput"
+                        />
+                        <button type="submit" class="logged-in-header-emotion-search-btn" aria-label="검색">
+                            <img th:src="@{/image/default-common/search.png}" alt="검색" class="logged-in-header-search-icon"/>
                         </button>
                     </form>
                 </div>
@@ -81,8 +92,8 @@
             <div class="dropdown-nav">
                 <div class="dropdown-menu-container" style="margin-left: 130px;">
                     <div class="dropdown-menu-list" id="emotions-dropdown" style="width: 145px;">
-                        <a class="dropdown-menu-item" th:href="@{/emotions/tourist-spots}">감정 관광지 찾기</a>
-                        <a class="dropdown-menu-item" th:href="@{/emotions/weather-spots}">날씨별 관광지 찾기</a>
+                        <a class="dropdown-menu-item" th:href="@{/emotion-search}">감정 관광지 찾기</a>
+                        <a class="dropdown-menu-item" th:href="@{/weather}">날씨별 관광지 찾기</a>
                     </div>
                     <div class="dropdown-menu-list" id="companion-dropdown" style="width: 109px;">
                         <a class="dropdown-menu-item" th:href="@{/companion-rooms/create}">방 만들기</a>
@@ -90,7 +101,8 @@
                         <a class="dropdown-menu-item" th:href="@{/mypage/my-matching}">스케줄 짜기</a>
                     </div>
                     <div class="dropdown-menu-list" id="notice-dropdown" style="width: 113px;">
-                        <a class="dropdown-menu-item" th:href="@{/faqs}">자주 묻는 질문</a>
+                        <a class="dropdown-menu-item" th:href="@{/customer-center/announcement}">공지사항</a>
+                        <a class="dropdown-menu-item" th:href="@{/customer-center/faq}">자주 묻는 질문</a>
                     </div>
                 </div>
             </div>
