@@ -20,9 +20,10 @@
        data-travel-start=${room.travelStartDate},
        data-travel-end=${room.travelEndDate},
        data-dest-name=${#strings.defaultString(room.destinationName, '여행지')},
-       data-dest-lat=${room.destinationLat},
-       data-dest-lon=${room.destinationLon}"
-         style="display:none;"></div><!--                data-dest-lat='${room.attraction.lat}',
+       data-dest-lat=${lat},
+       data-dest-lon=${lon}"
+         style="display:none;">
+    </div><!--                data-dest-lat='${room.attraction.lat}',
        data-dest-lon='${room.attraction.lon}', 나중에 이렇게 수정해야됨-->
     <div class="header">
         <h1>🌟 함께 떠나는 여행</h1>

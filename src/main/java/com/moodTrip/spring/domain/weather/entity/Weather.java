@@ -5,6 +5,8 @@ import com.moodTrip.spring.domain.rooms.entity.Room;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Setter
@@ -27,8 +29,8 @@ public class Weather {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "date_time", length = 19, nullable = false) // "yyyy-MM-dd HH:mm:ss"
-    private String dateTime;
+    @Column(name = "date_time", nullable = false)
+    private LocalDateTime dateTime;
 
     @Column(length = 10, nullable = false) // "yyyy-MM-dd"
     private String date;
