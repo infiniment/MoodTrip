@@ -141,14 +141,6 @@ function createPaginationControls() {
             </button>
         </div>
         
-        <div class="page-info" style="
-            text-align: center; 
-            margin-bottom: 2rem; 
-            color: #64748b; 
-            font-size: 0.875rem;
-        ">
-            <!-- 페이지 정보가 여기에 표시됩니다 -->
-        </div>
     `;
 
     // 매칭 리스트 래퍼 다음에 페이징 컨트롤 추가

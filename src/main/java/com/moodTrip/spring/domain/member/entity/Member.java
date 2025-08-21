@@ -53,4 +53,8 @@ public class Member extends BaseEntity { // BaseEntity 상속
 
     // 주의!
     // createdAt, updatedAt은 BaseEntity에서 상속받으므로 선언 필요 없음!
+
+    // 상우가 추가. 마이페이지에서 프로필 이미지 가져오기 위해 필요.
+    @OneToOne(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Profile profile;
 }

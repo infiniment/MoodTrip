@@ -4,6 +4,7 @@ let totalItems = 0;
 let totalPages = 0;
 let allRoomSections = []; // 모든 방 섹션을 저장
 let currentPageRooms = []; // 현재 페이지의 방들
+let isSingleRoomMode = false;
 
 // 🔥 서버 API 기본 URL
 const API_BASE_URL = '/api/v1/join-requests';
@@ -155,58 +156,76 @@ function initializeModals() {
     });
 }
 
-/**
- * 필터 적용
- */
 function applyFilters() {
-    const roomFilter = (document.getElementById('room-filter')?.value) || 'all';
-    const priorityFilter = (document.getElementById('priority-filter')?.value) || 'all';
-    const searchTerm = (document.getElementById('search-requests')?.value || '').toLowerCase();
+    const roomFilterEl = document.getElementById('room-filter');
+    const priorityFilterEl = document.getElementById('priority-filter');
+
+    const roomFilter = roomFilterEl ? roomFilterEl.value : 'all';
+
+    // ✅ "모든 방"일 때는 우선순위 필터 무시 + 비활성화
+    if (roomFilter === 'all') {
+        if (priorityFilterEl) {
+            priorityFilterEl.value = 'all';
+            priorityFilterEl.disabled = true;
+        }
+    } else {
+        if (priorityFilterEl) {
+            priorityFilterEl.disabled = false;
+        }
+    }
+
+    const priorityFilter = priorityFilterEl ? priorityFilterEl.value : 'all';
+    isSingleRoomMode = roomFilter !== 'all';
 
     const sections = document.querySelectorAll('.room-section');
-    let visibleRequests = 0;
-
+    let visibleCount = 0;
     sections.forEach(section => {
-        const roomTitle = section.querySelector('.room-title')?.textContent || '';
-        const requests = section.querySelectorAll('.request-item-detailed');
-        let sectionHasVisibleRequests = false;
+        const roomTitle = section.querySelector('.room-title').textContent.trim();
 
-        // 방 필터 적용
-        if (roomFilter !== 'all' && !roomTitle.includes(roomFilter)) {
-            section.classList.add('hidden');
-            return;
+        // ✅ 1. 방 필터
+        let matchesRoom = (roomFilter === 'all' || roomTitle === roomFilter);
+
+        // ✅ 2. 우선순위 필터 (방 단위)
+        let matchesPriority = false;
+        if (priorityFilter === 'all') {
+            matchesPriority = true;
+        } else {
+            const requests = section.querySelectorAll('.request-item-detailed');
+            matchesPriority = Array.from(requests).some(req => {
+                const badge = req.querySelector('.priority-badge');
+                if (!badge) return false;
+
+                return (
+                    (priorityFilter === 'high' && badge.classList.contains('priority-high')) ||
+                    (priorityFilter === 'normal' && badge.classList.contains('priority-normal'))
+                );
+            });
         }
 
-        // 각 요청 필터링
-        requests.forEach(request => {
-            const name = (request.querySelector('.request-name-large')?.textContent || '').toLowerCase();
-            const message = (request.querySelector('.request-message')?.textContent || '').toLowerCase();
-            const priority = request.querySelector('.priority-badge')?.classList.contains('priority-high') ? 'high' : 'normal';
-
-            let visible = true;
-
-            // 우선순위 필터
-            if (priorityFilter !== 'all' && priority !== priorityFilter) visible = false;
-
-            // 검색어 필터
-            if (searchTerm && !name.includes(searchTerm) && !message.includes(searchTerm)) visible = false;
-
-            if (visible) {
-                request.classList.remove('hidden');
-                sectionHasVisibleRequests = true;
-                visibleRequests++;
-            } else {
-                request.classList.add('hidden');
-            }
-        });
-
-        // 섹션 표시/숨김
-        section.classList.toggle('hidden', !sectionHasVisibleRequests);
+        // ✅ 최종 적용 (검색 필터 제거됨)
+        if (matchesRoom && matchesPriority) {
+            section.style.display = '';
+            visibleCount++;
+        } else {
+            section.style.display = 'none';
+        }
     });
 
-    // 결과 없음 표시
-    showNoResultsIfNeeded(visibleRequests === 0);
+    // ✅ 페이징 처리
+    const pagination = document.querySelector('.room-pagination-controls');
+    if (isSingleRoomMode) {
+        if (pagination) pagination.remove();
+    } else {
+        initializeRoomPagination();
+    }
+
+    // ✅ "검색 결과 없음" 표시
+    const noResults = document.getElementById('no-results-message');
+    if (noResults) {
+        noResults.style.display = (visibleCount === 0 && !isSingleRoomMode) ? '' : 'none';
+    }
 }
+
 
 /**
  * 검색 결과 없음 표시
@@ -350,24 +369,18 @@ async function refreshData() {
 
         // 🔥 페이징 데이터 다시 수집 추가
         setTimeout(() => {
-            collectAllRequestItems();
-            if (currentPage > totalPages && totalPages > 0) {
-                // 현재 페이지가 총 페이지보다 크면 마지막 페이지로 이동
-                showPage(totalPages);
-            } else {
-                // 현재 페이지 다시 표시
-                showPage(currentPage);
+            if (!isSingleRoomMode) {
+                collectAllRoomSections();
+                if (currentPage > totalPages && totalPages > 0) {
+                    showRoomPage(totalPages);
+                } else {
+                    showRoomPage(currentPage);
+                }
+                updateRoomPaginationButtons();
             }
-            updatePaginationButtons();
         }, 100);
-
-        // 알림 배지/대기 건수/빈 섹션 업데이트
-        updateNotificationBadge();
-
-        console.log('✅ 데이터 새로고침 완료');
-
     } catch (error) {
-        console.error('❌ 데이터 새로고침 실패:', error);
+        console.error("데이터 새로고침 실패:", error);
     }
 }
 
@@ -696,8 +709,10 @@ function handleApiError(error, defaultMessage = '오류가 발생했습니다.')
     }
 }
 function initializeRoomPagination() {
-    console.log('📄 방 단위 페이징 시스템 초기화 시작');
-
+    if (isSingleRoomMode) {
+        console.log("⚠ 단일 방 모드 - 페이징 생성 스킵");
+        return;
+    }
     // DOM이 준비되었는지 확인
     const mainWrapper = document.querySelector('.main-wrapper');
     if (!mainWrapper) {
@@ -1123,3 +1138,7 @@ window.goToRoomPage = goToRoomPage;
 window.goToPrevRoomPage = goToPrevRoomPage;
 window.goToNextRoomPage = goToNextRoomPage;
 window.initializeRoomPagination = initializeRoomPagination;
+
+document.addEventListener('DOMContentLoaded', () => {
+    applyFilters(); // 페이지 로드 직후 필터 적용
+});

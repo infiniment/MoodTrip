@@ -51,7 +51,11 @@ public class CompanionRoomListResponse {
                 .currentParticipants(room.getRoomCurrentCount())
                 .maxParticipants(room.getRoomMaxCount())
                 .createdDate(formatCreatedDate(room))
-                .image("/image/fix/moodtrip.png")
+                .image(
+                        (room.getAttraction() != null && room.getAttraction().getFirstImage() != null)
+                                ? room.getAttraction().getFirstImage()
+                                : "/static/image/default.png"
+                )
                 .urgent(calculateUrgent(room))
                 .status(calculateStatus(room))
                 .build();

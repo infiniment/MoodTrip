@@ -35,4 +35,11 @@ public interface JoinRepository extends JpaRepository<EnteringRoom, Long> {
     // 특정 방의 승인된 신청 개수 (실제 참여자 수)
     @Query("SELECT COUNT(e) FROM EnteringRoom e WHERE e.room = :room AND e.status = 'APPROVED'")
     Long countApprovedByRoom(@Param("room") Room room);
+
+    @Query("SELECT er FROM EnteringRoom er " +
+            "JOIN FETCH er.applicant m " +
+            "JOIN FETCH m.profile " +
+            "WHERE er.room.roomId = :roomId")
+    List<EnteringRoom> findByRoomIdWithProfile(@Param("roomId") Long roomId);
+
 }

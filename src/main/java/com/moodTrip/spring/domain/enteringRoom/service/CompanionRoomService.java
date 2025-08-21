@@ -152,7 +152,9 @@ public class CompanionRoomService {
                     .currentParticipants(actualParticipantCount.intValue())
                     .maxParticipants(response.getMaxParticipants())
                     .createdDate(response.getCreatedDate())
-                    .image(response.getImage())
+                    .image((room.getAttraction() != null && room.getAttraction().getFirstImage() != null)
+                            ? room.getAttraction().getFirstImage()
+                            : "/static/image/default.png")
                     .urgent(response.getUrgent())
                     .status(response.getStatus())
                     .build();
