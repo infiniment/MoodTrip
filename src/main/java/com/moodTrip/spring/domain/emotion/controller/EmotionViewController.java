@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -33,6 +34,31 @@ public class EmotionViewController {
         model.addAttribute("initialAttractions", initialAttractions);
         // 3. 렌더링할 Thymeleaf 템플릿 파일의 경로를 반환합니다.
         //    (resources/templates/emotion-search/emotion-search.html)
+        return "emotion-search/emotion-search";
+    }
+
+    @GetMapping("/emotions")
+    public String searchAttractionsByEmotion(
+            @RequestParam(required = false) Integer tagId, Model model) {
+
+        // emotion-search 페이지 자체의 카테고리 목록 (결과 페이지에도 필요)
+        model.addAttribute("emotionCategories", emotionService.getEmotionCategories());
+
+        List<AttractionCardDTO> searchedAttractions;
+        // tagId가 있으면 해당 감정으로 검색
+        if (tagId != null) {
+            searchedAttractions = attractionService.findAttractionsByEmotionTag(tagId, 6);
+            model.addAttribute("resultsTitle", "여행지 검색 결과");
+        } else {
+            // tagId 없이 요청된 경우(예: 대분류만 선택), 초기 추천 목록을 보여줌
+            searchedAttractions = attractionService.findInitialAttractions(6);
+            model.addAttribute("resultsTitle", "추천 여행지");
+        }
+
+        model.addAttribute("attractions", searchedAttractions);
+        model.addAttribute("resultsCount", searchedAttractions.size());
+
+        // 검색 결과를 보여줄 템플릿으로 이동
         return "emotion-search/emotion-search";
     }
 
