@@ -140,6 +140,11 @@ public interface AttractionRepository extends JpaRepository<Attraction, Long> {
     List<Attraction> findAttractionsByEmotionIds(@Param("emotionIds") List<Integer> emotionIds);
 
 
+//메인 서치 JPQL
+@Query("SELECT a FROM Attraction a JOIN a.attractionEmotions ae WHERE ae.emotion.tagId = :tagId AND ae.isActive = true")
+Page<Attraction> findByEmotionTagId(@Param("tagId") Integer tagId, Pageable pageable);
+
+
 //    // 소분류 감정 카테고리 조회용 JpaRepository 인터페이스
 //    public interface EmotionRepository extends JpaRepository<Emotion, Long> {
 //        // 특정 감정 대분류에 속한 소분류 감정 리스트 조회 메서드 예시
@@ -161,6 +166,8 @@ public interface AttractionRepository extends JpaRepository<Attraction, Long> {
     Page<Attraction> findByTitleContainingIgnoreCase(String title, Pageable pageable);
 
     Optional<Attraction> findByAttractionId(Long attractionId); // id -> attractionId로 변경
+
+
 
 
 

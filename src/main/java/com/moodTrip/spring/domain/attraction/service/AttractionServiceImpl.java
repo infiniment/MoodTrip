@@ -533,5 +533,27 @@ public class AttractionServiceImpl implements AttractionService {
         );
     }
 
+
+
+// findInitialAttractions 메서드 아래에 추가
+
+    // [추가] Emotion 태그 ID로 관광지를 검색하는 로직
+    public List<AttractionCardDTO> findAttractionsByEmotionTag(Integer tagId, int limit) {
+        Pageable pageable = PageRequest.of(0, limit);
+        // Repository에 추가한 쿼리 메서드 호출
+        Page<Attraction> attractionsPage = repository.findByEmotionTagId(tagId, pageable);
+        List<Attraction> attractions = attractionsPage.getContent();
+
+        // 결과를 DTO 리스트로 변환하여 반환
+        return attractions.stream()
+                .map(attraction -> AttractionCardDTO.builder()
+                        .attractionId(attraction.getAttractionId())
+                        .title(attraction.getTitle())
+                        .addr1(attraction.getAddr1())
+                        .firstImage(attraction.getFirstImage())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
 }
 
