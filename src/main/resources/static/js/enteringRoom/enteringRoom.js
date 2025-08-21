@@ -220,7 +220,7 @@ function viewRoomDetail(roomId) {
             if (roomData.emotions && roomData.emotions.length > 0) {
                 // 감정 태그들을 HTML로 생성
                 const emotionTagsHtml = roomData.emotions.map(emotion =>
-                    `<span class="detail-emotion-tag">${emotion}</span>`
+                    `<span class="detail-emotion-tag"> #${emotion} </span>`
                 ).join('');
                 tagsContainer.innerHTML = emotionTagsHtml;
                 console.log('감정 태그 생성 완료:', emotionTagsHtml); // 디버깅용 로그
@@ -848,9 +848,10 @@ function renderAllRoomCards() {
         // 감정 태그 HTML 생성
         const emotionsHtml = (room.emotions && room.emotions.length > 0)
             ? `<div class="room-emotions">
-                 ${room.emotions.map(emotion => `<span class="emotion-tag">${emotion}</span>`).join('')}
-               </div>`
+         ${room.emotions.map(emotion => `<span class="emotion-tag"> #${emotion} </span>`).join('')}
+       </div>`
             : '';
+
 
         return `
             <div class="room-card room-visible ${isUrgent ? 'urgent' : ''} ${isCompleted ? 'completed' : ''} ${isDateAdjustment ? 'date-adjustment' : ''} ${isRecruiting ? 'recruiting' : ''}" 
