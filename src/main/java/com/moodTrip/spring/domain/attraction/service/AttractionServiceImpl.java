@@ -234,37 +234,6 @@ public class AttractionServiceImpl implements AttractionService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public AttractionRegionResponse findAttractionsFiltered(
-            List<String> regionCodes, Pageable pageable,
-            String keyword, String cat1, String cat2, String cat3, String sort
-    ) {
-        // KR코드 → areaCode
-        List<Integer> areas = (regionCodes == null ? Collections.<Integer>emptyList() :
-                regionCodes.stream()
-                        .map(RegionCodeMapper::krToAreaCode)
-                        .filter(Objects::nonNull)
-                        .distinct()
-                        .collect(Collectors.toList()));
-
-        // 정렬 옵션 (이름 정렬만 지원 – 기존 정책 유지)
-        Pageable sorted = ("name".equalsIgnoreCase(sort) || "portfolio".equalsIgnoreCase(sort))
-                ? PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("title").ascending())
-                : pageable;
-
-        // 공백 → null 정규화
-        String kw   = (keyword != null && !keyword.isBlank()) ? keyword.trim() : null;
-        String c1   = (cat1 != null && !cat1.isBlank())       ? cat1.trim()     : null;
-        String c2   = (cat2 != null && !cat2.isBlank())       ? cat2.trim()     : null;
-        String c3   = (cat3 != null && !cat3.isBlank())       ? cat3.trim()     : null;
-
-        Page<Attraction> page = repository.searchByFilters(
-                areas, areas.isEmpty(), kw, c1, c2, c3, sorted
-        );
-        return AttractionRegionResponse.of(page);
-    }
-
-    @Override
     public int syncDetailIntroByArea(int areaCode, Integer sigunguCode, Integer contentTypeId, long pauseMillis) {
         List<Attraction> targets = (sigunguCode == null)
                 ? repository.findAllByAreaCode(areaCode)
@@ -372,6 +341,35 @@ public class AttractionServiceImpl implements AttractionService {
         return repository.searchKeywordPrefTitleStarts(q, area, si, type, PageRequest.of(page, size));
     }
 
+    // ===== 필터링 검색 (신규) =====
+    @Override
+    @Transactional(readOnly = true)
+    public AttractionRegionResponse findAttractionsFiltered(
+            List<String> regionCodes, Pageable pageable,
+            String keyword, String cat1, String cat2, String cat3, String sort
+    ) {
+        List<Integer> areas = (regionCodes == null ? Collections.<Integer>emptyList() :
+                regionCodes.stream()
+                        .map(RegionCodeMapper::krToAreaCode)
+                        .filter(Objects::nonNull)
+                        .distinct()
+                        .collect(Collectors.toList()));
+
+        Pageable sorted = ("name".equalsIgnoreCase(sort) || "portfolio".equalsIgnoreCase(sort))
+                ? PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("title").ascending())
+                : pageable;
+
+        String kw = (keyword != null && !keyword.isBlank()) ? keyword.trim() : null;
+        String c1 = (cat1 != null && !cat1.isBlank()) ? cat1.trim() : null;
+        String c2 = (cat2 != null && !cat2.isBlank()) ? cat2.trim() : null;
+        String c3 = (cat3 != null && !cat3.isBlank()) ? cat3.trim() : null;
+
+        Page<Attraction> page = repository.searchByFilters(
+                areas, areas.isEmpty(), kw, c1, c2, c3, sorted
+        );
+        return AttractionRegionResponse.of(page);
+    }
+
     // ===== 지역별 페이지 응답 =====
     @Override
     @Transactional(readOnly = true)
@@ -383,7 +381,7 @@ public class AttractionServiceImpl implements AttractionService {
         return AttractionRegionResponse.of(result);
     }
 
-    // ✅ (프론트 `/detail-regions`) 다중 지역 + 페이징
+    // ===== 다중 지역 + 페이징 =====
     @Override
     @Transactional(readOnly = true)
     public AttractionRegionResponse findAttractions(List<Integer> areaCodes, Pageable pageable) {
@@ -394,12 +392,11 @@ public class AttractionServiceImpl implements AttractionService {
         return AttractionRegionResponse.of(page);
     }
 
+    // ===== 상세 정보(단건) 조회 =====
     @Override
     public Optional<AttractionResponse> getDetail(long contentId) {
-        return repository.findById(contentId)
-                .map(AttractionResponse::from);
+        return repository.findById(contentId).map(AttractionResponse::from);
     }
-
 
     // ===== 전체 페이징 조회 =====
     @Override
@@ -446,6 +443,7 @@ public class AttractionServiceImpl implements AttractionService {
         var attractions = repository.findAttractionsByEmotionIds(emotionIds);
         return attractions.stream()
                 .map(a -> AttractionCardDTO.builder()
+                        .attractionId(a.getAttractionId())
                         .title(a.getTitle())
                         .addr1(a.getAddr1())
                         .firstImage(a.getFirstImage())
@@ -485,17 +483,13 @@ public class AttractionServiceImpl implements AttractionService {
     }
 
 
-    // findInitialAttractions 메서드 아래에 추가
-
-    // [추가] Emotion 태그 ID로 관광지를 검색하는 로직
+    // ===== Emotion 태그 ID로 관광지 검색 =====
     @Override
     public List<AttractionCardDTO> findAttractionsByEmotionTag(Integer tagId, int limit) {
         Pageable pageable = PageRequest.of(0, limit);
-        // Repository에 추가한 쿼리 메서드 호출
         Page<Attraction> attractionsPage = repository.findByEmotionTagId(tagId, pageable);
         List<Attraction> attractions = attractionsPage.getContent();
 
-        // 결과를 DTO 리스트로 변환하여 반환
         return attractions.stream()
                 .map(attraction -> AttractionCardDTO.builder()
                         .attractionId(attraction.getAttractionId())
@@ -516,12 +510,33 @@ public class AttractionServiceImpl implements AttractionService {
         return AttractionResponse.from(saved);
     }
 
+    // ===== 소개 정보 조회 (없으면 API 호출 후 저장) =====
+    @Override
+    @Transactional
+    public AttractionIntro getIntro(long contentId, Integer contentTypeId) {
+        var intro = introRepository.findById(contentId).orElse(null);
+        if (intro == null) {
+            syncDetailIntro(contentId, contentTypeId);
+            intro = introRepository.findById(contentId).orElse(null);
+        }
+        return intro;
+    }
+
+    // ===== 상세 정보 응답 생성 (기본정보 + 소개정보) =====
+    @Override
+    @Transactional(readOnly = true)
+    public AttractionDetailResponse getDetailResponse(long contentId) {
+        var base = getDetail(contentId)
+                .orElseThrow(() -> new IllegalArgumentException("Attraction not found: " + contentId));
+        var intro = getIntro(contentId, base.getContentTypeId());
+        return AttractionDetailResponse.of(base, intro);
+    }
+
     // ===== 지역 코드 매퍼 =====
     static final class RegionCodeMapper {
         private static final Map<String, Integer> KR_TO_AREA = new HashMap<>();
         private static final Map<Integer, String> AREA_TO_NAME = new HashMap<>();
         static {
-            // ⚠️ 실제 프로젝트 areaCode 매핑 확인
             KR_TO_AREA.put("KR11", 1);  AREA_TO_NAME.put(1,  "서울");
             KR_TO_AREA.put("KR28", 2);  AREA_TO_NAME.put(2,  "인천");
             KR_TO_AREA.put("KR30", 3);  AREA_TO_NAME.put(3,  "대전");
@@ -596,25 +611,5 @@ public class AttractionServiceImpl implements AttractionService {
         apiKey = apiKey.trim();
         log.info("TourAPI key loaded. len={}, tail={}", apiKey.length(),
                 apiKey.length() > 4 ? apiKey.substring(apiKey.length() - 4) : "****");
-    }
-
-    @Override
-    @Transactional
-    public AttractionIntro getIntro(long contentId, Integer contentTypeId) {
-        var intro = introRepository.findById(contentId).orElse(null); // PK가 contentId인 구조
-        if (intro == null) {
-            syncDetailIntro(contentId, contentTypeId);    // detailIntro2 호출 + 업서트 (기존 구현 재사용)
-            intro = introRepository.findById(contentId).orElse(null);
-        }
-        return intro;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public AttractionDetailResponse getDetailResponse(long contentId) {
-        var base = getDetail(contentId)
-                .orElseThrow(() -> new IllegalArgumentException("Attraction not found: " + contentId));
-        var intro = getIntro(contentId, base.getContentTypeId());
-        return AttractionDetailResponse.of(base, intro);
     }
 }

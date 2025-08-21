@@ -16,6 +16,7 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface AttractionService {
+
     int syncAreaBasedList(int areaCode, Integer sigunguCode, Integer contentTypeId, int pageSize, long pauseMillis);
     int syncDetailIntro(long contentId, Integer contentTypeId);
     int syncDetailIntroByArea(int areaCode, Integer sigunguCode, Integer contentTypeId, long pauseMillis);
