@@ -159,32 +159,41 @@ header.header .header-nav .right-nav .log-in-section {
   line-height: normal;
 }
 
-/* 검색바 스타일 */
-.search-bar-wrapper {
+/* ==== 로그인 후 헤더 전용 검색 영역 (다른 페이지와 충돌 방지) ==== */
+.logged-in-header-search-wrapper {
   width: 350px;
   margin-left: auto;
 }
 
-.search-bar {
+.logged-in-header-search-form {
   position: relative;
   width: 100%;
   display: flex;
   align-items: center;
 }
 
-.search-input {
+/* 로그인 후 헤더 전용 감정 검색 입력창 - 구체적인 클래스명 사용 */
+.logged-in-header-emotion-search-input {
   width: 100%;
   height: 36px;
   border: 1px solid #ccc;
   border-radius: 18px;
   font-size: 16px;
-  padding: 0 40px 0 12px;
+  padding: 0 40px 0 12px; /* 오른쪽에 아이콘 공간 확보 */
   box-sizing: border-box;
   background: #fff;
   outline: none;
+  transition: border-color 0.2s ease;
 }
 
-.search-btn {
+/* 로그인 후 헤더 검색 입력창 포커스 시 스타일 */
+.logged-in-header-emotion-search-input:focus {
+  border-color: #005792;
+  box-shadow: 0 0 0 2px rgba(0, 87, 146, 0.1);
+}
+
+/* 로그인 후 헤더 전용 검색 버튼 */
+.logged-in-header-emotion-search-btn {
   position: absolute;
   right: 8px;
   top: 50%;
@@ -196,12 +205,20 @@ header.header .header-nav .right-nav .log-in-section {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 32px;
-  width: 32px;
+  height: 32px;   /* 버튼 높이 input보다 약간 작게 */
+  width: 32px;    /* 버튼 너비 이미지와 맞춤 */
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
 }
 
-.search-icon {
-  width: 24px;
+/* 로그인 후 헤더 검색 버튼 호버 효과 */
+.logged-in-header-emotion-search-btn:hover {
+  background-color: rgba(0, 87, 146, 0.1);
+}
+
+/* 로그인 후 헤더 전용 검색 아이콘 */
+.logged-in-header-search-icon {
+  width: 24px;    /* 아이콘 크기 */
   height: 24px;
   display: block;
 }
@@ -531,7 +548,7 @@ header.header .dropdown-nav-container .dropdown-nav .dropdown-menu-container .dr
     padding: 0 20px;
   }
 
-  .search-bar-wrapper {
+  .logged-in-header-search-wrapper {
     width: 250px;
   }
 
