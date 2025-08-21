@@ -191,6 +191,8 @@ function viewRoomDetail(roomId) {
     fetch(`/entering-room/${roomId}/modal-data`)
         .then(response => response.json())
         .then(roomData => {
+            console.log('받은 방 데이터:', roomData); // 디버깅용 로그 추가
+
             // ✅ 이미지 세팅
             const imgEl = document.getElementById('detailRoomImage');
             if (roomData.image) {
@@ -210,6 +212,23 @@ function viewRoomDetail(roomId) {
             document.getElementById('detailRoomViews').textContent = roomData.views;
             document.getElementById('detailRoomPeriod').textContent = roomData.createdDate;
             document.getElementById('detailRoomDesc').textContent = roomData.description;
+
+            // 🔥 새로 추가: 감정 태그 처리
+            const tagsContainer = document.getElementById('detailRoomTags');
+            console.log('감정 데이터:', roomData.emotions); // 디버깅용 로그
+
+            if (roomData.emotions && roomData.emotions.length > 0) {
+                // 감정 태그들을 HTML로 생성
+                const emotionTagsHtml = roomData.emotions.map(emotion =>
+                    `<span class="detail-emotion-tag">${emotion}</span>`
+                ).join('');
+                tagsContainer.innerHTML = emotionTagsHtml;
+                console.log('감정 태그 생성 완료:', emotionTagsHtml); // 디버깅용 로그
+            } else {
+                // 감정 태그가 없을 때
+                tagsContainer.innerHTML = '<span class="no-tags">등록된 감정 태그가 없습니다.</span>';
+                console.log('감정 태그 없음'); // 디버깅용 로그
+            }
 
             // 모달 표시
             document.getElementById('detailModal').style.display = 'flex';
@@ -814,23 +833,29 @@ function showNotification(type, message) {
     }, 3000);
 }
 
-// 모든 방 카드 렌더링 함수도 수정
+// 모든 방 카드 렌더링 함수 (감정 태그 추가)
 function renderAllRoomCards() {
     const roomList = document.getElementById('roomList');
     if (!roomList) return;
 
-    // HTML 생성 부분은 동일하되, data 속성 추가
+    // HTML 생성 부분에 감정 태그 추가
     roomList.innerHTML = filteredRooms.map(room => {
         const isDateAdjustment = room.status === '날짜조율';
         const isCompleted = room.status === '모집완료';
         const isUrgent = room.urgent === true;
         const isRecruiting = room.status === '모집중';
 
+        // 감정 태그 HTML 생성
+        const emotionsHtml = (room.emotions && room.emotions.length > 0)
+            ? `<div class="room-emotions">
+                 ${room.emotions.map(emotion => `<span class="emotion-tag">${emotion}</span>`).join('')}
+               </div>`
+            : '';
+
         return `
             <div class="room-card room-visible ${isUrgent ? 'urgent' : ''} ${isCompleted ? 'completed' : ''} ${isDateAdjustment ? 'date-adjustment' : ''} ${isRecruiting ? 'recruiting' : ''}" 
                  data-room-id="${room.id}" 
                  data-pagination="true">
-                <!-- 기존 내용 동일 -->
                 <div class="room-image">
                     <img src="${room.image || '/image/fix/moodtrip.png'}" alt="${room.title}" onerror="this.src='/image/fix/moodtrip.png'">
                     <div class="room-status ${isUrgent ? 'urgent' : ''} ${isCompleted ? 'completed' : ''} ${isDateAdjustment ? 'date-adjustment' : ''}">${room.status}</div>
@@ -845,14 +870,16 @@ function renderAllRoomCards() {
                         </div>
                     </div>
                     <div class="room-description">${room.description}</div>
-                    <div class="room-tags">
-                        ${(room.tags || []).map(tag => `<span class="tag"># ${tag}</span>`).join('')}
-                    </div>
+                    
                     <div class="room-footer">
-                        <div class="room-participants">
-                            <span class="participants-label">인원현재</span>
-                            <span class="participants-count">${room.currentParticipants} / ${room.maxParticipants}</span>
+                        <div class="room-participants-and-emotions">
+                            <div class="room-participants">
+                                <span class="participants-label">인원현재</span>
+                                <span class="participants-count">${room.currentParticipants} / ${room.maxParticipants}</span>
+                            </div>
+                            ${emotionsHtml}
                         </div>
+                        
                         <div class="room-date-info">
                             <span class="created-date">${room.createdDate}</span>
                         </div>

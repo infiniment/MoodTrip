@@ -414,17 +414,22 @@ p {
     display: flex;
     flex-direction: column;
     font-size: 11px;
+    margin-left : 4px;
+    margin-top : 5px;
 }
 
 .participants-label {
     color: #64748b;
     margin-bottom: 1px;
+    margin-left : 2px;
+    margin-top : 12px;
 }
 
 .participants-count {
     font-weight: 600;
     color: #005792;
     font-size: 12px;
+    text-align : center;
 }
 
 .room-date-info {
@@ -1255,4 +1260,62 @@ p {
         min-width: 44px !important; /* 터치하기 좋은 크기 */
         padding: 12px 16px !important;
     }
+}
+
+.detail-emotion-tag {
+    display: inline-block;
+    padding: 10px 18px;
+    background: linear-gradient(135deg, rgba(0, 87, 146, 0.08) 0%, rgba(0, 26, 44, 0.04) 100%);
+    color: #005792;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid rgba(0, 87, 146, 0.1);
+    transition: all 0.2s ease;
+    margin-top: 30px;
+}
+
+.detail-emotion-tag:hover {
+    background: #004577;
+}
+
+/* 방 카드 내 감정 태그 영역 */
+.room-emotions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top : 8px;
+    margin-bottom: 8px;
+    margin-left : 30px;
+    padding: 8px 0;
+}
+
+.emotion-tag {
+    padding: 8px 12px;
+    background: linear-gradient(135deg, rgba(0, 87, 146, 0.08) 0%, rgba(0, 26, 44, 0.04) 100%);
+    color: #005792;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid rgba(0, 87, 146, 0.1);
+    transition: all 0.2s ease;
+}
+
+.emotion-tag:hover {
+    background: linear-gradient(135deg, rgba(0, 87, 146, 0.12) 0%, rgba(0, 26, 44, 0.06) 100%);
+    transform: translateY(-1px);
+}
+
+/* 인원 현재와 감정 태그를 나란히 배치 */
+.room-participants-and-emotions {
+    display: flex;
+    align-items: flex-start;  /* margin-top 때문에 flex-start로 변경 */
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.room-participants {
+    display: flex;
+    flex-direction: column;
+    font-size: 11px;
 }

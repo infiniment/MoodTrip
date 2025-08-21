@@ -136,6 +136,10 @@ public class CompanionRoomService {
             // 실제 DB의 조회수 사용
             Integer actualViewCount = room.getViewCount() != null ? room.getViewCount() : 0;
 
+            // 🔥 감정 태그 추출 추가!
+            List<String> emotions = extractEmotions(room);
+            log.info("방 ID: {}, 감정 개수: {}, 감정 목록: {}", room.getRoomId(), emotions.size(), emotions);
+
             // 기본 DTO 생성 (실제 조회수로)
             CompanionRoomListResponse response = CompanionRoomListResponse.from(room, actualViewCount);
 
@@ -149,6 +153,7 @@ public class CompanionRoomService {
                     .views(response.getViews())
                     .viewCount(actualViewCount)
                     .description(response.getDescription())
+                    .emotions(emotions)  // 🔥 감정 데이터 추가!
                     .currentParticipants(actualParticipantCount.intValue())
                     .maxParticipants(response.getMaxParticipants())
                     .createdDate(response.getCreatedDate())
@@ -160,11 +165,12 @@ public class CompanionRoomService {
                     .build();
 
         } catch (Exception e) {
+            log.error("convertToResponseWithActualViewCount 오류: ", e);
             return CompanionRoomListResponse.from(room, 0);
         }
     }
 
-    // 기존 엔티티 => dto 변환 (목록 조회용 - 조회수 증가 안함)
+    // 기존 엔티티 => dto 변환 (목록 조회용 - 조회수 증가 안함) (수정됨)
     private CompanionRoomListResponse convertToResponse(Room room) {
         try {
             // 실제 참여자 수 계산
@@ -172,6 +178,9 @@ public class CompanionRoomService {
 
             // 실제 조회수 사용 (증가시키지는 않음)
             Integer actualViewCount = room.getViewCount() != null ? room.getViewCount() : 0;
+
+            // 🔥 감정 태그 추출 추가!
+            List<String> emotions = extractEmotions(room);
 
             // 기본 DTO 생성 (실제 조회수로)
             CompanionRoomListResponse response = CompanionRoomListResponse.from(room, actualViewCount);
@@ -185,6 +194,7 @@ public class CompanionRoomService {
                     .views(response.getViews())
                     .viewCount(actualViewCount)
                     .description(response.getDescription())
+                    .emotions(emotions)  // 🔥 감정 데이터 추가!
                     .currentParticipants(actualParticipantCount.intValue())
                     .maxParticipants(response.getMaxParticipants())
                     .createdDate(response.getCreatedDate())
@@ -194,6 +204,7 @@ public class CompanionRoomService {
                     .build();
 
         } catch (Exception e) {
+            log.error("convertToResponse 오류: ", e);
             return CompanionRoomListResponse.from(room, 0);
         }
     }
@@ -281,6 +292,36 @@ public class CompanionRoomService {
                 return maxCount > 4;
             default:
                 return true;
+        }
+    }
+
+    // 감정 추출 메소드
+    private List<String> extractEmotions(Room room) {
+        try {
+            log.debug("감정 추출 시작 - Room ID: {}", room.getRoomId());
+
+            // EmotionRooms 강제 로딩
+            if (room.getEmotionRooms() != null) {
+                room.getEmotionRooms().size(); // 지연 로딩 강제 실행
+                log.debug("EmotionRooms 개수: {}", room.getEmotionRooms().size());
+            }
+
+            if (room.getEmotionRooms() == null || room.getEmotionRooms().isEmpty()) {
+                log.warn("EmotionRooms가 비어있음 - Room ID: {}", room.getRoomId());
+                return java.util.Collections.emptyList();
+            }
+
+            List<String> emotions = room.getEmotionRooms().stream()
+                    .filter(emotionRoom -> emotionRoom.getEmotion() != null)
+                    .map(emotionRoom -> emotionRoom.getEmotion().getTagName())
+                    .collect(java.util.stream.Collectors.toList());
+
+            log.debug("추출된 감정들 - Room ID: {}, 감정: {}", room.getRoomId(), emotions);
+            return emotions;
+
+        } catch (Exception e) {
+            log.error("감정 추출 중 오류 - Room ID: {}, 오류: {}", room.getRoomId(), e.getMessage());
+            return java.util.Collections.emptyList();
         }
     }
 }

@@ -164,6 +164,11 @@
                         <span class="room-views" th:text="${room.views}">3명이 봄</span>
                     </div>
                 </div>
+                <div class="room-emotions" th:if="${room.emotions != null and !#lists.isEmpty(room.emotions)}">
+                <span th:each="emotion : ${room.emotions}"
+                      class="room-emotion-tag"
+                      th:text="'#' + ${emotion}">#감정태그</span>
+                </div>
                 <div class="room-description" th:text="${room.description}">방 설명</div>
                 <div class="room-footer">
                     <div class="room-participants">

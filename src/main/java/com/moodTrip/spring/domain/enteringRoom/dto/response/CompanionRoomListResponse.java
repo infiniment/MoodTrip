@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @NoArgsConstructor
@@ -22,7 +24,7 @@ public class CompanionRoomListResponse {
     private Integer viewCount;
     private String description;
     private String category;
-    //private List<String> emotions; // 감정은 나중에 로직 구현 시 수정!!!
+    private List<String> emotions; // 감정 태그 활성화!
     private Integer currentParticipants;
     private Integer maxParticipants;
     private String createdDate;
@@ -47,7 +49,7 @@ public class CompanionRoomListResponse {
                 .views(formatViews(viewCount))
                 .viewCount(viewCount)
                 .description(room.getRoomDescription())
-                //.emotions(java.util.Collections.emptyList())
+                .emotions(extractEmotions(room)) // 감정 태그 추출 메서드 추가!
                 .currentParticipants(room.getRoomCurrentCount())
                 .maxParticipants(room.getRoomMaxCount())
                 .createdDate(formatCreatedDate(room))
@@ -59,6 +61,23 @@ public class CompanionRoomListResponse {
                 .urgent(calculateUrgent(room))
                 .status(calculateStatus(room))
                 .build();
+    }
+
+    // 감정 태그 추출 메서드 (새로 추가!)
+    private static List<String> extractEmotions(Room room) {
+        try {
+            if (room.getEmotionRooms() == null || room.getEmotionRooms().isEmpty()) {
+                return java.util.Collections.emptyList();
+            }
+
+            return room.getEmotionRooms().stream()
+                    .filter(emotionRoom -> emotionRoom.getEmotion() != null) // null 체크
+                    .map(emotionRoom -> emotionRoom.getEmotion().getTagName())
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            // 오류 발생 시 빈 리스트 반환
+            return java.util.Collections.emptyList();
+        }
     }
 
     // 날짜 변경하기 백 => 프론트 형태로
@@ -87,14 +106,14 @@ public class CompanionRoomListResponse {
 
     // 생성일 나타내기
     private static String formatCreatedDate(Room room) {
-        // 🔥 createdAt 대신 travelStartDate 사용
+        // createdAt 대신 travelStartDate 사용
         if (room.getTravelStartDate() == null) {
             return "날짜 미정";
         }
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yy/MM/dd");
 
-        // 🔥 여행 시작일 사용
+        // 여행 시작일 사용
         String startDate = room.getTravelStartDate().format(formatter);
 
         if (room.getTravelEndDate() != null) {
