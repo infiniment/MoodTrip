@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.moodTrip.spring.domain.attraction.dto.request.AttractionInsertRequest;
+import com.moodTrip.spring.domain.attraction.dto.response.AttractionDetailResponse;
+import com.moodTrip.spring.domain.attraction.dto.response.AttractionRegionResponse;
 import com.moodTrip.spring.domain.attraction.dto.response.AttractionResponse;
 import com.moodTrip.spring.domain.attraction.entity.Attraction;
 import com.moodTrip.spring.domain.attraction.entity.AttractionIntro;
@@ -14,17 +16,13 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.text.Collator;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -39,7 +37,6 @@ public class AttractionServiceImpl implements AttractionService {
     private final AttractionRepository repository;
     private final AttractionIntroRepository introRepository;
     private final RestTemplate restTemplate;
-
 
     @Value("${attraction.apikey.decoding}")
     private String apiKey;
@@ -84,7 +81,7 @@ public class AttractionServiceImpl implements AttractionService {
             if (items.isArray()) {
                 for (JsonNode it : items) {
                     Integer typeId = asInt(it, "contenttypeid");
-                    if (typeId != null && excludeSet.contains(typeId)) continue; // ★ 제외
+                    if (typeId != null && excludeSet.contains(typeId)) continue;
                     created += upsertAttraction(it);
                 }
             } else if (!items.isMissingNode() && !items.isNull()) {
@@ -99,6 +96,7 @@ public class AttractionServiceImpl implements AttractionService {
         }
         return created;
     }
+
 
     // ===== 목록(areaBasedList2) =====
     @Override
@@ -182,6 +180,9 @@ public class AttractionServiceImpl implements AttractionService {
         a.setMlevel(asInt(it, "mlevel"));
         a.setAreaCode(asInt(it, "areacode"));
         a.setSigunguCode(asInt(it, "sigungucode"));
+        a.setCat1(asText(it, "cat1"));
+        a.setCat2(asText(it, "cat2"));
+        a.setCat3(asText(it, "cat3"));
         a.setCreatedTime(parseTs(asText(it, "createdtime")));
         a.setModifiedTime(parseTs(asText(it, "modifiedtime")));
 
@@ -192,7 +193,6 @@ public class AttractionServiceImpl implements AttractionService {
     // ===== 소개(detailIntro2) =====
     @Override
     public int syncDetailIntro(long contentId, Integer contentTypeId) {
-        // 파라미터를 직접 바꾸지 말고 ctid 로컬 변수에 담기
         Integer ctid = (contentTypeId != null)
                 ? contentTypeId
                 : repository.findByContentId(contentId)
@@ -201,7 +201,6 @@ public class AttractionServiceImpl implements AttractionService {
 
         URI uri = buildDetailIntroUri(contentId, ctid);
         log.info("TourAPI GET {}", uri.toString().replaceAll("serviceKey=[^&]+", "serviceKey=***"));
-
 
         String body = restTemplate.getForObject(uri, String.class);
         String preview = body == null ? "null" : body.substring(0, Math.min(body.length(), 400));
@@ -232,6 +231,37 @@ public class AttractionServiceImpl implements AttractionService {
 
         upsertIntro(item);
         return 1;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public AttractionRegionResponse findAttractionsFiltered(
+            List<String> regionCodes, Pageable pageable,
+            String keyword, String cat1, String cat2, String cat3, String sort
+    ) {
+        // KR코드 → areaCode
+        List<Integer> areas = (regionCodes == null ? Collections.<Integer>emptyList() :
+                regionCodes.stream()
+                        .map(RegionCodeMapper::krToAreaCode)
+                        .filter(Objects::nonNull)
+                        .distinct()
+                        .collect(Collectors.toList()));
+
+        // 정렬 옵션 (이름 정렬만 지원 – 기존 정책 유지)
+        Pageable sorted = ("name".equalsIgnoreCase(sort) || "portfolio".equalsIgnoreCase(sort))
+                ? PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("title").ascending())
+                : pageable;
+
+        // 공백 → null 정규화
+        String kw   = (keyword != null && !keyword.isBlank()) ? keyword.trim() : null;
+        String c1   = (cat1 != null && !cat1.isBlank())       ? cat1.trim()     : null;
+        String c2   = (cat2 != null && !cat2.isBlank())       ? cat2.trim()     : null;
+        String c3   = (cat3 != null && !cat3.isBlank())       ? cat3.trim()     : null;
+
+        Page<Attraction> page = repository.searchByFilters(
+                areas, areas.isEmpty(), kw, c1, c2, c3, sorted
+        );
+        return AttractionRegionResponse.of(page);
     }
 
     @Override
@@ -342,6 +372,156 @@ public class AttractionServiceImpl implements AttractionService {
         return repository.searchKeywordPrefTitleStarts(q, area, si, type, PageRequest.of(page, size));
     }
 
+    // ===== 지역별 페이지 응답 =====
+    @Override
+    @Transactional(readOnly = true)
+    public AttractionRegionResponse getRegionAttractions(Integer areaCode, Integer sigunguCode, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("title").ascending());
+        Page<Attraction> result = (sigunguCode == null)
+                ? repository.findByAreaCode(areaCode, pageable)
+                : repository.findByAreaCodeAndSigunguCode(areaCode, sigunguCode, pageable);
+        return AttractionRegionResponse.of(result);
+    }
+
+    // ✅ (프론트 `/detail-regions`) 다중 지역 + 페이징
+    @Override
+    @Transactional(readOnly = true)
+    public AttractionRegionResponse findAttractions(List<Integer> areaCodes, Pageable pageable) {
+        if (areaCodes == null || areaCodes.isEmpty()) {
+            return AttractionRegionResponse.of(Page.empty(pageable));
+        }
+        Page<Attraction> page = repository.findByAreaCodeIn(areaCodes, pageable);
+        return AttractionRegionResponse.of(page);
+    }
+
+    @Override
+    public Optional<AttractionResponse> getDetail(long contentId) {
+        return repository.findById(contentId)
+                .map(AttractionResponse::from);
+    }
+
+
+    // ===== 전체 페이징 조회 =====
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Attraction> findAttractions(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "attractionId"));
+        return repository.findAll(pageable);
+    }
+
+    // ===== 지역코드(KR**) 목록 조회 + 정렬(옵션) =====
+    @Override
+    @Transactional(readOnly = true)
+    public List<AttractionResponse> findByRegionCodes(List<String> regionCodes, String sort) {
+        if (regionCodes == null || regionCodes.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Integer> areaCodes = regionCodes.stream()
+                .map(RegionCodeMapper::krToAreaCode)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+
+        if (areaCodes.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Attraction> list = repository.findByAreaCodeIn(areaCodes);
+
+        String s = (sort == null) ? "default" : sort.trim().toLowerCase(Locale.ROOT);
+        if ("name".equals(s) || "portfolio".equals(s)) {
+            list = list.stream()
+                    .sorted(Comparator.comparing(Attraction::getTitle, java.text.Collator.getInstance(java.util.Locale.KOREAN)))
+                    .collect(Collectors.toList());
+        }
+
+        return list.stream().map(AttractionResponse::from).collect(Collectors.toList());
+    }
+
+    // ===== 감정 태그 기반 카드 조회 =====
+    @Override
+    @Transactional(readOnly = true)
+    public List<AttractionCardDTO> findAttractionsByEmotionIds(List<Integer> emotionIds) {
+        var attractions = repository.findAttractionsByEmotionIds(emotionIds);
+        return attractions.stream()
+                .map(a -> AttractionCardDTO.builder()
+                        .title(a.getTitle())
+                        .addr1(a.getAddr1())
+                        .firstImage(a.getFirstImage())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    // ===== 초기 로딩 카드 조회 =====
+    @Override
+    @Transactional(readOnly = true)
+    public List<AttractionCardDTO> findInitialAttractions(int limit) {
+        Pageable pageable = PageRequest.of(0, limit);
+        List<Attraction> attractions = repository.findAll(pageable).getContent();
+
+        return attractions.stream()
+                .map(a -> AttractionCardDTO.builder()
+                        .attractionId(a.getAttractionId())
+                        .title(a.getTitle())
+                        .addr1(a.getAddr1())
+                        .firstImage(a.getFirstImage())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    // ===== 전체 조회 =====
+    @Override
+    @Transactional(readOnly = true)
+    public List<Attraction> getAllAttractions() {
+        return repository.findAll();
+    }
+
+    // ===== 키워드 검색 =====
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Attraction> searchAttractions(String keyword, int page, int size) {
+        return repository.findByTitleContainingIgnoreCase(keyword, PageRequest.of(page, size));
+    }
+
+    @Override
+    public AttractionResponse create(AttractionInsertRequest req) {
+        var contentId = req.getContentId();
+        var entity = (contentId != null)
+                ? repository.findByContentId(contentId).orElseGet(req::toEntity)
+                : req.toEntity();
+        var saved = repository.save(entity);
+        return AttractionResponse.from(saved);
+    }
+
+    // ===== 지역 코드 매퍼 =====
+    static final class RegionCodeMapper {
+        private static final Map<String, Integer> KR_TO_AREA = new HashMap<>();
+        private static final Map<Integer, String> AREA_TO_NAME = new HashMap<>();
+        static {
+            // ⚠️ 실제 프로젝트 areaCode 매핑 확인
+            KR_TO_AREA.put("KR11", 1);  AREA_TO_NAME.put(1,  "서울");
+            KR_TO_AREA.put("KR28", 2);  AREA_TO_NAME.put(2,  "인천");
+            KR_TO_AREA.put("KR30", 3);  AREA_TO_NAME.put(3,  "대전");
+            KR_TO_AREA.put("KR27", 4);  AREA_TO_NAME.put(4,  "대구");
+            KR_TO_AREA.put("KR29", 5);  AREA_TO_NAME.put(5,  "광주");
+            KR_TO_AREA.put("KR26", 6);  AREA_TO_NAME.put(6,  "부산");
+            KR_TO_AREA.put("KR31", 7);  AREA_TO_NAME.put(7,  "울산");
+            KR_TO_AREA.put("KR50", 8);  AREA_TO_NAME.put(8,  "세종");
+            KR_TO_AREA.put("KR41", 31); AREA_TO_NAME.put(31, "경기");
+            KR_TO_AREA.put("KR42", 32); AREA_TO_NAME.put(32, "강원");
+            KR_TO_AREA.put("KR43", 33); AREA_TO_NAME.put(33, "충북");
+            KR_TO_AREA.put("KR44", 34); AREA_TO_NAME.put(34, "충남");
+            KR_TO_AREA.put("KR47", 35); AREA_TO_NAME.put(35, "경북");
+            KR_TO_AREA.put("KR48", 36); AREA_TO_NAME.put(36, "경남");
+            KR_TO_AREA.put("KR45", 37); AREA_TO_NAME.put(37, "전북");
+            KR_TO_AREA.put("KR46", 38); AREA_TO_NAME.put(38, "전남");
+            KR_TO_AREA.put("KR49", 39); AREA_TO_NAME.put(39, "제주");
+        }
+        static Integer krToAreaCode(String kr) { return KR_TO_AREA.get(kr); }
+        static String areaCodeToName(Integer area) { return AREA_TO_NAME.get(area); }
+        private RegionCodeMapper() {}
+    }
 
     // ===== 공통 유틸 =====
     private JsonNode parseJson(String body) {
@@ -397,141 +577,22 @@ public class AttractionServiceImpl implements AttractionService {
     }
 
     @Override
-    public AttractionResponse create(AttractionInsertRequest req) {
-        var contentId = req.getContentId();
-        var entity = (contentId != null)
-                ? repository.findByContentId(contentId).orElseGet(req::toEntity)
-                : req.toEntity();
-        var saved = repository.save(entity);
-        return AttractionResponse.from(saved);
-    }
-
-
-    final class RegionCodeMapper {
-        private static final Map<String, Integer> KR_TO_AREA = new HashMap<>();
-        private static final Map<Integer, String> AREA_TO_NAME = new HashMap<>();
-        static {
-            // ⚠️ 프로젝트에서 쓰는 실제 areaCode에 맞게 채워줘
-            // 예시(필요값만 우선): 서울, 인천, 대전, 대구, 광주, 부산, 울산, 세종, 경기, 강원, 충북, 충남, 경북, 경남, 전북, 전남, 제주
-            KR_TO_AREA.put("KR11", 1);  AREA_TO_NAME.put(1,  "서울");
-            KR_TO_AREA.put("KR28", 2);  AREA_TO_NAME.put(2,  "인천");
-            KR_TO_AREA.put("KR30", 3);  AREA_TO_NAME.put(3,  "대전");
-            KR_TO_AREA.put("KR27", 4);  AREA_TO_NAME.put(4,  "대구");
-            KR_TO_AREA.put("KR29", 5);  AREA_TO_NAME.put(5,  "광주");
-            KR_TO_AREA.put("KR26", 6);  AREA_TO_NAME.put(6,  "부산");
-            KR_TO_AREA.put("KR31", 7);  AREA_TO_NAME.put(7,  "울산");
-            KR_TO_AREA.put("KR50", 8);  AREA_TO_NAME.put(8,  "세종");
-            KR_TO_AREA.put("KR41", 31); AREA_TO_NAME.put(31, "경기");
-            KR_TO_AREA.put("KR42", 32); AREA_TO_NAME.put(32, "강원");
-            KR_TO_AREA.put("KR43", 33); AREA_TO_NAME.put(33, "충북");
-            KR_TO_AREA.put("KR44", 34); AREA_TO_NAME.put(34, "충남");
-            KR_TO_AREA.put("KR47", 35); AREA_TO_NAME.put(35, "경북");
-            KR_TO_AREA.put("KR48", 36); AREA_TO_NAME.put(36, "경남");
-            KR_TO_AREA.put("KR45", 37); AREA_TO_NAME.put(37, "전북");
-            KR_TO_AREA.put("KR46", 38); AREA_TO_NAME.put(38, "전남");
-            KR_TO_AREA.put("KR49", 39); AREA_TO_NAME.put(39, "제주");
+    @Transactional
+    public AttractionIntro getIntro(long contentId, Integer contentTypeId) {
+        var intro = introRepository.findById(contentId).orElse(null); // PK가 contentId인 구조
+        if (intro == null) {
+            syncDetailIntro(contentId, contentTypeId);    // detailIntro2 호출 + 업서트 (기존 구현 재사용)
+            intro = introRepository.findById(contentId).orElse(null);
         }
-        static Integer krToAreaCode(String kr) { return KR_TO_AREA.get(kr); }
-        static String areaCodeToName(Integer area) { return AREA_TO_NAME.get(area); }
-        private RegionCodeMapper() {}
-    }
-
-    //    // ✅ 페이징 전체 조회
-//    public Page<Attraction> findAttractions(int page, int size) {
-//        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id"));
-//        return repository.findAll(pageable);
-//    }
-
-
-    @Override                                                   // ✅ 꼭 붙이기
-    @Transactional(readOnly = true)                             // (선택) 읽기 전용
-    public Page<Attraction> findAttractions(int page, int size) { // ✅ 시그니처 100% 동일
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "attractionId"));
-        return repository.findAll(pageable);
+        return intro;
     }
 
     @Override
-    public List<AttractionResponse> findByRegionCodes(List<String> regionCodes, String sort) {
-        if (regionCodes == null || regionCodes.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        // ✅ KR코드 → areaCode(Integer) 변환 (아래 mapper 참고)
-        List<Integer> areaCodes = regionCodes.stream()
-                .map(RegionCodeMapper::krToAreaCode)
-                .filter(Objects::nonNull)
-                .distinct()
-                .collect(Collectors.toList());
-
-        if (areaCodes.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        // ✅ 엔티티 조회 (엔티티엔 regionCode가 없고 areaCode만 있으므로!)
-        List<Attraction> list = repository.findByAreaCodeIn(areaCodes);
-
-        // ✅ 정렬: 이름(= title)만 지원. (portfolio/name → 모두 이름 정렬로 인식)
-        String s = (sort == null) ? "default" : sort.trim().toLowerCase(Locale.ROOT);
-        if ("name".equals(s) || "portfolio".equals(s)) {
-            list = list.stream()
-                    .sorted(Comparator.comparing(Attraction::getTitle,
-                            Collator.getInstance(Locale.KOREAN)))
-                    .collect(Collectors.toList());
-        }
-        // s가 default면 정렬 하지 않음
-
-        // ✅ 응답 매핑 (from() 없으면 아래 new로 매핑)
-        return list.stream()
-                .map(AttractionResponse::from)
-                // .map(a -> new AttractionResponse(a.getId(), a.getTitle(), RegionCodeMapper.areaCodeToName(a.getAreaCode()), a.getFirstImage(), /*rating*/ null, /*tags*/ List.of()))
-                .collect(Collectors.toList());
+    @Transactional(readOnly = true)
+    public AttractionDetailResponse getDetailResponse(long contentId) {
+        var base = getDetail(contentId)
+                .orElseThrow(() -> new IllegalArgumentException("Attraction not found: " + contentId));
+        var intro = getIntro(contentId, base.getContentTypeId());
+        return AttractionDetailResponse.of(base, intro);
     }
-
-
-
-
-    public List<AttractionCardDTO> findAttractionsByEmotionIds(List<Integer> emotionIds) {
-        List<Attraction> attractions = repository.findAttractionsByEmotionIds(emotionIds);
-
-        // 조회된 Attraction 엔터티 목록을 AttractionCardDTO 목록으로 변환
-        return attractions.stream()
-                .map(attraction -> AttractionCardDTO.builder()
-                        .title(attraction.getTitle())
-                        .addr1(attraction.getAddr1())
-                        .firstImage(attraction.getFirstImage())
-                        // DTO에 description이 필요하다면 여기에 추가 (예: attraction.getDescription())
-                        .build())
-                .collect(Collectors.toList());
-    }
-
-
-    // [추가] 초기 페이지 로딩 시 보여줄 여행지 조회 로직
-    public List<AttractionCardDTO> findInitialAttractions(int limit) {
-        Pageable pageable = PageRequest.of(0, limit);
-        List<Attraction> attractions = repository.findAll(pageable).getContent();
-
-        return attractions.stream()
-                .map(attraction -> AttractionCardDTO.builder()
-                        .attractionId(attraction.getAttractionId()) // <-- 이 줄을 추가합니다.
-                        .title(attraction.getTitle())
-                        .addr1(attraction.getAddr1())
-                        .firstImage(attraction.getFirstImage())
-                        .build())
-                .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true) // 읽기 전용 트랜잭션으로 설정 (선택 사항이지만 권장)
-    public List<Attraction> getAllAttractions() {
-        return repository.findAll(); // AttractionRepository를 사용하여 모든 Attraction 엔티티를 조회합니다.
-    }
-
-
-    @Override
-    public Page<Attraction> searchAttractions(String keyword, int page, int size) {
-        return repository.findByTitleContainingIgnoreCase(
-                keyword, PageRequest.of(page, size)
-        );
-    }
-
 }
-

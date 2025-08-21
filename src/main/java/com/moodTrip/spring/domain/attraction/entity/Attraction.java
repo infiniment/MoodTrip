@@ -34,6 +34,16 @@ public class Attraction {
     @Column(length = 20)  private String zipcode;
     @Column(length = 60)  private String tel;
 
+    @Column(length = 10)
+    private String cat1;
+
+    @Column(length = 10)
+    private String cat2;
+
+    @Column(length = 10)
+    private String cat3;
+
+
     // 대표 이미지 URL
     private String firstImage;
     private String firstImage2;
