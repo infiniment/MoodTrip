@@ -1,15 +1,18 @@
 package com.moodTrip.spring.domain.attraction.dto.response;
 
 import com.moodTrip.spring.domain.attraction.entity.Attraction;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Builder
 public class AttractionResponse {
-    private Long attractionId;
+    private Long id;
     private Long contentId;
     private Integer contentTypeId;
     private String title;
@@ -33,13 +36,13 @@ public class AttractionResponse {
 
     public static AttractionResponse from(Attraction a) {
         return AttractionResponse.builder()
-                .attractionId(a.getAttractionId())
+                .id(a.getAttractionId())
                 .contentId(a.getContentId())
                 .contentTypeId(a.getContentTypeId())
                 .title(a.getTitle())
                 .addr1(a.getAddr1())
                 .addr2(a.getAddr2())
-                .tel(normalizeTel(a.getTel()))
+                .tel(a.getTel())
                 .firstImage(a.getFirstImage())
                 .firstImage2(a.getFirstImage2())
                 .mapX(a.getMapX())
@@ -51,3 +54,4 @@ public class AttractionResponse {
                 .build();
     }
 }
+

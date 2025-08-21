@@ -44,20 +44,65 @@
                 </div>
 
                 <!-- 로그인 후 헤더 전용 검색바 (클래스명 변경됨) -->
+                <!-- 기존 위치 그대로 대체 -->
                 <div class="left-nav-menu pr-12 main-header text-header logged-in-header-search-wrapper" style="margin-left: 100px;">
-                    <form class="logged-in-header-search-form" th:action="@{/emotions}" method="get">
-                        <input
-                                type="text"
-                                name="q"
-                                placeholder="감정을 입력하세요"
-                                class="logged-in-header-emotion-search-input"
-                                id="loggedInHeaderEmotionSearchInput"
-                        />
+                    <form class="logged-in-header-search-form" th:action="@{/emotions}" method="get" id="headerEmotionForm">
+                        <!-- 대분류 -->
+                        <select name="categoryId" id="headerCategorySelect" aria-label="감정 카테고리"
+                                style="height:40px; padding:0 10px; border:1px solid #e5e7eb; border-radius:8px; margin-right:8px; min-width:150px;">
+                            <option value="">대분류 선택</option>
+                            <option th:each="c : ${headerEmotionCategories}"
+                                    th:value="${c.emotionCategoryId}"
+                                    th:text="${c.emotionCategoryName}">
+                            </option>
+                        </select>
+
+                        <!-- 소분류 -->
+                        <select name="tagId" id="headerEmotionSelect" aria-label="감정(소분류)"
+                                style="height:40px; padding:0 10px; border:1px solid #e5e7eb; border-radius:8px; margin-right:8px; min-width:150px;">
+                            <option value="">소분류 선택</option>
+                        </select>
+
+                        <!-- 기존 input은 레이아웃 영향 없도록 숨김(서버 전송에도 영향 없음) -->
+                        <input type="text" name="q" placeholder="감정을 입력하세요"
+                               class="logged-in-header-emotion-search-input" id="loggedInHeaderEmotionSearchInput"
+                               style="display:none;" aria-hidden="true" tabindex="-1" />
+
                         <button type="submit" class="logged-in-header-emotion-search-btn" aria-label="검색">
                             <img th:src="@{/image/default-common/search.png}" alt="검색" class="logged-in-header-search-icon"/>
                         </button>
                     </form>
                 </div>
+
+                <!-- 꼭: 직렬화를 위해 th:inline="javascript" -->
+                <script th:inline="javascript">
+                    (function () {
+                        // 서버가 내려준 DTO (카테고리 + 내부 emotions[{tagId, tagName}...])
+                        const categories = /*[[${headerEmotionCategories}]]*/ [];
+
+                        const catSel = document.getElementById('headerCategorySelect');
+                        const emoSel = document.getElementById('headerEmotionSelect');
+
+                        function renderEmotions(categoryId){
+                            emoSel.innerHTML = '<option value="">소분류 선택</option>';
+                            if(!categoryId) return;
+                            const cat = (categories || []).find(c => String(c.emotionCategoryId) === String(categoryId));
+                            if(!cat || !cat.emotions) return;
+                            cat.emotions.forEach(e => {
+                                const opt = document.createElement('option');
+                                opt.value = e.tagId;
+                                opt.textContent = e.tagName;
+                                emoSel.appendChild(opt);
+                            });
+                        }
+
+                        catSel && catSel.addEventListener('change', () => {
+                            renderEmotions(catSel.value);
+                        });
+                    })();
+                </script>
+
+
             </div>
 
             <!-- 로그인된 사용자 프로필 메뉴 -->

@@ -1,5 +1,7 @@
 package com.moodTrip.spring.domain.attraction.controller;
 
+import com.moodTrip.spring.domain.attraction.dto.response.AttractionDetailResponse;
+import com.moodTrip.spring.domain.attraction.dto.response.AttractionRegionResponse;
 import com.moodTrip.spring.domain.attraction.dto.request.AttractionInsertRequest;
 import com.moodTrip.spring.domain.attraction.dto.response.AttractionResponse;
 import com.moodTrip.spring.domain.attraction.service.AttractionService;
@@ -9,13 +11,20 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
@@ -188,26 +197,42 @@ public class AttractionController {
     public record SyncAreaCodesResponse(
             String message, List<Integer> areaCodes, Integer contentTypeId, int createdTotal) {}
 
-    @GetMapping("/regions")
-    public String regionPage(Model model) {
-        model.addAttribute("initialAttractions", List.of());
-        return "region-tourist-attractions/region-page";
+
+    // AttractionController.java 내
+    @GetMapping("/detail-regions")
+    public AttractionRegionResponse getByRegions(
+            @RequestParam(name = "regions", required = false) List<String> regions,
+            @RequestParam(name = "sort", required = false) String sort,
+            @RequestParam(name = "pageNo", required = false) Integer pageNo,
+            @RequestParam(name = "numOfRows", required = false) Integer numOfRows,
+            @RequestParam(name = "page", required = false) Integer page,
+            @RequestParam(name = "size", required = false) Integer size,
+            @RequestParam(name = "keyword", required = false) String keyword,
+            @RequestParam(name = "cat1", required = false) String cat1,
+            @RequestParam(name = "cat2", required = false) String cat2,
+            @RequestParam(name = "cat3", required = false) String cat3
+    ) {
+        int p = (pageNo != null) ? pageNo : (page != null ? page : 1);
+        int s = (numOfRows != null) ? numOfRows : (size != null ? size : 12);
+
+        Pageable pageable = PageRequest.of(Math.max(0, p - 1), s, Sort.by("title").ascending());
+        return attractionService.findAttractionsFiltered(
+                regions, pageable, keyword, cat1, cat2, cat3, sort
+        );
     }
 
-    @GetMapping("/api/attractions")
-    @ResponseBody
-    public ResponseEntity<List<AttractionResponse>> list(
-            @RequestParam(name = "regions", required = false) List<String> regionCodes,
-            @RequestParam(name = "areaCode", required = false) Integer areaCode,
-            @RequestParam(name = "sigunguCode", required = false) Integer sigunguCode,
-            @RequestParam(name = "sort", defaultValue = "default") String sort
-    ) {
-        if (regionCodes != null && !regionCodes.isEmpty()) {
-            return ResponseEntity.ok(attractionService.findByRegionCodes(regionCodes, sort));
-        }
-        if (areaCode != null) {
-            return ResponseEntity.ok(Collections.emptyList());
-        }
-        return ResponseEntity.ok(Collections.emptyList());
+
+    private Sort parseSort(String sort) {
+        if (sort == null || sort.isBlank()) return Sort.unsorted();
+        String[] parts = sort.split(",");
+        String property = parts[0].trim();
+        Sort.Direction direction = (parts.length > 1 && "desc".equalsIgnoreCase(parts[1].trim()))
+                ? Sort.Direction.DESC : Sort.Direction.ASC;
+        return Sort.by(direction, property);
+    }
+
+    @GetMapping("/content/{contentId}/detail")
+    public ResponseEntity<AttractionDetailResponse> getDetail(@PathVariable long contentId) {
+        return ResponseEntity.ok(attractionService.getDetailResponse(contentId));
     }
 }

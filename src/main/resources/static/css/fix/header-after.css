@@ -192,12 +192,14 @@ header.header .header-nav .right-nav .log-in-section {
   box-shadow: 0 0 0 2px rgba(0, 87, 146, 0.1);
 }
 
-/* 로그인 후 헤더 전용 검색 버튼 */
+/* 로그인 후 헤더 전용 검색 버튼 *//* 로그인 후 헤더 전용 검색 버튼 */
 .logged-in-header-emotion-search-btn {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
+  /* position: absolute; << 삭제 */
+  /* right: 8px; << 삭제 */
+  /* top: 50%; << 삭제 */
+  /* transform: translateY(-50%); << 삭제 */
+
+  margin-left: 8px; /* 셀렉트 박스와의 간격을 위해 추가 */
   background: none;
   border: none;
   padding: 0;
@@ -205,10 +207,11 @@ header.header .header-nav .right-nav .log-in-section {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 32px;   /* 버튼 높이 input보다 약간 작게 */
-  width: 32px;    /* 버튼 너비 이미지와 맞춤 */
+  height: 32px;
+  width: 32px;
   border-radius: 50%;
   transition: background-color 0.2s ease;
+  flex-shrink: 0; /* 버튼 크기가 줄어들지 않도록 설정 */
 }
 
 /* 로그인 후 헤더 검색 버튼 호버 효과 */

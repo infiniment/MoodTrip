@@ -100,8 +100,8 @@
     <div class="results-container">
         <div class="results-header">
             <div class="results-info">
-                <h2 class="results-title">여행지 검색 결과</h2>
-                <p class="results-subtitle">6개 결과가 있어요</p>
+                <h2 class="results-title" th:text="${resultsTitle ?: '여행지 검색 결과'}">여행지 검색 결과</h2>
+                <p class="results-subtitle" th:text="${(resultsCount ?: 0) + '개 결과가 있어요'}">6개 결과가 있어요</p>
             </div>
             <div class="sort-filter">
                 <div class="sort-dropdown">
@@ -127,32 +127,28 @@
               [수정] th:each를 사용하여 컨트롤러에서 받은 initialAttractions 리스트를 순회합니다.
               각 AttractionCardDTO 객체는 'attraction' 변수에 담깁니다.
             -->
-            <div class="destination-card" th:each="attraction : ${initialAttractions}">
-                <div class="card-image">
-                    <!--
-                      [수정] th:src와 th:alt를 사용하여 DTO의 이미지 URL과 제목을 동적으로 설정합니다.
-                      이미지가 없을 경우 기본 이미지를 보여줍니다.
-                    -->
-                    <img th:src="${attraction.firstImage != null ? attraction.firstImage : '/static/image/emotion-search/default-image.png'}"
-                         th:alt="${attraction.title}" />
-                    <button class="like-btn">♡</button>
-                    <!--
-                      [참고] 초기 로딩 시 감정 배지는 비워두거나,
-                      가장 대표적인 감정 하나를 DTO에 포함시켜 표시할 수 있습니다.
-                      여기서는 우선 정적 텍스트로 둡니다.
-                    -->
-                    <span class="emotion-badge">추천 여행지</span>
-                </div>
-                <div class="card-content">
-                    <div class="destination-header">
-                        <!-- [수정] th:text를 사용하여 DTO의 제목과 주소를 동적으로 설정합니다. -->
-                        <h3 class="destination-name" th:text="${attraction.title}">여행지 이름</h3>
-                        <span class="destination-location" th:text="${attraction.addr1}">여행지 위치</span>
+            <div class="destination-grid">
+                <!--
+                  [수정] 모델 어트리뷰트 이름을 "attractions"로 통일하여
+                  초기 목록과 검색 결과 모두 이 코드로 처리합니다.
+                -->
+                <div class="destination-card" th:each="attraction : ${attractions}">
+                    <div class="card-image">
+                        <img th:src="${attraction.firstImage != null ? attraction.firstImage : '/static/image/emotion-search/default-image.png'}"
+                             th:alt="${attraction.title}" />
+                        <button class="like-btn">♡</button>
+                        <span class="emotion-badge">추천 여행지</span>
                     </div>
-                    <!-- [수정] DTO에 description 필드가 있다면 th:text로 표시할 수 있습니다. -->
-                    <p class="destination-description">이곳에서 특별한 경험을 즐겨보세요.</p>
+                    <div class="card-content">
+                        <div class="destination-header">
+                            <h3 class="destination-name" th:text="${attraction.title}">여행지 이름</h3>
+                            <span class="destination-location" th:text="${attraction.addr1}">여행지 위치</span>
+                        </div>
+                        <p class="destination-description">이곳에서 특별한 경험을 즐겨보세요.</p>
+                    </div>
                 </div>
             </div>
+
         </div>
 
         <!-- 더보기 버튼 (정적 유지) -->
