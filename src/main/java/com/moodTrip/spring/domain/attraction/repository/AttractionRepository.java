@@ -26,9 +26,6 @@ public interface AttractionRepository extends JpaRepository<Attraction, Long> {
     List<Attraction> findByAreaCodeIn(List<Integer> areaCodes);
     Page<Attraction> findByAreaCodeIn(List<Integer> areaCodes, Pageable pageable);
 
-    // 키워드 검색(일반)
-    Page<Attraction> findByTitleContainingIgnoreCase(String keyword, Pageable pageable);
-
     // 키워드 검색 + 제목 시작 우선 + 필터(지역/시군구/타입)
     @Query("""
            select a

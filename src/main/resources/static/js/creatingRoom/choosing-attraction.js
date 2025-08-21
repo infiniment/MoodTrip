@@ -292,6 +292,7 @@ async function runSearchPaged(q, page = 0) {
         renderAttractions(data.content);
         initializeDestinationSelection();
         setupServerPagination(data.totalPages, data.page, data.totalElements);
+        preselectDestinationIfNeeded();
     } catch (e) {
         console.error(e);
         grid.innerHTML = `<div class="empty">검색 중 오류가 발생했습니다.</div>`;
@@ -591,35 +592,91 @@ function filterByMood(mood) {
     closeHelpModal();
 }
 
-// 데이터 정리
-function clearAllData() {
-    localStorage.removeItem('selected_emotions');
-    localStorage.removeItem('selected_destination');
-    localStorage.removeItem('room_creation_data');
-    localStorage.removeItem('temp_selected_destination');
-    
-    sessionStorage.removeItem('selected_emotions');
-    sessionStorage.removeItem('selected_destination');
-    sessionStorage.removeItem('room_creation_data');
-}
-
 function preselectDestinationIfNeeded() {
-    const preselectedName = localStorage.getItem('preselected_destination_name');
-    if (!preselectedName) return;
+    const raw = sessionStorage.getItem('room_prefill') || localStorage.getItem('room_prefill');
+    if (raw) {
+        try {
+            const a = JSON.parse(raw)?.attraction;
+            if (a && a.attractionId) {
+                // 카드가 없더라도 UI/hidden 채워지도록 selectedDestination 직접 세팅
+                selectedDestination = {
+                    attractionId: a.attractionId,
+                    name: a.title || '',
+                    category: a.addr1 || '',
+                    description: a.addr2 || '',
+                    image: a.firstImage || '',
+                    contentId: a.contentId ?? null,
+                    addr1: a.addr1 || '',
+                    addr2: a.addr2 || '',
+                    mapX: a.mapX ?? null, // 경도
+                    mapY: a.mapY ?? null, // 위도
+                    contentTypeId: a.contentTypeId ?? null,
+                };
 
-    const radios = document.querySelectorAll('.destination-radio');
-    for (const radio of radios) {
-        if (radio.value === preselectedName) {
-            radio.checked = true;
-            radio.dispatchEvent(new Event('change')); // 선택 UI 업데이트
-            console.log('사전 선택된 관광지 자동 적용:', preselectedName);
-            break;
-        }
+                // hidden input 채우기
+                const dummy = document.createElement('div');
+                Object.assign(dummy, { dataset: {} });
+                dummy.dataset.attractionId = String(selectedDestination.attractionId);
+                dummy.dataset.title = selectedDestination.name;
+                dummy.dataset.addr1 = selectedDestination.addr1;
+                dummy.dataset.addr2 = selectedDestination.addr2;
+                dummy.dataset.img   = selectedDestination.image;
+                dummy.dataset.mapx  = selectedDestination.mapX;
+                dummy.dataset.mapy  = selectedDestination.mapY;
+                dummy.dataset.contentId = selectedDestination.contentId;
+                dummy.dataset.type  = selectedDestination.contentTypeId;
+                fillHiddenFromMeta(dummy);
+
+                updateSelectedDestinationDisplay();
+
+                // 현재 페이지에 해당 카드가 있다면 라디오까지 체크
+                const metaEl = document.querySelector(
+                    `.destination-card .hidden[data-attraction-id="${selectedDestination.attractionId}"]`
+                );
+                if (metaEl) {
+                    const radio = metaEl.closest('.destination-card')?.querySelector('.destination-radio');
+                    if (radio) radio.checked = true;
+                }
+            }
+        } catch(e) { console.warn('room_prefill parse fail', e); }
+        sessionStorage.removeItem('room_prefill');
+        localStorage.removeItem('room_prefill');
+        return;
     }
 
-    // 자동 선택 후에는 다시 저장하지 않도록 삭제
-    localStorage.removeItem('preselected_destination_name');
+    // ② 이전 방식 호환: 이름으로 저장된 경우(가능하면 곧 제거)
+    const preselectedName = localStorage.getItem('preselected_destination_name');
+    if (preselectedName) {
+        const radios = document.querySelectorAll('.destination-radio');
+        for (const radio of radios) {
+            if (radio.value === preselectedName) {
+                radio.checked = true;
+                radio.dispatchEvent(new Event('change'));
+                break;
+            }
+        }
+        localStorage.removeItem('preselected_destination_name');
+    }
 }
+
+
+// function preselectDestinationIfNeeded() {
+//     const preselectedName = localStorage.getItem('preselected_destination_name');
+//     if (!preselectedName) return;
+//
+//     const radios = document.querySelectorAll('.destination-radio');
+//     for (const radio of radios) {
+//         if (radio.value === preselectedName) {
+//             radio.checked = true;
+//             radio.dispatchEvent(new Event('change')); // 선택 UI 업데이트
+//             console.log('사전 선택된 관광지 자동 적용:', preselectedName);
+//             break;
+//         }
+//     }
+//
+//     // 자동 선택 후에는 다시 저장하지 않도록 삭제
+//     localStorage.removeItem('preselected_destination_name');
+// }
 
 // 페이지 떠날 때 자동 저장 (사용자가 모르게)
 window.addEventListener('beforeunload', function() {

@@ -5,8 +5,55 @@ let selectedEmotions = [];
 document.addEventListener('DOMContentLoaded', function() {
     initializeCategoryButtons();
     restoreTemporaryEmotions();
+    applyEmotionPrefill();
     initializeNextButton();
 });
+
+// 프리필 감정 자동 적용(최대 3개, 이미 선택한 건 유지)
+function applyEmotionPrefill() {
+    // 이미 사용자가 뭔가 골라놓았으면 건드리지 않음(뒤로가기 등 중복 적용 방지)
+    if (selectedEmotions.length > 0) return;
+
+    const p = getRoomPrefill();
+    if (!p || !Array.isArray(p.emotions) || p.emotions.length === 0) return;
+
+    // 최대 3개까지만 채움
+    const remain = Math.max(0, 3 - selectedEmotions.length);
+    if (remain === 0) return;
+
+    p.emotions.slice(0, remain).forEach(name => {
+        const em = findEmotionByName(name);
+        if (em) addEmotionTag(em, 'preset');
+    });
+
+    // 현재 보이는 카테고리 그리드에 체크박스가 있다면 체크 상태와 동기화
+    document.querySelectorAll('#emotionTagsGrid input.emotion-checkbox').forEach(chk => {
+        const id = (chk.id || '').replace('emotion-', '');
+        if (selectedEmotions.some(e => String(e.id) === id)) chk.checked = true;
+    });
+
+    updateSelectedEmotionsDisplay();
+    updateCategoryButtonBadges();
+}
+
+// 상세 페이지에서 sessionStorage에 저장한 프리필 읽기
+function getRoomPrefill() {
+    try { return JSON.parse(sessionStorage.getItem('room_prefill') || 'null'); }
+    catch { return null; }
+}
+
+// emotionCategoryData 안에서 '감정 이름'으로 태그(id, 이름) 찾기
+function findEmotionByName(name) {
+    const target = String(name || '').trim();
+    for (const cat of (window.emotionCategoryData || [])) {
+        const em = (cat.emotions || []).find(e =>
+            e.tagName === target || e.name === target || e.text === target
+        );
+        if (em) return { id: em.tagId, text: em.tagName };
+    }
+    return null;
+}
+
 
 // 카테고리 버튼 초기화
 function initializeCategoryButtons() {
@@ -121,7 +168,7 @@ function addEmotionTag(emotion, type) {
         return false;
     }
 
-    selectedEmotions.push({ id: emotion.id, text: emotion.text });
+    selectedEmotions.push({ id: emotion.id, text: emotion.text, type: type || 'preset' });
 
     updateSelectedEmotionsDisplay();
     updateCategoryButtonBadges();
@@ -140,9 +187,10 @@ function removeEmotionTag(emotion) {
 
 // 이미 선택된 감정인지 확인
 function isEmotionAlreadySelected(emotion) {
-    return selectedEmotions.some(item => item.id === emotion.id);
+    const id   = (emotion && typeof emotion === 'object') ? emotion.id   : null;
+    const text = (emotion && typeof emotion === 'object') ? emotion.text : String(emotion);
+    return selectedEmotions.some(item => (id != null ? item.id === id : item.text === text));
 }
-
 // 선택된 감정 태그 UI 업데이트
 function updateSelectedEmotionsDisplay() {
     const container = document.getElementById('selectedEmotionsContainer');
