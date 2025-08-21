@@ -56,10 +56,9 @@
                                             <div class="matching-item-inner">
                                                 <div class="matching-info-section">
                                                     <div class="matching-image-wrapper">
-                                                        <img th:src="${room.image}"
+                                                        <img th:src="${room.image} ?: '/static/image/fix/moodtrip.png'"
                                                              th:alt="${room.roomName}"
-                                                             class="matching-image"
-                                                             onerror="this.src='/static/image/fix.moodtrip.png'">
+                                                             class="matching-image">
                                                     </div>
                                                     <div class="matching-details">
                                                         <h3 class="matching-title" th:text="${room.roomName}">방 제목</h3>
@@ -134,10 +133,9 @@
                                             <div class="matching-item-inner">
                                                 <div class="matching-info-section">
                                                     <div class="matching-image-wrapper">
-                                                        <img th:src="${room.image}"
+                                                        <img th:src="${room.image} ?: '/static/image/fix/moodtrip.png'"
                                                              th:alt="${room.roomName}"
-                                                             class="matching-image"
-                                                             onerror="this.src='/static/image/fix.moodtrip.png'">
+                                                             class="matching-image">
                                                     </div>
                                                     <div class="matching-details">
                                                         <h3 class="matching-title" th:text="${room.roomName}">방 제목</h3>
