@@ -73,7 +73,6 @@ body {
     display: flex;
     align-items: center;
     background: var(--gradient-primary);
-    overflow: hidden;
 }
 
 .hero-background {

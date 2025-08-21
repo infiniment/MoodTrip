@@ -34,6 +34,7 @@ public class JoinedRoomResponse {
     private LocalDateTime joinedAt;
     private LocalDateTime roomCreatedAt;
     private List<String> emotions;
+    private String image;
 
      // 데이터베이스에서 가져온 엔티티 데이터를 프론트엔드가 사용할 수 있는 형태로 변환
 
@@ -43,6 +44,10 @@ public class JoinedRoomResponse {
         List<String> emotionTexts = room.getEmotionRooms().stream()
                 .map(er -> er.getEmotion().getTagName())
                 .toList();
+
+        String image = (room.getAttraction() != null && room.getAttraction().getFirstImage() != null)
+                ? room.getAttraction().getFirstImage()
+                : "/static/image/default.png";
 
         return JoinedRoomResponse.builder()
                 .roomId(room.getRoomId())
@@ -59,6 +64,7 @@ public class JoinedRoomResponse {
                 .joinedAt(roomMember.getJoinedAt())  // 내가 방에 참여한 시간
                 .roomCreatedAt(room.getCreatedAt())  // 방 생성 시간
                 .emotions(emotionTexts)
+                .image(image)
                 .build();
     }
 }

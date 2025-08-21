@@ -52,6 +52,10 @@ public class RoomResponse {
     @Schema(description = "삭제 여부", example = "false")
     private Boolean isDeleted;
 
+    // 상우가 추가 : 방 입장하기에서 관광지 이미지 가져올 때 필요
+    @Schema(description = "대표 이미지", example = "/static/image/fix/moodtrip.png")
+    private String imageUrl;
+
     public static RoomResponse from(Room room) {
         RoomResponseBuilder builder = RoomResponse.builder()
                 .roomId(room.getRoomId())
@@ -66,6 +70,10 @@ public class RoomResponse {
         // Attraction 우선 채움
         if (room.getAttraction() != null) {
             builder.attractionId(room.getAttraction().getAttractionId());
+
+            // 상우가 추가 : 방 입장하기에서 이미지 세팅
+            String image = room.getAttraction().getFirstImage();
+            builder.imageUrl(image != null ? image : "\"/static/image/fix/moodtrip.png\"");
 
             // 이름
             String title = room.getAttraction().getTitle();

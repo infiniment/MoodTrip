@@ -95,6 +95,9 @@ public class RoomServiceImpl implements RoomService {
 
         // 5) 하위호환용 레거시 필드 동기화 (나중에 필드 제거 전까지 유지)
         room.setDestinationName(attr.getTitle());
+        //상우가 추가
+        room.setDestinationCategory(attr.getAddr1());
+
         if (attr.getMapY() != null) room.setDestinationLat(java.math.BigDecimal.valueOf(attr.getMapY())); // 위도
         if (attr.getMapX() != null) room.setDestinationLon(java.math.BigDecimal.valueOf(attr.getMapX())); // 경도
 
@@ -270,8 +273,12 @@ public class RoomServiceImpl implements RoomService {
         String status = (room.getRoomCurrentCount() >= room.getRoomMaxCount() * 0.5)
                 ? "마감임박"
                 : "모집중";
-        String image = null; // 이미지 컬럼이 있으면 할당. 없으면 null(템플릿서 기본 이미지로 처리)
-        List<String> tags = null; // EmotionRoom, 태그 연동시 할당
+        // 상우가 추가함
+        String image = (room.getAttraction() != null && room.getAttraction().getFirstImage() != null)
+                ? room.getAttraction().getFirstImage()
+                : "/static/image/fix/moodtrip.png";
+
+        List<String> tags = null;// EmotionRoom, 태그 연동시 할당
 
         return RoomCardDto.builder()
                 .roomId(room.getRoomId())

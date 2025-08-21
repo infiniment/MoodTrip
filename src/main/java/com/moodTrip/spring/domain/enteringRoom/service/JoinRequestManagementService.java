@@ -62,23 +62,16 @@ public class JoinRequestManagementService {
     public List<JoinRequestListResponse> getRoomRequests(Long roomId) {
         log.info("방 신청 목록 조회 - roomId: {}", roomId);
 
-        try {
-            // 방 존재 여부 및 권한 확인
-            Room room = validateRoomOwnership(roomId);
+        Room room = validateRoomOwnership(roomId);
 
-            // 해당 방의 PENDING 상태 신청들만 조회
-            List<EnteringRoom> pendingRequests = joinRepository.findByRoomAndStatus(
-                    room, EnteringRoom.EnteringStatus.PENDING);
+        List<EnteringRoom> pendingRequests = joinRepository.findByRoomIdWithProfile(roomId)
+                .stream()
+                .filter(er -> er.getStatus() == EnteringRoom.EnteringStatus.PENDING)
+                .toList();
 
-            // DTO 변환
-            return pendingRequests.stream()
-                    .map(JoinRequestListResponse::from)
-                    .collect(Collectors.toList());
-
-        } catch (Exception e) {
-            log.error("방 신청 목록 조회 실패 - roomId: {}", roomId, e);
-            throw new RuntimeException("신청 목록을 불러올 수 없습니다.");
-        }
+        return pendingRequests.stream()
+                .map(JoinRequestListResponse::from)
+                .toList();
     }
 
     // 개별 신청 승인
@@ -198,12 +191,14 @@ public class JoinRequestManagementService {
     }
 
     private RoomWithRequestsResponse convertToRoomWithRequests(Room room) {
-        List<EnteringRoom> pendingRequests = joinRepository.findByRoomAndStatus(
-                room, EnteringRoom.EnteringStatus.PENDING);
+        List<EnteringRoom> pendingRequests = joinRepository.findByRoomIdWithProfile(room.getRoomId())
+                .stream()
+                .filter(er -> er.getStatus() == EnteringRoom.EnteringStatus.PENDING)
+                .toList();
 
         List<JoinRequestListResponse> requestResponses = pendingRequests.stream()
                 .map(JoinRequestListResponse::from)
-                .collect(Collectors.toList());
+                .toList();
 
         return RoomWithRequestsResponse.from(room, requestResponses);
     }

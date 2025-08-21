@@ -30,31 +30,31 @@
 
             <div class="left-nav">
                 <!-- 감정여행 -->
-                <a th:href="@{/emotions}" class="left-nav-menu" data-menu="emotions">
+                <div class="left-nav-menu" data-menu="emotions">
                     <div class="main-header text-header">감정여행</div>
-                </a>
+                </div>
 
                 <!-- 동행매칭 -->
-                <a th:href="@{/companion-rooms}" class="left-nav-menu" data-menu="companion">
+                <div class="left-nav-menu" data-menu="companion">
                     <div class="main-header text-header">동행매칭</div>
-                </a>
+                </div>
 
                 <!-- 공지사항 -->
-                <a th:href="@{/notifications}" class="left-nav-menu" data-menu="notice">
+                <div class="left-nav-menu" data-menu="notice">
                     <div class="main-header text-header">공지사항</div>
-                </a>
-
-                <!-- 검색바 -->
-                <div class="left-nav-menu pr-12 main-header text-header search-bar-wrapper" style="margin-left: 100px;">
-                    <form class="search-bar" th:action="@{/emotions}" method="get">
+                </div>
+                <!-- 헤더 전용 검색바 (클래스명 변경됨) -->
+                <div class="left-nav-menu pr-12 main-header text-header header-search-wrapper" style="margin-left: 100px;">
+                    <form class="header-search-form" th:action="@{/emotions}" method="get">
                         <input
                                 type="text"
                                 name="q"
                                 placeholder="감정을 입력하세요"
-                                class="search-input"
+                                class="header-emotion-search-input"
+                                id="headerEmotionSearchInput"
                         />
-                        <button type="submit" class="search-btn" aria-label="검색">
-                            <img th:src="@{/image/default-common/search.png}" alt="검색" class="search-icon">
+                        <button type="submit" class="header-emotion-search-btn" aria-label="검색">
+                            <img th:src="@{/image/default-common/search.png}" alt="검색" class="header-search-icon">
                         </button>
                     </form>
                 </div>
@@ -78,7 +78,7 @@
                 <div class="dropdown-menu-container" style="margin-left: 130px;">
                     <!-- 감정여행 드롭다운 -->
                     <div class="dropdown-menu-list" id="emotions-dropdown" style="width: 145px;">
-                        <a class="dropdown-menu-item" th:href="@{/emotions/tourist-spots}">감정 관광지 찾기</a>
+                        <a class="dropdown-menu-item" th:href="@{/emotion-search}">감정 관광지 찾기</a>
                         <a class="dropdown-menu-item" th:href="@{/emotions/weather-spots}">날씨별 관광지 찾기</a>
                     </div>
 
@@ -91,7 +91,8 @@
 
                     <!-- 공지사항 드롭다운 -->
                     <div class="dropdown-menu-list" id="notice-dropdown" style="width: 113px;">
-                        <a class="dropdown-menu-item" th:href="@{/faqs}">자주 묻는 질문</a>
+                        <a class="dropdown-menu-item" th:href="@{/customer-center/announcement}">공지사항</a>
+                        <a class="dropdown-menu-item" th:href="@{/customer-center/faq}">자주 묻는 질문</a>
                     </div>
                 </div>
             </div>

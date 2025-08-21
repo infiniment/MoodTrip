@@ -47,11 +47,15 @@ public class JoinRequestListResponse {
                 .build();
     }
 
-    // 프로필 이미지 가져오기
     private static String getProfileImage(EnteringRoom entity) {
-        // 나중에 Profile 엔티티와 연결
-        return "/image/fix/moodtrip.jpg";
+        if (entity.getApplicant() != null
+                && entity.getApplicant().getProfile() != null
+                && entity.getApplicant().getProfile().getProfileImage() != null) {
+            return entity.getApplicant().getProfile().getProfileImage();
+        }
+        return "/image/fix/moodtrip.jpg"; // 기본 이미지
     }
+
 
     // 시간 차이 계산 ("2시간 전" 형식)
     private static String calculateTimeAgo(LocalDateTime createdAt) {

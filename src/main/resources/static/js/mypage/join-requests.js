@@ -1,41 +1,58 @@
+let currentPage = 1;
+const itemsPerPage = 3; // 방은 3개씩 표시 (카드가 크므로)
+let totalItems = 0;
+let totalPages = 0;
+let allRoomSections = []; // 모든 방 섹션을 저장
+let currentPageRooms = []; // 현재 페이지의 방들
+let isSingleRoomMode = false;
+
 // 🔥 서버 API 기본 URL
 const API_BASE_URL = '/api/v1/join-requests';
 
-// 방 입장 요청 관리
 document.addEventListener('DOMContentLoaded', function() {
-    // UI 초기화
+    // 🔥 1순위: 페이징 즉시 초기화 (기존 DOM 데이터 활용)
+    console.log('⚡ 페이지 로드 즉시 페이징 초기화');
+    initializeRoomPagination();
+
+    // 🔥 2순위: UI 초기화
     initializeFilters();
     initializeSearch();
     initializeRequestActions();
     initializeModals();
 
-    // 🔥 페이지 로드 시 데이터 가져오기
+    // 🔥 3순위: 백그라운드에서 최신 데이터 로드 (페이징은 이미 동작 중)
     loadInitialData();
 });
 
-/**
- * 🔥 초기 데이터 로드 (백엔드 API 호출)
- */
 async function loadInitialData() {
     try {
-        console.log('🚀 초기 데이터 로드 시작');
+        console.log('🚀 백그라운드 데이터 로드 시작');
 
-        // 통계 데이터와 방 목록을 병렬로 가져오기
         const [statsData, roomsData] = await Promise.all([
             fetchRequestStats(),
             fetchMyRoomsWithRequests()
         ]);
 
-        // UI 업데이트
         updateStatsDisplay(statsData);
-        renderRoomsData(roomsData);
+
+        // 🔥 데이터가 변경되었을 때만 다시 렌더링
+        const currentRoomCount = document.querySelectorAll('.room-section').length;
+        if (roomsData.length !== currentRoomCount) {
+            renderRoomsData(roomsData);
+            // 🔥 데이터 변경 시에만 페이징 재초기화
+            setTimeout(() => {
+                initializeRoomPagination();
+            }, 100);
+        }
+
         updateNotificationBadge();
 
-        console.log('✅ 초기 데이터 로드 완료');
+        console.log('✅ 백그라운드 데이터 로드 완료');
 
     } catch (error) {
-        console.error('❌ 초기 데이터 로드 실패:', error);
-        showToast('error', '데이터를 불러오는 중 오류가 발생했습니다.');
+        console.error('❌ 백그라운드 데이터 로드 실패:', error);
+        // 🔥 API 실패해도 기존 페이징은 계속 동작
+        showToast('error', '최신 데이터를 불러오는 중 오류가 발생했습니다.');
     }
 }
 
@@ -116,9 +133,6 @@ function initializeRequestActions() {
     });
 }
 
-/**
- * 모달 초기화
- */
 function initializeModals() {
     const modal = document.getElementById('confirmModal');
     if (!modal) return;
@@ -134,64 +148,84 @@ function initializeModals() {
         if (e.target === modal) hideModal();
     });
 
-    // ESC 키로 모달 닫기
+    // ESC 키로 모달 닫기만 (페이징 키보드 기능 제거)
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') hideModal();
+        if (e.key === 'Escape') {
+            hideModal();
+        }
     });
 }
 
-/**
- * 필터 적용
- */
 function applyFilters() {
-    const roomFilter = (document.getElementById('room-filter')?.value) || 'all';
-    const priorityFilter = (document.getElementById('priority-filter')?.value) || 'all';
-    const searchTerm = (document.getElementById('search-requests')?.value || '').toLowerCase();
+    const roomFilterEl = document.getElementById('room-filter');
+    const priorityFilterEl = document.getElementById('priority-filter');
+
+    const roomFilter = roomFilterEl ? roomFilterEl.value : 'all';
+
+    // ✅ "모든 방"일 때는 우선순위 필터 무시 + 비활성화
+    if (roomFilter === 'all') {
+        if (priorityFilterEl) {
+            priorityFilterEl.value = 'all';
+            priorityFilterEl.disabled = true;
+        }
+    } else {
+        if (priorityFilterEl) {
+            priorityFilterEl.disabled = false;
+        }
+    }
+
+    const priorityFilter = priorityFilterEl ? priorityFilterEl.value : 'all';
+    isSingleRoomMode = roomFilter !== 'all';
 
     const sections = document.querySelectorAll('.room-section');
-    let visibleRequests = 0;
-
+    let visibleCount = 0;
     sections.forEach(section => {
-        const roomTitle = section.querySelector('.room-title')?.textContent || '';
-        const requests = section.querySelectorAll('.request-item-detailed');
-        let sectionHasVisibleRequests = false;
+        const roomTitle = section.querySelector('.room-title').textContent.trim();
 
-        // 방 필터 적용
-        if (roomFilter !== 'all' && !roomTitle.includes(roomFilter)) {
-            section.classList.add('hidden');
-            return;
+        // ✅ 1. 방 필터
+        let matchesRoom = (roomFilter === 'all' || roomTitle === roomFilter);
+
+        // ✅ 2. 우선순위 필터 (방 단위)
+        let matchesPriority = false;
+        if (priorityFilter === 'all') {
+            matchesPriority = true;
+        } else {
+            const requests = section.querySelectorAll('.request-item-detailed');
+            matchesPriority = Array.from(requests).some(req => {
+                const badge = req.querySelector('.priority-badge');
+                if (!badge) return false;
+
+                return (
+                    (priorityFilter === 'high' && badge.classList.contains('priority-high')) ||
+                    (priorityFilter === 'normal' && badge.classList.contains('priority-normal'))
+                );
+            });
         }
 
-        // 각 요청 필터링
-        requests.forEach(request => {
-            const name = (request.querySelector('.request-name-large')?.textContent || '').toLowerCase();
-            const message = (request.querySelector('.request-message')?.textContent || '').toLowerCase();
-            const priority = request.querySelector('.priority-badge')?.classList.contains('priority-high') ? 'high' : 'normal';
-
-            let visible = true;
-
-            // 우선순위 필터
-            if (priorityFilter !== 'all' && priority !== priorityFilter) visible = false;
-
-            // 검색어 필터
-            if (searchTerm && !name.includes(searchTerm) && !message.includes(searchTerm)) visible = false;
-
-            if (visible) {
-                request.classList.remove('hidden');
-                sectionHasVisibleRequests = true;
-                visibleRequests++;
-            } else {
-                request.classList.add('hidden');
-            }
-        });
-
-        // 섹션 표시/숨김
-        section.classList.toggle('hidden', !sectionHasVisibleRequests);
+        // ✅ 최종 적용 (검색 필터 제거됨)
+        if (matchesRoom && matchesPriority) {
+            section.style.display = '';
+            visibleCount++;
+        } else {
+            section.style.display = 'none';
+        }
     });
 
-    // 결과 없음 표시
-    showNoResultsIfNeeded(visibleRequests === 0);
+    // ✅ 페이징 처리
+    const pagination = document.querySelector('.room-pagination-controls');
+    if (isSingleRoomMode) {
+        if (pagination) pagination.remove();
+    } else {
+        initializeRoomPagination();
+    }
+
+    // ✅ "검색 결과 없음" 표시
+    const noResults = document.getElementById('no-results-message');
+    if (noResults) {
+        noResults.style.display = (visibleCount === 0 && !isSingleRoomMode) ? '' : 'none';
+    }
 }
+
 
 /**
  * 검색 결과 없음 표시
@@ -322,6 +356,9 @@ async function processRequestRejection(requestId, requestItem) {
 /**
  * 🔥 데이터 새로고침 (통계 + 대기 카운트 등)
  */
+/**
+ * 🔥 데이터 새로고침 (통계 + 대기 카운트 등) - 수정됨
+ */
 async function refreshData() {
     try {
         console.log('🔄 데이터 새로고침 시작');
@@ -330,15 +367,20 @@ async function refreshData() {
         const statsData = await fetchRequestStats();
         updateStatsDisplay(statsData);
 
-        // 알림 배지/대기 건수/빈 섹션 업데이트
-        updateNotificationBadge();
-        updateWaitingCounts();
-        checkEmptySections();
-
-        console.log('✅ 데이터 새로고침 완료');
-
+        // 🔥 페이징 데이터 다시 수집 추가
+        setTimeout(() => {
+            if (!isSingleRoomMode) {
+                collectAllRoomSections();
+                if (currentPage > totalPages && totalPages > 0) {
+                    showRoomPage(totalPages);
+                } else {
+                    showRoomPage(currentPage);
+                }
+                updateRoomPaginationButtons();
+            }
+        }, 100);
     } catch (error) {
-        console.error('❌ 데이터 새로고침 실패:', error);
+        console.error("데이터 새로고침 실패:", error);
     }
 }
 
@@ -666,3 +708,437 @@ function handleApiError(error, defaultMessage = '오류가 발생했습니다.')
         showToast('error', defaultMessage);
     }
 }
+function initializeRoomPagination() {
+    if (isSingleRoomMode) {
+        console.log("⚠ 단일 방 모드 - 페이징 생성 스킵");
+        return;
+    }
+    // DOM이 준비되었는지 확인
+    const mainWrapper = document.querySelector('.main-wrapper');
+    if (!mainWrapper) {
+        console.error('❌ .main-wrapper를 찾을 수 없음');
+        return;
+    }
+
+    // 모든 방 섹션 수집
+    collectAllRoomSections();
+
+    console.log(`📊 수집된 방: ${totalItems}개 방, ${totalPages}페이지`);
+
+    if (totalItems > 0) {
+        console.log('✅ 방 페이징 시작');
+        showRoomPage(1);
+        createRoomPaginationControls();
+    } else {
+        console.log('⚠️ 표시할 방이 없음');
+    }
+}
+
+/**
+ * 모든 방 섹션 수집
+ */
+function collectAllRoomSections() {
+    console.log('🔍 방 섹션 수집 시작');
+
+    const allSections = document.querySelectorAll('.room-section');
+    console.log(`📂 찾은 방 섹션 수: ${allSections.length}`);
+
+    allRoomSections = [];
+
+    allSections.forEach((section, index) => {
+        const roomTitle = section.querySelector('.room-title')?.textContent || '';
+        const roomId = section.getAttribute('data-room-id') || '';
+        const requestCount = section.querySelectorAll('.request-item-detailed').length;
+
+        const roomData = {
+            element: section,
+            roomTitle: roomTitle,
+            roomId: roomId,
+            requestCount: requestCount,
+            index: index
+        };
+
+        allRoomSections.push(roomData);
+        console.log(`  📂 방 ${index + 1}: "${roomTitle}" (${requestCount}개 요청)`);
+    });
+
+    totalItems = allRoomSections.length;
+    totalPages = Math.ceil(totalItems / itemsPerPage);
+
+    console.log(`✅ 방 수집 완료: ${totalItems}개 방, ${totalPages}페이지`);
+}
+
+/**
+ * 특정 페이지의 방들만 표시
+ */
+function showRoomPage(pageNumber) {
+    console.log(`📄 방 페이지 ${pageNumber} 표시 시작`);
+
+    if (allRoomSections.length === 0) {
+        console.log('⚠️ 표시할 방이 없음');
+        return;
+    }
+
+    currentPage = pageNumber;
+
+    // 1단계: 모든 방 섹션 숨기기
+    allRoomSections.forEach(roomData => {
+        roomData.element.style.display = 'none';
+    });
+
+    // 2단계: 현재 페이지에 해당하는 방들 계산
+    const startIndex = (pageNumber - 1) * itemsPerPage;
+    const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+    currentPageRooms = allRoomSections.slice(startIndex, endIndex);
+
+    console.log(`📄 페이지 ${pageNumber}: ${startIndex}-${endIndex-1} (${currentPageRooms.length}개 방)`);
+
+    // 3단계: 현재 페이지의 방들만 표시
+    currentPageRooms.forEach((roomData, index) => {
+        roomData.element.style.display = 'block';
+
+        // 🎨 부드러운 애니메이션 효과
+        roomData.element.style.opacity = '0';
+        roomData.element.style.transform = 'translateY(20px)';
+
+        setTimeout(() => {
+            roomData.element.style.transition = 'all 0.3s ease';
+            roomData.element.style.opacity = '1';
+            roomData.element.style.transform = 'translateY(0)';
+        }, index * 150); // 방별로 순차적 애니메이션
+
+        console.log(`  📂 표시: "${roomData.roomTitle}" (${roomData.requestCount}개 요청)`);
+    });
+
+    // 4단계: 페이징 컨트롤 업데이트
+    updateRoomPaginationButtons();
+    updateRoomPageInfo();
+
+    // 5단계: 상단으로 부드러운 스크롤
+    scrollToTopSmoothly();
+
+    console.log('✅ 방 페이지 표시 완료');
+}
+
+/**
+ * 방 페이징 네비게이션 컨트롤 생성
+ */
+function createRoomPaginationControls() {
+    console.log('🎯 방 페이징 컨트롤 생성 시작');
+
+    // 기존 페이징 컨트롤 제거
+    const existingPagination = document.querySelector('.room-pagination-controls');
+    if (existingPagination) {
+        existingPagination.remove();
+        console.log('🗑️ 기존 방 페이징 컨트롤 제거');
+    }
+
+    if (totalPages <= 1) {
+        console.log('⚠️ 페이지가 1개 이하라 페이징 컨트롤 생성 안함');
+        return;
+    }
+
+    const mainWrapper = document.querySelector('.main-wrapper');
+    if (!mainWrapper) return;
+
+    // 🔥 페이지 정보(room-page-info) 제거된 버전
+    const paginationHtml = `
+        <div class="room-pagination-controls" style="
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            gap: 8px; 
+            margin: 3rem auto 2rem; 
+            padding: 1.5rem;
+            border: 1px solid #e5e7eb;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+        ">
+            <button class="room-pagination-btn room-prev-btn" onclick="goToPrevRoomPage()" style="
+                padding: 10px 20px;
+                border: 1px solid #e5e7eb;
+                background: white;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: all 0.2s;
+                color: #374151;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 5px;
+            ">
+                ← 이전
+            </button>
+            
+            <div class="room-page-numbers" style="display: flex; gap: 6px; align-items: center;">
+                <!-- 페이지 번호들 -->
+            </div>
+            
+            <button class="room-pagination-btn room-next-btn" onclick="goToNextRoomPage()" style="
+                padding: 10px 20px;
+                border: 1px solid #e5e7eb;
+                background: white;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: all 0.2s;
+                color: #374151;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 5px;
+            ">
+                다음 →
+            </button>
+        </div>
+    `;
+
+    // 메인 래퍼 다음에 추가
+    mainWrapper.insertAdjacentHTML('afterend', paginationHtml);
+
+    // 페이지 번호 생성
+    createRoomPageNumbers();
+
+    console.log('✅ 방 페이징 컨트롤 생성 완료');
+}
+
+/**
+ * 방 페이지 번호 버튼들 생성
+ */
+function createRoomPageNumbers() {
+    const pageNumbersContainer = document.querySelector('.room-page-numbers');
+    if (!pageNumbersContainer) return;
+
+    pageNumbersContainer.innerHTML = '';
+
+    // 표시할 페이지 번호 범위 계산 (최대 5개 버튼)
+    const maxButtons = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+    let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+
+    if (endPage - startPage + 1 < maxButtons) {
+        startPage = Math.max(1, endPage - maxButtons + 1);
+    }
+
+    // 페이지 번호 버튼 생성
+    for (let i = startPage; i <= endPage; i++) {
+        const isActive = i === currentPage;
+        const pageButton = document.createElement('button');
+        pageButton.className = `room-page-number-btn ${isActive ? 'active' : ''}`;
+        pageButton.textContent = i;
+        pageButton.onclick = () => goToRoomPage(i);
+
+        pageButton.style.cssText = `
+            padding: 10px 15px;
+            border: 1px solid ${isActive ? '#005792' : '#e5e7eb'};
+            background: ${isActive ? '#005792' : 'white'};
+            color: ${isActive ? 'white' : '#374151'};
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 45px;
+            font-weight: 600;
+            box-shadow: ${isActive ? '0 2px 4px rgba(0, 87, 146, 0.3)' : '0 1px 2px rgba(0, 0, 0, 0.1)'};
+        `;
+
+        // 호버 효과
+        if (!isActive) {
+            pageButton.addEventListener('mouseenter', function() {
+                this.style.backgroundColor = '#f1f5f9';
+                this.style.borderColor = '#005792';
+                this.style.transform = 'translateY(-1px)';
+                this.style.boxShadow = '0 2px 4px rgba(0, 87, 146, 0.2)';
+            });
+
+            pageButton.addEventListener('mouseleave', function() {
+                this.style.backgroundColor = 'white';
+                this.style.borderColor = '#e5e7eb';
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.1)';
+            });
+        }
+
+        pageNumbersContainer.appendChild(pageButton);
+    }
+}
+
+/**
+ * 방 페이징 버튼 상태 업데이트
+ */
+function updateRoomPaginationButtons() {
+    const prevBtn = document.querySelector('.room-prev-btn');
+    const nextBtn = document.querySelector('.room-next-btn');
+
+    if (prevBtn) {
+        prevBtn.disabled = currentPage === 1;
+        prevBtn.style.opacity = currentPage === 1 ? '0.5' : '1';
+        prevBtn.style.cursor = currentPage === 1 ? 'not-allowed' : 'pointer';
+        prevBtn.style.backgroundColor = currentPage === 1 ? '#f9fafb' : 'white';
+    }
+
+    if (nextBtn) {
+        nextBtn.disabled = currentPage === totalPages;
+        nextBtn.style.opacity = currentPage === totalPages ? '0.5' : '1';
+        nextBtn.style.cursor = currentPage === totalPages ? 'not-allowed' : 'pointer';
+        nextBtn.style.backgroundColor = currentPage === totalPages ? '#f9fafb' : 'white';
+    }
+
+    // 페이지 번호 버튼들 다시 생성
+    createRoomPageNumbers();
+}
+
+/**
+ * 방 페이지 정보 업데이트
+ */
+function updateRoomPageInfo() {
+    const pageInfo = document.querySelector('.room-page-info');
+    if (!pageInfo) return;
+
+    const startItem = (currentPage - 1) * itemsPerPage + 1;
+    const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+
+    // 현재 페이지 방들의 총 요청 수 계산
+    const totalRequestsOnPage = currentPageRooms.reduce((sum, room) => sum + room.requestCount, 0);
+
+    pageInfo.innerHTML = `
+        <div style="font-size: 1rem; margin-bottom: 8px;">
+            📂 총 <strong style="color: #005792;">${totalItems}</strong>개 방 중 
+            <strong style="color: #059669;">${startItem} - ${endItem}</strong>번째 방 표시
+        </div>
+        <div style="font-size: 0.85rem; color: #64748b;">
+            현재 페이지: <strong>${totalRequestsOnPage}</strong>개 입장 요청 
+            | 페이지 ${currentPage} / ${totalPages}
+        </div>
+        <div style="font-size: 0.8rem; color: #9ca3af; margin-top: 8px;">
+            ← → 화살표키 또는 1-9 숫자키로 페이지 이동 가능
+        </div>
+    `;
+}
+
+/**
+ * 부드러운 스크롤
+ */
+function scrollToTopSmoothly() {
+    const header = document.querySelector('.page-header') || document.querySelector('header') || document.body;
+    header.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+    });
+}
+
+// ==========================================
+// 🔥 방 페이징 네비게이션 함수들 (전역 함수로 노출)
+// ==========================================
+
+/**
+ * 특정 방 페이지로 이동
+ */
+function goToRoomPage(pageNumber) {
+    if (pageNumber < 1 || pageNumber > totalPages) return;
+
+    console.log(`🎯 방 페이지 ${pageNumber}로 이동`);
+    showRoomPage(pageNumber);
+}
+
+/**
+ * 이전 방 페이지로 이동
+ */
+function goToPrevRoomPage() {
+    if (currentPage > 1) {
+        goToRoomPage(currentPage - 1);
+    }
+}
+
+/**
+ * 다음 방 페이지로 이동
+ */
+function goToNextRoomPage() {
+    if (currentPage < totalPages) {
+        goToRoomPage(currentPage + 1);
+    }
+}
+
+// ==========================================
+// 🔥 수정된 refreshData 함수 (방 페이징과 연동)
+// ==========================================
+
+async function refreshData() {
+    try {
+        console.log('🔄 데이터 새로고침 시작');
+
+        // 통계 데이터 새로고침
+        const statsData = await fetchRequestStats();
+        updateStatsDisplay(statsData);
+
+        // 🔥 올바른 함수 이름으로 수정
+        setTimeout(() => {
+            collectAllRoomSections();  // ✅ 방 섹션 수집 함수
+            if (currentPage > totalPages && totalPages > 0) {
+                showRoomPage(totalPages);  // ✅ 방 페이지 표시 함수
+            } else {
+                showRoomPage(currentPage);  // ✅ 현재 페이지 다시 표시
+            }
+            updateRoomPaginationButtons();  // ✅ 방 페이징 버튼 업데이트
+        }, 100);
+
+        // 알림 배지 업데이트
+        updateNotificationBadge();
+
+        console.log('✅ 방 데이터 새로고침 완료');
+
+    } catch (error) {
+        console.error('❌ 데이터 새로고침 실패:', error);
+    }
+}
+
+// ==========================================
+// 🔥 수정된 키보드 네비게이션 (방 페이징용)
+// ==========================================
+
+// 기존 initializeModals 함수에서 키보드 이벤트 부분을 다음과 같이 수정:
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        hideModal();
+    }
+
+    // 페이징 키보드 단축키
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        return; // 입력 필드에서는 단축키 비활성화
+    }
+
+    // 모달이 열려있으면 단축키 비활성화
+    const visibleModals = document.querySelectorAll('.modal.show');
+    if (visibleModals.length > 0) {
+        return;
+    }
+
+    // 🔥 방 페이징 키보드 단축키
+    if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        goToPrevRoomPage();
+    } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        goToNextRoomPage();
+    }
+
+    // 숫자 키로 직접 페이지 이동 (1-9)
+    if (e.key >= '1' && e.key <= '9') {
+        const pageNum = parseInt(e.key);
+        if (pageNum <= totalPages) {
+            e.preventDefault();
+            goToRoomPage(pageNum);
+        }
+    }
+});
+
+// 🔥 전역 함수 노출
+window.goToRoomPage = goToRoomPage;
+window.goToPrevRoomPage = goToPrevRoomPage;
+window.goToNextRoomPage = goToNextRoomPage;
+window.initializeRoomPagination = initializeRoomPagination;
+
+document.addEventListener('DOMContentLoaded', () => {
+    applyFilters(); // 페이지 로드 직후 필터 적용
+});
