@@ -238,68 +238,6 @@ main.room-list {
     margin-right: 8px;
 }
 
-/* 정렬 드롭다운 */
-.sort-dropdown {
-    position: relative;
-}
-
-.sort-button {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    font-size: 14px;
-    color: #374151;
-    cursor: pointer;
-    transition: border-color 0.2s ease;
-}
-
-.sort-button:hover {
-    border-color: #005792;
-}
-
-.sort-menu {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    z-index: 10;
-    min-width: 150px;
-    display: none;
-}
-
-.sort-menu.show {
-    display: block;
-}
-
-.sort-option {
-    display: block;
-    width: 100%;
-    padding: 10px 16px;
-    background: none;
-    border: none;
-    text-align: left;
-    font-size: 14px;
-    color: #374151;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-
-.sort-option:hover {
-    background-color: #f8fafc;
-}
-
-.sort-option.active {
-    background-color: #005792;
-    color: white;
-}
-
 /* 방 목록 */
 .room-list {
     display: flex;
@@ -349,7 +287,7 @@ main.room-list {
     top: 8px;
     left: 8px;
     padding: 2px 8px;
-    background: #10b981;
+    background: #10b981;  /* 기본 모집중 색상 */
     color: white;
     font-size: 11px;
     font-weight: 500;
@@ -361,7 +299,29 @@ main.room-list {
 }
 
 .room-status.completed {
-    background: #dc2626;  /* 또는 #ef4444 */
+    background: #dc2626;
+}
+
+.room-status.date-adjustment {
+    background: #f59e0b;  /* 주황색 */
+}
+
+/* 🔥 모든 상태별 테두리 */
+.room-card.urgent {
+    border-left: 4px solid #ef4444;
+}
+
+.room-card.completed {
+    border-left: 4px solid #dc2626;
+}
+
+.room-card.date-adjustment {
+    border-left: 4px solid #f59e0b;
+}
+
+/* 🔥 모집중 테두리 추가 */
+.room-card.recruiting {
+    border-left: 4px solid #10b981;  /* 초록색 테두리 */
 }
 
 .room-content {
@@ -454,17 +414,22 @@ p {
     display: flex;
     flex-direction: column;
     font-size: 11px;
+    margin-left : 4px;
+    margin-top : 5px;
 }
 
 .participants-label {
     color: #64748b;
     margin-bottom: 1px;
+    margin-left : 2px;
+    margin-top : 12px;
 }
 
 .participants-count {
     font-weight: 600;
     color: #005792;
     font-size: 12px;
+    text-align : center;
 }
 
 .room-date-info {
@@ -529,46 +494,6 @@ p {
     color: #b91c1c;
 }
 
-/* 페이지네이션 */
-.pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    margin-top: 40px;
-}
-
-.page-btn {
-    padding: 8px 12px;
-    border: 1px solid #e2e8f0;
-    background: white;
-    color: #64748b;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.2s ease;
-}
-
-.page-btn:hover {
-    border-color: #005792;
-    color: #005792;
-}
-
-.page-btn.active {
-    background: #005792;
-    border-color: #005792;
-    color: white;
-}
-
-.page-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.page-dots {
-    padding: 8px 4px;
-    color: #cbd5e1;
-}
 
 /* 모달 공통 스타일 */
 .modal {
@@ -1270,4 +1195,127 @@ p {
     .btn-apply-detail {
         width: 100%;
     }
+}
+
+/* 페이징 관련 CSS 추가 - 기존 CSS 파일 끝에 추가하세요 */
+
+/* 방 카드 표시/숨김 처리 */
+.room-card.room-hidden {
+    display: none !important;
+}
+
+.room-card.room-visible {
+    display: flex !important; /* 기존 .room-card의 display 값 유지 */
+}
+
+/* 방 카드 페이드인 애니메이션 */
+.room-card.room-fade-in {
+    animation: roomFadeIn 0.3s ease-out forwards;
+}
+
+@keyframes roomFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 페이징 버튼 스타일 개선 */
+.room-pagination-controls-new button:hover:not(:disabled) {
+    background: #f3f4f6 !important;
+    border-color: #005792 !important;
+    color: #005792 !important;
+}
+
+.room-pagination-controls-new button:disabled {
+    cursor: not-allowed !important;
+    opacity: 0.5 !important;
+}
+
+/* 페이지 번호 버튼 활성 상태 스타일 */
+.room-page-numbers-new button.active {
+    background: #005792 !important;
+    color: white !important;
+    border-color: #005792 !important;
+}
+
+/* 반응형: 모바일에서 페이징 버튼 조정 */
+@media (max-width: 768px) {
+    .room-pagination-controls-new {
+        flex-direction: column !important;
+        gap: 1rem !important;
+        padding: 1rem !important;
+    }
+
+    .room-page-numbers-new {
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+    }
+
+    .room-pagination-controls-new button {
+        min-width: 44px !important; /* 터치하기 좋은 크기 */
+        padding: 12px 16px !important;
+    }
+}
+
+.detail-emotion-tag {
+    display: inline-block;
+    padding: 10px 18px;
+    background: linear-gradient(135deg, rgba(0, 87, 146, 0.08) 0%, rgba(0, 26, 44, 0.04) 100%);
+    color: #005792;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid rgba(0, 87, 146, 0.1);
+    transition: all 0.2s ease;
+    margin-top: 30px;
+}
+
+.detail-emotion-tag:hover {
+    background: #004577;
+}
+
+/* 방 카드 내 감정 태그 영역 */
+.room-emotions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top : 8px;
+    margin-bottom: 8px;
+    margin-left : 30px;
+    padding: 8px 0;
+}
+
+.emotion-tag {
+    padding: 8px 12px;
+    background: linear-gradient(135deg, rgba(0, 87, 146, 0.08) 0%, rgba(0, 26, 44, 0.04) 100%);
+    color: #005792;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid rgba(0, 87, 146, 0.1);
+    transition: all 0.2s ease;
+}
+
+.emotion-tag:hover {
+    background: linear-gradient(135deg, rgba(0, 87, 146, 0.12) 0%, rgba(0, 26, 44, 0.06) 100%);
+    transform: translateY(-1px);
+}
+
+/* 인원 현재와 감정 태그를 나란히 배치 */
+.room-participants-and-emotions {
+    display: flex;
+    align-items: flex-start;  /* margin-top 때문에 flex-start로 변경 */
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.room-participants {
+    display: flex;
+    flex-direction: column;
+    font-size: 11px;
 }

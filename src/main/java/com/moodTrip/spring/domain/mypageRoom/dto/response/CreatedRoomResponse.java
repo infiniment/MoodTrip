@@ -23,11 +23,16 @@ public class CreatedRoomResponse {
     private String destinationName;
     private LocalDateTime createdAt;
     private List<String> emotions;
+    private String image;
 
     public static CreatedRoomResponse from(Room room) {
         List<String> emotionTexts = room.getEmotionRooms().stream()
                 .map(er -> er.getEmotion().getTagName())
                 .toList();
+
+        String image = (room.getAttraction() != null && room.getAttraction().getFirstImage() != null)
+                ? room.getAttraction().getFirstImage()
+                : "/static/image/default.png";
 
         return CreatedRoomResponse.builder()
                 .roomId(room.getRoomId())
@@ -41,6 +46,7 @@ public class CreatedRoomResponse {
                 .destinationName(room.getDestinationName())
                 .createdAt(room.getCreatedAt())
                 .emotions(emotionTexts)
+                .image(image)
                 .build();
     }
 }

@@ -47,9 +47,6 @@ public class MainPageController {
             }
         }
 
-
-        List<RoomResponse> rooms = roomService.getAllRooms();
-        model.addAttribute("rooms", rooms);
         model.addAttribute("isLoggedIn", loggedIn);
 
         return "mainpage/mainpage";  // Thymeleaf 템플릿 위치

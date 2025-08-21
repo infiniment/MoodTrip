@@ -34,10 +34,8 @@
                         방 입장 요청 관리
                         <span class="notification-badge" id="join-requests-badge" style="display: none;">0</span>
                     </a>
-                    <a class="my_reviews active" th:href="@{/mypage/my-reviews}">내가 쓴 후기</a>
                     <a class="my_tourist_attraction_wishlist active" th:href="@{/mypage/my-tourist-attraction-wishlist}">관광지 찜 목록</a>
                     <a class="change_password active" th:href="@{/mypage/change-password}">비밀번호 변경 정보</a>
-                    <a class="alarm active" th:href="@{/mypage/alarm}">알림 설정</a>
                 </aside>
                 <main class="mypage_info">
                     <div class="total-wrapper">
@@ -58,7 +56,10 @@
                                             <div class="matching-item-inner">
                                                 <div class="matching-info-section">
                                                     <div class="matching-image-wrapper">
-                                                        <img src="/image/fix/moodtrip.png" th:alt="${room.roomName}" class="matching-image">
+                                                        <img th:src="${room.image}"
+                                                             th:alt="${room.roomName}"
+                                                             class="matching-image"
+                                                             onerror="this.src='/static/image/fix.moodtrip.png'">
                                                     </div>
                                                     <div class="matching-details">
                                                         <h3 class="matching-title" th:text="${room.roomName}">방 제목</h3>
@@ -133,7 +134,10 @@
                                             <div class="matching-item-inner">
                                                 <div class="matching-info-section">
                                                     <div class="matching-image-wrapper">
-                                                        <img src="/image/fix/moodtrip.png" th:alt="${room.roomName}" class="matching-image">
+                                                        <img th:src="${room.image}"
+                                                             th:alt="${room.roomName}"
+                                                             class="matching-image"
+                                                             onerror="this.src='/static/image/fix.moodtrip.png'">
                                                     </div>
                                                     <div class="matching-details">
                                                         <h3 class="matching-title" th:text="${room.roomName}">방 제목</h3>
@@ -171,15 +175,11 @@
                                                             <span th:text="${#temporals.format(room.travelEndDate, 'yy/MM/dd')}">종료일</span>
                                                         </span>
                                                         </div>
-                                                        <div class="join-requests-info">
-                                                            <span class="label">대기 중인 요청</span>
-                                                            <span class="count pending-requests" th:attr="data-room-id=${room.roomId}">0건</span>
-                                                        </div>
                                                     </div>
                                                     <!-- 🔥 중요: 방장용 버튼들 -->
                                                     <div class="action-buttons">
                                                         <button class="btn-chat" th:attr="data-room-id=${room.roomId}">스케줄 짜러 가기</button>
-                                                        <button class="btn-manage-requests" th:attr="data-room-id=${room.roomId}" disabled>입장 요청 관리</button>
+                                                        <button class="btn-manage-requests" th:attr="data-room-id=${room.roomId}">입장 요청 관리</button>
                                                         <button class="btn-delete-room" data-room-type="host"
                                                                 th:attr="data-room-id=${room.roomId}">방 삭제하기</button>
                                                     </div>

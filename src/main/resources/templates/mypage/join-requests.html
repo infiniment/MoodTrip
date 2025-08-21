@@ -34,10 +34,8 @@
                               th:if="${totalPendingRequests > 0}"
                               th:text="${totalPendingRequests}">3</span>
                     </a>
-                    <a class="my_reviews" th:href="@{/mypage/my-reviews}">내가 쓴 후기</a>
                     <a class="my_tourist_attraction_wishlist" th:href="@{/mypage/my-tourist-attraction-wishlist}">관광지 찜 목록</a>
                     <a class="change_password" th:href="@{/mypage/change-password}">비밀번호 변경 정보</a>
-                    <a class="alarm" th:href="@{/mypage/alarm}">알림 설정</a>
                 </aside>
 
                 <main class="mypage_info">
@@ -79,7 +77,6 @@
                                 <option value="high">높음</option>
                                 <option value="normal">보통</option>
                             </select>
-                            <input type="text" class="search-input" placeholder="이름 또는 메시지로 검색..." id="search-requests">
                         </div>
 
                         <!-- 🔥 에러 메시지 표시 -->
@@ -97,7 +94,6 @@
                                 </svg>
                                 <h3>아직 만든 방이 없습니다</h3>
                                 <p>방을 만들면 입장 요청을 관리할 수 있습니다.</p>
-                                <a th:href="@{/creating-room}" class="btn-primary" style="margin-top: 1rem;">방 만들기</a>
                             </div>
 
                             <!-- 🔥 방별 요청 섹션 - 서버 데이터로 동적 생성 -->
