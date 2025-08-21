@@ -37,7 +37,7 @@ public class AttractionController {
                 .body(created);
     }
 
-    // =============== 목록 동기화  ===============
+//     =============== 목록 동기화  ===============
     @PostMapping("/sync/area")
     public ResponseEntity<SyncAreaResponse> syncArea(
             @RequestParam("areaCode") @Min(1) @Max(99) int areaCode,
@@ -57,7 +57,7 @@ public class AttractionController {
         );
     }
 
-    // =============== 소개 ===============
+//     =============== 소개 ===============
     @PostMapping("/sync/intro")
     public ResponseEntity<SyncIntroResponse> syncIntro(
             @RequestParam("contentId") @Positive long contentId,
@@ -153,7 +153,7 @@ public class AttractionController {
         );
     }
 
-    // =============== 지정한 여러 지역 동기화 ===============
+//     =============== 지정한 여러 지역 동기화 ===============
     @PostMapping("/sync/area/codes")
     public ResponseEntity<SyncAreaCodesResponse> syncAreaCodes(
             @RequestParam("areaCodes") List<@Min(1) @Max(99) Integer> areaCodes,

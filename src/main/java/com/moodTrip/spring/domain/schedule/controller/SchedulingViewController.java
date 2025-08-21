@@ -69,6 +69,14 @@ public class SchedulingViewController  {
         model.addAttribute("durationLabel", durationLabel);
         model.addAttribute("currentMember", userDetails.getMember());
 
+        if (room.getDestinationLat() != null && room.getDestinationLon() != null) {
+            model.addAttribute("lat", room.getDestinationLat());
+            model.addAttribute("lon", room.getDestinationLon());
+        } else if (room.getAttraction() != null) {
+            model.addAttribute("lat", room.getAttraction().getMapY()); // 위도
+            model.addAttribute("lon", room.getAttraction().getMapX()); // 경도
+        }
+
         return "schedule-with-companion/scheduling";
     }
 }
