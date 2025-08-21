@@ -535,9 +535,10 @@ public class AttractionServiceImpl implements AttractionService {
 
 
 
-// findInitialAttractions 메서드 아래에 추가
+    // findInitialAttractions 메서드 아래에 추가
 
     // [추가] Emotion 태그 ID로 관광지를 검색하는 로직
+    @Override
     public List<AttractionCardDTO> findAttractionsByEmotionTag(Integer tagId, int limit) {
         Pageable pageable = PageRequest.of(0, limit);
         // Repository에 추가한 쿼리 메서드 호출

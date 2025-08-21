@@ -3,6 +3,7 @@ package com.moodTrip.spring.domain.attraction.service;
 import com.moodTrip.spring.domain.attraction.dto.request.AttractionInsertRequest;
 import com.moodTrip.spring.domain.attraction.dto.response.AttractionResponse;
 import com.moodTrip.spring.domain.attraction.entity.Attraction;
+import com.moodTrip.spring.domain.emotion.dto.response.AttractionCardDTO;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -33,4 +34,9 @@ public interface AttractionService {
 
     //관리자 감정 매핑 검색
     Page<Attraction> searchAttractions(String keyword, int page, int size);
+
+
+   List<AttractionCardDTO> findAttractionsByEmotionTag(Integer tagId, int limit);
+
+
 }
