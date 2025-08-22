@@ -1471,3 +1471,80 @@ body.room-create .room-create-formview .container::after {
         font-size: 13px;
     }
 }
+/* =========================
+   final-registration: responsive overrides
+   ========================= */
+
+/* 0) 기본: 고정폭/넘침 제거 + 컨테이너 중앙정렬 */
+.big-frame { min-width: 0; } /* 데스크톱 최소폭 강제 해제 */
+body.room-create .room-create-formview .container{
+    width: 100%;
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
+/* 1) 데스크톱(>=1025px): 좌측 진행상태 + 우측 폼을 한 줄에 */
+@media (min-width: 1025px){
+    body.room-create .room-create-formview .container{
+        display: flex;
+        align-items: flex-start;
+        gap: 24px;
+    }
+    /* 사이드바는 고정폭, shrink 방지 */
+    body.room-create .submit-progress{
+        float: none;
+        margin: 0;
+        flex: 0 0 264px;
+    }
+    /* 폼 영역은 남는 공간을 차지 */
+    body.room-create .room-create-form-section{
+        float: none;
+        flex: 1 1 0;
+        min-width: 0;
+    }
+}
+
+/* 2) 태블릿(<=1024px): 1열 스택 + 안쪽 여백 보정 */
+@media (max-width: 1024px){
+    .big-frame { padding: 20px; }                 /* 가장자리 여백 */
+    body.room-create .submit-progress{
+        float: none; width: 100%; margin: 0 0 24px;
+    }
+    body.room-create .room-create-form-section{
+        float: none; width: 100%;
+    }
+    /* 섹션 패딩 살짝 축소 */
+    .form-section-header{ padding: 22px 20px; }
+    .form-input-section{  padding: 24px; }
+}
+
+/* 3) 모바일(<=768px): 터치 우선 레이아웃 */
+/*@media (max-width: 768px){*/
+/*    !* 섹션 패딩 더 축소 *!*/
+/*    .form-section-header{ padding: 18px 16px; }*/
+/*    .form-input-section{  padding: 16px; }*/
+
+/*    !* 하단 버튼이 줄바꿈 없이 꽉 차게 *!*/
+/*    body.room-create .room-create-form-section .form-section-footer{*/
+/*        display: flex;*/
+/*        justify-content: stretch;*/
+/*        gap: 8px;*/
+/*    }*/
+/*    body.room-create .room-create-form-section .form-section-footer .btn{*/
+/*        width: 100%;*/
+/*        display: block;*/
+/*    }*/
+
+/*    !* 최종 등록의 성공/도움말 모달은 세로 공간에 맞춰 축소 *!*/
+/*    .success-buttons{ flex-direction: column; }*/
+/*    .help-modal-content{*/
+/*        width: 95%;*/
+/*        margin: 20px;*/
+/*        max-height: 90vh;*/
+/*    }*/
+/*}*/
+
+/* 4) 성공 모달: 작은 화면에서 텍스트 줄간격 유지(파일의 기존 규칙 존중) */
+.success-modal-content,
+.success-modal-content *{ line-height: 1.4; }

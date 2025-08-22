@@ -1262,3 +1262,110 @@ body.room-create .room-create-formview .container::after {
         padding: 12px 20px 20px;
     }
 }
+
+/* =========================
+   choosing-attraction: responsive overrides
+   ========================= */
+
+/* 0) 고정폭/가로 넘침 제거 */
+.big-frame { min-width: 0; } /* was 1080px */
+body.room-create.phase-3 .room-create-formview .container{
+    /* was width:1080px */
+    width: 100%;
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
+/* 1) 데스크톱(>=1025px): float → flex 로 한 줄 고정 */
+@media (min-width: 1025px){
+    body.room-create.phase-3 .room-create-formview .container{
+        display: flex; align-items: flex-start; gap: 24px;
+        padding-left: 0;
+        padding-right: 0;
+    }
+    /* 사이드바 폭을 shrink되지 않게 고정 */
+    body.room-create.phase-3 .submit-progress{
+        float: none; margin: 0; flex: 0 0 264px; /* ← 원하면 280~360px로 조절 */
+    }
+    body.room-create.phase-3 .room-create-form-section{
+        float: none; flex: 1 1 0; min-width: 0;
+    }
+}
+
+@media (max-width: 1024px) {
+    body.room-create.phase-3 .room-create-formview .container {
+        padding: 0 16px;
+    }
+}
+
+/* 2) 여행지 카드 그리드 반응형 */
+body.room-create.phase-3 .destination-results-grid{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);  /* 기본 3열 */
+    gap: 16px;
+}
+@media (max-width: 900px){
+    body.room-create.phase-3 .destination-results-grid{
+        grid-template-columns: repeat(2, 1fr); /* 태블릿 2열 */
+    }
+}
+@media (max-width: 520px){
+    body.room-create.phase-3 .destination-results-grid{
+        grid-template-columns: 1fr;            /* 폰 1열 */
+    }
+    .destination-image{ height: 180px; }     /* 이미지 비율 유지 */
+}
+
+/* 3) 선택된 관광지 표시(좌우 → 상하) */
+@media (max-width: 768px){
+    body.room-create.phase-3 .selected-destination-info{
+        display: grid; grid-template-columns: 1fr; gap: 12px;
+    }
+    body.room-create.phase-3 .selected-destination-info .destination-image{
+        width: 100%; height: 160px;
+    }
+}
+
+/* 4) 검색/버튼/페이지네이션 정리 */
+@media (max-width: 768px){
+    .destination-filter{ justify-content: stretch; }
+    .filter-select{ width: 100%; }
+
+    .btn-right{ float: none; width: 100%; }   /* 다음 버튼 풀폭 */
+}
+.pagination{ flex-wrap: wrap; row-gap: 8px; } /* 버튼이 좁을 때 자동 줄바꿈 */
+
+/* 5) 단계 번호(원 안 숫자) 중앙 정렬 */
+body.room-create.phase-3 .submit-progress .status-sub-menu-title .sub-menu-marker{
+    width:14px; height:14px; border-radius:50%;
+    display:inline-flex; align-items:center; justify-content:center;
+    margin:0 12px 0 0; line-height:1; font-size:10px; vertical-align:middle;
+}
+
+/* 6) “다음” 버튼이 스크롤에 딸려 올라가지 않도록: sticky 해제 보강 */
+body.room-create.phase-3 .room-create-form-section .form-section-footer{
+    position: static !important; bottom: auto !important; z-index: auto !important; box-shadow:none !important;
+}
+
+/* 페이징 공통 정리 */
+.pagination { display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:nowrap; }
+.pagination-numbers { display:flex; gap:8px; }
+.pagination-button, .pagination-number { flex:0 0 auto; white-space:nowrap; }
+.pagination-number.active { font-weight:600; }
+
+/* 모바일(≤600px): 숫자 대신 현재/전체만 */
+.pagination-compact { display:none; }
+@media (max-width: 600px){
+    .pagination { justify-content: space-between; }
+    .pagination-numbers .pagination-number,
+    .pagination-numbers .pagination-ellipsis { display: none; }
+    .pagination-compact { display: inline-block; font-weight: 600; }
+}
+
+@media (min-width: 1280px) {
+    body.room-create.phase-3 .room-create-formview .container {
+        max-width: 1125px; /* 1240~1280 등 원하는 값으로 조절 */
+    }
+}
+

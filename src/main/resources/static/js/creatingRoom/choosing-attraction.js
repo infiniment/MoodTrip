@@ -186,61 +186,87 @@ function initializeDestinationSearch() {
     }
 }
 
-function setupServerPagination(totalPages, current, totalElements) {
-    const container = document.getElementById('paginationContainer');
+// 화면폭에 따라 모드/버튼 수 결정
+function paginationMode() {
+    const w = window.innerWidth;
+    if (w <= 600) return { mode: 'compact', max: 0 }; // 모바일
+    if (w <= 1024) return { mode: 'normal',  max: 5 }; // 태블릿
+    return { mode: 'normal', max: 7 };                 // 데스크톱
+}
 
+let __pageState = { totalPages: 0, current: 0, totalElements: 0 };
+
+function setupServerPagination(totalPages, current, totalElements) {
+    __pageState = { totalPages, current, totalElements };
+
+    const container = document.getElementById('paginationContainer');
     if (!container) return;
 
-    if (totalPages <= 1) {
-        container.hidden = true;
-        return;
-    }
+    if (totalPages <= 1) { container.hidden = true; return; }
     container.hidden = false;
 
+    const { mode, max } = paginationMode();
+
     const numbers = container.querySelector('.pagination-numbers');
-    numbers.innerHTML = '';
+    numbers.innerHTML = ''; // 초기화
 
-    const maxButtons = 4;             // ← 한 번에 보여줄 최대 버튼 개수
-    let start = Math.max(0, current - Math.floor(maxButtons / 2));
-    let end   = start + maxButtons - 1;
-
-    if (end > totalPages - 1) {
-        end = totalPages - 1;
-        start = Math.max(0, end - (maxButtons - 1));
-    }
-
-    // 이전 버튼
+    // 이전/다음 버튼
     const prevBtn = container.querySelector('.pagination-button.prev');
+    const nextBtn = container.querySelector('.pagination-button.next');
     if (prevBtn) {
-        prevBtn.disabled = current === 0;
+        prevBtn.disabled = current <= 0;
         prevBtn.onclick = () => current > 0 && runSearchPaged(lastQuery, current - 1);
     }
-
-    // 앞쪽 생략(...) 표시
-    if (start > 0) {
-        numbers.appendChild(makePageBtn(0, current));     // 1
-        numbers.appendChild(makeEllipsis());
-    }
-
-    // 윈도우 구간
-    for (let i = start; i <= end; i++) {
-        numbers.appendChild(makePageBtn(i, current));
-    }
-
-    // 뒤쪽 생략(...) 표시
-    if (end < totalPages - 1) {
-        numbers.appendChild(makeEllipsis());
-        numbers.appendChild(makePageBtn(totalPages - 1, current)); // 마지막
-    }
-
-    // 다음 버튼
-    const nextBtn = container.querySelector('.pagination-button.next');
     if (nextBtn) {
         nextBtn.disabled = current >= totalPages - 1;
         nextBtn.onclick = () => current < totalPages - 1 && runSearchPaged(lastQuery, current + 1);
     }
 
-    // 범위/총개수 표시
+    // --- 모바일: 콤팩트 표시 (예: 12 / 623) ---
+    if (mode === 'compact') {
+        const compact = document.createElement('div');
+        compact.className = 'pagination-compact';
+        compact.innerHTML = `<strong class="current">${current + 1}</strong> / <span class="total">${totalPages}</span>`;
+        numbers.appendChild(compact);
+    } else {
+        // --- 데스크톱/태블릿: 숫자 버튼 ---
+        const maxButtons = Math.max(3, max);
+        let start = Math.max(0, current - Math.floor(maxButtons / 2));
+        let end   = start + maxButtons - 1;
+
+        if (end > totalPages - 1) {
+            end = totalPages - 1;
+            start = Math.max(0, end - (maxButtons - 1));
+        }
+
+        const makePageBtn = (pageIdx, cur) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'pagination-number' + (pageIdx === cur ? ' active' : '');
+            btn.textContent = String(pageIdx + 1);
+            btn.dataset.page = pageIdx;
+            btn.addEventListener('click', () => runSearchPaged(lastQuery, pageIdx));
+            return btn;
+        };
+        const makeEllipsis = () => {
+            const span = document.createElement('span');
+            span.className = 'pagination-ellipsis';
+            span.textContent = '…';
+            return span;
+        };
+
+        if (start > 0) {
+            numbers.appendChild(makePageBtn(0, current));     // 첫 페이지
+            if (start > 1) numbers.appendChild(makeEllipsis());
+        }
+        for (let i = start; i <= end; i++) numbers.appendChild(makePageBtn(i, current));
+        if (end < totalPages - 1) {
+            if (end < totalPages - 2) numbers.appendChild(makeEllipsis());
+            numbers.appendChild(makePageBtn(totalPages - 1, current)); // 마지막
+        }
+    }
+
+    // 하단 범위/총개수
     const size = serverSize;
     const startIdx = current * size + 1;
     const endIdx   = Math.min((current + 1) * size, totalElements || 0);
@@ -248,24 +274,14 @@ function setupServerPagination(totalPages, current, totalElements) {
     const totalEl = container.querySelector('.pagination-info .total');
     if (range)  range.textContent = `${startIdx} - ${endIdx} / `;
     if (totalEl) totalEl.textContent = String(totalElements ?? 0);
-
-    // helpers
-    function makePageBtn(pageIdx, cur) {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'pagination-number' + (pageIdx === cur ? ' active' : '');
-        btn.textContent = (pageIdx + 1);
-        btn.dataset.page = pageIdx;
-        btn.addEventListener('click', () => runSearchPaged(lastQuery, pageIdx));
-        return btn;
-    }
-    function makeEllipsis() {
-        const span = document.createElement('span');
-        span.className = 'pagination-ellipsis';
-        span.textContent = '…';
-        return span;
-    }
 }
+
+// 창 크기 변경 시 자동 재렌더
+window.addEventListener('resize', () => {
+    if (__pageState.totalPages > 0) {
+        setupServerPagination(__pageState.totalPages, __pageState.current, __pageState.totalElements);
+    }
+});
 
 async function runSearchPaged(q, page = 0) {
     const grid = document.getElementById('destinationResults');

@@ -3,10 +3,29 @@ let selectedEmotions = [];
 
 // DOM 로드 후 실행
 document.addEventListener('DOMContentLoaded', function() {
+    const hasPeople = !!localStorage.getItem('selected_people');
+    const hasName   = !!localStorage.getItem('room_name');
+    const hasIntro  = !!localStorage.getItem('room_description');
+    if (!hasPeople || !hasName || !hasIntro) {
+        alert('먼저 기본 정보를 입력해주세요.');
+        window.location.replace('/companion-rooms/create');
+    }
     initializeCategoryButtons();
     restoreTemporaryEmotions();
     applyEmotionPrefill();
     initializeNextButton();
+});
+
+document.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href]');
+    if (!a) return;
+
+    const href = a.getAttribute('href');
+    if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
+
+    if (href.startsWith('/companion-rooms/attraction')) navIntent = 'next';      // 다음 단계
+    else if (href.startsWith('/companion-rooms/create')) navIntent = 'back';     // 이전 단계
+    else navIntent = 'leave';                                                    // 그 외 페이지
 });
 
 // 프리필 감정 자동 적용(최대 3개, 이미 선택한 건 유지)
@@ -157,6 +176,8 @@ function hideCategoryEmotions() {
     displayArea.style.display = 'none';
 }
 
+let navIntent = 'unknown';
+
 // 감정 태그 추가
 function addEmotionTag(emotion, type) {
     if (selectedEmotions.length >= 3 && !isEmotionAlreadySelected(emotion)) {
@@ -294,12 +315,6 @@ function restoreTemporaryEmotions() {
     }
 }
 
-// 페이지를 벗어나면 감정 초기화
-window.addEventListener('beforeunload', function() {
-    if (selectedEmotions.length > 0) {
-        localStorage.setItem('temp_selected_emotions', JSON.stringify(selectedEmotions));
-    }
-});
 
 // 폼 제출 시 선택된 감정들을 hidden input에 추가
 function prepareFormSubmission() {
@@ -338,12 +353,10 @@ function validationPhase(form) {
 
 // 뒤로가기 함수
 function exitWithSubmit(formId, canSubmit) {
-    // 현재 선택된 감정들을 로컬 스토리지에 저장
+    navIntent = 'back';                             // << 추가
     if (selectedEmotions.length > 0) {
         localStorage.setItem('temp_selected_emotions', JSON.stringify(selectedEmotions));
     }
-
-    // 이전 페이지로 이동
     window.location.href = '/companion-rooms/create';
 }
 
@@ -353,17 +366,10 @@ function initializeNextButton() {
     if (nextButton) {
         nextButton.addEventListener('click', function(e) {
             e.preventDefault();
+            if (selectedEmotions.length === 0) { alert('최소 하나의 감정 태그를 선택해주세요.'); return; }
 
-            // 유효성 검사
-            if (selectedEmotions.length === 0) {
-                alert('최소 하나의 감정 태그를 선택해주세요.');
-                return;
-            }
-
-            // 선택된 감정들 저장
-            saveEmotionsForNextPage();
-
-            // 다음 페이지로 이동
+            navIntent = 'next';
+            saveEmotionsForNextPage();                  // 다음 단계에서 읽을 값 저장
             goToNextPage();
         });
     }
@@ -432,10 +438,10 @@ document.addEventListener('keydown', function(e) {
 // 빠른 선택 기능
 function selectQuickEmotions(type) {
     const emotionSets = {
-        'positive': ['기쁨', '즐거움', '행복', '만족'],
-        'healing': ['평온', '안정', '휴식', '여유'],
-        'adventure': ['모험', '스릴', '도전', '짜릿함'],
-        'comfort': ['위로', '공감', '이해', '지지']
+        positive: ['기쁨','즐거움','행복','만족'],
+        healing:  ['평온','안정','휴식','여유'],
+        adventure:['모험','스릴','도전','짜릿함'],
+        comfort:  ['위로','공감','이해','지지']
     };
 
     // 기존 선택 해제
@@ -443,14 +449,14 @@ function selectQuickEmotions(type) {
     updateSelectedEmotionsDisplay();
     updateCategoryButtonBadges();
 
-    // 새로운 감정들 선택
+    // 이름으로 id 찾아서 정상 추가
     if (emotionSets[type]) {
-        emotionSets[type].forEach(emotion => {
-            addEmotionTag({id: emotion.id, text: emotion.text}, 'preset');
+        emotionSets[type].forEach((name) => {
+            const em = findEmotionByName(name);
+            if (em) addEmotionTag(em, 'preset');
         });
     }
 
-    // 모달 닫기
     closeHelpModal();
 }
 
@@ -499,18 +505,21 @@ function getEmotionStats() {
     };
 }
 
-// 페이지 언로드 시 임시 저장
-window.addEventListener('beforeunload', function() {
-    if (selectedEmotions.length > 0) {
-        localStorage.setItem('temp_selected_emotions', JSON.stringify(selectedEmotions));
+
+window.addEventListener('beforeunload', function () {
+    if (navIntent === 'next') {
+        // 다음 단계로 갈 때: 이미 saveEmotionsForNextPage()로 저장됨
+        // 남아있을 수 있는 임시값은 정리
+        localStorage.removeItem('temp_selected_emotions');
+    } else if (navIntent === 'back') {
+        // 이전 단계로 돌아갈 때: 임시값만 보존
+        if (selectedEmotions.length > 0) {
+            localStorage.setItem('temp_selected_emotions', JSON.stringify(selectedEmotions));
+        } else {
+            localStorage.removeItem('temp_selected_emotions');
+        }
+    } else {
+        // 그 외(헤더 이동, 주소창 입력, 새 탭/닫기 등): 전부 초기화
+        clearEmotionData(); // selected_emotions / temp_selected_emotions 모두 제거
     }
 });
-
-// 디버그 정보 (개발용)
-function getDebugInfo() {
-    return {
-        selectedEmotions: selectedEmotions,
-        stats: getEmotionStats(),
-        categoryNames: categoryNames
-    };
-}

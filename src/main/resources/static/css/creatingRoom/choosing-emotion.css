@@ -1156,10 +1156,11 @@ body.room-create .room-create-formview .container::after {
         min-width: auto;
         padding: 20px;
     }
+
     
     body.room-create .room-create-formview .container {
         width: 100%;
-        max-width: 1080px;
+        max-width: 1125px;
     }
     
     body.room-create .submit-progress {
@@ -1259,3 +1260,136 @@ body.room-create .room-create-formview .container::after {
         font-size: 13px;
     }
 }
+
+/* =========================
+   choosing-emotion: responsive overrides
+   ========================= */
+
+/* 0) 기본: 고정폭/넘침 제거 */
+.big-frame { min-width: 0; } /* was 1080px */
+body.room-create .room-create-formview .container{
+    /* was width:1080px */
+    width: 100%;
+    max-width: 1145px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
+/* 1) 진행 단계 ‘원 안 숫자’ 중앙정렬 (기존 규칙 덮어쓰기) */
+body.room-create .submit-progress .input-group-status
+.status-sub-menu .status-sub-menu-title .sub-menu-marker{
+    width: 14px; height: 14px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    margin: 0 12px 0 0; line-height: 1; font-size: 10px; vertical-align: middle;
+}
+
+/* 2) 데스크톱(>=1025px): float -> flex (두 영역 한 줄 고정) */
+@media (min-width: 1025px){
+    body.room-create .room-create-formview .container{
+        display: flex; align-items: flex-start; gap: 24px;
+    }
+    /* 사이드바 폭은 flex-basis로 ‘고정’(shrink 방지) */
+    body.room-create .submit-progress{
+        float: none; margin: 0; flex: 0 0 264px;
+    }
+    body.room-create .room-create-form-section{
+        float: none; flex: 1 1 0; min-width: 0;
+    }
+    /* 카테고리 버튼 3열 유지(낮은 해상도에서 줄바꿈 과도 방지) */
+    .emotion-category-buttons{
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+/* 3) 태블릿(<=1024px): 기존 1200px 미디어쿼리와 동일한 스택 + 여백 보정 */
+@media (max-width: 1024px){
+    .form-section-header{ padding: 22px 20px; }
+    .form-input-section{ padding: 24px; }
+}
+
+/* 4) 모바일(<=768px): 1열, 버튼/그리드 축소 */
+@media (max-width: 768px){
+    body.room-create .submit-progress{ float: none; width: 100%; margin: 0 0 16px; }
+    body.room-create .room-create-form-section{ float: none; width: 100%; }
+
+    .form-section-header{ padding: 18px 16px; }
+    .form-input-section{ padding: 16px; }
+
+    /* 카테고리 버튼 2열 → 이미 파일에 존재하지만 보강 */
+    .emotion-category-buttons{
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    /* 태그 그리드 가독성 보강 */
+    .emotion-tags-display .emotion-tags-grid{
+        grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+        gap: 8px;
+    }
+
+    /* 하단 '다음' 버튼이 겹치지 않도록 */
+    .btn-right{ float: none; width: 100%; }
+    .btn.btn-client{ width: 100%; }
+}
+
+/* 5) 초소형 폰(<=480px): 1열 고정 */
+@media (max-width: 480px){
+    .emotion-category-buttons{ grid-template-columns: 1fr; }
+    .category-btn .category-name{ font-size: 13px; }
+}
+
+/* 폼 하단 버튼을 화면 하단에 고정(섹션 범위 안에서 sticky) */
+body.room-create .room-create-form-section {
+    position: relative; /* sticky 기준 컨테이너 */
+}
+
+body.room-create .room-create-form-section .form-section-footer {
+    position: sticky;
+    bottom: 0;                 /* 뷰포트 하단에 붙기 */
+    background: #fff;          /* 내용과 겹침 대비 */
+    z-index: 20;
+    border-top: 1px solid #e0e0e0;
+    box-shadow: 0 -6px 16px rgba(0,0,0,0.06); /* 살짝 띄워 보이게 */
+}
+
+/* 버튼이 좌우로 떠 있지 않도록 */
+body.room-create .room-create-form-section .form-section-footer .btn-right {
+    float: none;
+}
+
+/* 모바일에서는 버튼을 풀폭으로 */
+@media (max-width: 768px){
+    body.room-create .room-create-form-section .form-section-footer .btn {
+        width: 100%;
+        display: block;
+    }
+}
+
+/* sticky 영역에 가려지지 않도록 본문 아래 여백 조금 더 확보 */
+body.room-create .room-create-form-section .form-input-section {
+    padding-bottom: 96px; /* 기존 60px보다 여유있게 */
+}
+
+/* 폼 하단 액션 바 정렬 */
+body.room-create .room-create-form-section .form-section-footer{
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;  /* 오른쪽 정렬 */
+    gap: 8px;
+}
+
+/* 버튼은 float 없이도 오른쪽으로 */
+body.room-create .room-create-form-section .form-section-footer .btn-right{
+    float: none;        /* 기존 override 유지 */
+    margin-left: auto;  /* flex에서 오른쪽으로 밀기 */
+}
+
+@media (max-width: 768px){
+    body.room-create .room-create-form-section .form-section-footer{
+        justify-content: stretch;
+    }
+    body.room-create .room-create-form-section .form-section-footer .btn-right{
+        width: 100%;      /* 모바일 풀폭 */
+    }
+}
+
