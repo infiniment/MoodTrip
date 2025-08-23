@@ -234,47 +234,9 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .catch(err => console.error('3일 예보 불러오기 실패:', err));
 
-    // // 현재 날씨
-    // fetch('/api/weather/current')
-    //     .then(res => res.json())
-    //     .then(renderCurrentWeather)
-    //     .catch(err => console.error('현재 날씨 불러오기 실패:', err));
-    //
-    // // 3일 예보
-    // fetch('/api/weather/daily')
-    //     .then(res => res.json())
-    //     .then(renderDailyForecast)
-    //     .catch(err => console.error('3일 예보 불러오기 실패:', err));
-
 });
 
 
-// // 메신저 초기화
-// function initializeMessenger() {
-//     const messengerWidget = document.getElementById('messengerWidget');
-//     const floatingBtn = document.getElementById('messengerFloatingBtn');
-//
-//     // 초기에는 메신저 숨김
-//     if (messengerWidget) {
-//         messengerWidget.style.display = 'none';
-//     }
-//
-//     // 플로팅 버튼 표시
-//     if (floatingBtn) {
-//         floatingBtn.style.display = 'flex';
-//     }
-//
-//     // 채팅 입력창 엔터키 이벤트
-//     const chatInput = document.getElementById('chatInput');
-//     if (chatInput) {
-//         chatInput.addEventListener('keypress', function(e) {
-//             if (e.key === 'Enter' && !e.shiftKey) {
-//                 e.preventDefault();
-//                 sendMessage();
-//             }
-//         });
-//     }
-// }
 
 function loadSeenSet(key) {
     try { return new Set(JSON.parse(localStorage.getItem(key) || '[]')); }
@@ -372,38 +334,6 @@ function addReceivedMessage(chatMessageResponse) {
     addMessageToUI(chatMessageResponse.sender, message, isCurrentUser, timeString);
 }
 
-// // 메시지를 UI에 추가하는 함수
-// async function addMessageToUI(sender, content, isCurrentUser = false, timeString = null) {
-//     const chatMessages = document.getElementById('chatMessages');
-//     const messageDiv = document.createElement('div');
-//     messageDiv.className = `chat-message ${isCurrentUser ? 'user' : ''}`;
-//
-//     const currentTime = timeString || new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
-//
-//     if (isCurrentUser) {
-//         messageDiv.innerHTML = `
-//       <div class="message-content">
-//         ${content}
-//         <div class="message-time">${currentTime}</div>
-//       </div>`;
-//     } else {
-//         const avatarUrl = await getAvatar(sender);
-//         messageDiv.innerHTML = `
-//       <div class="message-avatar">
-//         <img src="${avatarUrl}" alt="${sender}" onerror="this.src='${DEFAULT_AVATAR}'">
-//       </div>
-//       <div class="message-content">
-//         <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-//           <strong>${sender}</strong>
-//           <span class="message-time" style="font-size:11px;color:#999;">${currentTime}</span>
-//         </div>
-//         <div>${content}</div>
-//       </div>`;
-//     }
-//
-//     chatMessages.appendChild(messageDiv);
-//     scrollToBottom();
-// }
 
 // 채팅 스크롤을 최하단으로
 function scrollToBottom() {
@@ -472,81 +402,6 @@ function addSystemMessage(content) {
 let isConnecting = false;
 let closedByClient = false;
 
-// WebSocket 연결 설정
-// function connectWebSocket() {
-//     const socket = new SockJS('/ws/chat', null, { transports: ['websocket'] });
-//     stompClient = Stomp.over(socket);
-//
-//     stompClient.connect({}, function (frame) {
-//         console.log('WebSocket 연결 성공: ' + frame);
-//
-//         // 채팅방 메시지 구독
-//         stompClient.subscribe(`/sub/chatroom/${chattingRoomId}`, function (message) {
-//             const chatMessage = JSON.parse(message.body);
-//             addReceivedMessage(chatMessage);
-//         });
-//
-//         // 스케줄링 접속자 목록 구독
-//         stompClient.subscribe(`/sub/schedule/${roomId}`, function (message) {
-//             console.log("[서버에서 수신함]", message.body);
-//             const onlineUsers = JSON.parse(message.body);
-//             updateSchedulingOnlineUsers(onlineUsers);
-//         });
-//
-//         stompClient.subscribe(`/sub/schedule/room/${roomId}`, function (message) {
-//             const payload = JSON.parse(message.body);
-//             const type = payload.type;
-//             const data = payload.data;
-//
-//             switch (type) {
-//                 case 'CREATE':
-//                     addScheduleToUI(data);
-//                     break;
-//                 case 'UPDATE':
-//                     updateScheduleInUI(data);
-//                     break;
-//                 case 'DELETE':
-//                     removeScheduleFromUI(data);
-//                     break;
-//             }
-//         })
-//
-//         // 입장 메시지 전송
-//         sendEnterMessage();
-//         sendSchedulingEnterMessage();
-//
-//     }, function (error) {
-//         console.error('WebSocket 연결 실패:', error);
-//         setTimeout(connectWebSocket, 5000); // 재연결 시도
-//     });
-// }
-//
-// function renderHistory(items) {
-//     if (!Array.isArray(items) || items.length === 0) return;
-//
-//     for (const it of items) {
-//         const sender = it.sender ?? '';
-//         const content = it.message ?? '';
-//         // sentAt(epoch ms) 우선, 없으면 sendTime(ISO)
-//         const t = (typeof it.sentAt === 'number')
-//             ? new Date(it.sentAt)
-//             : (it.sendTime ? new Date(it.sendTime) : new Date());
-//         const timeString = t.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
-//
-//         const isCurrentUser = sender === currentUser;
-//
-//         // 시스템(ENTER/LEAVE) 문구면 시스템 메시지로
-//         if (String(it.type).toUpperCase() === 'ENTER' || String(it.type).toUpperCase() === 'LEAVE' ||
-//             content.includes('입장했습니다') || content.includes('퇴장했습니다')) {
-//             addSystemMessage(content);
-//         } else {
-//             addMessageToUI(sender, content, isCurrentUser, timeString);
-//         }
-//     }
-//
-//     // 히스토리 그린 뒤 맨 아래로
-//     setTimeout(scrollToBottom, 50);
-// }
 
 // WebSocket 연결 설정
 function connectWebSocket() {
@@ -737,27 +592,7 @@ function sendSchedulingEnterMessage() {
         stompClient.send("/pub/schedule/enter", {}, JSON.stringify(schedulingEnterMsg));
     }
 }
-// WebSocket 연결 해제
-// function disconnectWebSocket() {
-//     if (stompClient && stompClient.connected) {
-//         // 퇴장 메시지 전송
-//         const leaveMessage = {
-//             type: 'LEAVE',
-//             chattingRoomId: chattingRoomId,
-//             sender: currentUser,
-//             message: `${currentUser}님이 퇴장했습니다.`
-//         };
-//
-//         stompClient.send("/pub/chat/message", {}, JSON.stringify(leaveMessage));
-//         stompClient.disconnect();
-//         console.log('WebSocket 연결 해제');
-//     }
-//
-//     // 사용자 목록에서 제거
-//     const usedUsers = JSON.parse(localStorage.getItem('usedUsers') || '[]');
-//     const updatedUsers = usedUsers.filter(user => user !== currentUser);
-//     localStorage.setItem('usedUsers', JSON.stringify(updatedUsers));
-// }
+
 
 function disconnectWebSocket() {
     try {
@@ -1431,9 +1266,10 @@ function setupRouteUI() {
     const sRes   = document.getElementById('startResults');
     const eRes   = document.getElementById('endResults');
     const btn    = document.getElementById('routeBtn');
+    const swap   = document.getElementById('swapRouteBtn');
 
-    if (!sInput || !eInput || !btn) return;
-    if (btn.dataset.bound === '1') return;  // 중복 방지
+    if (!sInput || !eInput || !btn || !swap) return;
+    if (btn.dataset.bound === '1') return;     // 중복 방지 (기존 로직)
     btn.dataset.bound = '1';
 
     // 오토컴플리트(이미 만든 함수 재사용)
@@ -1442,6 +1278,22 @@ function setupRouteUI() {
 
     // 버튼 클릭 바인딩
     btn.addEventListener('click', onRouteClick);
+    swap.addEventListener('click', onSwapClick);
+}
+
+// 길찾기 swap용 추가
+function onSwapClick() {
+    const sInput = document.getElementById('startInput');
+    const eInput = document.getElementById('endInput');
+    if (!sInput || !eInput) return;
+
+    // 입력값 교환
+    [sInput.value, eInput.value] = [eInput.value, sInput.value];
+    // 선택된 위치 객체도 교환
+    [startPick, endPick] = [endPick, startPick];
+
+    if (startPick && endPick) drawRoutePreview(startPick, endPick);
+    hideKakaoBtn();
 }
 
 function onRouteClick() {
@@ -1822,58 +1674,59 @@ function drawRoutePreview(a, b) {
 }
 
 // 길찾기 버튼
-document.getElementById('routeBtn')?.addEventListener('click', () => {
-    const sInput = document.getElementById('startInput');
-    const eInput = document.getElementById('endInput');
+// document.getElementById('routeBtn')?.addEventListener('click', () => {
+//     const sInput = document.getElementById('startInput');
+//     const eInput = document.getElementById('endInput');
+//
+//     const ensurePicked = (text, setter, done) => {
+//         if (!text) return done(false);
+//         if (kakao?.maps?.services && (!startPick || !endPick)) {
+//             const places = new kakao.maps.services.Places();
+//             places.keywordSearch(text, (data, status) => {
+//                 if (status === kakao.maps.services.Status.OK && data[0]) {
+//                     const d = data[0];
+//                     setter({ name: d.place_name, lon: parseFloat(d.x), lat: parseFloat(d.y) });
+//                     done(true);
+//                 } else done(false);
+//             });
+//         } else done(!!text);
+//     };
+//
+//     ensurePicked(sInput.value.trim(), v => startPick = v, (ok1) => {
+//         ensurePicked(eInput.value.trim(), v => endPick = v, (ok2) => {
+//             if (!ok1 || !ok2 || !startPick || !endPick) {
+//                 alert('출발지와 도착지를 모두 선택해 주세요.');
+//                 return;
+//             }
+//
+//             // 지도 프리뷰
+//             drawRoutePreview(startPick, endPick);
+//
+//             // 교통편 카드 갱신
+//             updateTransportCards(startPick, endPick);
+//
+//             // 최신 경로 저장 + 버튼 보이기
+//             lastStart = startPick;
+//             lastEnd   = endPick;
+//             showKakaoBtn();
+//
+//             // (자동 새 탭 열기는 원하면 유지/삭제)
+//             // const url = buildKakaoRouteUrl(startPick, endPick, 'transit');
+//             // window.open(url, '_blank', 'noopener');
+//         });
+//     });
+// });
 
-    const ensurePicked = (text, setter, done) => {
-        if (!text) return done(false);
-        if (kakao?.maps?.services && (!startPick || !endPick)) {
-            const places = new kakao.maps.services.Places();
-            places.keywordSearch(text, (data, status) => {
-                if (status === kakao.maps.services.Status.OK && data[0]) {
-                    const d = data[0];
-                    setter({ name: d.place_name, lon: parseFloat(d.x), lat: parseFloat(d.y) });
-                    done(true);
-                } else done(false);
-            });
-        } else done(!!text);
-    };
+// // 출발/도착 스왑
+// document.getElementById('swapRouteBtn')?.addEventListener('click', () => {
+//     const sInput = document.getElementById('startInput');
+//     const eInput = document.getElementById('endInput');
+//     [sInput.value, eInput.value] = [eInput.value, sInput.value];
+//     [startPick, endPick] = [endPick, startPick];
+//     if (startPick && endPick) drawRoutePreview(startPick, endPick);
+//     hideKakaoBtn(); // ← 선택
+// });
 
-    ensurePicked(sInput.value.trim(), v => startPick = v, (ok1) => {
-        ensurePicked(eInput.value.trim(), v => endPick = v, (ok2) => {
-            if (!ok1 || !ok2 || !startPick || !endPick) {
-                alert('출발지와 도착지를 모두 선택해 주세요.');
-                return;
-            }
-
-            // 지도 프리뷰
-            drawRoutePreview(startPick, endPick);
-
-            // 교통편 카드 갱신
-            updateTransportCards(startPick, endPick);
-
-            // 최신 경로 저장 + 버튼 보이기
-            lastStart = startPick;
-            lastEnd   = endPick;
-            showKakaoBtn();
-
-            // (자동 새 탭 열기는 원하면 유지/삭제)
-            // const url = buildKakaoRouteUrl(startPick, endPick, 'transit');
-            // window.open(url, '_blank', 'noopener');
-        });
-    });
-});
-
-// 출발/도착 스왑
-document.getElementById('swapRouteBtn')?.addEventListener('click', () => {
-    const sInput = document.getElementById('startInput');
-    const eInput = document.getElementById('endInput');
-    [sInput.value, eInput.value] = [eInput.value, sInput.value];
-    [startPick, endPick] = [endPick, startPick];
-    if (startPick && endPick) drawRoutePreview(startPick, endPick);
-    hideKakaoBtn(); // ← 선택
-});
 // 오토컴플리트 바인딩
 bindAutocomplete(
     document.getElementById('startInput'),
@@ -2013,3 +1866,4 @@ function renderTransitOptions(container, routes, s, e) {
       </div>`;
     }).join('');
 }
+
