@@ -143,17 +143,10 @@
                             <p><strong>24°C</strong> / 19°C</p>
                         </div>
                     </div>
-                    <button class="add-btn">상세 예보 보기</button>
+<!--                    <button class="add-btn">상세 예보 보기</button>-->
                 </div>
             </div>
         </div>
-        <!--                <div class="map-container">-->
-        <!--                    <div style="text-align: center;">-->
-        <!--                        <div style="font-size: 48px; margin-bottom: 20px;">🗺️</div>-->
-        <!--                        <p>카카오맵 API 연동 예정</p>-->
-        <!--                        <p style="margin-top: 10px; font-size: 14px;">실시간 교통정보 및 경로 안내</p>-->
-        <!--                    </div>-->
-        <!--                </div>-->
         <div id="transport" class="content-section">
             <div class="transport-section">
 
@@ -165,20 +158,23 @@
 
                     <!-- 검색 결과 드롭다운/리스트 -->
                     <div id="placeResults" style="display:none;"></div>
-
-                    <div class="map-container">
-                        <div class="route-search">
-                            <div class="route-inputs">
-                                <input id="startInput" type="text" placeholder="출발지 검색" />
-                                <button id="swapRouteBtn" type="button" title="출발/도착 바꾸기">↕</button>
-                                <input id="endInput" type="text" placeholder="도착지 검색" />
-                                <button id="routeBtn" type="button" class="add-btn">길찾기</button>
-                            </div>
-
-                            <!-- 자동완성 결과 -->
-                            <div id="startResults" class="results route-results"></div>
-                            <div id="endResults" class="results route-results"></div>
+                    <div class="route-search">
+                        <div class="route-inputs">
+                            <!--                                <input id="startInput" type="text" placeholder="출발지 검색" />-->
+                            <!--                                <button id="swapRouteBtn" type="button" title="출발/도착 바꾸기">↕</button>-->
+                            <!--                                <input id="endInput" type="text" placeholder="도착지 검색" />-->
+                            <!--                                <button id="routeBtn" type="button" class="add-btn">길찾기</button>-->
+                            <input id="startInput" type="text" placeholder="출발지 검색" autocomplete="off" inputmode="search" />
+                            <button id="swapRouteBtn" type="button" title="출발/도착 바꾸기">↕</button>
+                            <input id="endInput"   type="text" placeholder="도착지 검색"  autocomplete="off" inputmode="search" />
+                            <button id="routeBtn"  type="button" class="add-btn">길찾기</button>
                         </div>
+
+                        <!-- 자동완성 결과 -->
+                        <div id="startResults" class="results route-results"></div>
+                        <div id="endResults" class="results route-results"></div>
+                    </div>
+                    <div class="map-container">
                         <div id="map"></div>
                     </div>
                 </div>

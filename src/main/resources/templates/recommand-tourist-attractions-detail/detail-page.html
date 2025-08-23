@@ -150,12 +150,14 @@
 
           <div class="button-group">
             <a class="guide-btn" href="/templates/enteringRoom/enteringRoom.html">
-              <span>동행자 찾기</span>
-              <span class="btn-arrow">→</span>
+              <span>동행자 찾기</span><span class="btn-arrow">→</span>
             </a>
-            <a class="ask-btn" href="/templates/creatingRoom/creatingRoom-detail.html">
-              <span>방 만들기</span>
-              <span class="btn-plus">+</span>
+
+            <!-- 관광지 id가 이미 있으면 data-attraction-id만 -->
+            <a class="ask-btn" th:href="@{/templates/recommand-tourist-attractions-detail/detail-page.html}" id="btnMakeRoom"
+               data-content-id="[[${attraction.contentId}]]"
+               data-attraction-id="[[${attraction.attractionId}]]">
+              <span>방 만들기</span><span class="btn-plus">+</span>
             </a>
           </div>
         </div>

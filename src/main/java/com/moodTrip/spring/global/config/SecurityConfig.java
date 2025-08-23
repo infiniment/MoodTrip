@@ -8,6 +8,7 @@ import com.moodTrip.spring.global.security.oauth.CustomOAuth2SuccessHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -64,6 +65,8 @@ public class SecurityConfig {
                                 "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/api-docs/**",
                                 "/error", "/api/v1/room-online/**", "/api/v1/profiles/**", "/image/**", "/uploads/**"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/attractions/content/*/emotion-tags").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/attractions/content/*/detail").permitAll()
                         .requestMatchers("/mypage/**").authenticated()
                         .anyRequest().permitAll()
                 )
