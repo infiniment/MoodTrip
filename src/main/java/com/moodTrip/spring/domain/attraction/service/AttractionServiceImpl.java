@@ -12,6 +12,7 @@ import com.moodTrip.spring.domain.attraction.entity.AttractionIntro;
 import com.moodTrip.spring.domain.attraction.repository.AttractionIntroRepository;
 import com.moodTrip.spring.domain.attraction.repository.AttractionRepository;
 import com.moodTrip.spring.domain.emotion.dto.response.AttractionCardDTO;
+import com.moodTrip.spring.domain.emotion.repository.AttractionEmotionRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +37,10 @@ public class AttractionServiceImpl implements AttractionService {
 
     private final AttractionRepository repository;
     private final AttractionIntroRepository introRepository;
+    private final AttractionEmotionRepository attractionEmotionRepository;
     private final RestTemplate restTemplate;
+
+
 
     @Value("${attraction.apikey.decoding}")
     private String apiKey;
@@ -611,5 +615,11 @@ public class AttractionServiceImpl implements AttractionService {
         apiKey = apiKey.trim();
         log.info("TourAPI key loaded. len={}, tail={}", apiKey.length(),
                 apiKey.length() > 4 ? apiKey.substring(apiKey.length() - 4) : "****");
+    }
+
+    @Override
+    public List<String> getEmotionTagNames(long contentId) {
+        // Top 3만 원하면 .stream().limit(3) 추가
+        return attractionEmotionRepository.findActiveEmotionNamesByContentId(contentId);
     }
 }

@@ -71,4 +71,6 @@ public interface AttractionService {
     AttractionIntro getIntro(long contentId, Integer contentTypeId);
     AttractionDetailResponse getDetailResponse(long contentId);
 
+    List<String> getEmotionTagNames(long contentId);
+
 }

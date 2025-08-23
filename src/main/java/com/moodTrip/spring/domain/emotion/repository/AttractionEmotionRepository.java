@@ -1,7 +1,9 @@
 package com.moodTrip.spring.domain.emotion.repository;
 
 import com.moodTrip.spring.domain.emotion.entity.AttractionEmotion;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,6 +21,18 @@ public interface AttractionEmotionRepository extends JpaRepository<AttractionEmo
 
     Optional<AttractionEmotion> findByAttraction_AttractionIdAndEmotion_TagId(Long attractionId, Long tagId);
     List<AttractionEmotion> findByAttraction_AttractionIdAndIsActiveTrue(Long attractionId);
+
+
+    // contentId 기준: 활성화된 감정 이름을 가중치 내림차순으로
+    @Query("""
+         select e.tagName
+         from AttractionEmotion ae
+         join ae.emotion e
+         where ae.attraction.contentId = :contentId
+           and ae.isActive = true
+         order by ae.weight desc, e.displayOrder asc, e.tagName asc
+         """)
+    List<String> findActiveEmotionNamesByContentId(@Param("contentId") long contentId);
 
 
 

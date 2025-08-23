@@ -86,6 +86,7 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	testImplementation 'org.testcontainers:mariadb'
 
 	//메일 전송 기능
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
