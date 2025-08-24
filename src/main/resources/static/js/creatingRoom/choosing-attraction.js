@@ -186,61 +186,87 @@ function initializeDestinationSearch() {
     }
 }
 
-function setupServerPagination(totalPages, current, totalElements) {
-    const container = document.getElementById('paginationContainer');
+// 화면폭에 따라 모드/버튼 수 결정
+function paginationMode() {
+    const w = window.innerWidth;
+    if (w <= 600) return { mode: 'compact', max: 0 }; // 모바일
+    if (w <= 1024) return { mode: 'normal',  max: 5 }; // 태블릿
+    return { mode: 'normal', max: 7 };                 // 데스크톱
+}
 
+let __pageState = { totalPages: 0, current: 0, totalElements: 0 };
+
+function setupServerPagination(totalPages, current, totalElements) {
+    __pageState = { totalPages, current, totalElements };
+
+    const container = document.getElementById('paginationContainer');
     if (!container) return;
 
-    if (totalPages <= 1) {
-        container.hidden = true;
-        return;
-    }
+    if (totalPages <= 1) { container.hidden = true; return; }
     container.hidden = false;
 
+    const { mode, max } = paginationMode();
+
     const numbers = container.querySelector('.pagination-numbers');
-    numbers.innerHTML = '';
+    numbers.innerHTML = ''; // 초기화
 
-    const maxButtons = 4;             // ← 한 번에 보여줄 최대 버튼 개수
-    let start = Math.max(0, current - Math.floor(maxButtons / 2));
-    let end   = start + maxButtons - 1;
-
-    if (end > totalPages - 1) {
-        end = totalPages - 1;
-        start = Math.max(0, end - (maxButtons - 1));
-    }
-
-    // 이전 버튼
+    // 이전/다음 버튼
     const prevBtn = container.querySelector('.pagination-button.prev');
+    const nextBtn = container.querySelector('.pagination-button.next');
     if (prevBtn) {
-        prevBtn.disabled = current === 0;
+        prevBtn.disabled = current <= 0;
         prevBtn.onclick = () => current > 0 && runSearchPaged(lastQuery, current - 1);
     }
-
-    // 앞쪽 생략(...) 표시
-    if (start > 0) {
-        numbers.appendChild(makePageBtn(0, current));     // 1
-        numbers.appendChild(makeEllipsis());
-    }
-
-    // 윈도우 구간
-    for (let i = start; i <= end; i++) {
-        numbers.appendChild(makePageBtn(i, current));
-    }
-
-    // 뒤쪽 생략(...) 표시
-    if (end < totalPages - 1) {
-        numbers.appendChild(makeEllipsis());
-        numbers.appendChild(makePageBtn(totalPages - 1, current)); // 마지막
-    }
-
-    // 다음 버튼
-    const nextBtn = container.querySelector('.pagination-button.next');
     if (nextBtn) {
         nextBtn.disabled = current >= totalPages - 1;
         nextBtn.onclick = () => current < totalPages - 1 && runSearchPaged(lastQuery, current + 1);
     }
 
-    // 범위/총개수 표시
+    // --- 모바일: 콤팩트 표시 (예: 12 / 623) ---
+    if (mode === 'compact') {
+        const compact = document.createElement('div');
+        compact.className = 'pagination-compact';
+        compact.innerHTML = `<strong class="current">${current + 1}</strong> / <span class="total">${totalPages}</span>`;
+        numbers.appendChild(compact);
+    } else {
+        // --- 데스크톱/태블릿: 숫자 버튼 ---
+        const maxButtons = Math.max(3, max);
+        let start = Math.max(0, current - Math.floor(maxButtons / 2));
+        let end   = start + maxButtons - 1;
+
+        if (end > totalPages - 1) {
+            end = totalPages - 1;
+            start = Math.max(0, end - (maxButtons - 1));
+        }
+
+        const makePageBtn = (pageIdx, cur) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'pagination-number' + (pageIdx === cur ? ' active' : '');
+            btn.textContent = String(pageIdx + 1);
+            btn.dataset.page = pageIdx;
+            btn.addEventListener('click', () => runSearchPaged(lastQuery, pageIdx));
+            return btn;
+        };
+        const makeEllipsis = () => {
+            const span = document.createElement('span');
+            span.className = 'pagination-ellipsis';
+            span.textContent = '…';
+            return span;
+        };
+
+        if (start > 0) {
+            numbers.appendChild(makePageBtn(0, current));     // 첫 페이지
+            if (start > 1) numbers.appendChild(makeEllipsis());
+        }
+        for (let i = start; i <= end; i++) numbers.appendChild(makePageBtn(i, current));
+        if (end < totalPages - 1) {
+            if (end < totalPages - 2) numbers.appendChild(makeEllipsis());
+            numbers.appendChild(makePageBtn(totalPages - 1, current)); // 마지막
+        }
+    }
+
+    // 하단 범위/총개수
     const size = serverSize;
     const startIdx = current * size + 1;
     const endIdx   = Math.min((current + 1) * size, totalElements || 0);
@@ -248,24 +274,14 @@ function setupServerPagination(totalPages, current, totalElements) {
     const totalEl = container.querySelector('.pagination-info .total');
     if (range)  range.textContent = `${startIdx} - ${endIdx} / `;
     if (totalEl) totalEl.textContent = String(totalElements ?? 0);
-
-    // helpers
-    function makePageBtn(pageIdx, cur) {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'pagination-number' + (pageIdx === cur ? ' active' : '');
-        btn.textContent = (pageIdx + 1);
-        btn.dataset.page = pageIdx;
-        btn.addEventListener('click', () => runSearchPaged(lastQuery, pageIdx));
-        return btn;
-    }
-    function makeEllipsis() {
-        const span = document.createElement('span');
-        span.className = 'pagination-ellipsis';
-        span.textContent = '…';
-        return span;
-    }
 }
+
+// 창 크기 변경 시 자동 재렌더
+window.addEventListener('resize', () => {
+    if (__pageState.totalPages > 0) {
+        setupServerPagination(__pageState.totalPages, __pageState.current, __pageState.totalElements);
+    }
+});
 
 async function runSearchPaged(q, page = 0) {
     const grid = document.getElementById('destinationResults');
@@ -292,6 +308,7 @@ async function runSearchPaged(q, page = 0) {
         renderAttractions(data.content);
         initializeDestinationSelection();
         setupServerPagination(data.totalPages, data.page, data.totalElements);
+        preselectDestinationIfNeeded();
     } catch (e) {
         console.error(e);
         grid.innerHTML = `<div class="empty">검색 중 오류가 발생했습니다.</div>`;
@@ -591,35 +608,91 @@ function filterByMood(mood) {
     closeHelpModal();
 }
 
-// 데이터 정리
-function clearAllData() {
-    localStorage.removeItem('selected_emotions');
-    localStorage.removeItem('selected_destination');
-    localStorage.removeItem('room_creation_data');
-    localStorage.removeItem('temp_selected_destination');
-    
-    sessionStorage.removeItem('selected_emotions');
-    sessionStorage.removeItem('selected_destination');
-    sessionStorage.removeItem('room_creation_data');
-}
-
 function preselectDestinationIfNeeded() {
-    const preselectedName = localStorage.getItem('preselected_destination_name');
-    if (!preselectedName) return;
+    const raw = sessionStorage.getItem('room_prefill') || localStorage.getItem('room_prefill');
+    if (raw) {
+        try {
+            const a = JSON.parse(raw)?.attraction;
+            if (a && a.attractionId) {
+                // 카드가 없더라도 UI/hidden 채워지도록 selectedDestination 직접 세팅
+                selectedDestination = {
+                    attractionId: a.attractionId,
+                    name: a.title || '',
+                    category: a.addr1 || '',
+                    description: a.addr2 || '',
+                    image: a.firstImage || '',
+                    contentId: a.contentId ?? null,
+                    addr1: a.addr1 || '',
+                    addr2: a.addr2 || '',
+                    mapX: a.mapX ?? null, // 경도
+                    mapY: a.mapY ?? null, // 위도
+                    contentTypeId: a.contentTypeId ?? null,
+                };
 
-    const radios = document.querySelectorAll('.destination-radio');
-    for (const radio of radios) {
-        if (radio.value === preselectedName) {
-            radio.checked = true;
-            radio.dispatchEvent(new Event('change')); // 선택 UI 업데이트
-            console.log('사전 선택된 관광지 자동 적용:', preselectedName);
-            break;
-        }
+                // hidden input 채우기
+                const dummy = document.createElement('div');
+                Object.assign(dummy, { dataset: {} });
+                dummy.dataset.attractionId = String(selectedDestination.attractionId);
+                dummy.dataset.title = selectedDestination.name;
+                dummy.dataset.addr1 = selectedDestination.addr1;
+                dummy.dataset.addr2 = selectedDestination.addr2;
+                dummy.dataset.img   = selectedDestination.image;
+                dummy.dataset.mapx  = selectedDestination.mapX;
+                dummy.dataset.mapy  = selectedDestination.mapY;
+                dummy.dataset.contentId = selectedDestination.contentId;
+                dummy.dataset.type  = selectedDestination.contentTypeId;
+                fillHiddenFromMeta(dummy);
+
+                updateSelectedDestinationDisplay();
+
+                // 현재 페이지에 해당 카드가 있다면 라디오까지 체크
+                const metaEl = document.querySelector(
+                    `.destination-card .hidden[data-attraction-id="${selectedDestination.attractionId}"]`
+                );
+                if (metaEl) {
+                    const radio = metaEl.closest('.destination-card')?.querySelector('.destination-radio');
+                    if (radio) radio.checked = true;
+                }
+            }
+        } catch(e) { console.warn('room_prefill parse fail', e); }
+        sessionStorage.removeItem('room_prefill');
+        localStorage.removeItem('room_prefill');
+        return;
     }
 
-    // 자동 선택 후에는 다시 저장하지 않도록 삭제
-    localStorage.removeItem('preselected_destination_name');
+    // ② 이전 방식 호환: 이름으로 저장된 경우(가능하면 곧 제거)
+    const preselectedName = localStorage.getItem('preselected_destination_name');
+    if (preselectedName) {
+        const radios = document.querySelectorAll('.destination-radio');
+        for (const radio of radios) {
+            if (radio.value === preselectedName) {
+                radio.checked = true;
+                radio.dispatchEvent(new Event('change'));
+                break;
+            }
+        }
+        localStorage.removeItem('preselected_destination_name');
+    }
 }
+
+
+// function preselectDestinationIfNeeded() {
+//     const preselectedName = localStorage.getItem('preselected_destination_name');
+//     if (!preselectedName) return;
+//
+//     const radios = document.querySelectorAll('.destination-radio');
+//     for (const radio of radios) {
+//         if (radio.value === preselectedName) {
+//             radio.checked = true;
+//             radio.dispatchEvent(new Event('change')); // 선택 UI 업데이트
+//             console.log('사전 선택된 관광지 자동 적용:', preselectedName);
+//             break;
+//         }
+//     }
+//
+//     // 자동 선택 후에는 다시 저장하지 않도록 삭제
+//     localStorage.removeItem('preselected_destination_name');
+// }
 
 // 페이지 떠날 때 자동 저장 (사용자가 모르게)
 window.addEventListener('beforeunload', function() {

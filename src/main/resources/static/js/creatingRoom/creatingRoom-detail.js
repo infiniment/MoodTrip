@@ -301,6 +301,7 @@ function validationPhase(form) {
         최대인원수: maxPeople
     });
 
+    navIntent = 'next';
     window.location.href = '/companion-rooms/emotion';
 
     // const draftId = localStorage.getItem("draft_room_id");
@@ -314,58 +315,17 @@ function validationPhase(form) {
 }
 
 // 뒤로가기 함수 - 확인 메시지 없이 바로 이동 (구체적인 URL로 이동)
-function exitWithSubmit(formId, value) {
-    console.log('뒤로가기 버튼 클릭됨');
-
-    // 현재 입력 내용 임시 저장 (조용히 저장)
-    const selectedPeople = document.querySelector('input[name="selected_people"]')?.value;
-    const roomNameInput = document.querySelector('.roomName-search-typing-input');
-    const roomIntroInput = document.querySelector('.roomName-search-typing-input2');
-
-    if (selectedPeople) {
-        const koreanPeopleValue = convertPeopleValueToKorean(selectedPeople);
-        localStorage.setItem("temp_selected_people", koreanPeopleValue);
-
-        const maxPeople = extractMaxPeopleNumber(koreanPeopleValue);
-        if (maxPeople) {
-            localStorage.setItem("temp_max_people", maxPeople.toString());
-        }
-    }
-    if (roomNameInput && roomNameInput.value.trim()) {
-        localStorage.setItem("temp_room_name", roomNameInput.value.trim());
-    }
-    if (roomIntroInput && roomIntroInput.value.trim()) {
-        localStorage.setItem("temp_room_description", roomIntroInput.value.trim());
-    }
+function exitWithSubmit() {
+    navIntent = 'back';
+    saveTempDraft();
     window.location.href = "/companion-rooms/start";
 }
 
+
 function goToPreviousPage() {
-    console.log('뒤로가기 버튼 클릭됨');
-
-    // 현재 입력 내용 임시 저장
-    const selectedPeople = document.querySelector('input[name="selected_people"]')?.value;
-    const roomNameInput = document.querySelector('.roomName-search-typing-input');
-    const roomIntroInput = document.querySelector('.roomName-search-typing-input2');
-
-    if (selectedPeople) {
-        const koreanPeopleValue = convertPeopleValueToKorean(selectedPeople);
-        localStorage.setItem("temp_selected_people", koreanPeopleValue);
-
-        const maxPeople = extractMaxPeopleNumber(koreanPeopleValue);
-        if (maxPeople) {
-            localStorage.setItem("temp_max_people", maxPeople.toString());
-        }
-    }
-    if (roomNameInput && roomNameInput.value.trim()) {
-        localStorage.setItem("temp_room_name", roomNameInput.value.trim());
-    }
-    if (roomIntroInput && roomIntroInput.value.trim()) {
-        localStorage.setItem("temp_room_description", roomIntroInput.value.trim());
-    }
-
-    // 바로 메인 페이지나 방 목록으로 이동 (확인 메시지 없음)
-    window.location.href = "/companion-rooms/start"; // 메인 페이지로 이동
+    navIntent = 'back';
+    saveTempDraft();
+    window.location.href = "/companion-rooms/start";
 }
 
 // 다음 버튼을 눌렀을 때 해당 정보들을 가지고 다음 페이지로 넘어가는 JS 코드
@@ -606,36 +566,7 @@ function getSelectedPeopleText(value) {
     return convertPeopleValueToKorean(value);
 }
 
-// 페이지 떠날 때 자동 저장 (사용자가 모르게)
-window.addEventListener('beforeunload', function() {
-    // 새 방 만들기 모드가 아닐 때만 자동 저장
-    const urlParams = new URLSearchParams(window.location.search);
-    const isNewRoom = urlParams.get('new') === 'true';
 
-    if (!isNewRoom) {
-        const selectedPeople = document.querySelector('input[name="selected_people"]')?.value;
-        const roomNameInput = document.querySelector('.roomName-search-typing-input');
-        const roomIntroInput = document.querySelector('.roomName-search-typing-input2');
-
-        if (selectedPeople) {
-            // ✨ 자동 저장도 한글로
-            const koreanPeopleValue = convertPeopleValueToKorean(selectedPeople);
-            localStorage.setItem("temp_selected_people", koreanPeopleValue);
-
-            // ✨ 최대 인원수도 자동 저장
-            const maxPeople = extractMaxPeopleNumber(koreanPeopleValue);
-            if (maxPeople) {
-                localStorage.setItem("temp_max_people", maxPeople.toString());
-            }
-        }
-        if (roomNameInput && roomNameInput.value.trim()) {
-            localStorage.setItem("temp_room_name", roomNameInput.value.trim());
-        }
-        if (roomIntroInput && roomIntroInput.value.trim()) {
-            localStorage.setItem("temp_room_description", roomIntroInput.value.trim());
-        }
-    }
-});
 
 // ✨ 추가된 유틸리티 함수들
 
@@ -712,6 +643,55 @@ function getCurrentMaxPeople() {
     return maxPeople ? parseInt(maxPeople) : null;
 }
 
+let navIntent = null; // 'next' | 'back' | null
+
+// 폼/버튼에서 의도 표시
+document.addEventListener('DOMContentLoaded', () => {
+    // 다음(제출) 의도
+    const form = document.getElementById('temporary_room_phase_1');
+    if (form) {
+        form.addEventListener('submit', () => { navIntent = 'next'; });
+    }
+});
+
+// 공통 임시 저장
+function saveTempDraft() {
+    const selectedPeople = document.querySelector('input[name="selected_people"]')?.value;
+    const roomNameInput  = document.querySelector('.roomName-search-typing-input');
+    const roomIntroInput = document.querySelector('.roomName-search-typing-input2');
+
+    if (selectedPeople) {
+        const koreanPeopleValue = convertPeopleValueToKorean(selectedPeople);
+        localStorage.setItem("temp_selected_people", koreanPeopleValue);
+        const maxPeople = extractMaxPeopleNumber(koreanPeopleValue);
+        if (maxPeople) localStorage.setItem("temp_max_people", String(maxPeople));
+    }
+    if (roomNameInput?.value.trim())  localStorage.setItem("temp_room_name", roomNameInput.value.trim());
+    if (roomIntroInput?.value.trim()) localStorage.setItem("temp_room_description", roomIntroInput.value.trim());
+}
+
+// 앱 내 버튼에서 의도 지정
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('temporary_room_phase_1');
+    if (form) form.addEventListener('submit', () => { navIntent = 'next'; });
+    // 뒤로가기 버튼들에서는:
+    // navIntent = 'back'; saveTempDraft(); location.href='/companion-rooms/start';
+});
+
+// **하나로 통합한** beforeunload (유일한 리스너)
+window.addEventListener('beforeunload', (e) => {
+    // 앱 내 '다음/뒤로'로 이동 중이면 막지 않음
+    if (navIntent === 'next' || navIntent === 'back') return;
+
+    // 나가기 전 임시 저장
+    saveTempDraft();
+
+    // 최신 방식
+    e.preventDefault();
+
+    e.returnValue = ''; // 값은 비어 있어야 함. 커스텀 문구는 무시됨
+});
+
 // ✨ 페이지 새로고침 감지 및 처리
 window.addEventListener('load', function() {
     // 페이지가 로드된 후 새 방 만들기 체크
@@ -728,3 +708,50 @@ window.addEventListener('load', function() {
         }, 1000);
     }
 });
+
+function isBasicInfoComplete() {
+    const people = document.querySelector('input[name="selected_people"]')?.value;
+    const name   = document.querySelector('.roomName-search-typing-input')?.value.trim();
+    const intro  = document.querySelector('.roomName-search-typing-input2')?.value.trim();
+    return !!people && !!name && !!intro;
+}
+
+// 마우스/키보드 '뒤로가기' 가드 설치
+function installHistoryLeaveGuard() {
+    // ① 현재 URL을 기준점으로 만들고
+    history.replaceState({ guardBase: true }, '', location.href);
+    // ② 한 칸을 더 쌓아서, 사용자가 뒤로가기 누르면 '우리 스택'만 빠지도록 함
+    history.pushState({ guard: true }, '', location.href);
+
+    let ignoreNext = false;
+
+    function onPopstate(evt) {
+        // 우리 앱 버튼으로 이동하는 중이면(예: '다음/뒤로' 클릭) 그냥 통과
+        if (navIntent === 'next' || navIntent === 'back') return;
+
+        // 직전의 보정용 back 호출은 무시
+        if (ignoreNext) { ignoreNext = false; return; }
+
+        // 저장 안 됐거나(필수값 미완) 그냥 나가려는 경우 → 커스텀 확인
+        if (!isBasicInfoComplete()) {
+            const ok = window.confirm('작성 중인 내용이 저장되지 않았습니다. 나가시겠습니까?');
+            if (!ok) {
+                // 나가지 않기로 했으면 현재 페이지를 다시 스택에 올려서 그대로 머무름
+                history.pushState({ guard: true }, '', location.href);
+                return;
+            }
+        }
+
+        // 나가기로 했으면 임시 저장(있으면)
+        saveTempDraft();
+
+        // 지금 pop 으로는 '우리 스택'만 빠졌으니, 실제 이전 페이지로 한 칸 더 이동
+        ignoreNext = true;
+        history.back();
+    }
+
+    window.addEventListener('popstate', onPopstate);
+}
+
+// 페이지 로드 후 가드 설치
+document.addEventListener('DOMContentLoaded', installHistoryLeaveGuard);

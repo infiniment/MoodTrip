@@ -641,7 +641,13 @@ body {
 }
 
 .map-container { overflow: visible; }       /* 기존 hidden 을 덮어쓰기 */
-.route-search { position: absolute; z-index: 10; overflow: visible; }
+
+.route-search{
+    position: static !important;
+    top:auto; left:auto; right:auto; z-index:auto;
+    margin: 12px 0 14px;
+}
+.results.route-results{ position: static !important; max-height: 240px; }
 
 
 .results.route-results{
@@ -667,13 +673,7 @@ body {
     pointer-events:none; /* 오버레이가 지도를 막지 않게 */
 }
 
-.route-search {
-    position: absolute;
-    top: 16px; left: 16px; right: 16px;
-    z-index: 5;
-    display: grid;
-    gap: 10px;
-}
+
 
 /* 검색 인풋 묶음 */
 .route-inputs {
@@ -1594,4 +1594,109 @@ body {
 /* 캔버스 축소 시 가로 스크롤 방지용 (보너스) */
 @media (max-width: 1200px) {
     html, body { overflow-x: hidden; }
+}
+
+/* === Mobile (≤768px) 공통 튜닝 ======================================= */
+@media (max-width: 768px){
+
+    /* 1) 교통편 검색: 인풋/버튼 세로 스택 + 자동완성은 레이아웃 안으로 */
+    .transport-section { grid-template-columns: 1fr; } /* 기존 2열 → 1열 */
+    .map-container { min-height: 360px; }
+    #map { min-height: 320px; }
+
+    .route-inputs{
+        grid-template-columns: 1fr;       /* 4칸 → 한 줄씩 */
+        gap: 8px;
+    }
+    #swapRouteBtn{
+        order: 3;                          /* 인풋 사이가 아니라 인풋 아래 중앙 */
+        justify-self: center;
+        width: 44px; height: 40px;
+    }
+    #routeBtn{
+        grid-column: 1 / -1;               /* 길찾기 버튼은 가로 전체 */
+        height: 44px;
+    }
+
+    /* 자동완성 리스트: 지도 위 절대배치 → 폼 아래 일반 흐름(스크롤 가능) */
+    .results.route-results{
+        position: static;
+        left: auto; right: auto; top: auto;
+        max-height: 200px;
+    }
+
+    /* 2) 날씨 섹션: 2열 → 1열, 터치여백 확대 */
+    .weather-section{
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    .weather-current{ padding: 16px; text-align:center; }
+    .weather-icon{ font-size: 48px; }          /* 아이콘 살짝 축소 */
+    .weather-forecast .forecast-item{ padding: 12px; }
+
+    /* 3) 채팅 위젯: 모바일 전체화면 + 하단 세이프에어리어 */
+    .messenger-widget{
+        width: 100vw;
+        height: 100dvh;        /* 모바일 주소창 높이 이슈 대비 */
+        bottom: 0;
+        right: 0;
+        border-radius: 0;
+    }
+    .chat-input-area{
+        padding-bottom: calc(12px + env(safe-area-inset-bottom)); /* iOS 홈바 여백 */
+    }
+
+    /* 플로팅 버튼도 살짝 축소 */
+    .messenger-floating-btn{ bottom: 20px; right: 20px; width: 56px; height: 56px; }
+    .messenger-floating-btn img{ width: 28px; height: 28px; }
+}
+
+/* --- trip-info 모바일 정렬/여백 보정 --- */
+@media (max-width: 1024px){
+    .trip-detail:last-child { margin-left: 0; } /* 음수 마진 제거 */
+}
+@media (max-width: 768px){
+    .trip-details{
+        flex-direction: column;      /* 가로 → 세로 스택 */
+        align-items: stretch;
+        gap: 14px;
+    }
+    .trip-detail{ align-items: flex-start; }
+    .trip-detail .icon{ width: 40px; height: 40px; } /* 아이콘 약간 축소 */
+}
+
+/* === Messenger 위젯: 모바일에서 더 작게(카드형) ===================== */
+@media (max-width: 768px){
+    .messenger-widget{
+        position: fixed;
+        right: 12px;
+        bottom: 12px;
+        width: min(90vw, 420px);   /* 화면의 90% 너비, 최대 420px */
+        height: 64vh;              /* 화면 높이의 64% */
+        min-height: 420px;         /* 너무 낮아지지 않도록 가드 */
+        border-radius: 18px;
+        /* 혹시 이전에 100vw/100dvh로 설정했었다면 덮어쓰기 위해 !important 사용 */
+        /* width: min(90vw, 420px) !important;
+           height: 64vh !important; */
+    }
+    /* 헤더/본문/입력영역 패딩도 살짝 줄여서 내용 공간 확보 */
+    .chat-header { padding: 10px 14px; }
+    #chatMessages { padding: 12px; }
+    .chat-input-area{
+        padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+    }
+    /* 플로팅 버튼이 겹치지 않게 살짝 위로 */
+    .messenger-floating-btn{ right: 16px; }
+}
+
+/* 태블릿~데스크톱 기본 사이즈(원하는 값으로 조절 가능) */
+@media (min-width: 769px){
+    .messenger-widget{
+        width: 360px;
+        height: 520px;
+        right: 24px;
+        bottom: 24px;
+        border-radius: 18px;
+    }
 }

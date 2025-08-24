@@ -163,3 +163,58 @@ document.addEventListener("DOMContentLoaded", function () {
 
   renderReviews(3);
 });
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('btnMakeRoom');
+  if (!btn) return;
+
+  btn.addEventListener('click', async (e) => {
+    e.preventDefault();
+
+    // 1) attractionId 결정 (data-attraction-id → 없으면 detail 호출)
+    let attractionId = Number(btn.dataset.attractionId) || null;
+    const contentId = btn.dataset.contentId;
+
+    if (!attractionId && contentId) {
+      try {
+        const res = await fetch(`/api/attractions/content/${contentId}/detail`);
+        if (res.ok) {
+          const d = await res.json();
+          const a = d.attraction || d.base || d;
+          attractionId = Number(a?.attractionId) || null;
+        }
+      } catch (_) {}
+    }
+    if (!attractionId) {
+      alert('관광지 정보를 불러오지 못했습니다.');
+      return;
+    }
+
+    // 2) 감정 태그: API 우선, 실패/부재 시 DOM 폴백 (.emotion-tag 등)
+    let emotions = [];
+    try {
+      if (contentId) {
+        const er = await fetch(`/api/attractions/content/${contentId}/emotion-tags`);
+        if (er.ok) emotions = await er.json(); // ["힐링","여유",...]
+      }
+    } catch (_) {}
+    if (emotions.length === 0) {
+      emotions = Array.from(document.querySelectorAll('.emotion-tag, .tag-item, .place-tag-list .tag'))
+          .map(el => (el.textContent || '').replace('#','').trim())
+          .filter(Boolean)
+          .slice(0, 3);
+    }
+
+    // 3) prefill 저장 (생성 플로우에서 자동 반영됨)
+    sessionStorage.setItem('room_prefill', JSON.stringify({
+      source: 'attraction-detail',
+      attraction: { attractionId },
+      emotions
+    }));
+
+    // 4) 이동 (a태그 href 우선)
+    const redirect = btn.getAttribute('href') || '/companion-rooms/create';
+    window.location.href = redirect;
+  });
+});
