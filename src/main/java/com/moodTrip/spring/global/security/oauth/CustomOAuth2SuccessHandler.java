@@ -15,6 +15,8 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 @Slf4j
@@ -122,8 +124,8 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
                 response.addCookie(jwtCookie);
                 response.sendRedirect("/mainpage/mainpage");
             } else {
-                response.sendRedirect("/signup?error=등록되지+않은+계정입니다.+회원가입이+필요합니다");
-            }
+                String errorMessage = "등록되지 않은 계정입니다. 회원가입이 필요합니다.";
+                response.sendRedirect("/signup?error=" + URLEncoder.encode(errorMessage, StandardCharsets.UTF_8.toString()));            }
         }
     }
 }
