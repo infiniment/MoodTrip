@@ -61,7 +61,7 @@ public class AttractionEmotionController {
                 attractionEmotionService.getAttractionToEmotionWeightsMap();
         model.addAttribute("attractionToEmotionWeights", attractionToEmotionWeights);
 
-        return "admin/attraction-emotion-mapping";
+        return "admin/attraction-emotion-mapping :: content";
     }
 
     // 검색 목록
@@ -101,7 +101,7 @@ public class AttractionEmotionController {
         model.addAttribute("attractionToEmotionIds", attractionEmotionService.getAttractionToEmotionIdsMap());
         model.addAttribute("attractionToEmotionWeights", attractionEmotionService.getAttractionToEmotionWeightsMap());
 
-        return "admin/attraction-emotion-mapping";
+        return "admin/attraction-emotion-mapping :: content"; // ":: content" 필수
     }
     @PostMapping("/update/{attractionId}")
     @ResponseBody
