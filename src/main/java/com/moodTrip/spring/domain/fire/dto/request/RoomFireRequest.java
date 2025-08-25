@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class FireRequest {
+public class RoomFireRequest {
     // 신고 사유
     private String reportReason;
 

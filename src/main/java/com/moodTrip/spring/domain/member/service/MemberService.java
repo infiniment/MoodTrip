@@ -1,13 +1,16 @@
 package com.moodTrip.spring.domain.member.service;
 
+import com.moodTrip.spring.domain.enteringRoom.entity.EnteringRoom;
 import com.moodTrip.spring.domain.member.dto.request.MemberRequest;
 import com.moodTrip.spring.domain.member.dto.request.NicknameUpdateRequest;
+import com.moodTrip.spring.domain.member.dto.response.MemberAdminDto;
 import com.moodTrip.spring.domain.member.dto.response.ProfileResponse;
 import com.moodTrip.spring.domain.member.dto.response.WithdrawResponse;
 import com.moodTrip.spring.domain.member.entity.Member;
 import com.moodTrip.spring.domain.member.entity.Profile;
 import com.moodTrip.spring.domain.member.repository.MemberRepository;
 import com.moodTrip.spring.domain.member.repository.ProfileRepository;
+import com.moodTrip.spring.domain.enteringRoom.repository.JoinRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,8 +22,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -30,6 +35,7 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final ProfileRepository profileRepository;
+    private final JoinRepository enteringRoomRepository;
     private final WithdrawDataService withdrawDataService;
 
     // 회원가입 등록
@@ -240,4 +246,98 @@ public class MemberService {
         return memberRepository.findByMemberId(memberId)
                 .orElseThrow(() -> new RuntimeException("회원이 존재하지 않습니다."));
     }
+
+
+    //수연
+    //관리자용 전체 회원 목록 조회
+    @Transactional(readOnly = true)
+    public List<MemberAdminDto> getAllMembersForAdmin() {
+        List<Member> members = memberRepository.findAllByOrderByCreatedAtDesc();
+
+        return members.stream()
+                .map(member -> {
+                    MemberAdminDto dto = MemberAdminDto.fromEntity(member);
+                    // 매칭 참여 횟수 계산
+                    Long participationCount = enteringRoomRepository.countByApplicantAndStatus(
+                            member, EnteringRoom.EnteringStatus.APPROVED
+                    );
+                    dto.setMatchingParticipationCount(participationCount);
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
+    //관리자용 회원 상세 정보 조회
+    @Transactional(readOnly = true)
+    public MemberAdminDto getMemberDetailForAdmin(Long memberPk) {
+        Member member = memberRepository.findById(memberPk)
+                .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
+
+        MemberAdminDto dto = MemberAdminDto.fromEntity(member);
+
+        // 매칭 참여 횟수 계산
+        Long participationCount = enteringRoomRepository.countByApplicantAndStatus(
+                member, EnteringRoom.EnteringStatus.APPROVED
+        );
+        dto.setMatchingParticipationCount(participationCount);
+
+        // 추후 리뷰 개수도 여기서 계산 가능
+        // dto.setReviewCount(reviewRepository.countByMember(member));
+
+        return dto;
+    }
+
+    //회원 상태 변경 (정지/활성화)
+    public void updateMemberStatus(Long memberPk, String status) {
+        Member member = memberRepository.findById(memberPk)
+                .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
+
+        try {
+            Member.MemberStatus memberStatus = Member.MemberStatus.valueOf(status.toUpperCase());
+            member.setStatus(memberStatus);
+            memberRepository.save(member);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("유효하지 않은 상태값입니다.");
+        }
+    }
+
+    //회원 강제 탈퇴 처리
+    public void withdrawMember(Long memberPk) {
+        Member member = memberRepository.findById(memberPk)
+                .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
+
+        member.setIsWithdraw(true);
+        member.setStatus(Member.MemberStatus.WITHDRAWN);
+        memberRepository.save(member);
+    }
+
+    //관리자용 회원 검색
+    @Transactional(readOnly = true)
+    public List<MemberAdminDto> searchMembersForAdmin(String keyword) {
+        List<Member> members;
+
+        if (keyword == null || keyword.trim().isEmpty()) {
+            members = memberRepository.findAllByOrderByCreatedAtDesc();
+        } else {
+            // 회원ID, 닉네임, 이메일로 검색
+            members = memberRepository.findByMemberIdContainingOrNicknameContainingOrEmailContaining(
+                    keyword, keyword, keyword
+            );
+        }
+
+        return members.stream()
+                .map(member -> {
+                    MemberAdminDto dto = MemberAdminDto.fromEntity(member);
+                    // 매칭 참여 횟수 계산
+                    Long participationCount = enteringRoomRepository.countByApplicantAndStatus(
+                            member, EnteringRoom.EnteringStatus.APPROVED
+                    );
+                    dto.setMatchingParticipationCount(participationCount);
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
+
+
 }

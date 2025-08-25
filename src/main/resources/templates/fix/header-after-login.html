@@ -120,12 +120,22 @@
                     </div>
 
                     <!-- 드롭다운 -->
+                    <!-- 드롭다운 -->
                     <div class="profile-dropdown" id="profileDropdown">
                         <div class="profile-info">
                             <div class="profile-nickname" th:text="${currentMember.nickname}">닉네임</div>
                             <div class="profile-email" th:text="${currentMember.email}">이메일</div>
                         </div>
-                        <button class="header-profile-btn" id="profileManageBtn">프로필 관리</button>
+
+                        <!-- 프로필 관리 버튼에 배지 추가 -->
+                        <button class="header-profile-btn profile-manage-with-badge" id="profileManageBtn">
+                            <span>프로필 관리</span>
+                            <!-- 배지를 버튼 안에 추가 -->
+                            <span class="header-notification-badge"
+                                  th:if="${totalPendingRequests > 0}"
+                                  th:text="${totalPendingRequests}">3</span>
+                        </button>
+
                         <button class="logout-btn" id="logoutBtn">로그아웃</button>
                     </div>
                 </div>
