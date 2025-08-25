@@ -26,6 +26,14 @@
     </div><!--                data-dest-lat='${room.attraction.lat}',
        data-dest-lon='${room.attraction.lon}', 나중에 이렇게 수정해야됨-->
     <div class="header">
+        <a class="back-btn"
+           th:href="@{/mypage/my-matching}"
+           onclick="return goBackToMyMatching(event)"
+           aria-label="뒤로가기">
+            <!-- 아이콘 + 텍스트 조합 -->
+            <span class="back-icon">←</span>
+            <span class="back-text">뒤로가기</span>
+        </a>
         <h1>🌟 함께 떠나는 여행</h1>
         <p>동행자들과 완벽한 여행 계획을 세워보세요</p>
     </div>
