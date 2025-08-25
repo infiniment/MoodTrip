@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>여행 플랫폼 관리자</title>
     <link rel="stylesheet" href="/css/admin/admin.css">
+
+    <link rel="stylesheet" href="/css/admin/adminMapping.css">
+    <script src="/js/admin/adminMapping.js" defer></script>
+    <meta name="_csrf" th:content="${_csrf?.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}"/>
 </head>
 <body>
     <!-- 관리자 페이지 컨테이너 -->
@@ -52,6 +57,12 @@
                     <span class="menu-icon">⚙️</span>
                     <span class="menu-text">설정</span>
                 </div>
+
+                <div class="menu-item" data-menu="mapping">
+                    <span class="menu-icon">🎨</span> <!-- 아이콘은 자유롭게 변경 -->
+                    <span class="menu-text">감정 매핑 관리</span>
+                </div>
+
             </nav>
         </aside>
 
@@ -858,6 +869,13 @@
                     <button class="btn-secondary" onclick="resetSettings()">초기화</button>
                 </div>
             </section>
+
+
+            <section class="content-section" id="mapping-section" style="display: none;">
+                <!-- 이 안의 내용은 JavaScript에 의해 동적으로 채워집니다. -->
+            </section>
+
+
         </main>
     </div>
 

@@ -50,7 +50,8 @@
                         <!-- 대분류 -->
                         <select name="categoryId" id="headerCategorySelect" aria-label="감정 카테고리"
                                 style="height:40px; padding:0 10px; border:1px solid #e5e7eb; border-radius:8px; margin-right:8px; min-width:150px;">
-                            <option value="">대분류 선택</option>
+                            <!-- hidden 속성 추가 -->
+                            <option value="" disabled selected hidden>대분류 선택</option>
                             <option th:each="c : ${headerEmotionCategories}"
                                     th:value="${c.emotionCategoryId}"
                                     th:text="${c.emotionCategoryName}">
@@ -60,7 +61,8 @@
                         <!-- 소분류 -->
                         <select name="tagId" id="headerEmotionSelect" aria-label="감정(소분류)"
                                 style="height:40px; padding:0 10px; border:1px solid #e5e7eb; border-radius:8px; margin-right:8px; min-width:150px;">
-                            <option value="">소분류 선택</option>
+                            <!-- hidden 속성 추가 -->
+                            <option value="" disabled selected hidden>소분류 선택</option>
                         </select>
 
                         <!-- 기존 input은 레이아웃 영향 없도록 숨김(서버 전송에도 영향 없음) -->
@@ -84,7 +86,7 @@
                         const emoSel = document.getElementById('headerEmotionSelect');
 
                         function renderEmotions(categoryId){
-                            emoSel.innerHTML = '<option value="">소분류 선택</option>';
+                            emoSel.innerHTML = '<option value="" disabled selected hidden>소분류 선택</option>';
                             if(!categoryId) return;
                             const cat = (categories || []).find(c => String(c.emotionCategoryId) === String(categoryId));
                             if(!cat || !cat.emotions) return;

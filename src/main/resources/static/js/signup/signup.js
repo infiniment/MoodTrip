@@ -202,3 +202,19 @@ document.getElementById('signupForm').addEventListener('submit', function(event)
     event.preventDefault();
     // fetch('/api/member/signup', ...)
 });
+
+// 페이지가 완전히 로드된 후 스크립트가 실행되도록 합니다.
+window.onload = function() {
+    // 현재 페이지의 URL에서 쿼리 파라미터를 가져옵니다.
+    const urlParams = new URLSearchParams(window.location.search);
+
+    // 'error' 라는 이름의 파라미터 값을 추출합니다.
+    const errorMessage = urlParams.get('error');
+
+    // errorMessage 변수에 값이 존재할 경우에만 알림창을 띄웁니다.
+    if (errorMessage) {
+        // 서버에서 URL 인코딩된 메시지를 원래의 한글로 디코딩합니다.
+        const decodedErrorMessage = decodeURIComponent(errorMessage);
+        alert(decodedErrorMessage);
+    }
+};

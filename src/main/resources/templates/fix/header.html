@@ -45,19 +45,17 @@
                 </div>
                 <!-- 헤더 전용 검색바 (클래스명 변경됨) -->
                 <div class="left-nav-menu pr-12 main-header text-header header-search-wrapper" style="margin-left: 100px;">
-                    <form class="header-search-form" th:action="@{/emotions}" method="get">
-                        <input
-                                type="text"
-                                name="q"
-                                placeholder="감정을 입력하세요"
-                                class="header-emotion-search-input"
-                                id="headerEmotionSearchInput"
-                        />
-                        <button type="submit" class="header-emotion-search-btn" aria-label="검색">
-                            <img th:src="@{/image/default-common/search.png}" alt="검색" class="header-search-icon">
-                        </button>
-                    </form>
+                    <!-- 비회원용 안내 문구 및 로그인 링크 -->
+                    <div class="non-member-search-info">
+                        <!-- href를 제거해 링크 기능을 없애고, img를 빈 span으로 대체하여 여백 유지 -->
+                        <a class="login-prompt-link">
+                            <span>로그인 후 검색할 수 있습니다.</span>
+                            <!-- 이미지가 있던 자리에 보이지 않는 스페이서(spacer) 역할 -->
+                            <span class="header-search-icon"></span>
+                        </a>
+                    </div>
                 </div>
+
             </div>
 
             <div class="right-nav">
