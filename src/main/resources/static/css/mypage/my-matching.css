@@ -384,6 +384,24 @@
     background: linear-gradient(135deg, rgba(248, 250, 252, 0.5) 0%, rgba(241, 245, 249, 0.3) 100%);
 }
 
+/* 신고하기 버튼 */
+.btn-report-room {
+    background-color: #f97316; /* 주황색 (경고 느낌) */
+    color: #fff;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin: 0 0.3rem;
+}
+
+.btn-report-room:hover {
+    background-color: #ea580c; /* hover 시 조금 더 진한 주황 */
+}
+
 .btn-cancel,
 .btn-confirm {
     padding: 12px 24px;
@@ -942,10 +960,12 @@ a:focus:not(:focus-visible) {
     width: 100%;
 }
 
+/* 공통 버튼 스타일 */
 .btn-exit-room,
 .btn-chat,
 .btn-manage-requests,
-.btn-delete-room {
+.btn-delete-room,
+.btn-report-room {
     outline: none;
     box-sizing: border-box;
     border-radius: 6px;
@@ -970,20 +990,38 @@ a:focus:not(:focus-visible) {
     background-image: none;
     text-transform: none;
     border: 1px solid rgb(200, 202, 210);
-    width: 100%;
+    width: auto;  /* 🔥 수정 */
+    min-width: 200px; /* 버튼 크기 통일 (선택) */
 }
-
+.action-buttons {
+    display: flex;
+    flex-direction: column; /* 세로 배치 */
+    gap: 8px;
+    align-items: center; /* 🔥 버튼들을 가운데 정렬 */
+}
 /* 채팅 버튼 */
 .btn-chat {
     background: linear-gradient(to bottom right, #005792, #001A2C);
-    color: rgb(255, 255, 255);
+    color: #fff;
     border-color: #005792;
 }
-
 .btn-chat:hover {
     background: linear-gradient(to bottom right, #004773, #000F1A);
     transform: translateY(-1px);
     box-shadow: 0 8px 20px rgba(0, 87, 146, 0.4);
+}
+
+/* 신고하기 버튼 */
+.btn-report-room {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); /* 빨간색 계열 */
+    color: white;
+    border-color: #ef4444;
+}
+
+.btn-report-room:hover {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
 }
 
 /* 입장 요청 관리 버튼 */
@@ -1252,6 +1290,32 @@ a:focus:not(:focus-visible) {
         font-size: 12px;
     }
 }
+
+.member-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.member-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.member-list li span {
+    font-size: 14px;
+    color: #374151;
+}
+
+.member-list li input[type="radio"] {
+    transform: scale(1.2);
+}
+
 
 /* 접근성 */
 @media (prefers-reduced-motion: reduce) {

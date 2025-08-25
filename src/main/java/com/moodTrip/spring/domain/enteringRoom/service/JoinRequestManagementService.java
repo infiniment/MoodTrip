@@ -292,4 +292,32 @@ public class JoinRequestManagementService {
         LocalDateTime twoHoursAgo = LocalDateTime.now().minusHours(2);
         return request.getCreatedAt().isAfter(twoHoursAgo);
     }
+
+    /**
+     * 사이드바 알림 배지용 - 총 대기 요청 수만 간단히 조회
+     * 다른 마이페이지들에서 사이드바에 배지 표시하기 위해 사용
+     */
+    public Integer getTotalPendingRequestsForSidebar() {
+        log.debug("사이드바 배지용 총 대기 요청 수 조회");
+
+        try {
+            Member roomOwner = securityUtil.getCurrentMember();
+            List<Room> myRooms = roomRepository.findByCreatorAndIsDeleteRoomFalse(roomOwner);
+
+            // 각 방의 대기 중인 요청 수를 모두 합산
+            int totalCount = 0;
+            for (Room room : myRooms) {
+                List<EnteringRoom> pendingRequests = joinRepository.findByRoomAndStatus(
+                        room, EnteringRoom.EnteringStatus.PENDING);
+                totalCount += pendingRequests.size();
+            }
+
+            log.debug("사이드바 배지용 총 대기 요청 수: {}", totalCount);
+            return totalCount;
+
+        } catch (Exception e) {
+            log.error("사이드바용 대기 요청 수 조회 실패", e);
+            return 0;  // 에러 시 0 반환
+        }
+    }
 }
