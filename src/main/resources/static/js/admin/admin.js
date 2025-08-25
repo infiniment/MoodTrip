@@ -29,6 +29,52 @@ function setupMenuNavigation() {
             
             // 선택된 섹션 보이기
             const menuType = this.getAttribute('data-menu');
+
+            // '감정 매핑 관리' 메뉴를 위한 특별 처리
+            if (menuType === 'mapping') {
+                const mappingSection = document.getElementById('mapping-section');
+                if (mappingSection) {
+                    mappingSection.style.display = 'block'; // 섹션을 먼저 화면에 표시
+
+                    // 섹션에 내용이 비어있을 때만 서버에서 콘텐츠를 가져옴 (중복 로딩 방지)
+                    if (mappingSection.innerHTML.trim() === '') {
+                        showLoadingMessage('매핑 데이터를 불러오는 중...'); // 로딩 메시지 표시
+                        fetch('/admin/attraction-emotions') // 서버에 콘텐츠(HTML 조각) 요청
+                            .then(response => {
+                                hideLoadingMessage(); // 로딩 메시지 숨김
+                                if (!response.ok) {
+                                    throw new Error('콘텐츠를 불러오는 데 실패했습니다.');
+                                }
+                                return response.text(); // 응답을 텍스트(HTML)로 변환
+                            })
+                            .then(html => {
+                                mappingSection.innerHTML = html; // 받아온 HTML을 섹션에 삽입
+                            })
+                            .catch(error => {
+                                console.error('Error loading mapping content:', error);
+                                mappingSection.innerHTML = `<p style="color: red; text-align: center; padding: 20px;">${error.message}</p>`;
+                                showErrorMessage(error.message);
+                            });
+                    }
+                }
+            } else {
+                // 기존의 다른 메뉴들을 위한 처리
+                const targetSection = document.getElementById(menuType + '-section');
+                if (targetSection) {
+                    targetSection.style.display = 'block';
+
+                    // 공지사항이나 FAQ 메뉴 클릭 시 목록 로드 (기존 로직 유지)
+                    if (menuType === 'notices') {
+                        loadNoticeList();
+                    } else if (menuType === 'faq') {
+                        // FAQ 목록 로드 함수가 있다면 여기에 추가
+                        // loadFaqList();
+                    }
+                }
+            }
+
+
+
             const targetSection = document.getElementById(menuType + '-section');
             if (targetSection) {
                 targetSection.style.display = 'block';
@@ -48,6 +94,13 @@ function setupMenuNavigation() {
             }
         });
     });
+
+
+
+
+
+
+
 }
 
 function updatePageTitle(menuType) {
@@ -59,6 +112,7 @@ function updatePageTitle(menuType) {
         'locations': '관광지 관리',
         'reports': '신고 관리',
         'notices': '공지사항',
+        'mapping': '감정 매핑 관리',
         'settings': '설정'
     };
     
@@ -70,6 +124,7 @@ function updatePageTitle(menuType) {
         'locations': '관광지 정보를 관리하세요',
         'reports': '신고 내역을 처리하세요',
         'notices': '공지사항을 관리하세요',
+        'mapping': '관광지와 감정 태그를 연결하고 가중치를 설정합니다',
         'settings': '시스템 설정을 변경하세요'
     };
     
@@ -1665,9 +1720,9 @@ function loadNoticeList() {
 
 // 공지사항 메뉴 클릭 시 목록 로드
 // setupMenuNavigation 함수 내부 수정
-if (menuType === 'notices') {
-    loadNoticeList();
-}
+// if (menuType === 'notices') {
+//     loadNoticeList();
+// }
 
 // // 공지사항 삭제 함수
 // function handleNoticeDelete(btn) {
@@ -3099,8 +3154,17 @@ function clearFieldError(field) {
 
 // 전역 에러 핸들러
 window.addEventListener('error', function(e) {
-    console.error('JavaScript 에러:', e.error);
-    showErrorMessage('시스템 오류가 발생했습니다. 새로고침 후 다시 시도해주세요.');
+    // e.error 객체가 존재하고, stack 속성이 있는지 확인
+    if (e.error && e.error.stack) {
+        console.error('💥 전역 에러 발생:', e.error.message);
+        console.error('📜 스택 트레이스:', e.error.stack);
+    } else {
+        // 일반적인 오류 이벤트 (예: 리소스 로드 실패)
+        console.error('🐞 잡힌 오류 이벤트:', e);
+    }
+
+    // 사용자에게 보여주는 메시지는 그대로 유지할 수 있습니다.
+    // showErrorMessage('시스템 오류가 발생했습니다. 새로고침 후 다시 시도해주세요.');
 });
 
 // 네트워크 상태 감지
@@ -3111,5 +3175,208 @@ window.addEventListener('online', function() {
 window.addEventListener('offline', function() {
     showErrorMessage('네트워크 연결이 끊어졌습니다.');
 });
+
+// admin.js 파일의 적절한 위치에 추가
+
+// 콘텐츠 영역을 동적으로 로드하는 함수
+function loadDynamicContent(url, pushState = true) {
+    const mappingSection = document.getElementById('mapping-section');
+    if (!mappingSection) return;
+
+    // 모든 섹션 숨기기 및 mapping-section 보이기
+    document.querySelectorAll('.content-section').forEach(section => {
+        section.style.display = 'none';
+    });
+    mappingSection.style.display = 'block';
+
+    showLoadingMessage('데이터를 불러오는 중...');
+
+    fetch(url)
+        .then(response => {
+            hideLoadingMessage();
+            if (!response.ok) throw new Error('콘텐츠 로드 실패');
+            return response.text();
+        })
+        .then(html => {
+            mappingSection.innerHTML = html;
+            initializeMappingPageScripts();
+            if (pushState) {
+                // 브라우저의 주소창 URL을 변경하고, 히스토리에 상태를 저장
+                history.pushState({ path: url }, '', url);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            mappingSection.innerHTML = `<p style="color: red;">${error.message}</p>`;
+            showErrorMessage(error.message);
+        });
+}
+
+// 브라우저 뒤로가기/앞으로가기 버튼 처리
+window.onpopstate = function(event) {
+    if (event.state && event.state.path) {
+        loadDynamicContent(event.state.path, false);
+    }
+};
+
+
+// 기존 setupMenuNavigation 함수를 아래 내용으로 교체
+function setupMenuNavigation() {
+    document.querySelectorAll('.sidebar-menu .menu-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            const menuType = this.getAttribute('data-menu');
+
+            // 메뉴 활성화/비활성화 처리
+            document.querySelector('.menu-item.active').classList.remove('active');
+            this.classList.add('active');
+
+            if (menuType === 'mapping') {
+                e.preventDefault(); // 기본 링크 동작 방지
+                const targetUrl = '/admin/attraction-emotions';
+                loadDynamicContent(targetUrl);
+                updatePageTitle(menuType);
+            } else {
+                // 기존의 다른 메뉴들을 위한 처리
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.style.display = 'none';
+                });
+                const targetSection = document.getElementById(menuType + '-section');
+                if (targetSection) {
+                    targetSection.style.display = 'block';
+                }
+                updatePageTitle(menuType);
+            }
+        });
+    });
+
+    // 이벤트 위임: #mapping-section 내부에서 발생하는 클릭 이벤트를 감지
+    const mainContent = document.querySelector('.main-content');
+    mainContent.addEventListener('click', function(e) {
+        const mappingSection = document.getElementById('mapping-section');
+        // 클릭된 요소가 mapping-section 내부에 있고, 페이지네이션 링크인 경우
+        const link = e.target.closest('.pagination a');
+        if (link && mappingSection.contains(link)) {
+            e.preventDefault(); // 기본 링크 이동 방지
+            const url = link.getAttribute('href');
+            loadDynamicContent(url);
+        }
+    });
+
+    // 이벤트 위임: 검색 폼 제출 처리
+    mainContent.addEventListener('submit', function(e) {
+        const form = e.target.closest('.search-container form');
+        const mappingSection = document.getElementById('mapping-section');
+        if (form && mappingSection.contains(form)) {
+            e.preventDefault(); // 기본 폼 제출 방지
+            const formData = new FormData(form);
+            const params = new URLSearchParams(formData);
+            const url = `${form.getAttribute('action')}?${params.toString()}`;
+            loadDynamicContent(url);
+        }
+    });
+}
+
+// '저장' 버튼을 눌렀을 때 실행될 fetch 로직 (기존 submitForm 함수)
+function handleEmotionFormSubmit(event) {
+    event.preventDefault(); // 기본 폼 제출 방지
+    const formElement = event.target; // 이벤트가 발생한 form 요소
+
+    const attractionId = formElement.getAttribute('data-attraction-id');
+    const emotionWeights = [];
+
+    // ⭐ 1. CSRF 관련 메타 태그를 먼저 변수에 할당합니다.
+    const csrfTokenMeta = document.querySelector('meta[name="_csrf"]');
+    const csrfHeaderMeta = document.querySelector('meta[name="_csrf_header"]');
+
+    // ⭐ 2. 메타 태그가 존재하는지 확인합니다.
+    if (!csrfTokenMeta || !csrfHeaderMeta) {
+        alert('보안 토큰 정보를 찾을 수 없습니다. 페이지를 새로고침 후 다시 시도해 주세요.');
+        console.error('CSRF meta tags are not found in the DOM.');
+        return; // 함수 실행을 중단합니다.
+    }
+
+
+
+    // CSRF 토큰은 메인 페이지(admin.html)의 메타 태그에서 가져옵니다.
+    const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+    const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+    const emotionItems = formElement.querySelectorAll('.emotion-item');
+    emotionItems.forEach(item => {
+        const checkbox = item.querySelector('input[type="checkbox"]');
+        const weightInput = item.querySelector('input[name="weight"]');
+        if (checkbox && checkbox.checked) {
+            const emotionId = parseInt(checkbox.value);
+            const weight = (weightInput.value === '' || isNaN(parseFloat(weightInput.value))) ? 1.0 : parseFloat(weightInput.value);
+            emotionWeights.push({ emotionId: emotionId, weight: weight });
+        }
+    });
+
+    if (emotionWeights.length === 0) {
+        alert('저장할 감정을 하나 이상 선택해주세요.');
+        return;
+    }
+
+    fetch('/admin/attraction-emotions/update/' + attractionId, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            [header]: token
+        },
+        body: JSON.stringify(emotionWeights)
+    })
+        .then(response => {
+            if (response.ok) {
+                alert('성공적으로 저장되었습니다!');
+                // 성공 후 현재 페이지의 콘텐츠를 다시 로드
+                const currentUrl = history.state ? history.state.path : '/admin/attraction-emotions';
+                loadDynamicContent(currentUrl, false);
+            } else {
+                return response.json().then(errorData => {
+                    alert('저장 실패: ' + (errorData.message || '알 수 없는 오류'));
+                });
+            }
+        })
+        .catch(error => {
+            alert('네트워크 오류 또는 서버 통신 실패');
+            console.error('Fetch Error:', error);
+        });
+}
+
+// 매핑 페이지의 스크립트를 초기화하는 함수
+function initializeMappingPageScripts() {
+    // 1. 모든 '저장' form에 submit 이벤트 리스너를 추가합니다.
+    document.querySelectorAll('.attraction-emotion-form').forEach(form => {
+        form.addEventListener('submit', handleEmotionFormSubmit);
+    });
+
+    // 2. 체크박스 상태에 따른 input 활성화/비활성화 로직 (adminMapping.js에서 가져옴)
+    document.querySelectorAll('.emotion-item').forEach(item => {
+        const checkbox = item.querySelector('input[type="checkbox"]');
+        const weightInput = item.querySelector('input[name="weight"]');
+        if (checkbox && weightInput) {
+            weightInput.disabled = !checkbox.checked;
+            checkbox.addEventListener("change", () => {
+                weightInput.disabled = !checkbox.checked;
+                if (!checkbox.checked) {
+                    weightInput.value = "";
+                } else {
+                    weightInput.focus();
+                }
+            });
+        }
+    });
+
+    // 3. 가중치 입력 필드 blur 이벤트 (adminMapping.js에서 가져옴)
+    document.querySelectorAll('.emotion-item input[name="weight"]').forEach(input => {
+        input.addEventListener("blur", function () {
+            if (this.value && !isNaN(this.value)) {
+                this.value = parseFloat(this.value).toFixed(1);
+            }
+        });
+    });
+}
+
+
 
 console.log('관리자 페이지 JavaScript 로딩 완료');

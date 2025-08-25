@@ -210,21 +210,28 @@ header.header .header-nav .right-nav .log-in-section {
   height: 32px;
   width: 32px;
   border-radius: 50%;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.2s ease;
   flex-shrink: 0; /* 버튼 크기가 줄어들지 않도록 설정 */
 }
 
 /* 로그인 후 헤더 검색 버튼 호버 효과 */
 .logged-in-header-emotion-search-btn:hover {
   background-color: rgba(0, 87, 146, 0.1);
+  transform: scale(1.1);
 }
 
 /* 로그인 후 헤더 전용 검색 아이콘 */
 .logged-in-header-search-icon {
-  width: 24px;    /* 아이콘 크기 */
-  height: 24px;
+  width: 18px;
+  height: 18px;
   display: block;
+
+  /* --- 아래 3줄 추가 --- */
+  position: relative; /* 위치 조정을 위해 추가 */
+  right: 1px;          /* 오른쪽으로 1px 이동 */
+  top: 1px;
 }
+
 
 /* 로그인/회원가입 스타일 */
 header.header .header-nav .right-nav .sign-up-button {
