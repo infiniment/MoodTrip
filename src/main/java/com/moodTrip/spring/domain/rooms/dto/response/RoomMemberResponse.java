@@ -7,7 +7,6 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-import static com.moodTrip.spring.domain.member.entity.QMember.member;
 import static com.moodTrip.spring.global.common.code.status.ErrorStatus.INTERNAL_SERVER_ERROR;
 
 @Getter

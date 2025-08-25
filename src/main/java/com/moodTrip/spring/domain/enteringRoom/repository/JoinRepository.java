@@ -42,4 +42,14 @@ public interface JoinRepository extends JpaRepository<EnteringRoom, Long> {
             "WHERE er.room.roomId = :roomId")
     List<EnteringRoom> findByRoomIdWithProfile(@Param("roomId") Long roomId);
 
+
+    //특정 회원의 승인된 매칭 참여 횟수 계산
+    Long countByApplicantAndStatus(Member applicant, EnteringRoom.EnteringStatus status);
+
+    //특정 회원의 모든 매칭 신청 내역 조회 (관리자용)
+    List<EnteringRoom> findByApplicantOrderByCreatedAtDesc(Member applicant);
+
+    //특정 회원의 상태별 매칭 신청 내역 조회
+    List<EnteringRoom> findByApplicantAndStatusOrderByCreatedAtDesc(
+            Member applicant, EnteringRoom.EnteringStatus status);
 }
