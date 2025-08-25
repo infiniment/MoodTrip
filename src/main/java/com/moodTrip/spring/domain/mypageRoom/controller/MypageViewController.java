@@ -40,7 +40,12 @@ public class MypageViewController {
 
     // 마이페이지 매칭 정보 페이지 렌더링
     @GetMapping("/my-matching")
-    public String myMatching(String tab, Model model) {
+    public String myMatching(
+            @RequestParam(name = "activeTab", required = false) String activeTab,
+            @RequestParam(name = "tab",       required = false) String legacyTab,
+            Model model
+    ) {
+        String tab = (activeTab != null ? activeTab : legacyTab);
         Member currentMember = securityUtil.getCurrentMember();
 
         //  탭 파라미터 검증 및 정규화

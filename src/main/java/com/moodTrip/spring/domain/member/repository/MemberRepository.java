@@ -1,7 +1,9 @@
 package com.moodTrip.spring.domain.member.repository;
 
 import com.moodTrip.spring.domain.member.entity.Member;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
 
@@ -30,5 +32,49 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     Optional<Member> findByNickname(String nickname);
 
+    // 상우가 추가
+    // ========== 🔥 재가입 지원용 새 메서드들 (최소한만 추가) ==========
 
+    /**
+     * 활성 상태 회원의 아이디 중복 체크
+     * - 회원가입 시 사용 (탈퇴한 회원은 중복 허용)
+     */
+    @Query("SELECT COUNT(m) > 0 FROM Member m WHERE m.memberId = :memberId AND m.isWithdraw = false")
+    boolean existsByMemberIdAndIsWithdrawFalse(@Param("memberId") String memberId);
+
+    /**
+     * 활성 상태 회원의 이메일 중복 체크
+     * - 회원가입 시 사용 (탈퇴한 회원은 중복 허용)
+     */
+    @Query("SELECT COUNT(m) > 0 FROM Member m WHERE m.email = :email AND m.isWithdraw = false")
+    boolean existsByEmailAndIsWithdrawFalse(@Param("email") String email);
+
+    /**
+     * 탈퇴한 상태의 회원을 아이디로 찾기
+     * - 재가입 시 기존 계정 복구용
+     */
+    @Query("SELECT m FROM Member m WHERE m.memberId = :memberId AND m.isWithdraw = true")
+    Optional<Member> findByMemberIdAndIsWithdrawTrue(@Param("memberId") String memberId);
+
+    /**
+     * 탈퇴한 상태의 회원이 해당 아이디로 있는지 확인
+     * - 재가입 가능 여부 판단용
+     */
+    @Query("SELECT COUNT(m) > 0 FROM Member m WHERE m.memberId = :memberId AND m.isWithdraw = true")
+    boolean existsByMemberIdAndIsWithdrawTrue(@Param("memberId") String memberId);
+
+    // MemberRepository.java에 추가
+    /**
+     * 탈퇴한 소셜 계정 조회
+     */
+    @Query("SELECT m FROM Member m WHERE m.provider = :provider AND m.providerId = :providerId AND m.isWithdraw = true")
+    Optional<Member> findByProviderAndProviderIdAndIsWithdrawTrue(@Param("provider") String provider,
+                                                                  @Param("providerId") String providerId);
+
+    /**
+     * 탈퇴한 소셜 계정 존재 여부 확인
+     */
+    @Query("SELECT COUNT(m) > 0 FROM Member m WHERE m.provider = :provider AND m.providerId = :providerId AND m.isWithdraw = true")
+    boolean existsByProviderAndProviderIdAndIsWithdrawTrue(@Param("provider") String provider,
+                                                           @Param("providerId") String providerId);
 }
