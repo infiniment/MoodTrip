@@ -3154,8 +3154,17 @@ function clearFieldError(field) {
 
 // 전역 에러 핸들러
 window.addEventListener('error', function(e) {
-    console.error('JavaScript 에러:', e.error);
-    showErrorMessage('시스템 오류가 발생했습니다. 새로고침 후 다시 시도해주세요.');
+    // e.error 객체가 존재하고, stack 속성이 있는지 확인
+    if (e.error && e.error.stack) {
+        console.error('💥 전역 에러 발생:', e.error.message);
+        console.error('📜 스택 트레이스:', e.error.stack);
+    } else {
+        // 일반적인 오류 이벤트 (예: 리소스 로드 실패)
+        console.error('🐞 잡힌 오류 이벤트:', e);
+    }
+
+    // 사용자에게 보여주는 메시지는 그대로 유지할 수 있습니다.
+    // showErrorMessage('시스템 오류가 발생했습니다. 새로고침 후 다시 시도해주세요.');
 });
 
 // 네트워크 상태 감지
@@ -3190,6 +3199,7 @@ function loadDynamicContent(url, pushState = true) {
         })
         .then(html => {
             mappingSection.innerHTML = html;
+            initializeMappingPageScripts();
             if (pushState) {
                 // 브라우저의 주소창 URL을 변경하고, 히스토리에 상태를 저장
                 history.pushState({ path: url }, '', url);
@@ -3265,6 +3275,108 @@ function setupMenuNavigation() {
         }
     });
 }
+
+// '저장' 버튼을 눌렀을 때 실행될 fetch 로직 (기존 submitForm 함수)
+function handleEmotionFormSubmit(event) {
+    event.preventDefault(); // 기본 폼 제출 방지
+    const formElement = event.target; // 이벤트가 발생한 form 요소
+
+    const attractionId = formElement.getAttribute('data-attraction-id');
+    const emotionWeights = [];
+
+    // ⭐ 1. CSRF 관련 메타 태그를 먼저 변수에 할당합니다.
+    const csrfTokenMeta = document.querySelector('meta[name="_csrf"]');
+    const csrfHeaderMeta = document.querySelector('meta[name="_csrf_header"]');
+
+    // ⭐ 2. 메타 태그가 존재하는지 확인합니다.
+    if (!csrfTokenMeta || !csrfHeaderMeta) {
+        alert('보안 토큰 정보를 찾을 수 없습니다. 페이지를 새로고침 후 다시 시도해 주세요.');
+        console.error('CSRF meta tags are not found in the DOM.');
+        return; // 함수 실행을 중단합니다.
+    }
+
+
+
+    // CSRF 토큰은 메인 페이지(admin.html)의 메타 태그에서 가져옵니다.
+    const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+    const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+    const emotionItems = formElement.querySelectorAll('.emotion-item');
+    emotionItems.forEach(item => {
+        const checkbox = item.querySelector('input[type="checkbox"]');
+        const weightInput = item.querySelector('input[name="weight"]');
+        if (checkbox && checkbox.checked) {
+            const emotionId = parseInt(checkbox.value);
+            const weight = (weightInput.value === '' || isNaN(parseFloat(weightInput.value))) ? 1.0 : parseFloat(weightInput.value);
+            emotionWeights.push({ emotionId: emotionId, weight: weight });
+        }
+    });
+
+    if (emotionWeights.length === 0) {
+        alert('저장할 감정을 하나 이상 선택해주세요.');
+        return;
+    }
+
+    fetch('/admin/attraction-emotions/update/' + attractionId, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            [header]: token
+        },
+        body: JSON.stringify(emotionWeights)
+    })
+        .then(response => {
+            if (response.ok) {
+                alert('성공적으로 저장되었습니다!');
+                // 성공 후 현재 페이지의 콘텐츠를 다시 로드
+                const currentUrl = history.state ? history.state.path : '/admin/attraction-emotions';
+                loadDynamicContent(currentUrl, false);
+            } else {
+                return response.json().then(errorData => {
+                    alert('저장 실패: ' + (errorData.message || '알 수 없는 오류'));
+                });
+            }
+        })
+        .catch(error => {
+            alert('네트워크 오류 또는 서버 통신 실패');
+            console.error('Fetch Error:', error);
+        });
+}
+
+// 매핑 페이지의 스크립트를 초기화하는 함수
+function initializeMappingPageScripts() {
+    // 1. 모든 '저장' form에 submit 이벤트 리스너를 추가합니다.
+    document.querySelectorAll('.attraction-emotion-form').forEach(form => {
+        form.addEventListener('submit', handleEmotionFormSubmit);
+    });
+
+    // 2. 체크박스 상태에 따른 input 활성화/비활성화 로직 (adminMapping.js에서 가져옴)
+    document.querySelectorAll('.emotion-item').forEach(item => {
+        const checkbox = item.querySelector('input[type="checkbox"]');
+        const weightInput = item.querySelector('input[name="weight"]');
+        if (checkbox && weightInput) {
+            weightInput.disabled = !checkbox.checked;
+            checkbox.addEventListener("change", () => {
+                weightInput.disabled = !checkbox.checked;
+                if (!checkbox.checked) {
+                    weightInput.value = "";
+                } else {
+                    weightInput.focus();
+                }
+            });
+        }
+    });
+
+    // 3. 가중치 입력 필드 blur 이벤트 (adminMapping.js에서 가져옴)
+    document.querySelectorAll('.emotion-item input[name="weight"]').forEach(input => {
+        input.addEventListener("blur", function () {
+            if (this.value && !isNaN(this.value)) {
+                this.value = parseFloat(this.value).toFixed(1);
+            }
+        });
+    });
+}
+
 
 
 console.log('관리자 페이지 JavaScript 로딩 완료');

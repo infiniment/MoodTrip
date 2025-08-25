@@ -8,6 +8,8 @@
 
     <link rel="stylesheet" href="/css/admin/adminMapping.css">
     <script src="/js/admin/adminMapping.js" defer></script>
+    <meta name="_csrf" th:content="${_csrf?.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}"/>
 </head>
 <body>
     <!-- 관리자 페이지 컨테이너 -->
