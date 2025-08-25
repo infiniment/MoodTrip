@@ -1,5 +1,6 @@
 package com.moodTrip.spring.domain.member.controller;
 
+import com.moodTrip.spring.domain.enteringRoom.service.JoinRequestManagementService;
 import com.moodTrip.spring.domain.member.dto.request.ChangePasswordForm;
 import com.moodTrip.spring.domain.member.dto.response.ProfileResponse;
 import com.moodTrip.spring.domain.member.entity.Member;
@@ -20,15 +21,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-/**
- * ✅ SSR 프로필 페이지 컨트롤러 - JWT 인증 적용
- *
- * 주요 변경사항:
- * - createTestMember() 제거 ❌
- * - SecurityUtil.getCurrentMember() 사용 ✅
- * - 실제 로그인한 사용자의 프로필 페이지 렌더링 ✅
- * - 로그인하지 않은 경우 로그인 페이지로 리다이렉트 ✅
- */
 @Slf4j
 @Controller
 @RequiredArgsConstructor
@@ -38,9 +30,7 @@ public class ProfileViewController {
     private final SecurityUtil securityUtil;
     private final MemberService memberService;
     private final PasswordEncoder passwordEncoder;
-
-
-
+    private final JoinRequestManagementService joinRequestManagementService;
 
     @GetMapping("/mypage/edit-profile")
     public String editMyProfile(Model model) {
@@ -54,6 +44,14 @@ public class ProfileViewController {
             model.addAttribute("currentMember", currentMember);
             model.addAttribute("isLoggedIn", true);
             model.addAttribute("editMode", true); // 편집 모드 플래그
+
+            try {
+                Integer totalPendingRequests = joinRequestManagementService.getTotalPendingRequestsForSidebar();
+                model.addAttribute("totalPendingRequests", totalPendingRequests);
+            } catch (Exception e) {
+                log.error("사이드바 배지 데이터 조회 실패", e);
+                model.addAttribute("totalPendingRequests", 0);
+            }
 
             log.info("✅ SSR 프로필 편집 페이지 렌더링 성공 - 회원ID: {}", currentMember.getMemberId());
 

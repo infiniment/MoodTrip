@@ -355,6 +355,28 @@ header.header .header-nav .right-nav .sign-up-button {
   transform: translateY(-1px);
 }
 
+.header-notification-badge {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 0 6px;         /* 위/아래 padding은 빼고 */
+  border-radius: 12px;
+  min-width: 18px;
+  height: 18px;
+  text-align: center;
+  animation: pulse 2s infinite;
+  margin-right: 19px;
+  margin-top : 2px;
+}
+
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
 .logout-btn {
   width: 100%;
   padding: 10px 0;
@@ -544,6 +566,24 @@ header.header .dropdown-nav-container .dropdown-nav .dropdown-menu-container .dr
   transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* 프로필 관리 버튼 + 배지 레이아웃 */
+.profile-manage-with-badge {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+/* 프로필 관리 텍스트 위치 조정 */
+.profile-manage-with-badge span:first-child {
+  margin-left: 57px;   /* 텍스트를 오른쪽으로 이동 */
+  /* 또는 margin-right: 16px; 텍스트를 왼쪽으로 이동 */
+}
+/* 배지를 왼쪽으로 살짝 이동 */
+.profile-manage-with-badge .notification-badge {
+  margin-left: auto;
+  margin-right: 20px; /* 오른쪽 여백 추가해서 왼쪽으로 이동 */
+}
+
 /* 반응형 대응 */
 @media (max-width: 1080px) {
   .container {
@@ -554,6 +594,7 @@ header.header .dropdown-nav-container .dropdown-nav .dropdown-menu-container .dr
   .logged-in-header-search-wrapper {
     width: 250px;
   }
+
 
   .profile-dropdown {
     min-width: 200px;
