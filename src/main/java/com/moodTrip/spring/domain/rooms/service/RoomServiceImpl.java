@@ -145,9 +145,12 @@ public class RoomServiceImpl implements RoomService {
     }
 
     // 방 목록 조회 서비스
+    @Transactional
     @Override
     public List<RoomResponse> getAllRooms() {
-        return roomRepository.findAll().stream()
+        List<Room> rooms = roomRepository.findAll();
+        // 트랜잭션 내에서 DTO 변환까지 완료
+        return rooms.stream()
                 .map(RoomResponse::from)
                 .collect(Collectors.toList());
     }

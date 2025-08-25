@@ -29,6 +29,52 @@ function setupMenuNavigation() {
             
             // 선택된 섹션 보이기
             const menuType = this.getAttribute('data-menu');
+
+            // '감정 매핑 관리' 메뉴를 위한 특별 처리
+            if (menuType === 'mapping') {
+                const mappingSection = document.getElementById('mapping-section');
+                if (mappingSection) {
+                    mappingSection.style.display = 'block'; // 섹션을 먼저 화면에 표시
+
+                    // 섹션에 내용이 비어있을 때만 서버에서 콘텐츠를 가져옴 (중복 로딩 방지)
+                    if (mappingSection.innerHTML.trim() === '') {
+                        showLoadingMessage('매핑 데이터를 불러오는 중...'); // 로딩 메시지 표시
+                        fetch('/admin/attraction-emotions') // 서버에 콘텐츠(HTML 조각) 요청
+                            .then(response => {
+                                hideLoadingMessage(); // 로딩 메시지 숨김
+                                if (!response.ok) {
+                                    throw new Error('콘텐츠를 불러오는 데 실패했습니다.');
+                                }
+                                return response.text(); // 응답을 텍스트(HTML)로 변환
+                            })
+                            .then(html => {
+                                mappingSection.innerHTML = html; // 받아온 HTML을 섹션에 삽입
+                            })
+                            .catch(error => {
+                                console.error('Error loading mapping content:', error);
+                                mappingSection.innerHTML = `<p style="color: red; text-align: center; padding: 20px;">${error.message}</p>`;
+                                showErrorMessage(error.message);
+                            });
+                    }
+                }
+            } else {
+                // 기존의 다른 메뉴들을 위한 처리
+                const targetSection = document.getElementById(menuType + '-section');
+                if (targetSection) {
+                    targetSection.style.display = 'block';
+
+                    // 공지사항이나 FAQ 메뉴 클릭 시 목록 로드 (기존 로직 유지)
+                    if (menuType === 'notices') {
+                        loadNoticeList();
+                    } else if (menuType === 'faq') {
+                        // FAQ 목록 로드 함수가 있다면 여기에 추가
+                        // loadFaqList();
+                    }
+                }
+            }
+
+
+
             const targetSection = document.getElementById(menuType + '-section');
             if (targetSection) {
                 targetSection.style.display = 'block';
@@ -48,6 +94,13 @@ function setupMenuNavigation() {
             }
         });
     });
+
+
+
+
+
+
+
 }
 
 function updatePageTitle(menuType) {
@@ -59,6 +112,7 @@ function updatePageTitle(menuType) {
         'locations': '관광지 관리',
         'reports': '신고 관리',
         'notices': '공지사항',
+        'mapping': '감정 매핑 관리',
         'settings': '설정'
     };
     
@@ -70,6 +124,7 @@ function updatePageTitle(menuType) {
         'locations': '관광지 정보를 관리하세요',
         'reports': '신고 내역을 처리하세요',
         'notices': '공지사항을 관리하세요',
+        'mapping': '관광지와 감정 태그를 연결하고 가중치를 설정합니다',
         'settings': '시스템 설정을 변경하세요'
     };
     
@@ -124,7 +179,7 @@ function saveFaq() {
     };
 
     // 수정 모드인지 새 작성 모드인지 확인
-    const url = editingFaqId ? `/api/admin/faq/${editingFaqId}` : '/api/admin/faq';
+    const url = editingFaqId ? `/api/v1/admin/faq/${editingFaqId}` : '/api/v1/admin/faq';
     const method = editingFaqId ? 'PUT' : 'POST';
 
     fetch(url, {
@@ -158,7 +213,7 @@ function editFaq(button) {
     document.getElementById('faq-category').value = category;
 
     // 서버에서 상세 정보 가져오기
-    fetch(`/api/admin/faq/${editingFaqId}`)
+    fetch(`/api/v1/admin/faq/${editingFaqId}`)
         .then(response => response.json())
         .then(faq => {
             document.getElementById('faq-answer').value = faq.content;
@@ -174,7 +229,7 @@ function deleteFaq(button) {
         const row = button.closest('tr');
         const faqId = row.dataset.faqId;
 
-        fetch(`/api/admin/faq/${faqId}`, {
+        fetch(`/api/v1/admin/faq/${faqId}`, {
             method: 'DELETE'
         })
             .then(response => {
@@ -191,7 +246,7 @@ function deleteFaq(button) {
 }
 
 function loadFaqList() {
-    fetch('/api/admin/faq')
+    fetch('/api/v1/admin/faq')
         .then(response => response.json())
         .then(faqs => {
             const tbody = document.querySelector('#faq-list-view tbody');
@@ -1665,9 +1720,9 @@ function loadNoticeList() {
 
 // 공지사항 메뉴 클릭 시 목록 로드
 // setupMenuNavigation 함수 내부 수정
-if (menuType === 'notices') {
-    loadNoticeList();
-}
+// if (menuType === 'notices') {
+//     loadNoticeList();
+// }
 
 // // 공지사항 삭제 함수
 // function handleNoticeDelete(btn) {
@@ -2481,69 +2536,714 @@ function deleteReviewFromTable(author, location) {
         }
     });
 }
-
 // === 회원 관리 함수들 ===
 
+// 회원 상세 정보 보기 (기존 함수 개선)
 function handleUserDetail(btn) {
     const row = btn.closest('tr');
-    const userId = row.cells[0].textContent;
-    const userName = row.cells[1].textContent;
-    const userEmail = row.cells[2].textContent;
-    const joinDate = row.cells[3].textContent;
-    const status = row.querySelector('.status').textContent;
-    
+    const memberPk = row.dataset.memberPk;
+
+    if (!memberPk) {
+        showErrorMessage('회원 정보를 찾을 수 없습니다.');
+        return;
+    }
+
+    // 서버에서 회원 상세 정보 가져오기
+    fetch(`/admin/members/${memberPk}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('회원 정보를 불러올 수 없습니다.');
+            }
+            return response.json();
+        })
+        .then(member => {
+            showMemberDetailModal(member);
+        })
+        .catch(error => {
+            console.error('회원 상세 정보 조회 오류:', error);
+            showErrorMessage('회원 정보를 불러오는 중 오류가 발생했습니다.');
+        });
+}
+
+// 회원 상세 정보 모달 표시
+function showMemberDetailModal(member) {
+    const lastLoginText = member.lastLoginAt ?
+        new Date(member.lastLoginAt).toLocaleString() : '로그인 기록 없음';
+
+    const providerText = member.provider ?
+        `${member.provider} 연동` : '일반 회원가입';
+
     const content = `
         <h3>회원 상세 정보</h3>
         <div class="user-detail">
-            <p><strong>ID:</strong> ${userId}</p>
-            <p><strong>이름:</strong> ${userName}</p>
-            <p><strong>이메일:</strong> ${userEmail}</p>
-            <p><strong>가입일:</strong> ${joinDate}</p>
-            <p><strong>상태:</strong> ${status}</p>
-            <p><strong>최근 로그인:</strong> 2024-07-12 14:30</p>
-            <p><strong>매칭 참여 횟수:</strong> 5회</p>
-            <p><strong>매칭 생성 횟수:</strong> 2회</p>
-            <p><strong>신고 접수:</strong> 0건</p>
-            <p><strong>리뷰 작성:</strong> 12건</p>
-            <p><strong>평균 평점:</strong> 4.5/5.0</p>
+            <div class="detail-section">
+                <h4>기본 정보</h4>
+                <p><strong>회원 ID:</strong> ${member.memberId}</p>
+                <p><strong>닉네임:</strong> ${member.nickname}</p>
+                <p><strong>이메일:</strong> ${member.email || '-'}</p>
+                <p><strong>전화번호:</strong> ${member.memberPhone}</p>
+                <p><strong>가입 방식:</strong> ${providerText}</p>
+            </div>
+            
+            <div class="detail-section">
+                <h4>활동 정보</h4>
+                <p><strong>가입일:</strong> ${new Date(member.createdAt).toLocaleDateString()}</p>
+                <p><strong>최근 로그인:</strong> ${lastLoginText}</p>
+                <p><strong>현재 상태:</strong> <span class="${member.statusClass}">${member.statusDisplay}</span></p>
+                <p><strong>매칭 참여 횟수:</strong> ${member.matchingParticipationCount || 0}회</p>
+            </div>
+            
+            <div class="detail-section">
+                <h4>신고 관련</h4>
+                <p><strong>신고 받은 횟수:</strong> ${member.rptRcvdCnt || 0}건</p>
+                <p><strong>신고한 횟수:</strong> ${member.rptCnt || 0}건</p>
+                ${(member.rptRcvdCnt || 0) >= 3 ? '<p style="color: #ef4444;"><strong>⚠️ 주의:</strong> 신고 누적으로 주의가 필요한 회원입니다.</p>' : ''}
+            </div>
         </div>
         <div class="modal-actions">
             <button class="btn-secondary" onclick="closeModal()">닫기</button>
-            <button class="btn-primary" onclick="exportUserData('${userId}')">활동 내역 보기</button>
+            <button class="btn-primary" onclick="exportUserData('${member.memberPk}')">활동 내역 보기</button>
+            ${member.status !== 'WITHDRAWN' && !member.isWithdraw ? `
+                <button class="btn-warning" onclick="showMemberStatusChangeModal('${member.memberPk}', '${member.status}', '${member.nickname}')">상태 변경</button>
+            ` : ''}
         </div>
     `;
     showModal(content);
 }
 
-function handleUserSuspension(btn) {
+// 회원 상태 변경 (정지/활성화)
+function handleUserStatusChange(btn, memberPk) {
     const row = btn.closest('tr');
-    const userName = row.cells[1].textContent;
-    const statusCell = row.querySelector('.status');
-    const isActive = statusCell.textContent.includes('활성');
-    
-    const action = isActive ? '정지' : '활성화';
-    showConfirmModal(`${userName} 회원을 ${action}하시겠습니까?`, function() {
-        if (isActive) {
-            statusCell.textContent = '정지';
-            statusCell.className = 'status suspended';
-            btn.textContent = '활성화';
-            btn.className = 'btn-small success';
-        } else {
-            statusCell.textContent = '활성';
-            statusCell.className = 'status active';
-            btn.textContent = '정지';
-            btn.className = 'btn-small danger';
+    const nickname = row.cells[1].textContent;
+    const currentStatus = row.querySelector('.status').textContent;
+    const isActive = currentStatus.includes('활성');
+
+    const newStatus = isActive ? 'SUSPENDED' : 'ACTIVE';
+    const actionText = isActive ? '정지' : '활성화';
+
+    showConfirmModal(
+        `${nickname} 회원을 ${actionText}하시겠습니까?${isActive ? '\n\n정지된 회원은 서비스 이용이 제한됩니다.' : ''}`,
+        function() {
+            updateMemberStatus(memberPk, newStatus, btn);
         }
-        showSuccessMessage(`회원이 ${action}되었습니다.`);
+    );
+}
+// === 회원 관리 함수들 ===
+
+// 회원 상세 정보 보기 (기존 함수 개선)
+function handleUserDetail(btn) {
+    const row = btn.closest('tr');
+    const memberPk = row.dataset.memberPk;
+
+    if (!memberPk) {
+        showErrorMessage('회원 정보를 찾을 수 없습니다.');
+        return;
+    }
+
+    // 서버에서 회원 상세 정보 가져오기
+    fetch(`/admin/members/${memberPk}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('회원 정보를 불러올 수 없습니다.');
+            }
+            return response.json();
+        })
+        .then(member => {
+            showMemberDetailModal(member);
+        })
+        .catch(error => {
+            console.error('회원 상세 정보 조회 오류:', error);
+            showErrorMessage('회원 정보를 불러오는 중 오류가 발생했습니다.');
+        });
+}
+
+// 회원 상세 정보 모달 표시
+function showMemberDetailModal(member) {
+    const lastLoginText = member.lastLoginAt ?
+        new Date(member.lastLoginAt).toLocaleString() : '로그인 기록 없음';
+
+    const providerText = member.provider ?
+        `${member.provider} 연동` : '일반 회원가입';
+
+    const content = `
+        <h3>회원 상세 정보</h3>
+        <div class="user-detail">
+            <div class="detail-section">
+                <h4>기본 정보</h4>
+                <p><strong>회원 ID:</strong> ${member.memberId}</p>
+                <p><strong>닉네임:</strong> ${member.nickname}</p>
+                <p><strong>이메일:</strong> ${member.email || '-'}</p>
+                <p><strong>전화번호:</strong> ${member.memberPhone}</p>
+                <p><strong>가입 방식:</strong> ${providerText}</p>
+            </div>
+            
+            <div class="detail-section">
+                <h4>활동 정보</h4>
+                <p><strong>가입일:</strong> ${new Date(member.createdAt).toLocaleDateString()}</p>
+                <p><strong>최근 로그인:</strong> ${lastLoginText}</p>
+                <p><strong>현재 상태:</strong> <span class="${member.statusClass}">${member.statusDisplay}</span></p>
+                <p><strong>매칭 참여 횟수:</strong> ${member.matchingParticipationCount || 0}회</p>
+            </div>
+            
+            <div class="detail-section">
+                <h4>신고 관련</h4>
+                <p><strong>신고 받은 횟수:</strong> ${member.rptRcvdCnt || 0}건</p>
+                <p><strong>신고한 횟수:</strong> ${member.rptCnt || 0}건</p>
+                ${(member.rptRcvdCnt || 0) >= 3 ? '<p style="color: #ef4444;"><strong>⚠️ 주의:</strong> 신고 누적으로 주의가 필요한 회원입니다.</p>' : ''}
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-secondary" onclick="closeModal()">닫기</button>
+            <button class="btn-primary" onclick="exportUserData('${member.memberPk}')">활동 내역 보기</button>
+            ${member.status !== 'WITHDRAWN' && !member.isWithdraw ? `
+                <button class="btn-warning" onclick="showMemberStatusChangeModal('${member.memberPk}', '${member.status}', '${member.nickname}')">상태 변경</button>
+            ` : ''}
+        </div>
+    `;
+    showModal(content);
+}
+
+// 회원 상태 변경 (정지/활성화)
+function handleUserStatusChange(btn, memberPk) {
+    const row = btn.closest('tr');
+    const nickname = row.cells[1].textContent;
+    const currentStatus = row.querySelector('.status').textContent;
+    const isActive = currentStatus.includes('활성');
+
+    const newStatus = isActive ? 'SUSPENDED' : 'ACTIVE';
+    const actionText = isActive ? '정지' : '활성화';
+
+    showConfirmModal(
+        `${nickname} 회원을 ${actionText}하시겠습니까?${isActive ? '\n\n정지된 회원은 서비스 이용이 제한됩니다.' : ''}`,
+        function() {
+            updateMemberStatus(memberPk, newStatus, btn);
+        }
+    );
+}
+
+// 회원 강제 탈퇴
+function handleUserWithdraw(btn, memberPk) {
+    const row = btn.closest('tr');
+    const nickname = row.cells[1].textContent;
+
+    showConfirmModal(
+        `${nickname} 회원을 강제 탈퇴 처리하시겠습니까?\n\n⚠️ 주의: 탈퇴 처리된 회원은 복구할 수 없으며, 모든 활동 데이터가 비활성화됩니다.`,
+        function() {
+            withdrawMember(memberPk, btn);
+        }
+    );
+}
+
+// 서버에 회원 상태 변경 요청
+function updateMemberStatus(memberPk, newStatus, btn) {
+    fetch(`/admin/members/${memberPk}/status`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `status=${newStatus}`
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('서버 오류');
+            }
+            return response.text();
+        })
+        .then(message => {
+            // UI 업데이트
+            updateMemberStatusInTable(btn, newStatus);
+            showSuccessMessage(message);
+        })
+        .catch(error => {
+            console.error('회원 상태 변경 오류:', error);
+            showErrorMessage('상태 변경 중 오류가 발생했습니다.');
+        });
+}
+
+// 서버에 회원 탈퇴 요청
+function withdrawMember(memberPk, btn) {
+    fetch(`/admin/members/${memberPk}/withdraw`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('서버 오류');
+            }
+            return response.text();
+        })
+        .then(message => {
+            // UI 업데이트
+            updateMemberWithdrawInTable(btn);
+            showSuccessMessage(message);
+        })
+        .catch(error => {
+            console.error('회원 탈퇴 처리 오류:', error);
+            showErrorMessage('탈퇴 처리 중 오류가 발생했습니다.');
+        });
+}
+
+// 테이블에서 회원 상태 업데이트
+function updateMemberStatusInTable(btn, newStatus) {
+    const row = btn.closest('tr');
+    const statusCell = row.querySelector('.status');
+
+    if (newStatus === 'ACTIVE') {
+        statusCell.textContent = '활성';
+        statusCell.className = 'status active';
+        btn.textContent = '정지';
+        btn.className = 'btn-small danger';
+    } else if (newStatus === 'SUSPENDED') {
+        statusCell.textContent = '정지';
+        statusCell.className = 'status suspended';
+        btn.textContent = '활성화';
+        btn.className = 'btn-small success';
+    }
+}
+
+// 테이블에서 회원 탈퇴 상태 업데이트
+function updateMemberWithdrawInTable(btn) {
+    const row = btn.closest('tr');
+    const statusCell = row.querySelector('.status');
+    const actionCell = row.querySelector('td:last-child');
+
+    statusCell.textContent = '탈퇴';
+    statusCell.className = 'status suspended';
+
+    // 탈퇴 버튼 제거, 상세보기만 남김
+    actionCell.innerHTML = `
+        <button class="btn-small" onclick="handleUserDetail(this)">상세</button>
+        <span style="color: #666; font-size: 12px;">탈퇴 처리됨</span>
+    `;
+}
+
+// 회원 검색 함수
+function searchMembers() {
+    const keyword = document.getElementById('member-search-input').value.trim();
+
+    if (!keyword) {
+        showErrorMessage('검색어를 입력해주세요.');
+        return;
+    }
+
+    fetch(`/admin/members/search?keyword=${encodeURIComponent(keyword)}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('검색 중 오류가 발생했습니다.');
+            }
+            return response.json();
+        })
+        .then(members => {
+            updateMembersTable(members);
+            showSuccessMessage(`${members.length}명의 회원을 찾았습니다.`);
+        })
+        .catch(error => {
+            console.error('회원 검색 오류:', error);
+            showErrorMessage('회원 검색 중 오류가 발생했습니다.');
+        });
+}
+
+// 회원 테이블 업데이트
+function updateMembersTable(members) {
+    const tbody = document.getElementById('members-table-body');
+
+    if (!members || members.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8" style="text-align: center; padding: 40px; color: #666;">
+                    검색 결과가 없습니다.
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = '';
+
+    members.forEach(member => {
+        const row = document.createElement('tr');
+        row.dataset.memberPk = member.memberPk;
+
+        const createdDate = new Date(member.createdAt).toLocaleDateString();
+        const statusClass = getStatusClass(member.status, member.isWithdraw);
+        const statusDisplay = getStatusDisplay(member.status, member.isWithdraw);
+
+        row.innerHTML =
+            '<td>' + member.memberId + '</td>' +
+            '<td>' + member.nickname + '</td>' +
+            '<td>' + (member.email || '-') + '</td>' +
+            '<td>' + createdDate + '</td>' +
+            '<td>' + (member.matchingParticipationCount || 0) + '회</td>' +
+            '<td>' + (member.rptRcvdCnt || 0) + '건</td>' +
+            '<td><span class="' + statusClass + '">' + statusDisplay + '</span></td>' +
+            '<td>' +
+            '<button class="btn-small" onclick="handleUserDetail(this)">상세</button>' +
+            (!member.isWithdraw ?
+                    '<button class="' + (member.status === 'ACTIVE' ? 'btn-small danger' : 'btn-small success') + '" ' +
+                    'onclick="handleUserStatusChange(this, \'' + member.memberPk + '\')">' +
+                    (member.status === 'ACTIVE' ? '정지' : '활성화') +
+                    '</button>' +
+                    '<button class="btn-small danger" ' +
+                    'onclick="handleUserWithdraw(this, \'' + member.memberPk + '\')">' +
+                    '탈퇴' +
+                    '</button>'
+                    : '<span style="color: #666; font-size: 12px;">탈퇴 처리됨</span>'
+            ) +
+            '</td>';
+
+        tbody.appendChild(row);
     });
 }
 
-function exportUserData(userId) {
-    console.log(`회원 ${userId} 활동 내역 내보내기`);
-    showSuccessMessage('회원 활동 내역을 조회하고 있습니다...');
-    closeModal();
+// 회원 상태 CSS 클래스 반환
+function getStatusClass(status, isWithdraw) {
+    if (isWithdraw) {
+        return 'status suspended';
+    }
+
+    switch (status) {
+        case 'ACTIVE':
+            return 'status active';
+        case 'SUSPENDED':
+            return 'status suspended';
+        case 'WITHDRAWN':
+            return 'status suspended';
+        default:
+            return 'status active';
+    }
 }
 
+// 회원 상태 표시 텍스트 반환
+function getStatusDisplay(status, isWithdraw) {
+    if (isWithdraw) {
+        return '탈퇴';
+    }
+
+    switch (status) {
+        case 'ACTIVE':
+            return '활성';
+        case 'SUSPENDED':
+            return '정지';
+        case 'WITHDRAWN':
+            return '탈퇴';
+        default:
+            return '활성';
+    }
+}
+
+// 회원 검색 입력창 엔터키 처리
+function initializeMemberSearch() {
+    const searchInput = document.getElementById('member-search-input');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchMembers();
+            }
+        });
+    }
+}
+
+// 회원 활동 내역 보기 (기존 exportUserData 함수 개선)
+function exportUserData(memberPk) {
+    console.log(`회원 ${memberPk} 활동 내역 조회`);
+    closeModal();
+
+    // 실제로는 여기서 회원의 상세 활동 내역을 조회하는 API를 호출
+    // 예: 매칭 참여 내역, 신고 내역, 리뷰 작성 내역 등
+
+    showSuccessMessage('회원 활동 내역을 조회하고 있습니다...');
+
+    // 추후 구현: 새 모달이나 페이지에서 상세 내역 표시
+    setTimeout(() => {
+        showInfoMessage('활동 내역 상세 보기 기능은 곧 업데이트됩니다.');
+    }, 1000);
+}
+
+// 회원 상태 변경 모달 (상세 정보 모달에서 호출)
+function showMemberStatusChangeModal(memberPk, currentStatus, nickname) {
+    const isActive = currentStatus === 'ACTIVE';
+    const newStatus = isActive ? 'SUSPENDED' : 'ACTIVE';
+    const actionText = isActive ? '정지' : '활성화';
+
+    const content = `
+        <h3>회원 상태 변경</h3>
+        <div class="status-change-form">
+            <p><strong>회원:</strong> ${nickname}</p>
+            <p><strong>현재 상태:</strong> ${getStatusDisplay(currentStatus, false)}</p>
+            <p><strong>변경할 상태:</strong> ${getStatusDisplay(newStatus, false)}</p>
+            
+            ${isActive ? `
+                <div class="warning-section">
+                    <h4>⚠️ 정지 처리 시 주의사항</h4>
+                    <ul>
+                        <li>해당 회원은 서비스 이용이 제한됩니다</li>
+                        <li>진행 중인 매칭에서 자동으로 제외됩니다</li>
+                        <li>새로운 매칭 참여가 불가능합니다</li>
+                    </ul>
+                </div>
+            ` : `
+                <div class="info-section">
+                    <h4>✓ 활성화 처리 시</h4>
+                    <ul>
+                        <li>해당 회원은 정상적으로 서비스를 이용할 수 있습니다</li>
+                        <li>매칭 참여 및 생성이 가능합니다</li>
+                    </ul>
+                </div>
+            `}
+            
+            <div class="form-group">
+                <label>변경 사유 (선택사항)</label>
+                <textarea id="status-change-reason" placeholder="상태 변경 사유를 입력하세요..." rows="3"></textarea>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-secondary" onclick="closeModal()">취소</button>
+            <button class="${isActive ? 'btn-danger' : 'btn-success'}" 
+                    onclick="confirmMemberStatusChange('${memberPk}', '${newStatus}')">
+                ${actionText} 처리
+            </button>
+        </div>
+    `;
+
+    showModal(content);
+}
+
+// 회원 상태 변경 확인
+function confirmMemberStatusChange(memberPk, newStatus) {
+    const reason = document.getElementById('status-change-reason').value.trim();
+
+    // 사유가 있으면 로그에 기록 (실제 구현시 서버로 전송)
+    if (reason) {
+        console.log(`회원 ${memberPk} 상태 변경 사유: ${reason}`);
+    }
+
+    closeModal();
+
+    // 실제 상태 변경 수행
+    fetch(`/admin/members/${memberPk}/status`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `status=${newStatus}&reason=${encodeURIComponent(reason)}`
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('서버 오류');
+            }
+            return response.text();
+        })
+        .then(message => {
+            showSuccessMessage(message);
+            // 페이지 새로고침 또는 테이블 업데이트
+            setTimeout(() => {
+                location.reload(); // 간단한 방법으로 페이지 새로고침
+            }, 1000);
+        })
+        .catch(error => {
+            console.error('회원 상태 변경 오류:', error);
+            showErrorMessage('상태 변경 중 오류가 발생했습니다.');
+        });
+}
+
+// 회원 관리 섹션 초기화
+function initializeMemberManagement() {
+    // 검색 기능 초기화
+    initializeMemberSearch();
+
+    // 기타 회원 관리 관련 초기화 작업
+    console.log('회원 관리 섹션이 초기화되었습니다.');
+}
+
+// 회원 검색 초기화 (전체 목록으로 돌아가기)
+function resetMemberSearch() {
+    document.getElementById('member-search-input').value = '';
+    location.reload(); // 간단하게 페이지 새로고침으로 전체 목록 표시
+}
+
+// 상태별 회원 필터링
+function filterMembersByStatus(status) {
+    // 필터 버튼 활성화 상태 변경
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+
+    const rows = document.querySelectorAll('#members-table-body tr[data-member-pk]');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        const memberStatus = row.dataset.status;
+        const isWithdraw = row.dataset.isWithdraw === 'true';
+        const rptCount = parseInt(row.dataset.rptCount) || 0;
+
+        let shouldShow = false;
+
+        switch(status) {
+            case 'ALL':
+                shouldShow = true;
+                break;
+            case 'ACTIVE':
+                shouldShow = memberStatus === 'ACTIVE' && !isWithdraw;
+                break;
+            case 'SUSPENDED':
+                shouldShow = memberStatus === 'SUSPENDED' && !isWithdraw;
+                break;
+            case 'WITHDRAWN':
+                shouldShow = isWithdraw;
+                break;
+            case 'REPORTED':
+                shouldShow = rptCount >= 3;
+                break;
+        }
+
+        if (shouldShow) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    // 표시된 회원 수 업데이트
+    updateVisibleMembersCount(visibleCount);
+
+    // 결과가 없을 때 메시지 표시
+    showNoResultsMessage(visibleCount === 0, getStatusDisplayName(status) + ' 회원이 없습니다.');
+}
+
+// 상태 표시명 반환
+function getStatusDisplayName(status) {
+    switch(status) {
+        case 'ALL': return '전체';
+        case 'ACTIVE': return '활성';
+        case 'SUSPENDED': return '정지';
+        case 'WITHDRAWN': return '탈퇴';
+        case 'REPORTED': return '신고 다수';
+        default: return '';
+    }
+}
+
+// 표시된 회원 수 업데이트
+function updateVisibleMembersCount(count) {
+    const visibleCountElement = document.getElementById('visible-members-count');
+    if (visibleCountElement) {
+        visibleCountElement.textContent = count;
+    }
+}
+
+// 결과 없음 메시지 표시/숨김
+function showNoResultsMessage(show, message) {
+    message = message || '결과가 없습니다.';
+    const tbody = document.getElementById('members-table-body');
+    let noResultRow = tbody.querySelector('#no-result-row');
+
+    // 기존 메시지 제거
+    if (noResultRow) {
+        noResultRow.remove();
+    }
+
+    if (show) {
+        const row = document.createElement('tr');
+        row.id = 'no-result-row';
+        row.innerHTML = '<td colspan="8" style="text-align: center; padding: 40px; color: #666;">' + message + '</td>';
+        tbody.appendChild(row);
+    }
+}
+
+// 회원 목록 새로고침
+function refreshMemberList() {
+    showSuccessMessage('회원 목록을 새로고침합니다...');
+    setTimeout(() => {
+        location.reload();
+    }, 500);
+}
+
+// 회원 목록 내보내기
+function exportMemberList() {
+    showSuccessMessage('회원 목록 내보내기 기능을 준비 중입니다...');
+
+    // 실제 구현시에는 현재 표시된 회원 목록을 CSV나 Excel 형태로 다운로드
+    // 예: /admin/members/export API 호출
+    setTimeout(() => {
+        showInfoMessage('회원 목록 내보내기 기능은 곧 업데이트됩니다.');
+    }, 1000);
+}
+
+// 회원 테이블 업데이트 시 추가 처리
+function updateMembersTableEnhanced(members) {
+    updateMembersTable(members);
+
+    // 필터 상태 초기화
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelector('.filter-btn').classList.add('active'); // 첫 번째 버튼(전체) 활성화
+
+    // 회원 수 업데이트
+    updateVisibleMembersCount(members.length);
+
+    // 검색 결과 메시지
+    if (members.length === 0) {
+        showNoResultsMessage(true, '검색 결과가 없습니다.');
+    }
+}
+
+// 기존 searchMembers 함수 개선
+function searchMembersEnhanced() {
+    const keyword = document.getElementById('member-search-input').value.trim();
+
+    if (!keyword) {
+        showErrorMessage('검색어를 입력해주세요.');
+        return;
+    }
+
+    // 로딩 표시
+    const searchBtn = event.target;
+    const originalText = searchBtn.textContent;
+    searchBtn.textContent = '검색중...';
+    searchBtn.disabled = true;
+
+    fetch(`/admin/members/search?keyword=${encodeURIComponent(keyword)}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('검색 중 오류가 발생했습니다.');
+            }
+            return response.json();
+        })
+        .then(members => {
+            updateMembersTableEnhanced(members);
+
+            if (members.length > 0) {
+                showSuccessMessage(`${members.length}명의 회원을 찾았습니다.`);
+            } else {
+                showInfoMessage('검색 조건에 맞는 회원이 없습니다.');
+            }
+        })
+        .catch(error => {
+            console.error('회원 검색 오류:', error);
+            showErrorMessage('회원 검색 중 오류가 발생했습니다.');
+        })
+        .finally(() => {
+            // 버튼 상태 복원
+            searchBtn.textContent = originalText;
+            searchBtn.disabled = false;
+        });
+}
+
+// 기존 함수들을 새로운 버전으로 교체
+function searchMembers() {
+    searchMembersEnhanced();
+}
+
+// 페이지 로드시 회원 관리 초기화
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => {
+        initializeMemberManagement();
+    }, 500);
+});
 
 // === 설정 관리 함수들 ===
 // === 설정 관리 함수들 (수정된 버전) ===
@@ -3099,8 +3799,17 @@ function clearFieldError(field) {
 
 // 전역 에러 핸들러
 window.addEventListener('error', function(e) {
-    console.error('JavaScript 에러:', e.error);
-    showErrorMessage('시스템 오류가 발생했습니다. 새로고침 후 다시 시도해주세요.');
+    // e.error 객체가 존재하고, stack 속성이 있는지 확인
+    if (e.error && e.error.stack) {
+        console.error('💥 전역 에러 발생:', e.error.message);
+        console.error('📜 스택 트레이스:', e.error.stack);
+    } else {
+        // 일반적인 오류 이벤트 (예: 리소스 로드 실패)
+        console.error('🐞 잡힌 오류 이벤트:', e);
+    }
+
+    // 사용자에게 보여주는 메시지는 그대로 유지할 수 있습니다.
+    // showErrorMessage('시스템 오류가 발생했습니다. 새로고침 후 다시 시도해주세요.');
 });
 
 // 네트워크 상태 감지
@@ -3111,5 +3820,208 @@ window.addEventListener('online', function() {
 window.addEventListener('offline', function() {
     showErrorMessage('네트워크 연결이 끊어졌습니다.');
 });
+
+// admin.js 파일의 적절한 위치에 추가
+
+// 콘텐츠 영역을 동적으로 로드하는 함수
+function loadDynamicContent(url, pushState = true) {
+    const mappingSection = document.getElementById('mapping-section');
+    if (!mappingSection) return;
+
+    // 모든 섹션 숨기기 및 mapping-section 보이기
+    document.querySelectorAll('.content-section').forEach(section => {
+        section.style.display = 'none';
+    });
+    mappingSection.style.display = 'block';
+
+    showLoadingMessage('데이터를 불러오는 중...');
+
+    fetch(url)
+        .then(response => {
+            hideLoadingMessage();
+            if (!response.ok) throw new Error('콘텐츠 로드 실패');
+            return response.text();
+        })
+        .then(html => {
+            mappingSection.innerHTML = html;
+            initializeMappingPageScripts();
+            if (pushState) {
+                // 브라우저의 주소창 URL을 변경하고, 히스토리에 상태를 저장
+                history.pushState({ path: url }, '', url);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            mappingSection.innerHTML = `<p style="color: red;">${error.message}</p>`;
+            showErrorMessage(error.message);
+        });
+}
+
+// 브라우저 뒤로가기/앞으로가기 버튼 처리
+window.onpopstate = function(event) {
+    if (event.state && event.state.path) {
+        loadDynamicContent(event.state.path, false);
+    }
+};
+
+
+// 기존 setupMenuNavigation 함수를 아래 내용으로 교체
+function setupMenuNavigation() {
+    document.querySelectorAll('.sidebar-menu .menu-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            const menuType = this.getAttribute('data-menu');
+
+            // 메뉴 활성화/비활성화 처리
+            document.querySelector('.menu-item.active').classList.remove('active');
+            this.classList.add('active');
+
+            if (menuType === 'mapping') {
+                e.preventDefault(); // 기본 링크 동작 방지
+                const targetUrl = '/admin/attraction-emotions';
+                loadDynamicContent(targetUrl);
+                updatePageTitle(menuType);
+            } else {
+                // 기존의 다른 메뉴들을 위한 처리
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.style.display = 'none';
+                });
+                const targetSection = document.getElementById(menuType + '-section');
+                if (targetSection) {
+                    targetSection.style.display = 'block';
+                }
+                updatePageTitle(menuType);
+            }
+        });
+    });
+
+    // 이벤트 위임: #mapping-section 내부에서 발생하는 클릭 이벤트를 감지
+    const mainContent = document.querySelector('.main-content');
+    mainContent.addEventListener('click', function(e) {
+        const mappingSection = document.getElementById('mapping-section');
+        // 클릭된 요소가 mapping-section 내부에 있고, 페이지네이션 링크인 경우
+        const link = e.target.closest('.pagination a');
+        if (link && mappingSection.contains(link)) {
+            e.preventDefault(); // 기본 링크 이동 방지
+            const url = link.getAttribute('href');
+            loadDynamicContent(url);
+        }
+    });
+
+    // 이벤트 위임: 검색 폼 제출 처리
+    mainContent.addEventListener('submit', function(e) {
+        const form = e.target.closest('.search-container form');
+        const mappingSection = document.getElementById('mapping-section');
+        if (form && mappingSection.contains(form)) {
+            e.preventDefault(); // 기본 폼 제출 방지
+            const formData = new FormData(form);
+            const params = new URLSearchParams(formData);
+            const url = `${form.getAttribute('action')}?${params.toString()}`;
+            loadDynamicContent(url);
+        }
+    });
+}
+
+// '저장' 버튼을 눌렀을 때 실행될 fetch 로직 (기존 submitForm 함수)
+function handleEmotionFormSubmit(event) {
+    event.preventDefault(); // 기본 폼 제출 방지
+    const formElement = event.target; // 이벤트가 발생한 form 요소
+
+    const attractionId = formElement.getAttribute('data-attraction-id');
+    const emotionWeights = [];
+
+    // ⭐ 1. CSRF 관련 메타 태그를 먼저 변수에 할당합니다.
+    const csrfTokenMeta = document.querySelector('meta[name="_csrf"]');
+    const csrfHeaderMeta = document.querySelector('meta[name="_csrf_header"]');
+
+    // ⭐ 2. 메타 태그가 존재하는지 확인합니다.
+    if (!csrfTokenMeta || !csrfHeaderMeta) {
+        alert('보안 토큰 정보를 찾을 수 없습니다. 페이지를 새로고침 후 다시 시도해 주세요.');
+        console.error('CSRF meta tags are not found in the DOM.');
+        return; // 함수 실행을 중단합니다.
+    }
+
+
+
+    // CSRF 토큰은 메인 페이지(admin.html)의 메타 태그에서 가져옵니다.
+    const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+    const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+    const emotionItems = formElement.querySelectorAll('.emotion-item');
+    emotionItems.forEach(item => {
+        const checkbox = item.querySelector('input[type="checkbox"]');
+        const weightInput = item.querySelector('input[name="weight"]');
+        if (checkbox && checkbox.checked) {
+            const emotionId = parseInt(checkbox.value);
+            const weight = (weightInput.value === '' || isNaN(parseFloat(weightInput.value))) ? 1.0 : parseFloat(weightInput.value);
+            emotionWeights.push({ emotionId: emotionId, weight: weight });
+        }
+    });
+
+    if (emotionWeights.length === 0) {
+        alert('저장할 감정을 하나 이상 선택해주세요.');
+        return;
+    }
+
+    fetch('/admin/attraction-emotions/update/' + attractionId, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            [header]: token
+        },
+        body: JSON.stringify(emotionWeights)
+    })
+        .then(response => {
+            if (response.ok) {
+                alert('성공적으로 저장되었습니다!');
+                // 성공 후 현재 페이지의 콘텐츠를 다시 로드
+                const currentUrl = history.state ? history.state.path : '/admin/attraction-emotions';
+                loadDynamicContent(currentUrl, false);
+            } else {
+                return response.json().then(errorData => {
+                    alert('저장 실패: ' + (errorData.message || '알 수 없는 오류'));
+                });
+            }
+        })
+        .catch(error => {
+            alert('네트워크 오류 또는 서버 통신 실패');
+            console.error('Fetch Error:', error);
+        });
+}
+
+// 매핑 페이지의 스크립트를 초기화하는 함수
+function initializeMappingPageScripts() {
+    // 1. 모든 '저장' form에 submit 이벤트 리스너를 추가합니다.
+    document.querySelectorAll('.attraction-emotion-form').forEach(form => {
+        form.addEventListener('submit', handleEmotionFormSubmit);
+    });
+
+    // 2. 체크박스 상태에 따른 input 활성화/비활성화 로직 (adminMapping.js에서 가져옴)
+    document.querySelectorAll('.emotion-item').forEach(item => {
+        const checkbox = item.querySelector('input[type="checkbox"]');
+        const weightInput = item.querySelector('input[name="weight"]');
+        if (checkbox && weightInput) {
+            weightInput.disabled = !checkbox.checked;
+            checkbox.addEventListener("change", () => {
+                weightInput.disabled = !checkbox.checked;
+                if (!checkbox.checked) {
+                    weightInput.value = "";
+                } else {
+                    weightInput.focus();
+                }
+            });
+        }
+    });
+
+    // 3. 가중치 입력 필드 blur 이벤트 (adminMapping.js에서 가져옴)
+    document.querySelectorAll('.emotion-item input[name="weight"]').forEach(input => {
+        input.addEventListener("blur", function () {
+            if (this.value && !isNaN(this.value)) {
+                this.value = parseFloat(this.value).toFixed(1);
+            }
+        });
+    });
+}
+
+
 
 console.log('관리자 페이지 JavaScript 로딩 완료');

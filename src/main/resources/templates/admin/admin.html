@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>여행 플랫폼 관리자</title>
     <link rel="stylesheet" href="/css/admin/admin.css">
+
+    <link rel="stylesheet" href="/css/admin/adminMapping.css">
+    <script src="/js/admin/adminMapping.js" defer></script>
+    <meta name="_csrf" th:content="${_csrf?.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}"/>
 </head>
 <body>
     <!-- 관리자 페이지 컨테이너 -->
@@ -52,6 +57,12 @@
                     <span class="menu-icon">⚙️</span>
                     <span class="menu-text">설정</span>
                 </div>
+
+                <div class="menu-item" data-menu="mapping">
+                    <span class="menu-icon">🎨</span> <!-- 아이콘은 자유롭게 변경 -->
+                    <span class="menu-text">감정 매핑 관리</span>
+                </div>
+
             </nav>
         </aside>
 
@@ -140,54 +151,148 @@
                     </div>
                 </div>
             </section>
-
             <!-- 회원 관리 섹션 -->
             <section class="content-section" id="users-section" style="display: none;">
                 <div class="section-header">
                     <h2>회원 관리</h2>
                     <div class="section-actions">
-                        <input type="text" placeholder="회원 검색..." class="search-input">
-                        <button class="btn-primary">검색</button>
+                        <input type="text" placeholder="회원ID, 닉네임, 이메일로 검색..." class="search-input" id="member-search-input">
+                        <button class="btn-primary" onclick="searchMembers()">검색</button>
+                        <button class="btn-secondary" onclick="resetMemberSearch()">전체보기</button>
                     </div>
                 </div>
-                
+
+                <!-- 회원 현황 요약 -->
+                <div class="member-summary" style="margin-bottom: 20px;">
+                    <div class="summary-cards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <div class="summary-card" style="background: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid #10b981;">
+                            <h4 style="margin: 0 0 5px 0; color: #065f46;">활성 회원</h4>
+                            <p style="margin: 0; font-size: 18px; font-weight: bold;">
+                                <span th:text="${#lists.size(members)}">0</span>명
+                            </p>
+                        </div>
+                        <div class="summary-card" style="background: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                            <h4 style="margin: 0 0 5px 0; color: #92400e;">정지 회원</h4>
+                            <p style="margin: 0; font-size: 18px; font-weight: bold;">
+                                <span th:text="${#lists.size(members)}">0</span>명
+                            </p>
+                        </div>
+                        <div class="summary-card" style="background: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid #ef4444;">
+                            <h4 style="margin: 0 0 5px 0; color: #991b1b;">탈퇴 회원</h4>
+                            <p style="margin: 0; font-size: 18px; font-weight: bold;">
+                                <span th:text="${#lists.size(members)}">0</span>명
+                            </p>
+                        </div>
+                        <div class="summary-card" style="background: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid #ef4444;">
+                            <h4 style="margin: 0 0 5px 0; color: #991b1b;">신고 다수 회원</h4>
+                            <p style="margin: 0; font-size: 18px; font-weight: bold;">
+                                <span th:text="${#lists.size(members)}">0</span>명
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 필터 버튼 -->
+                <div class="filter-section" style="margin-bottom: 15px;">
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" onclick="filterMembersByStatus('ALL')">전체</button>
+                        <button class="filter-btn" onclick="filterMembersByStatus('ACTIVE')">활성</button>
+                        <button class="filter-btn" onclick="filterMembersByStatus('SUSPENDED')">정지</button>
+                        <button class="filter-btn" onclick="filterMembersByStatus('WITHDRAWN')">탈퇴</button>
+                        <button class="filter-btn" onclick="filterMembersByStatus('REPORTED')">신고다수</button>
+                    </div>
+                </div>
+
                 <div class="table-container">
                     <table class="data-table">
                         <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>이름</th>
-                                <th>이메일</th>
-                                <th>가입일</th>
-                                <th>상태</th>
-                                <th>관리</th>
-                            </tr>
+                        <tr>
+                            <th>회원ID</th>
+                            <th>닉네임</th>
+                            <th>이메일</th>
+                            <th>가입일</th>
+                            <th>매칭참여</th>
+                            <th>신고받음</th>
+                            <th>상태</th>
+                            <th>관리</th>
+                        </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td>001</td>
-                                <td>홍길동</td>
-                                <td>hong@example.com</td>
-                                <td>2024-06-15</td>
-                                <td><span class="status active">활성</span></td>
-                                <td>
-                                    <button class="btn-small" onclick="handleUserDetail(this)">상세</button>
-                                    <button class="btn-small danger" onclick="handleUserSuspension(this)">정지</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>002</td>
-                                <td>김영희</td>
-                                <td>kim@example.com</td>
-                                <td>2024-06-14</td>
-                                <td><span class="status active">활성</span></td>
-                                <td>
-                                    <button class="btn-small" onclick="handleUserDetail(this)">상세</button>
-                                    <button class="btn-small danger" onclick="handleUserSuspension(this)">정지</button>
-                                </td>
-                            </tr>
+                        <tbody id="members-table-body">
+                        <!-- 타임리프로 회원 목록 표시 -->
+                        <tr th:each="member : ${members}"
+                            th:data-member-pk="${member.memberPk}"
+                            th:data-status="${member.status}"
+                            th:data-is-withdraw="${member.isWithdraw}"
+                            th:data-rpt-count="${member.rptRcvdCnt ?: 0}">
+                            <td th:text="${member.memberId}">회원ID</td>
+                            <td>
+                                <span th:text="${member.nickname}">닉네임</span>
+                                <!-- 소셜 로그인 표시 -->
+                                <span th:if="${member.provider}"
+                                      th:class="'social-badge ' + ${#strings.toLowerCase(member.provider)}"
+                                      th:text="${member.provider}"
+                                      style="font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 5px; background: #e5e7eb; color: #374151;">
+                                    </span>
+                            </td>
+                            <td th:text="${member.email ?: '-'}">이메일</td>
+                            <td th:text="${#temporals.format(member.createdAt, 'yyyy-MM-dd')}">가입일</td>
+                            <td>
+                                <span th:text="${member.matchingParticipationCount ?: 0} + '회'">0회</span>
+                            </td>
+                            <td>
+                                    <span th:text="${member.rptRcvdCnt ?: 0} + '건'"
+                                          th:style="${(member.rptRcvdCnt ?: 0) >= 3 ? 'color: #ef4444; font-weight: bold;' : ''}"
+                                          th:title="${(member.rptRcvdCnt ?: 0) >= 3 ? '주의 필요 회원' : ''}">0건</span>
+                            </td>
+                            <td>
+                                <span th:class="${member.statusClass}" th:text="${member.statusDisplay}">활성</span>
+                            </td>
+                            <td>
+                                <button class="btn-small" onclick="handleUserDetail(this)">상세</button>
+                                <!-- 탈퇴하지 않은 회원만 상태 변경/탈퇴 버튼 표시 -->
+                                <th:block th:if="${!member.isWithdraw}">
+                                    <button th:class="${member.status == 'ACTIVE' ? 'btn-small danger' : 'btn-small success'}"
+                                            th:onclick="'handleUserStatusChange(this, \'' + ${member.memberPk} + '\')'"
+                                            th:text="${member.status == 'ACTIVE' ? '정지' : '활성화'}">
+                                        정지
+                                    </button>
+                                    <button class="btn-small danger"
+                                            th:onclick="'handleUserWithdraw(this, \'' + ${member.memberPk} + '\')'">
+                                        탈퇴
+                                    </button>
+                                </th:block>
+                                <!-- 탈퇴한 회원은 탈퇴 표시만 -->
+                                <th:block th:if="${member.isWithdraw}">
+                                    <span style="color: #666; font-size: 12px;">탈퇴 처리됨</span>
+                                </th:block>
+                            </td>
+                        </tr>
+
+                        <!-- 회원이 없을 때 -->
+                        <tr th:if="${#lists.isEmpty(members)}" id="no-members-row">
+                            <td colspan="8" style="text-align: center; padding: 40px; color: #666;">
+                                등록된 회원이 없습니다.
+                            </td>
+                        </tr>
                         </tbody>
                     </table>
+                </div>
+
+                <!-- 테이블 하단 정보 -->
+                <div class="table-footer" style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center; color: #666; font-size: 14px;">
+                    <div class="table-info">
+                        총 <span id="total-members-count" th:text="${#lists.size(members)}">0</span>명의 회원
+                        (<span id="visible-members-count" th:text="${#lists.size(members)}">0</span>명 표시 중)
+                    </div>
+                    <div class="table-actions">
+                        <button class="btn-small" onclick="refreshMemberList()">새로고침</button>
+                        <button class="btn-small" onclick="exportMemberList()">목록 내보내기</button>
+                    </div>
+                </div>
+
+                <!-- 페이지네이션 (추후 구현시 사용) -->
+                <div class="pagination-container" style="margin-top: 20px; text-align: center;">
+                    <!-- 페이지네이션 버튼들이 여기 올 예정 -->
                 </div>
             </section>
 
@@ -858,6 +963,13 @@
                     <button class="btn-secondary" onclick="resetSettings()">초기화</button>
                 </div>
             </section>
+
+
+            <section class="content-section" id="mapping-section" style="display: none;">
+                <!-- 이 안의 내용은 JavaScript에 의해 동적으로 채워집니다. -->
+            </section>
+
+
         </main>
     </div>
 
