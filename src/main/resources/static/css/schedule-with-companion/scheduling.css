@@ -1700,3 +1700,55 @@ body {
         border-radius: 18px;
     }
 }
+
+
+.header .back-btn {
+    position: absolute;
+    left: 16px;
+    top: 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 9999px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 14px;
+    color: #fff;
+    background: linear-gradient(135deg, #005792 0%, #001A2C 100%);
+    box-shadow: 0 8px 18px rgba(0, 87, 146, 0.28);
+    transition: transform .2s ease, box-shadow .2s ease, opacity .2s ease;
+    z-index: 3;
+    pointer-events: auto;
+}
+
+.header .back-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 26px rgba(0, 87, 146, 0.35);
+    opacity: 0.95;
+}
+
+.header .back-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 6px 16px rgba(0, 87, 146, 0.25);
+}
+
+.header .back-btn .back-icon {
+    font-size: 16px;
+    line-height: 1;
+}
+
+@media (max-width: 768px) {
+    .header .back-btn {
+        left: 12px;
+        top: 12px;
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+    .header .back-btn .back-text { display: none; } /* 모바일은 아이콘만 */
+}
+
+.header::before {
+    pointer-events: none;
+    z-index: 0;
+}

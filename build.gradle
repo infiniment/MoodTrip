@@ -92,8 +92,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 }
 
-tasks.named('test') {
-	useJUnitPlatform()
+tasks.withType(JavaCompile) {
+	options.compilerArgs += ['-parameters']
 }
 
 // QueryDSL 설정 추가
