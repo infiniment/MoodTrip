@@ -64,6 +64,14 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     @Query("SELECT COUNT(m) > 0 FROM Member m WHERE m.memberId = :memberId AND m.isWithdraw = true")
     boolean existsByMemberIdAndIsWithdrawTrue(@Param("memberId") String memberId);
 
+    // MemberRepository.java에 추가
+    /**
+     * 탈퇴한 소셜 계정 조회
+     */
+    @Query("SELECT m FROM Member m WHERE m.provider = :provider AND m.providerId = :providerId AND m.isWithdraw = true")
+    Optional<Member> findByProviderAndProviderIdAndIsWithdrawTrue(@Param("provider") String provider,
+                                                                  @Param("providerId") String providerId);
+
     //수연
     // 관리자용 전체 회원 목록 (생성일 역순)
     List<Member> findAllByOrderByCreatedAtDesc();
@@ -80,5 +88,12 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     //신고 받은 횟수가 특정 수 이상인 회원 조회
     List<Member> findByRptRcvdCntGreaterThanEqual(Long count);
+
+    /**
+     * 탈퇴한 소셜 계정 존재 여부 확인
+     */
+    @Query("SELECT COUNT(m) > 0 FROM Member m WHERE m.provider = :provider AND m.providerId = :providerId AND m.isWithdraw = true")
+    boolean existsByProviderAndProviderIdAndIsWithdrawTrue(@Param("provider") String provider,
+                                                           @Param("providerId") String providerId);
 
 }
