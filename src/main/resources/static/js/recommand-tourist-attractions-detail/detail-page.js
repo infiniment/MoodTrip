@@ -1,7 +1,161 @@
+// -------------------- 상세 데이터 바인딩 --------------------
+document.addEventListener("DOMContentLoaded", async function () {
+  // 맨 처음 기본 텍스트 비워두기 (덮어쓰기 티 방지)
+  const nameEl = document.querySelector(".place-name");
+  if (nameEl) nameEl.textContent = "";
+  ["#infoTel", "#infoAddr", "#infoUseTime", "#infoRest", "#infoParking", "#infoAge"].forEach((id) => {
+    const el = document.querySelector(id);
+    if (el) el.textContent = "";
+  });
+
+  // 1) contentId 추출 (쿼리 우선, 버튼 data 폴백)
+  const params = new URLSearchParams(location.search);
+  const contentId =
+      params.get("contentId") ||
+      (document.getElementById("btnMakeRoom")?.dataset.contentId ?? "");
+  if (!contentId) return;
+
+  // 2) API 호출
+  let d = null;
+  try {
+    const res = await fetch(
+        `/api/attractions/content/${encodeURIComponent(contentId)}/detail`,
+        { headers: { Accept: "application/json" } }
+    );
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    d = await res.json();
+  } catch (e) {
+    console.error("상세 불러오기 실패:", e);
+    return;
+  }
+
+  // 3) 바인딩 유틸
+  const FallbackImg =
+      "/static/image/recommand-tourist-attractions-detail/SaryeoniForestTrail.png";
+  const $ = (s) => document.querySelector(s);
+  const setText = (sel, v, fallback = "제공되지 않음") => {
+    const el = typeof sel === "string" ? $(sel) : sel;
+    if (!el) return;
+    const val = (v ?? "").toString().trim();
+    el.textContent = val.length ? val : fallback;
+  };
+  // ★ 줄바꿈/nbsp 처리(호이스팅 가능하도록 function 선언식)
+  function setMultiline(sel, v, fallback = "제공되지 않음") {
+    const el = typeof sel === "string" ? $(sel) : sel;
+    if (!el) return;
+    const raw = (v ?? "").toString().trim();
+    if (!raw) {
+      el.textContent = fallback;
+      return;
+    }
+    const txt = raw.replace(/<br\s*\/?>/gi, "\n").replace(/&nbsp;/gi, " ");
+    el.textContent = txt;
+    el.style.whiteSpace = "pre-line";
+  }
+
+  // 4) 헤더/이미지/제목
+  setText(".place-name", d.title || "상세정보");
+  document.title = (d.title || "상세정보") + " - 상세정보";
+  const hero = document.querySelector(".place-image img.place");
+  if (hero) {
+    hero.src = d.image || FallbackImg;
+    hero.alt = d.title || "이미지";
+    hero.onerror = () => {
+      hero.onerror = null;
+      hero.src = FallbackImg;
+    };
+  }
+
+  // 5) 상세 정보 그리드
+  setMultiline("#infoTel", d.tel);
+  setMultiline("#infoAddr", d.addr);
+  setMultiline("#infoUseTime", d.useTime);
+  setMultiline("#infoRest", d.restDate);
+  setMultiline("#infoParking", d.parking);
+  setText("#infoAge", d.age);
+
+  // 6) 개요(상세설명) — 길면 자동 2파트 + 토글 / 없으면 섹션 숨김
+  renderOverview(d.overview);
+});
+
+// 개요 렌더링(길면 분할, 짧으면 토글 숨김)
+function renderOverview(overview) {
+  const section = document.getElementById("overviewSection");
+  const preview = document.getElementById("overviewPreview");
+  const moreSec = document.getElementById("overviewMoreSection");
+  const moreBody = document.getElementById("overviewMoreBody");
+  const toggle = document.getElementById("overviewToggle");
+  if (!section || !preview || !moreSec || !moreBody || !toggle) return;
+
+  const text = (overview || "").replace(/\r\n?/g, "\n").trim();
+  if (!text) {
+    const wrapper = section.closest(".place-detail-wrapper");
+    if (wrapper) wrapper.classList.add("hidden");
+    moreSec.classList.add("hidden");
+    toggle.classList.add("hidden");
+    return;
+  }
+
+  const { previewHtml, restHtml, hasMore } = splitOverview(text, {
+    minChars: 350,
+    minParas: 2,
+  });
+
+  preview.innerHTML = previewHtml;
+  moreBody.innerHTML = restHtml;
+
+  if (hasMore) {
+    toggle.classList.remove("hidden");
+    moreSec.classList.add("hidden");
+    toggle.addEventListener("click", () => {
+      const nowHidden = moreSec.classList.toggle("hidden");
+      toggle.querySelector(".toggle-text").textContent = nowHidden ? "더 자세히 보기" : "접기";
+      toggle.querySelector(".toggle-icon").textContent = nowHidden ? "▼" : "▲";
+    });
+  } else {
+    toggle.classList.add("hidden");
+    moreSec.classList.add("hidden");
+  }
+}
+
+// 개요 분할(문단 우선, 부족하면 글자수 기준)
+function splitOverview(text, { minChars = 350, minParas = 2 } = {}) {
+  const paras = text.split(/\n{2,}/); // 빈 줄 2개 이상 = 문단
+  const needToggle = paras.length > minParas || text.length > minChars;
+
+  if (!needToggle) {
+    return { previewHtml: toHtml(text), restHtml: "", hasMore: false };
+  }
+
+  let acc = "";
+  let i = 0;
+  while (i < paras.length && acc.length < minChars) {
+    acc += (i ? "\n\n" : "") + paras[i++];
+  }
+  const rest = paras.slice(i).join("\n\n");
+
+  return { previewHtml: toHtml(acc), restHtml: toHtml(rest), hasMore: rest.length > 0 };
+}
+
+// 안전 렌더링: escape + 줄바꿈/문단 처리
+function toHtml(txt) {
+  const esc = escapeHtml(txt);
+  return "<p>" + esc.replace(/\n{2,}/g, "</p><p>").replace(/\n/g, "<br>") + "</p>";
+}
+function escapeHtml(str) {
+  return String(str)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#39;");
+}
+
+// -------------------- (기존) 리뷰 UI --------------------
 document.addEventListener("DOMContentLoaded", function () {
   const currentUser = {
     name: "김치국밥",
-    isLoggedIn: true
+    isLoggedIn: true,
   };
 
   const reviewDB = [];
@@ -14,18 +168,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let showingAll = false;
 
- function maskUsername(name) {
-  const len = name.length;
-  const visible = Math.ceil(len / 2);
-  return name.slice(0, visible) + "*".repeat(len - visible);
-}
-
+  function maskUsername(name) {
+    const len = name.length;
+    const visible = Math.ceil(len / 2);
+    return name.slice(0, visible) + "*".repeat(len - visible);
+  }
 
   function formatDate(date) {
     const d = new Date(date);
     const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
     return `${year}.${month}.${day}`;
   }
 
@@ -36,33 +189,31 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function renderReviews(limit = 3) {
-  reviewContainer.innerHTML = "";
-  const sorted = [...reviewDB].sort((a, b) => b.timestamp - a.timestamp);
-  const sliced = sorted.slice(0, limit);
+    reviewContainer.innerHTML = "";
+    const sorted = [...reviewDB].sort((a, b) => b.timestamp - a.timestamp);
+    const sliced = sorted.slice(0, limit);
 
-  sliced.forEach(r => {
-    const li = document.createElement("li");
-    li.innerHTML = `
-      <div class="review-box">
-        <strong>${maskUsername(r.username)}</strong> <span class="star-icon">⭐</span> ${r.rating || 0}점
-        <div class="review-text">${r.review}</div>
-        <div class="review-date">🕒 ${formatDate(r.timestamp)}</div>
-      </div>
-    `;
-    reviewContainer.appendChild(li);
-  });
+    sliced.forEach((r) => {
+      const li = document.createElement("li");
+      li.innerHTML = `
+        <div class="review-box">
+          <strong>${maskUsername(r.username)}</strong> <span class="star-icon">⭐</span> ${r.rating || 0}점
+          <div class="review-text">${r.review}</div>
+          <div class="review-date">🕒 ${formatDate(r.timestamp)}</div>
+        </div>
+      `;
+      reviewContainer.appendChild(li);
+    });
 
-  updateReviewCount();
+    updateReviewCount();
 
-  // 더보기 버튼 토글 여부
-  if (reviewDB.length <= 3) {
-    moreBtn.style.display = "none";
-  } else {
-    moreBtn.style.display = "inline-block";
-    moreBtn.textContent = showingAll ? "접기 ❮" : "더보기 ❯";
+    if (reviewDB.length <= 3) {
+      moreBtn.style.display = "none";
+    } else {
+      moreBtn.style.display = "inline-block";
+      moreBtn.textContent = showingAll ? "접기 ❮" : "더보기 ❯";
+    }
   }
-}
-
 
   function updateStars(score) {
     stars.forEach((star, index) => {
@@ -105,18 +256,15 @@ document.addEventListener("DOMContentLoaded", function () {
       alert("로그인 후 작성 가능합니다.");
       return;
     }
-
     if (!reviewText) {
       alert("후기를 작성해주세요.");
       input.focus();
       return;
     }
-
     if (reviewText.length > 500) {
       alert("후기는 500자 이하로 작성해주세요.");
       return;
     }
-
     if (isNaN(rating) || rating <= 0) {
       alert("별점을 선택해주세요.");
       return;
@@ -128,7 +276,7 @@ document.addEventListener("DOMContentLoaded", function () {
       username: maskedName,
       review: reviewText,
       rating,
-      timestamp: new Date()
+      timestamp: new Date(),
     });
 
     input.value = "";
@@ -147,32 +295,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // 테스트용 더미 데이터
   reviewDB.push(
-    {
-      username: "서유진",
-      review: "방문 추천드려요!",
-      rating: 4,
-      timestamp: new Date("2024-08-22")
-    },
-    {
-      username: "마라탕개맛있다",
-      review: "생각보다 괜찮았어요",
-      rating: 3.5,
-      timestamp: new Date("2024-12-10")
-    }
+      { username: "서유진", review: "방문 추천드려요!", rating: 4, timestamp: new Date("2024-08-22") },
+      { username: "마라탕개맛있다", review: "생각보다 괜찮았어요", rating: 3.5, timestamp: new Date("2024-12-10") }
   );
 
   renderReviews(3);
 });
 
-
-document.addEventListener('DOMContentLoaded', () => {
-  const btn = document.getElementById('btnMakeRoom');
+// -------------------- (기존) 방 만들기 프리필 --------------------
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("btnMakeRoom");
   if (!btn) return;
 
-  btn.addEventListener('click', async (e) => {
+  btn.addEventListener("click", async (e) => {
     e.preventDefault();
 
-    // 1) attractionId 결정 (data-attraction-id → 없으면 detail 호출)
     let attractionId = Number(btn.dataset.attractionId) || null;
     const contentId = btn.dataset.contentId;
 
@@ -187,34 +324,36 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (_) {}
     }
     if (!attractionId) {
-      alert('관광지 정보를 불러오지 못했습니다.');
+      alert("관광지 정보를 불러오지 못했습니다.");
       return;
     }
 
-    // 2) 감정 태그: API 우선, 실패/부재 시 DOM 폴백 (.emotion-tag 등)
     let emotions = [];
     try {
       if (contentId) {
         const er = await fetch(`/api/attractions/content/${contentId}/emotion-tags`);
-        if (er.ok) emotions = await er.json(); // ["힐링","여유",...]
+        if (er.ok) emotions = await er.json();
       }
     } catch (_) {}
     if (emotions.length === 0) {
-      emotions = Array.from(document.querySelectorAll('.emotion-tag, .tag-item, .place-tag-list .tag'))
-          .map(el => (el.textContent || '').replace('#','').trim())
+      emotions = Array.from(
+          document.querySelectorAll(".emotion-tag, .tag-item, .place-tag-list .tag")
+      )
+          .map((el) => (el.textContent || "").replace("#", "").trim())
           .filter(Boolean)
           .slice(0, 3);
     }
 
-    // 3) prefill 저장 (생성 플로우에서 자동 반영됨)
-    sessionStorage.setItem('room_prefill', JSON.stringify({
-      source: 'attraction-detail',
-      attraction: { attractionId },
-      emotions
-    }));
+    sessionStorage.setItem(
+        "room_prefill",
+        JSON.stringify({
+          source: "attraction-detail",
+          attraction: { attractionId },
+          emotions,
+        })
+    );
 
-    // 4) 이동 (a태그 href 우선)
-    const redirect = btn.getAttribute('href') || '/companion-rooms/create';
+    const redirect = btn.getAttribute("href") || "/companion-rooms/create";
     window.location.href = redirect;
   });
 });

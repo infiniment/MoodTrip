@@ -236,6 +236,7 @@ public class AttractionController {
         return ResponseEntity.ok(attractionService.getDetailResponse(contentId));
     }
 
+
     @GetMapping("/content/{contentId}/emotion-tags")
     public ResponseEntity<List<String>> getEmotionTags(@PathVariable long contentId) {
         return ResponseEntity.ok(attractionService.getEmotionTagNames(contentId));

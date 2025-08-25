@@ -191,6 +191,13 @@ public class AttractionServiceImpl implements AttractionService {
         a.setModifiedTime(parseTs(asText(it, "modifiedtime")));
 
         repository.save(a);
+        if (isNew || !introRepository.existsById(a.getContentId())) {
+            try {
+                syncDetailIntro(a.getContentId(), a.getContentTypeId());
+            } catch (Exception e) {
+                log.warn("intro sync on upsert failed. contentId={}, msg={}", a.getContentId(), e.getMessage());
+            }
+        }
         return isNew ? 1 : 0;
     }
 
@@ -399,7 +406,8 @@ public class AttractionServiceImpl implements AttractionService {
     // ===== 상세 정보(단건) 조회 =====
     @Override
     public Optional<AttractionResponse> getDetail(long contentId) {
-        return repository.findById(contentId).map(AttractionResponse::from);
+        return repository.findByContentId(contentId)
+                .map(AttractionResponse::from);
     }
 
     // ===== 전체 페이징 조회 =====
@@ -511,6 +519,14 @@ public class AttractionServiceImpl implements AttractionService {
                 ? repository.findByContentId(contentId).orElseGet(req::toEntity)
                 : req.toEntity();
         var saved = repository.save(entity);
+        try {
+            if (!introRepository.existsById(saved.getContentId())) {
+                syncDetailIntro(saved.getContentId(), saved.getContentTypeId());
+            }
+        } catch (Exception e) {
+            log.warn("intro sync on create failed. contentId={}, msg={}", saved.getContentId(), e.getMessage());
+        }
+
         return AttractionResponse.from(saved);
     }
 
@@ -518,12 +534,17 @@ public class AttractionServiceImpl implements AttractionService {
     @Override
     @Transactional
     public AttractionIntro getIntro(long contentId, Integer contentTypeId) {
-        var intro = introRepository.findById(contentId).orElse(null);
+        var intro = introRepository.findById(contentId).orElse(null); // PK = contentId
         if (intro == null) {
-            syncDetailIntro(contentId, contentTypeId);
-            intro = introRepository.findById(contentId).orElse(null);
+            try {
+                syncDetailIntro(contentId, contentTypeId);           // TourAPI 호출 + 업서트
+                intro = introRepository.findById(contentId).orElse(null);
+            } catch (Exception e) {
+                // 실패해도 화면은 떠야 하므로 조용히 폴백
+                log.warn("detailIntro2 sync failed. contentId={}, msg={}", contentId, e.getMessage());
+            }
         }
-        return intro;
+        return intro; // null 이어도 아래 normalizeIntro가 안전 폴백함
     }
 
     // ===== 상세 정보 응답 생성 (기본정보 + 소개정보) =====
@@ -532,10 +553,107 @@ public class AttractionServiceImpl implements AttractionService {
     public AttractionDetailResponse getDetailResponse(long contentId) {
         var base = getDetail(contentId)
                 .orElseThrow(() -> new IllegalArgumentException("Attraction not found: " + contentId));
-        var intro = getIntro(contentId, base.getContentTypeId());
-        return AttractionDetailResponse.of(base, intro);
+
+        var intro = getIntro(contentId, base.getContentTypeId());       // 없으면 동기화 시도
+        var introNorm = normalizeIntro(intro);                          // null 안전
+
+        AttractionDetailResponse.DetailCommon common;
+        try {
+            common = fetchDetailCommon(contentId, base.getContentTypeId());
+        } catch (Exception e) {
+            log.warn("detailCommon2 fetch failed. contentId={}, msg={}", contentId, e.getMessage());
+            common = AttractionDetailResponse.DetailCommon.builder().build(); // tel/overview/addr 폴백
+        }
+
+        return AttractionDetailResponse.of(base, introNorm, common);    // DTO는 프런트 최소 9필드만
     }
 
+
+    private AttractionDetailResponse.IntroNormalized normalizeIntro(AttractionIntro i) {
+        if (i == null) return AttractionDetailResponse.IntroNormalized.builder().build();
+
+        String infocenter = firstNonEmpty(
+                i.getInfocenter(), i.getInfocenterfood(), i.getInfocenterlodging(),
+                i.getInfocenterculture(), i.getInfocentershopping(),
+                i.getInfocenterleports(), i.getInfocentertourcourse()
+        );
+
+        String usetime = firstNonEmpty(
+                i.getUsetime(), i.getUsetimeculture(), i.getUsetimefestival(),
+                i.getUsetimeleports(), i.getOpentime(), i.getOpentimefood()
+        );
+
+        String rest = firstNonEmpty(
+                i.getRestdate(), i.getRestdatefood(), i.getRestdateculture(),
+                i.getRestdateshopping(), i.getRestdateleports()
+        );
+
+        String parking = firstNonEmpty(
+                i.getParking(), i.getParkingfood(), i.getParkingculture(),
+                i.getParkingshopping(), i.getParkinglodging(), i.getParkingleports()
+        );
+
+        String age = firstNonEmpty(
+                i.getExpagerange(), i.getExpagerangeleports(), i.getAgelimit()
+        );
+
+        return AttractionDetailResponse.IntroNormalized.builder()
+                .infocenter(infocenter)
+                .usetime(usetime)
+                .restdate(rest)
+                .parking(parking)
+                .age(age)
+                .build();
+    }
+
+    private AttractionDetailResponse.DetailCommon fetchDetailCommon(long contentId, Integer contentTypeId) {
+        var uri = UriComponentsBuilder.fromUriString(BASE + "/detailCommon2")
+                .queryParam("serviceKey", apiKey)
+                .queryParam("MobileOS", "ETC")
+                .queryParam("MobileApp", "moodTrip")
+                .queryParam("_type", "json")
+                .queryParam("contentId", contentId)
+                .queryParam("contentTypeId", contentTypeId)
+                .build(apiKey != null && apiKey.contains("%"))
+                .toUri();
+
+        log.info("TourAPI GET {}", uri.toString().replaceAll("serviceKey=[^&]+", "serviceKey=***"));
+
+        String raw = restTemplate.getForObject(uri, String.class);
+        String trimmed = raw == null ? "" : raw.trim();
+        if (!trimmed.isEmpty() && trimmed.charAt(0) == '<') {
+            throw new IllegalStateException("detailCommon2가 XML 에러를 반환. preview=" +
+                    (raw == null ? "null" : raw.substring(0, Math.min(raw.length(), 400))));
+        }
+
+        JsonNode root = safe(parseJson(raw));
+        JsonNode item = root.path("response").path("body").path("items").path("item");
+        if (item.isArray()) item = item.size() > 0 ? item.get(0) : om.createObjectNode();
+
+        String tel = firstNonEmpty(asText(item, "tel"), asText(item, "telname"));
+        String overview = asText(item, "overview");
+        String addr1 = asText(item, "addr1");
+        String addr2 = asText(item, "addr2");
+
+        return AttractionDetailResponse.DetailCommon.builder()
+                .tel(tel)
+                .overview(overview)
+                .addrDisplay(joinNonBlankSpace(addr1, addr2))
+                .build();
+    }
+
+    // 공백/널 제거하며 주소 결합
+    private String joinNonBlankSpace(String... parts) {
+        if (parts == null) return null;
+        StringBuilder sb = new StringBuilder();
+        for (String p : parts) {
+            if (p != null && !p.isBlank()) {
+                if (sb.length() > 0) sb.append(' ');
+                sb.append(p);
+            }
+        }
+        return sb.length() == 0 ? null : sb.toString();
+    }
     // ===== 지역 코드 매퍼 =====
     static final class RegionCodeMapper {
         private static final Map<String, Integer> KR_TO_AREA = new HashMap<>();
