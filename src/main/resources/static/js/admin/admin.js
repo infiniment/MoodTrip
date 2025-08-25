@@ -179,7 +179,7 @@ function saveFaq() {
     };
 
     // 수정 모드인지 새 작성 모드인지 확인
-    const url = editingFaqId ? `/api/admin/faq/${editingFaqId}` : '/api/admin/faq';
+    const url = editingFaqId ? `/api/v1/admin/faq/${editingFaqId}` : '/api/v1/admin/faq';
     const method = editingFaqId ? 'PUT' : 'POST';
 
     fetch(url, {
@@ -213,7 +213,7 @@ function editFaq(button) {
     document.getElementById('faq-category').value = category;
 
     // 서버에서 상세 정보 가져오기
-    fetch(`/api/admin/faq/${editingFaqId}`)
+    fetch(`/api/v1/admin/faq/${editingFaqId}`)
         .then(response => response.json())
         .then(faq => {
             document.getElementById('faq-answer').value = faq.content;
@@ -229,7 +229,7 @@ function deleteFaq(button) {
         const row = button.closest('tr');
         const faqId = row.dataset.faqId;
 
-        fetch(`/api/admin/faq/${faqId}`, {
+        fetch(`/api/v1/admin/faq/${faqId}`, {
             method: 'DELETE'
         })
             .then(response => {
@@ -246,7 +246,7 @@ function deleteFaq(button) {
 }
 
 function loadFaqList() {
-    fetch('/api/admin/faq')
+    fetch('/api/v1/admin/faq')
         .then(response => response.json())
         .then(faqs => {
             const tbody = document.querySelector('#faq-list-view tbody');
@@ -2536,69 +2536,714 @@ function deleteReviewFromTable(author, location) {
         }
     });
 }
-
 // === 회원 관리 함수들 ===
 
+// 회원 상세 정보 보기 (기존 함수 개선)
 function handleUserDetail(btn) {
     const row = btn.closest('tr');
-    const userId = row.cells[0].textContent;
-    const userName = row.cells[1].textContent;
-    const userEmail = row.cells[2].textContent;
-    const joinDate = row.cells[3].textContent;
-    const status = row.querySelector('.status').textContent;
-    
+    const memberPk = row.dataset.memberPk;
+
+    if (!memberPk) {
+        showErrorMessage('회원 정보를 찾을 수 없습니다.');
+        return;
+    }
+
+    // 서버에서 회원 상세 정보 가져오기
+    fetch(`/admin/members/${memberPk}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('회원 정보를 불러올 수 없습니다.');
+            }
+            return response.json();
+        })
+        .then(member => {
+            showMemberDetailModal(member);
+        })
+        .catch(error => {
+            console.error('회원 상세 정보 조회 오류:', error);
+            showErrorMessage('회원 정보를 불러오는 중 오류가 발생했습니다.');
+        });
+}
+
+// 회원 상세 정보 모달 표시
+function showMemberDetailModal(member) {
+    const lastLoginText = member.lastLoginAt ?
+        new Date(member.lastLoginAt).toLocaleString() : '로그인 기록 없음';
+
+    const providerText = member.provider ?
+        `${member.provider} 연동` : '일반 회원가입';
+
     const content = `
         <h3>회원 상세 정보</h3>
         <div class="user-detail">
-            <p><strong>ID:</strong> ${userId}</p>
-            <p><strong>이름:</strong> ${userName}</p>
-            <p><strong>이메일:</strong> ${userEmail}</p>
-            <p><strong>가입일:</strong> ${joinDate}</p>
-            <p><strong>상태:</strong> ${status}</p>
-            <p><strong>최근 로그인:</strong> 2024-07-12 14:30</p>
-            <p><strong>매칭 참여 횟수:</strong> 5회</p>
-            <p><strong>매칭 생성 횟수:</strong> 2회</p>
-            <p><strong>신고 접수:</strong> 0건</p>
-            <p><strong>리뷰 작성:</strong> 12건</p>
-            <p><strong>평균 평점:</strong> 4.5/5.0</p>
+            <div class="detail-section">
+                <h4>기본 정보</h4>
+                <p><strong>회원 ID:</strong> ${member.memberId}</p>
+                <p><strong>닉네임:</strong> ${member.nickname}</p>
+                <p><strong>이메일:</strong> ${member.email || '-'}</p>
+                <p><strong>전화번호:</strong> ${member.memberPhone}</p>
+                <p><strong>가입 방식:</strong> ${providerText}</p>
+            </div>
+            
+            <div class="detail-section">
+                <h4>활동 정보</h4>
+                <p><strong>가입일:</strong> ${new Date(member.createdAt).toLocaleDateString()}</p>
+                <p><strong>최근 로그인:</strong> ${lastLoginText}</p>
+                <p><strong>현재 상태:</strong> <span class="${member.statusClass}">${member.statusDisplay}</span></p>
+                <p><strong>매칭 참여 횟수:</strong> ${member.matchingParticipationCount || 0}회</p>
+            </div>
+            
+            <div class="detail-section">
+                <h4>신고 관련</h4>
+                <p><strong>신고 받은 횟수:</strong> ${member.rptRcvdCnt || 0}건</p>
+                <p><strong>신고한 횟수:</strong> ${member.rptCnt || 0}건</p>
+                ${(member.rptRcvdCnt || 0) >= 3 ? '<p style="color: #ef4444;"><strong>⚠️ 주의:</strong> 신고 누적으로 주의가 필요한 회원입니다.</p>' : ''}
+            </div>
         </div>
         <div class="modal-actions">
             <button class="btn-secondary" onclick="closeModal()">닫기</button>
-            <button class="btn-primary" onclick="exportUserData('${userId}')">활동 내역 보기</button>
+            <button class="btn-primary" onclick="exportUserData('${member.memberPk}')">활동 내역 보기</button>
+            ${member.status !== 'WITHDRAWN' && !member.isWithdraw ? `
+                <button class="btn-warning" onclick="showMemberStatusChangeModal('${member.memberPk}', '${member.status}', '${member.nickname}')">상태 변경</button>
+            ` : ''}
         </div>
     `;
     showModal(content);
 }
 
-function handleUserSuspension(btn) {
+// 회원 상태 변경 (정지/활성화)
+function handleUserStatusChange(btn, memberPk) {
     const row = btn.closest('tr');
-    const userName = row.cells[1].textContent;
-    const statusCell = row.querySelector('.status');
-    const isActive = statusCell.textContent.includes('활성');
-    
-    const action = isActive ? '정지' : '활성화';
-    showConfirmModal(`${userName} 회원을 ${action}하시겠습니까?`, function() {
-        if (isActive) {
-            statusCell.textContent = '정지';
-            statusCell.className = 'status suspended';
-            btn.textContent = '활성화';
-            btn.className = 'btn-small success';
-        } else {
-            statusCell.textContent = '활성';
-            statusCell.className = 'status active';
-            btn.textContent = '정지';
-            btn.className = 'btn-small danger';
+    const nickname = row.cells[1].textContent;
+    const currentStatus = row.querySelector('.status').textContent;
+    const isActive = currentStatus.includes('활성');
+
+    const newStatus = isActive ? 'SUSPENDED' : 'ACTIVE';
+    const actionText = isActive ? '정지' : '활성화';
+
+    showConfirmModal(
+        `${nickname} 회원을 ${actionText}하시겠습니까?${isActive ? '\n\n정지된 회원은 서비스 이용이 제한됩니다.' : ''}`,
+        function() {
+            updateMemberStatus(memberPk, newStatus, btn);
         }
-        showSuccessMessage(`회원이 ${action}되었습니다.`);
+    );
+}
+// === 회원 관리 함수들 ===
+
+// 회원 상세 정보 보기 (기존 함수 개선)
+function handleUserDetail(btn) {
+    const row = btn.closest('tr');
+    const memberPk = row.dataset.memberPk;
+
+    if (!memberPk) {
+        showErrorMessage('회원 정보를 찾을 수 없습니다.');
+        return;
+    }
+
+    // 서버에서 회원 상세 정보 가져오기
+    fetch(`/admin/members/${memberPk}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('회원 정보를 불러올 수 없습니다.');
+            }
+            return response.json();
+        })
+        .then(member => {
+            showMemberDetailModal(member);
+        })
+        .catch(error => {
+            console.error('회원 상세 정보 조회 오류:', error);
+            showErrorMessage('회원 정보를 불러오는 중 오류가 발생했습니다.');
+        });
+}
+
+// 회원 상세 정보 모달 표시
+function showMemberDetailModal(member) {
+    const lastLoginText = member.lastLoginAt ?
+        new Date(member.lastLoginAt).toLocaleString() : '로그인 기록 없음';
+
+    const providerText = member.provider ?
+        `${member.provider} 연동` : '일반 회원가입';
+
+    const content = `
+        <h3>회원 상세 정보</h3>
+        <div class="user-detail">
+            <div class="detail-section">
+                <h4>기본 정보</h4>
+                <p><strong>회원 ID:</strong> ${member.memberId}</p>
+                <p><strong>닉네임:</strong> ${member.nickname}</p>
+                <p><strong>이메일:</strong> ${member.email || '-'}</p>
+                <p><strong>전화번호:</strong> ${member.memberPhone}</p>
+                <p><strong>가입 방식:</strong> ${providerText}</p>
+            </div>
+            
+            <div class="detail-section">
+                <h4>활동 정보</h4>
+                <p><strong>가입일:</strong> ${new Date(member.createdAt).toLocaleDateString()}</p>
+                <p><strong>최근 로그인:</strong> ${lastLoginText}</p>
+                <p><strong>현재 상태:</strong> <span class="${member.statusClass}">${member.statusDisplay}</span></p>
+                <p><strong>매칭 참여 횟수:</strong> ${member.matchingParticipationCount || 0}회</p>
+            </div>
+            
+            <div class="detail-section">
+                <h4>신고 관련</h4>
+                <p><strong>신고 받은 횟수:</strong> ${member.rptRcvdCnt || 0}건</p>
+                <p><strong>신고한 횟수:</strong> ${member.rptCnt || 0}건</p>
+                ${(member.rptRcvdCnt || 0) >= 3 ? '<p style="color: #ef4444;"><strong>⚠️ 주의:</strong> 신고 누적으로 주의가 필요한 회원입니다.</p>' : ''}
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-secondary" onclick="closeModal()">닫기</button>
+            <button class="btn-primary" onclick="exportUserData('${member.memberPk}')">활동 내역 보기</button>
+            ${member.status !== 'WITHDRAWN' && !member.isWithdraw ? `
+                <button class="btn-warning" onclick="showMemberStatusChangeModal('${member.memberPk}', '${member.status}', '${member.nickname}')">상태 변경</button>
+            ` : ''}
+        </div>
+    `;
+    showModal(content);
+}
+
+// 회원 상태 변경 (정지/활성화)
+function handleUserStatusChange(btn, memberPk) {
+    const row = btn.closest('tr');
+    const nickname = row.cells[1].textContent;
+    const currentStatus = row.querySelector('.status').textContent;
+    const isActive = currentStatus.includes('활성');
+
+    const newStatus = isActive ? 'SUSPENDED' : 'ACTIVE';
+    const actionText = isActive ? '정지' : '활성화';
+
+    showConfirmModal(
+        `${nickname} 회원을 ${actionText}하시겠습니까?${isActive ? '\n\n정지된 회원은 서비스 이용이 제한됩니다.' : ''}`,
+        function() {
+            updateMemberStatus(memberPk, newStatus, btn);
+        }
+    );
+}
+
+// 회원 강제 탈퇴
+function handleUserWithdraw(btn, memberPk) {
+    const row = btn.closest('tr');
+    const nickname = row.cells[1].textContent;
+
+    showConfirmModal(
+        `${nickname} 회원을 강제 탈퇴 처리하시겠습니까?\n\n⚠️ 주의: 탈퇴 처리된 회원은 복구할 수 없으며, 모든 활동 데이터가 비활성화됩니다.`,
+        function() {
+            withdrawMember(memberPk, btn);
+        }
+    );
+}
+
+// 서버에 회원 상태 변경 요청
+function updateMemberStatus(memberPk, newStatus, btn) {
+    fetch(`/admin/members/${memberPk}/status`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `status=${newStatus}`
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('서버 오류');
+            }
+            return response.text();
+        })
+        .then(message => {
+            // UI 업데이트
+            updateMemberStatusInTable(btn, newStatus);
+            showSuccessMessage(message);
+        })
+        .catch(error => {
+            console.error('회원 상태 변경 오류:', error);
+            showErrorMessage('상태 변경 중 오류가 발생했습니다.');
+        });
+}
+
+// 서버에 회원 탈퇴 요청
+function withdrawMember(memberPk, btn) {
+    fetch(`/admin/members/${memberPk}/withdraw`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('서버 오류');
+            }
+            return response.text();
+        })
+        .then(message => {
+            // UI 업데이트
+            updateMemberWithdrawInTable(btn);
+            showSuccessMessage(message);
+        })
+        .catch(error => {
+            console.error('회원 탈퇴 처리 오류:', error);
+            showErrorMessage('탈퇴 처리 중 오류가 발생했습니다.');
+        });
+}
+
+// 테이블에서 회원 상태 업데이트
+function updateMemberStatusInTable(btn, newStatus) {
+    const row = btn.closest('tr');
+    const statusCell = row.querySelector('.status');
+
+    if (newStatus === 'ACTIVE') {
+        statusCell.textContent = '활성';
+        statusCell.className = 'status active';
+        btn.textContent = '정지';
+        btn.className = 'btn-small danger';
+    } else if (newStatus === 'SUSPENDED') {
+        statusCell.textContent = '정지';
+        statusCell.className = 'status suspended';
+        btn.textContent = '활성화';
+        btn.className = 'btn-small success';
+    }
+}
+
+// 테이블에서 회원 탈퇴 상태 업데이트
+function updateMemberWithdrawInTable(btn) {
+    const row = btn.closest('tr');
+    const statusCell = row.querySelector('.status');
+    const actionCell = row.querySelector('td:last-child');
+
+    statusCell.textContent = '탈퇴';
+    statusCell.className = 'status suspended';
+
+    // 탈퇴 버튼 제거, 상세보기만 남김
+    actionCell.innerHTML = `
+        <button class="btn-small" onclick="handleUserDetail(this)">상세</button>
+        <span style="color: #666; font-size: 12px;">탈퇴 처리됨</span>
+    `;
+}
+
+// 회원 검색 함수
+function searchMembers() {
+    const keyword = document.getElementById('member-search-input').value.trim();
+
+    if (!keyword) {
+        showErrorMessage('검색어를 입력해주세요.');
+        return;
+    }
+
+    fetch(`/admin/members/search?keyword=${encodeURIComponent(keyword)}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('검색 중 오류가 발생했습니다.');
+            }
+            return response.json();
+        })
+        .then(members => {
+            updateMembersTable(members);
+            showSuccessMessage(`${members.length}명의 회원을 찾았습니다.`);
+        })
+        .catch(error => {
+            console.error('회원 검색 오류:', error);
+            showErrorMessage('회원 검색 중 오류가 발생했습니다.');
+        });
+}
+
+// 회원 테이블 업데이트
+function updateMembersTable(members) {
+    const tbody = document.getElementById('members-table-body');
+
+    if (!members || members.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8" style="text-align: center; padding: 40px; color: #666;">
+                    검색 결과가 없습니다.
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = '';
+
+    members.forEach(member => {
+        const row = document.createElement('tr');
+        row.dataset.memberPk = member.memberPk;
+
+        const createdDate = new Date(member.createdAt).toLocaleDateString();
+        const statusClass = getStatusClass(member.status, member.isWithdraw);
+        const statusDisplay = getStatusDisplay(member.status, member.isWithdraw);
+
+        row.innerHTML =
+            '<td>' + member.memberId + '</td>' +
+            '<td>' + member.nickname + '</td>' +
+            '<td>' + (member.email || '-') + '</td>' +
+            '<td>' + createdDate + '</td>' +
+            '<td>' + (member.matchingParticipationCount || 0) + '회</td>' +
+            '<td>' + (member.rptRcvdCnt || 0) + '건</td>' +
+            '<td><span class="' + statusClass + '">' + statusDisplay + '</span></td>' +
+            '<td>' +
+            '<button class="btn-small" onclick="handleUserDetail(this)">상세</button>' +
+            (!member.isWithdraw ?
+                    '<button class="' + (member.status === 'ACTIVE' ? 'btn-small danger' : 'btn-small success') + '" ' +
+                    'onclick="handleUserStatusChange(this, \'' + member.memberPk + '\')">' +
+                    (member.status === 'ACTIVE' ? '정지' : '활성화') +
+                    '</button>' +
+                    '<button class="btn-small danger" ' +
+                    'onclick="handleUserWithdraw(this, \'' + member.memberPk + '\')">' +
+                    '탈퇴' +
+                    '</button>'
+                    : '<span style="color: #666; font-size: 12px;">탈퇴 처리됨</span>'
+            ) +
+            '</td>';
+
+        tbody.appendChild(row);
     });
 }
 
-function exportUserData(userId) {
-    console.log(`회원 ${userId} 활동 내역 내보내기`);
-    showSuccessMessage('회원 활동 내역을 조회하고 있습니다...');
-    closeModal();
+// 회원 상태 CSS 클래스 반환
+function getStatusClass(status, isWithdraw) {
+    if (isWithdraw) {
+        return 'status suspended';
+    }
+
+    switch (status) {
+        case 'ACTIVE':
+            return 'status active';
+        case 'SUSPENDED':
+            return 'status suspended';
+        case 'WITHDRAWN':
+            return 'status suspended';
+        default:
+            return 'status active';
+    }
 }
 
+// 회원 상태 표시 텍스트 반환
+function getStatusDisplay(status, isWithdraw) {
+    if (isWithdraw) {
+        return '탈퇴';
+    }
+
+    switch (status) {
+        case 'ACTIVE':
+            return '활성';
+        case 'SUSPENDED':
+            return '정지';
+        case 'WITHDRAWN':
+            return '탈퇴';
+        default:
+            return '활성';
+    }
+}
+
+// 회원 검색 입력창 엔터키 처리
+function initializeMemberSearch() {
+    const searchInput = document.getElementById('member-search-input');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchMembers();
+            }
+        });
+    }
+}
+
+// 회원 활동 내역 보기 (기존 exportUserData 함수 개선)
+function exportUserData(memberPk) {
+    console.log(`회원 ${memberPk} 활동 내역 조회`);
+    closeModal();
+
+    // 실제로는 여기서 회원의 상세 활동 내역을 조회하는 API를 호출
+    // 예: 매칭 참여 내역, 신고 내역, 리뷰 작성 내역 등
+
+    showSuccessMessage('회원 활동 내역을 조회하고 있습니다...');
+
+    // 추후 구현: 새 모달이나 페이지에서 상세 내역 표시
+    setTimeout(() => {
+        showInfoMessage('활동 내역 상세 보기 기능은 곧 업데이트됩니다.');
+    }, 1000);
+}
+
+// 회원 상태 변경 모달 (상세 정보 모달에서 호출)
+function showMemberStatusChangeModal(memberPk, currentStatus, nickname) {
+    const isActive = currentStatus === 'ACTIVE';
+    const newStatus = isActive ? 'SUSPENDED' : 'ACTIVE';
+    const actionText = isActive ? '정지' : '활성화';
+
+    const content = `
+        <h3>회원 상태 변경</h3>
+        <div class="status-change-form">
+            <p><strong>회원:</strong> ${nickname}</p>
+            <p><strong>현재 상태:</strong> ${getStatusDisplay(currentStatus, false)}</p>
+            <p><strong>변경할 상태:</strong> ${getStatusDisplay(newStatus, false)}</p>
+            
+            ${isActive ? `
+                <div class="warning-section">
+                    <h4>⚠️ 정지 처리 시 주의사항</h4>
+                    <ul>
+                        <li>해당 회원은 서비스 이용이 제한됩니다</li>
+                        <li>진행 중인 매칭에서 자동으로 제외됩니다</li>
+                        <li>새로운 매칭 참여가 불가능합니다</li>
+                    </ul>
+                </div>
+            ` : `
+                <div class="info-section">
+                    <h4>✓ 활성화 처리 시</h4>
+                    <ul>
+                        <li>해당 회원은 정상적으로 서비스를 이용할 수 있습니다</li>
+                        <li>매칭 참여 및 생성이 가능합니다</li>
+                    </ul>
+                </div>
+            `}
+            
+            <div class="form-group">
+                <label>변경 사유 (선택사항)</label>
+                <textarea id="status-change-reason" placeholder="상태 변경 사유를 입력하세요..." rows="3"></textarea>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-secondary" onclick="closeModal()">취소</button>
+            <button class="${isActive ? 'btn-danger' : 'btn-success'}" 
+                    onclick="confirmMemberStatusChange('${memberPk}', '${newStatus}')">
+                ${actionText} 처리
+            </button>
+        </div>
+    `;
+
+    showModal(content);
+}
+
+// 회원 상태 변경 확인
+function confirmMemberStatusChange(memberPk, newStatus) {
+    const reason = document.getElementById('status-change-reason').value.trim();
+
+    // 사유가 있으면 로그에 기록 (실제 구현시 서버로 전송)
+    if (reason) {
+        console.log(`회원 ${memberPk} 상태 변경 사유: ${reason}`);
+    }
+
+    closeModal();
+
+    // 실제 상태 변경 수행
+    fetch(`/admin/members/${memberPk}/status`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `status=${newStatus}&reason=${encodeURIComponent(reason)}`
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('서버 오류');
+            }
+            return response.text();
+        })
+        .then(message => {
+            showSuccessMessage(message);
+            // 페이지 새로고침 또는 테이블 업데이트
+            setTimeout(() => {
+                location.reload(); // 간단한 방법으로 페이지 새로고침
+            }, 1000);
+        })
+        .catch(error => {
+            console.error('회원 상태 변경 오류:', error);
+            showErrorMessage('상태 변경 중 오류가 발생했습니다.');
+        });
+}
+
+// 회원 관리 섹션 초기화
+function initializeMemberManagement() {
+    // 검색 기능 초기화
+    initializeMemberSearch();
+
+    // 기타 회원 관리 관련 초기화 작업
+    console.log('회원 관리 섹션이 초기화되었습니다.');
+}
+
+// 회원 검색 초기화 (전체 목록으로 돌아가기)
+function resetMemberSearch() {
+    document.getElementById('member-search-input').value = '';
+    location.reload(); // 간단하게 페이지 새로고침으로 전체 목록 표시
+}
+
+// 상태별 회원 필터링
+function filterMembersByStatus(status) {
+    // 필터 버튼 활성화 상태 변경
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+
+    const rows = document.querySelectorAll('#members-table-body tr[data-member-pk]');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        const memberStatus = row.dataset.status;
+        const isWithdraw = row.dataset.isWithdraw === 'true';
+        const rptCount = parseInt(row.dataset.rptCount) || 0;
+
+        let shouldShow = false;
+
+        switch(status) {
+            case 'ALL':
+                shouldShow = true;
+                break;
+            case 'ACTIVE':
+                shouldShow = memberStatus === 'ACTIVE' && !isWithdraw;
+                break;
+            case 'SUSPENDED':
+                shouldShow = memberStatus === 'SUSPENDED' && !isWithdraw;
+                break;
+            case 'WITHDRAWN':
+                shouldShow = isWithdraw;
+                break;
+            case 'REPORTED':
+                shouldShow = rptCount >= 3;
+                break;
+        }
+
+        if (shouldShow) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    // 표시된 회원 수 업데이트
+    updateVisibleMembersCount(visibleCount);
+
+    // 결과가 없을 때 메시지 표시
+    showNoResultsMessage(visibleCount === 0, getStatusDisplayName(status) + ' 회원이 없습니다.');
+}
+
+// 상태 표시명 반환
+function getStatusDisplayName(status) {
+    switch(status) {
+        case 'ALL': return '전체';
+        case 'ACTIVE': return '활성';
+        case 'SUSPENDED': return '정지';
+        case 'WITHDRAWN': return '탈퇴';
+        case 'REPORTED': return '신고 다수';
+        default: return '';
+    }
+}
+
+// 표시된 회원 수 업데이트
+function updateVisibleMembersCount(count) {
+    const visibleCountElement = document.getElementById('visible-members-count');
+    if (visibleCountElement) {
+        visibleCountElement.textContent = count;
+    }
+}
+
+// 결과 없음 메시지 표시/숨김
+function showNoResultsMessage(show, message) {
+    message = message || '결과가 없습니다.';
+    const tbody = document.getElementById('members-table-body');
+    let noResultRow = tbody.querySelector('#no-result-row');
+
+    // 기존 메시지 제거
+    if (noResultRow) {
+        noResultRow.remove();
+    }
+
+    if (show) {
+        const row = document.createElement('tr');
+        row.id = 'no-result-row';
+        row.innerHTML = '<td colspan="8" style="text-align: center; padding: 40px; color: #666;">' + message + '</td>';
+        tbody.appendChild(row);
+    }
+}
+
+// 회원 목록 새로고침
+function refreshMemberList() {
+    showSuccessMessage('회원 목록을 새로고침합니다...');
+    setTimeout(() => {
+        location.reload();
+    }, 500);
+}
+
+// 회원 목록 내보내기
+function exportMemberList() {
+    showSuccessMessage('회원 목록 내보내기 기능을 준비 중입니다...');
+
+    // 실제 구현시에는 현재 표시된 회원 목록을 CSV나 Excel 형태로 다운로드
+    // 예: /admin/members/export API 호출
+    setTimeout(() => {
+        showInfoMessage('회원 목록 내보내기 기능은 곧 업데이트됩니다.');
+    }, 1000);
+}
+
+// 회원 테이블 업데이트 시 추가 처리
+function updateMembersTableEnhanced(members) {
+    updateMembersTable(members);
+
+    // 필터 상태 초기화
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelector('.filter-btn').classList.add('active'); // 첫 번째 버튼(전체) 활성화
+
+    // 회원 수 업데이트
+    updateVisibleMembersCount(members.length);
+
+    // 검색 결과 메시지
+    if (members.length === 0) {
+        showNoResultsMessage(true, '검색 결과가 없습니다.');
+    }
+}
+
+// 기존 searchMembers 함수 개선
+function searchMembersEnhanced() {
+    const keyword = document.getElementById('member-search-input').value.trim();
+
+    if (!keyword) {
+        showErrorMessage('검색어를 입력해주세요.');
+        return;
+    }
+
+    // 로딩 표시
+    const searchBtn = event.target;
+    const originalText = searchBtn.textContent;
+    searchBtn.textContent = '검색중...';
+    searchBtn.disabled = true;
+
+    fetch(`/admin/members/search?keyword=${encodeURIComponent(keyword)}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('검색 중 오류가 발생했습니다.');
+            }
+            return response.json();
+        })
+        .then(members => {
+            updateMembersTableEnhanced(members);
+
+            if (members.length > 0) {
+                showSuccessMessage(`${members.length}명의 회원을 찾았습니다.`);
+            } else {
+                showInfoMessage('검색 조건에 맞는 회원이 없습니다.');
+            }
+        })
+        .catch(error => {
+            console.error('회원 검색 오류:', error);
+            showErrorMessage('회원 검색 중 오류가 발생했습니다.');
+        })
+        .finally(() => {
+            // 버튼 상태 복원
+            searchBtn.textContent = originalText;
+            searchBtn.disabled = false;
+        });
+}
+
+// 기존 함수들을 새로운 버전으로 교체
+function searchMembers() {
+    searchMembersEnhanced();
+}
+
+// 페이지 로드시 회원 관리 초기화
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => {
+        initializeMemberManagement();
+    }, 500);
+});
 
 // === 설정 관리 함수들 ===
 // === 설정 관리 함수들 (수정된 버전) ===

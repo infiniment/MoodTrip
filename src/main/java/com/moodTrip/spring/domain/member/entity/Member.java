@@ -4,6 +4,8 @@ import com.moodTrip.spring.global.common.entity.BaseEntity; // BaseEntity import
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "member")
 @Getter
@@ -50,6 +52,21 @@ public class Member extends BaseEntity { // BaseEntity 상속
 
     @Column(name = "provider_id", length = 100)
     private String providerId; // 소셜 플랫폼 내 고유 ID. 폼 회원이면 null
+
+    //수연 추가 어드민에서 마지막 로그인 기록, 회원 상태 관리하기 위해 필요.
+    @Column(name = "last_login_at")
+    private LocalDateTime lastLoginAt;  // 최근 로그인
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 20)
+    @Builder.Default
+    private MemberStatus status = MemberStatus.ACTIVE;  // 회원 상태
+
+    public enum MemberStatus {
+        ACTIVE,      // 활성
+        SUSPENDED,   // 정지
+        WITHDRAWN    // 탈퇴
+    }
 
     // 주의!
     // createdAt, updatedAt은 BaseEntity에서 상속받으므로 선언 필요 없음!
