@@ -2,6 +2,7 @@ package com.moodTrip.spring.domain.enteringRoom.controller;
 
 import com.moodTrip.spring.domain.enteringRoom.dto.response.CompanionRoomListResponse;
 import com.moodTrip.spring.domain.enteringRoom.service.CompanionRoomService;
+import com.moodTrip.spring.domain.enteringRoom.service.JoinRequestManagementService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -17,6 +18,7 @@ import java.util.List;
 public class CompanionRoomViewController {
 
     private final CompanionRoomService companionRoomService;
+    private final JoinRequestManagementService joinRequestManagementService;
 
     @GetMapping
     public String roomListPage(
@@ -69,6 +71,14 @@ public class CompanionRoomViewController {
                     .filter(room -> "모집중".equals(room.getStatus()))
                     .count();
 
+            // ✅ 헤더 배지용 데이터 추가
+            try {
+                Integer totalPendingRequests = joinRequestManagementService.getTotalPendingRequestsForSidebar();
+                model.addAttribute("totalPendingRequests", totalPendingRequests);
+            } catch (Exception e) {
+                model.addAttribute("totalPendingRequests", 0);
+            }
+
             // Thymeleaf 템플릿에 데이터 전달
             model.addAttribute("rooms", rooms);
             model.addAttribute("totalCount", totalCount);
@@ -93,6 +103,9 @@ public class CompanionRoomViewController {
             model.addAttribute("totalCount", 0);
             model.addAttribute("recruitingCount", 0);
             model.addAttribute("error", "방 목록을 불러오는 중 오류가 발생했습니다.");
+
+            // ✅ 예외 상황에도 기본값 주입
+            model.addAttribute("totalPendingRequests", 0);
 
             return "enteringRoom/enteringRoom";
         }
@@ -131,6 +144,14 @@ public class CompanionRoomViewController {
 
             List<CompanionRoomListResponse> searchResults = companionRoomService.searchRooms(query);
 
+            // ✅ 헤더 배지용 데이터 추가
+            try {
+                Integer totalPendingRequests = joinRequestManagementService.getTotalPendingRequestsForSidebar();
+                model.addAttribute("totalPendingRequests", totalPendingRequests);
+            } catch (Exception e) {
+                model.addAttribute("totalPendingRequests", 0);
+            }
+
             model.addAttribute("rooms", searchResults);
             model.addAttribute("query", query);
             model.addAttribute("resultCount", searchResults.size());
@@ -145,6 +166,7 @@ public class CompanionRoomViewController {
             model.addAttribute("query", query);
             model.addAttribute("resultCount", 0);
             model.addAttribute("error", "검색 중 오류가 발생했습니다.");
+            model.addAttribute("totalPendingRequests", 0); // ✅ 기본값
 
             return "enteringRoom/searchResults";
         }
@@ -187,6 +209,14 @@ public class CompanionRoomViewController {
 
             model.addAttribute("rooms", rooms);
 
+            // ✅ 부분 렌더링에도 배지 값 기본 주입
+            try {
+                Integer totalPendingRequests = joinRequestManagementService.getTotalPendingRequestsForSidebar();
+                model.addAttribute("totalPendingRequests", totalPendingRequests);
+            } catch (Exception e) {
+                model.addAttribute("totalPendingRequests", 0);
+            }
+
             log.debug("부분 렌더링 완료 - 결과수: {}", rooms.size());
             return "enteringRoom/fragments/roomList :: roomList";
 
@@ -194,6 +224,7 @@ public class CompanionRoomViewController {
             log.error("부분 렌더링 실패", e);
 
             model.addAttribute("rooms", java.util.Collections.emptyList());
+            model.addAttribute("totalPendingRequests", 0); // ✅ 기본값
             return "enteringRoom/fragments/roomList :: roomList";
         }
     }

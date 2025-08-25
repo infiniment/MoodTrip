@@ -1,9 +1,9 @@
 package com.moodTrip.spring.domain.fire.service;
 
-import com.moodTrip.spring.domain.fire.dto.request.FireRequest;
-import com.moodTrip.spring.domain.fire.dto.response.FireResponse;
-import com.moodTrip.spring.domain.fire.entity.Fire;
-import com.moodTrip.spring.domain.fire.repository.FireRepository;
+import com.moodTrip.spring.domain.fire.dto.request.RoomFireRequest;
+import com.moodTrip.spring.domain.fire.dto.response.RoomFireResponse;
+import com.moodTrip.spring.domain.fire.entity.RoomFire;
+import com.moodTrip.spring.domain.fire.repository.RoomFireRepository;
 import com.moodTrip.spring.domain.member.entity.Member;
 import com.moodTrip.spring.domain.rooms.entity.Room;
 import com.moodTrip.spring.domain.rooms.repository.RoomRepository;
@@ -19,15 +19,15 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)  // 기본적으로 읽기 전용 (성능 최적화)
-public class FireService {
+public class RoomFireService {
 
-    private final FireRepository fireRepository;
+    private final RoomFireRepository fireRepository;
     private final RoomRepository roomRepository;
     private final SecurityUtil securityUtil;
 
 
     @Transactional  // 데이터 변경이 있으므로 쓰기 트랜잭션
-    public FireResponse fireRoom(Long roomId, FireRequest fireRequest) {
+    public RoomFireResponse fireRoom(Long roomId, RoomFireRequest fireRequest) {
         log.info("🔥 방 신고 요청 시작 - roomId: {}, 신고 사유: {}",
                 roomId, fireRequest.getReportReason());
 
@@ -53,14 +53,14 @@ public class FireService {
             validateFireRequest(currentMember, targetRoom);
 
             // Fire 엔티티 생성 및 저장
-            Fire fire = createFire(currentMember, targetRoom, fireRequest);
-            Fire savedFire = fireRepository.save(fire);
+            RoomFire fire = createFire(currentMember, targetRoom, fireRequest);
+            RoomFire savedFire = fireRepository.save(fire);
 
             log.info("✅ 방 신고 완료 - fireId: {}, 방: {}, 신고자: {}",
                     savedFire.getFireId(), targetRoom.getRoomName(), currentMember.getNickname());
 
             // 성공 응답 생성
-            return FireResponse.success(savedFire);
+            return RoomFireResponse.success(savedFire);
 
         } catch (RuntimeException e) {
             log.error("❌ 방 신고 실패 - roomId: {}, 오류: {}", roomId, e.getMessage());
@@ -69,17 +69,17 @@ public class FireService {
             try {
                 Room room = roomRepository.findById(roomId).orElse(null);
                 if (room != null) {
-                    return FireResponse.failure(e.getMessage(), roomId, room.getRoomName());
+                    return RoomFireResponse.failure(e.getMessage(), roomId, room.getRoomName());
                 }
             } catch (Exception ex) {
                 log.warn("방 정보 조회 중 오류: {}", ex.getMessage());
             }
 
-            return FireResponse.failure(e.getMessage());
+            return RoomFireResponse.failure(e.getMessage());
 
         } catch (Exception e) {
             log.error("💥 예상치 못한 오류 발생 - roomId: {}", roomId, e);
-            return FireResponse.failure("신고 처리 중 오류가 발생했습니다. 고객센터에 문의해주세요.");
+            return RoomFireResponse.failure("신고 처리 중 오류가 발생했습니다. 고객센터에 문의해주세요.");
         }
     }
 
@@ -94,7 +94,7 @@ public class FireService {
         }
 
         // 중복 신고 체크
-        Optional<Fire> existingFire = fireRepository.findByFireReporterAndFiredRoom(fireReporter, targetRoom);
+        Optional<RoomFire> existingFire = fireRepository.findByFireReporterAndFiredRoom(fireReporter, targetRoom);
         if (existingFire.isPresent()) {
             log.warn("❌ 중복 신고 시도 - 방: {}, 신고자: {}",
                     targetRoom.getRoomName(), fireReporter.getNickname());
@@ -111,18 +111,18 @@ public class FireService {
     }
 
     // 신고 엔티티 생성
-    private Fire createFire(Member fireReporter, Room targetRoom, FireRequest fireRequest) {
+    private RoomFire createFire(Member fireReporter, Room targetRoom, RoomFireRequest fireRequest) {
         log.info("🔥 Fire 엔티티 생성 시작");
 
         // 문자열 신고 사유를 ENUM으로 변환
-        Fire.FireReason fireReason = Fire.FireReason.fromString(fireRequest.getCleanedReportReason());
+        RoomFire.FireReason fireReason = RoomFire.FireReason.fromString(fireRequest.getCleanedReportReason());
 
-        Fire fire = Fire.builder()
+        RoomFire fire = RoomFire.builder()
                 .fireReporter(fireReporter)
                 .firedRoom(targetRoom)
                 .fireReason(fireReason)
                 .fireMessage(fireRequest.getCleanedReportMessage())
-                .fireStatus(Fire.FireStatus.PENDING)  // 기본값: 처리 대기
+                .fireStatus(RoomFire.FireStatus.PENDING)  // 기본값: 처리 대기
                 .build();
 
         log.info("✅ Fire 엔티티 생성 완료 - 사유: {}", fireReason.getDescription());

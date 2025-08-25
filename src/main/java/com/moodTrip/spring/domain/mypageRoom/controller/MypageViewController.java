@@ -1,5 +1,6 @@
 package com.moodTrip.spring.domain.mypageRoom.controller;
 
+import com.moodTrip.spring.domain.enteringRoom.service.JoinRequestManagementService;
 import com.moodTrip.spring.domain.member.dto.response.ProfileResponse;
 import com.moodTrip.spring.domain.member.entity.Member;
 import com.moodTrip.spring.domain.member.service.ProfileService;
@@ -25,40 +26,60 @@ public class MypageViewController {
     private final SecurityUtil securityUtil;
     private final ProfileService profileService;
     private final MypageRoomService mypageRoomService;
+    private final JoinRequestManagementService joinRequestManagementService;
 
     // 기본정보 프로필 페이지
     @GetMapping("/my-profile")
     public String viewMyProfile(Model model) {
         Member currentMember = securityUtil.getCurrentMember();
         ProfileResponse profile = profileService.getMyProfile(currentMember);
+
         model.addAttribute("profile", profile);
         model.addAttribute("currentMember", currentMember);
         model.addAttribute("pageTitle", "내 정보");
         model.addAttribute("isLoggedIn", true);
+
+        // 사이드바 배지용 데이터 추가
+        try {
+            Integer totalPendingRequests = joinRequestManagementService.getTotalPendingRequestsForSidebar();
+            model.addAttribute("totalPendingRequests", totalPendingRequests);
+        } catch (Exception e) {
+            model.addAttribute("totalPendingRequests", 0);
+        }
+
         return "mypage/my-profile";
     }
 
     // 마이페이지 매칭 정보 페이지 렌더링
     @GetMapping("/my-matching")
-    public String myMatching(String tab, Model model) {
+    public String myMatching(
+            @RequestParam(name = "activeTab", required = false) String activeTab,
+            @RequestParam(name = "tab",       required = false) String legacyTab,
+            Model model
+    ) {
+        String tab = (activeTab != null ? activeTab : legacyTab);
         Member currentMember = securityUtil.getCurrentMember();
 
-        //  탭 파라미터 검증 및 정규화
         String validatedTab = validateAndNormalizeTab(tab);
 
-        // 탭별 데이터 로딩
+        // 기존 로직...
         List<JoinedRoomResponse> joinedRooms = null;
         List<CreatedRoomResponse> createdRooms = null;
 
         if ("received".equals(validatedTab)) {
-            // 내가 입장한 방 탭 데이터 로드하기
             joinedRooms = mypageRoomService.getMyJoinedRooms(currentMember);
         } else if ("created".equals(validatedTab)) {
-            // "내가 만든 방 탭 데이터 로드하기
             createdRooms = mypageRoomService.getMyCreatedRooms(currentMember);
         }
 
-        // 3. 템플릿에 렌더링할 데이터 준비
+        // 사이드바 배지용 데이터 추가
+        try {
+            Integer totalPendingRequests = joinRequestManagementService.getTotalPendingRequestsForSidebar();
+            model.addAttribute("totalPendingRequests", totalPendingRequests);
+        } catch (Exception e) {
+            model.addAttribute("totalPendingRequests", 0);
+        }
+
         setupModelAttributes(model, validatedTab, currentMember, joinedRooms, createdRooms);
         return "mypage/my-matching";
     }

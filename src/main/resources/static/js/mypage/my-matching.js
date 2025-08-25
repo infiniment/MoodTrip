@@ -456,6 +456,14 @@ function initializeButtons() {
             }
         }
 
+        if (e.target.matches('.btn-report-room')) {
+            const matchingItem = e.target.closest('.matching-item');
+            const roomId = matchingItem.getAttribute('data-room-id');
+            const roomTitle = matchingItem.querySelector('.matching-title').textContent;
+
+            handleReportRoomClick(roomId, roomTitle);
+        }
+
     });
 }
 
@@ -473,64 +481,6 @@ function initializeTabs() {
                 window.location.href = '/mypage/my-matching?tab=created';
             }
         });
-    });
-}
-
-// SSR 방식 사용 시 타임리프 사용을 위한 버튼 초기화
-function initializeButtons() {
-    document.addEventListener('click', function(e) {
-
-        // 방 나가기 버튼
-        if (e.target.matches('.btn-exit-room')) {
-            if (e.target.disabled) {
-                const userRole = e.target.getAttribute('data-user-role') ||
-                    e.target.closest('.matching-item')?.getAttribute('data-user-role');
-
-                if (userRole === 'LEADER') {
-                    showNotification('info', '방장은 방을 나갈 수 없습니다. 방 삭제를 이용해주세요.');
-                } else {
-                    showNotification('error', '현재 이 기능을 사용할 수 없습니다.');
-                }
-                return;
-            }
-
-            const matchingItem = e.target.closest('.matching-item');
-            const roomTitle = matchingItem.querySelector('.matching-title').textContent;
-            const roomId = e.target.getAttribute('data-room-id');
-
-            handleExitRoomClick(roomTitle, roomId, matchingItem);
-        }
-
-        // 방 삭제 버튼
-        if (e.target.matches('.btn-delete-room')) {
-            const matchingItem = e.target.closest('.matching-item');
-            const roomTitle = matchingItem.querySelector('.matching-title').textContent;
-            const roomId = e.target.getAttribute('data-room-id');
-
-            handleDeleteRoomClick(roomTitle, roomId, matchingItem);
-        }
-
-        // 입장 요청 관리 버튼
-        if (e.target.matches('.btn-manage-requests')) {
-            const roomId = e.target.getAttribute('data-room-id');
-            const matchingItem = e.target.closest('.matching-item');
-            const roomTitle = matchingItem.querySelector('.matching-title').textContent;
-
-            handleManageRequestsClick(roomId, roomTitle);
-        }
-
-        // 스케줄 짜기 버튼
-        if (e.target.matches('.btn-chat')) {
-            const matchingItem = e.target.closest('.matching-item');
-            const roomId = matchingItem.getAttribute('data-room-id');
-
-            if (roomId) {
-                window.location.href = `/scheduling/${roomId}`;
-            } else {
-                showNotification('error', '방 정보를 찾을 수 없습니다.', 'under-header');
-            }
-        }
-
     });
 }
 
@@ -1081,5 +1031,137 @@ document.addEventListener('keydown', function(e) {
         console.log('🔄 페이지 새로고침');
     }
 });
+
+/**
+ * 신고하기 버튼 클릭 시
+ */
+async function handleReportRoomClick(roomId, roomTitle) {
+    console.log(`🚨 신고하기 클릭 - 방ID: ${roomId}, 방제목: ${roomTitle}`);
+
+    try {
+        // ✅ 방 멤버 조회 API 호출
+        const response = await fetch(`/api/v1/room-members/${roomId}/members`, {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('방 멤버 조회 실패');
+        }
+
+        const members = await response.json();
+        console.log('👥 방 멤버:', members);
+
+        // 모달에 멤버 리스트 표시
+        showReportModal(roomId, roomTitle, members);
+
+    } catch (error) {
+        console.error('신고 모달 오류:', error);
+        showNotification('error', '멤버 목록을 불러올 수 없습니다.');
+    }
+}
+
+/**
+ * 신고 모달 표시
+ */
+function showReportModal(roomId, roomTitle, members) {
+    const modal = document.getElementById('reportRoomModal');
+    if (!modal) return;
+
+    const memberList = modal.querySelector('#reportMemberList');
+    modal.querySelector('.modal-header h3').textContent = `${roomTitle} - 신고하기`;
+
+    if (!members || members.length === 0) {
+        memberList.innerHTML = `
+            <div style="text-align:center; padding:1rem; color:#64748b;">
+                이 방에는 멤버가 없습니다.
+            </div>`;
+    } else {
+        // ✅ 멤버 리스트 + 신고 사유 선택 + 상세 입력
+        memberList.innerHTML = `
+            <ul class="report-member-list">
+                ${members.map(m => `
+                    <li style="margin-bottom:8px;">
+                        <label style="display:flex; align-items:center; gap:8px;">
+                            <input type="radio" name="reportMember" value="${m.nickname}">
+                            <span>${m.nickname} (${m.role})</span>
+                        </label>
+                    </li>
+                `).join('')}
+            </ul>
+
+            <div class="report-reason-wrapper" style="margin-top:1rem;">
+                <label for="reportReasonSelect" style="display:block; font-weight:500; margin-bottom:6px;">
+                    신고 사유
+                </label>
+                <select id="reportReasonSelect" style="width:100%; padding:8px; border-radius:6px; border:1px solid #d1d5db;">
+                    <option value="">-- 선택하세요 --</option>
+                    <option value="SPAM">스팸/광고</option>
+                    <option value="INAPPROPRIATE">부적절한 내용</option>
+                    <option value="FRAUD">사기/허위정보</option>
+                    <option value="HARASSMENT">괴롭힘/혐오발언</option>
+                    <option value="OTHER">기타</option>
+                </select>
+            </div>
+
+            <div class="report-message-wrapper" style="margin-top:1rem;">
+                <label for="reportMessageTextarea" style="display:block; font-weight:500; margin-bottom:6px;">
+                    상세 사유 (선택사항)
+                </label>
+                <textarea id="reportMessageTextarea" placeholder="상세 사유를 입력하세요"
+                          style="width:100%; min-height:80px; padding:8px; border-radius:6px;
+                                 border:1px solid #d1d5db; resize: vertical;"></textarea>
+            </div>
+        `;
+    }
+
+    // 확인 버튼 이벤트
+    const confirmBtn = modal.querySelector('#submitReportBtn');
+    confirmBtn.onclick = async () => {
+        const selected = modal.querySelector("input[name='reportMember']:checked");
+        if (!selected) {
+            showNotification('info', '신고 대상을 선택하세요.');
+            return;
+        }
+
+        const reportedNickname = selected.value; // 🔥 닉네임 값
+        const reason = modal.querySelector("#reportReasonSelect")?.value.toLowerCase();
+        const message = modal.querySelector("#reportMessageTextarea")?.value.trim();
+
+        if (!reason) {
+            showNotification('info', '신고 사유를 선택하세요.');
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/v1/fires/rooms/${roomId}/members`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    reportedNickname: reportedNickname,
+                    reportReason: reason.toUpperCase(),  // 🔥 백엔드 ENUM 맞추기
+                    reportMessage: message
+                })
+            });
+
+            if (!res.ok) throw new Error('신고 실패');
+            showNotification('success', '신고가 접수되었습니다.');
+            hideModal('reportRoomModal');
+
+        } catch (err) {
+            console.error(err);
+            showNotification('error', '신고 중 오류가 발생했습니다.');
+        }
+    };
+
+    // 모달 열기
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
 
 console.log('🎉 MoodTrip 매칭 정보 페이지 JavaScript 로드 완료! (방장 권한 체크 포함)');

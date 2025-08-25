@@ -1,6 +1,6 @@
 package com.moodTrip.spring.domain.fire.dto.response;
 
-import com.moodTrip.spring.domain.fire.entity.Fire;
+import com.moodTrip.spring.domain.fire.entity.RoomFire;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class FireResponse {
+public class RoomFireResponse {
 
     private boolean success;
     private String message;
@@ -22,8 +22,8 @@ public class FireResponse {
     private LocalDateTime firedAt;
     private String fireReason;
 
-    public static FireResponse success(Fire fire) {
-        return FireResponse.builder()
+    public static RoomFireResponse success(RoomFire fire) {
+        return RoomFireResponse.builder()
                 .success(true)
                 .message("신고가 정상적으로 접수되었습니다. 검토 후 적절한 조치를 취하겠습니다.")
                 .fireId(fire.getFireId())
@@ -34,8 +34,8 @@ public class FireResponse {
                 .build();
     }
 
-    public static FireResponse failure(String message, Long roomId, String roomTitle) {
-        return FireResponse.builder()
+    public static RoomFireResponse failure(String message, Long roomId, String roomTitle) {
+        return RoomFireResponse.builder()
                 .success(false)
                 .message(message)
                 .fireId(null)
@@ -46,8 +46,8 @@ public class FireResponse {
                 .build();
     }
 
-    public static FireResponse failure(String message) {
-        return FireResponse.builder()
+    public static RoomFireResponse failure(String message) {
+        return RoomFireResponse.builder()
                 .success(false)
                 .message(message)
                 .fireId(null)
