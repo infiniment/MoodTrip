@@ -247,6 +247,7 @@ public class MemberService {
                 .orElseThrow(() -> new RuntimeException("회원이 존재하지 않습니다."));
     }
 
+
     //수연
     //관리자용 전체 회원 목록 조회
     @Transactional(readOnly = true)
