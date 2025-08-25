@@ -15,6 +15,8 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 @Slf4j
@@ -72,8 +74,15 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 
         if ("signup".equals(flowType)) {
             if (exists) {
-                response.sendRedirect("/signup?error=이미+회원가입+된+계정입니다");
+                // 1. 에러 메시지를 변수로 선언합니다.
+                String errorMessage = "이미 회원가입 된 계정입니다.";
+                // 2. URLEncoder를 사용하여 메시지를 인코딩합니다.
+                String encodedMessage = URLEncoder.encode(errorMessage, StandardCharsets.UTF_8.toString());
+                // 3. 인코딩된 메시지를 사용하여 리디렉션합니다.
+                response.sendRedirect("/signup?error=" + encodedMessage);
                 return;
+
+
             } else {
                 String memberId = provider + "_" + providerId;
                 String memberPw = "";
@@ -122,8 +131,8 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
                 response.addCookie(jwtCookie);
                 response.sendRedirect("/mainpage/mainpage");
             } else {
-                response.sendRedirect("/signup?error=등록되지+않은+계정입니다.+회원가입이+필요합니다");
-            }
+                String errorMessage = "등록되지 않은 계정입니다. 회원가입이 필요합니다.";
+                response.sendRedirect("/signup?error=" + URLEncoder.encode(errorMessage, StandardCharsets.UTF_8.toString()));            }
         }
     }
 }
