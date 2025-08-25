@@ -335,7 +335,7 @@ header.header .header-nav .right-nav .sign-up-button {
   color: #757575;
 }
 
-.profile-btn {
+.header-profile-btn {
   width: 100%;
   padding: 10px 0;
   margin-bottom: 8px;
@@ -350,7 +350,7 @@ header.header .header-nav .right-nav .sign-up-button {
   transition: all 0.2s;
 }
 
-.profile-btn:hover {
+.header-profile-btn:hover {
   background: linear-gradient(to right, #0066a3, #002a3d);
   transform: translateY(-1px);
 }
