@@ -4,6 +4,8 @@ import lombok.*;
 @Getter @Builder
 @AllArgsConstructor @NoArgsConstructor
 public class AttractionDetailResponse {
+    private Long attractionId; // 내부 PK
+    private Long contentId;    // TourAPI contentId
 
     // === 프런트에서 실제로 쓰는 최소 필드 ===
     private String title;      // 장소명
@@ -45,6 +47,8 @@ public class AttractionDetailResponse {
                 joinNonBlank(" ", base.getAddr1(), base.getAddr2()));
 
         return AttractionDetailResponse.builder()
+                .attractionId(base.getAttractionId())
+                .contentId(base.getContentId())
                 .title(base.getTitle())
                 .image(image)
                 .tel(tel)

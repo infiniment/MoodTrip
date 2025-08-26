@@ -56,23 +56,36 @@ function applyEmotionPrefill() {
 }
 
 // 상세 페이지에서 sessionStorage에 저장한 프리필 읽기
-function getRoomPrefill() {
-    try { return JSON.parse(sessionStorage.getItem('room_prefill') || 'null'); }
-    catch { return null; }
+function getRoomPrefill(opts = { consume: true }) {
+    try {
+        const raw =
+            sessionStorage.getItem('room_prefill') ||
+            localStorage.getItem('room_prefill');
+        const data = raw ? JSON.parse(raw) : null;
+
+        if (opts.consume) {
+            sessionStorage.removeItem('room_prefill');
+            localStorage.removeItem('room_prefill');
+        }
+        return data;
+    } catch {
+        return null;
+    }
 }
 
 // emotionCategoryData 안에서 '감정 이름'으로 태그(id, 이름) 찾기
 function findEmotionByName(name) {
-    const target = String(name || '').trim();
+    const target = String(name || '').trim().toLowerCase();
     for (const cat of (window.emotionCategoryData || [])) {
-        const em = (cat.emotions || []).find(e =>
-            e.tagName === target || e.name === target || e.text === target
-        );
-        if (em) return { id: em.tagId, text: em.tagName };
+        const em = (cat.emotions || []).find(e => {
+            const now = String(e.tagName || e.name || e.text || '')
+                .trim().toLowerCase();
+            return now === target;
+        });
+        if (em) return { id: em.tagId ?? em.id, text: em.tagName ?? em.text };
     }
     return null;
 }
-
 
 // 카테고리 버튼 초기화
 function initializeCategoryButtons() {
