@@ -111,8 +111,10 @@ function renderAttractionCards(list) {
     img.onerror = () => { img.onerror = null; img.src = FALLBACK_IMG; }; // 루프 방지
 
     // 카드 생성 후
-    card.addEventListener("click", () => {
-      location.href = `/templates/recommand-tourist-attractions-detail/detail-page.html?contentId=${item.contentId}`;
+    card.addEventListener('click', () => {
+      const id = item.contentId;           // 서버가 내려준 필드명 확인: contentId
+      if (!id) return;
+      window.location.assign(`/attractions/detail/${id}`);
     });
 
 
