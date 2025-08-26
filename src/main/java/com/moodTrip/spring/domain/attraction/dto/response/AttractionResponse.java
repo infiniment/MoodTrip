@@ -54,5 +54,9 @@ public class AttractionResponse {
                 .modifiedTime(a.getModifiedTime())
                 .build();
     }
+
+    public Long getAttractionId() {
+        return id;
+    }
 }
 

@@ -13,11 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class AttractionEmotionService {
@@ -109,4 +105,11 @@ public class AttractionEmotionService {
         }
         return map;
     }
+
+    @Transactional(readOnly = true)
+    public List<String> findTagNamesByContentId(long contentId) {
+        List<String> names = attractionEmotionRepository.findTagNamesByContentId(contentId);
+        return names != null ? names : Collections.emptyList();
+    }
+
 }

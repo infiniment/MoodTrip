@@ -7,7 +7,6 @@ public class AttractionDetailResponse {
     private Long attractionId; // 내부 PK
     private Long contentId;    // TourAPI contentId
 
-    // === 프런트에서 실제로 쓰는 최소 필드 ===
     private String title;      // 장소명
     private String image;      // 대표 이미지 (firstImage || firstImage2)
     private String tel;        // 문의/안내 (common.tel || intro.infocenter || base.tel)
@@ -17,6 +16,8 @@ public class AttractionDetailResponse {
     private String parking;    // 주차
     private String age;        // 체험가능 연령
     private String overview;   // 개요(detailCommon2)
+
+
 
     // 내부에서만 쓰는 축약 DTO (서비스 헬퍼와만 연동)
     @Getter @Builder
@@ -47,7 +48,6 @@ public class AttractionDetailResponse {
                 joinNonBlank(" ", base.getAddr1(), base.getAddr2()));
 
         return AttractionDetailResponse.builder()
-                .attractionId(base.getAttractionId())
                 .contentId(base.getContentId())
                 .title(base.getTitle())
                 .image(image)
@@ -58,6 +58,7 @@ public class AttractionDetailResponse {
                 .parking(firstNonBlank(intro.getParking()))
                 .age(firstNonBlank(intro.getAge()))
                 .overview(common.getOverview())
+                .attractionId(base.getAttractionId())
                 .build();
     }
 
