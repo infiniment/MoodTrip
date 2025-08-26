@@ -4,8 +4,8 @@ import lombok.*;
 @Getter @Builder
 @AllArgsConstructor @NoArgsConstructor
 public class AttractionDetailResponse {
-
-    private Long attractionId;
+    private Long attractionId; // 내부 PK
+    private Long contentId;    // TourAPI contentId
 
     private String title;      // 장소명
     private String image;      // 대표 이미지 (firstImage || firstImage2)
@@ -48,8 +48,7 @@ public class AttractionDetailResponse {
                 joinNonBlank(" ", base.getAddr1(), base.getAddr2()));
 
         return AttractionDetailResponse.builder()
-
-
+                .contentId(base.getContentId())
                 .title(base.getTitle())
                 .image(image)
                 .tel(tel)

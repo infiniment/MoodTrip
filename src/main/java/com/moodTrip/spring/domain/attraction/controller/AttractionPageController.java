@@ -21,7 +21,7 @@ public class AttractionPageController {
 
 
     @GetMapping("/attractions/detail/{contentId}")
-    public String view(@PathVariable long contentId, Model model) {
+    public String view(@PathVariable("contentId") long contentId, Model model) {
 
 
         AttractionDetailResponse detail = attractionService.getDetailResponse(contentId);

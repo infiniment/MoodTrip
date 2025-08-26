@@ -100,14 +100,16 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 
   // 1) contentId 추출 (쿼리 우선, 버튼 data 폴백)
-  let contentId = null;
   if (!d) {
     const params = new URLSearchParams(location.search);
-    const pathId = location.pathname.match(/\/attractions\/detail\/(\d+)/)?.[1];
-    contentId = params.get("contentId")
-    ($("#btnMakeRoom")?.dataset.contentId ?? "")
-    pathId;
-    if (!contentId) return;
+    const cidRaw =
+        params.get("contentId") ||
+        (document.getElementById("btnMakeRoom")?.dataset.contentId ?? "");
+    const contentId = /^\d+$/.test(cidRaw) ? cidRaw : "";   // ← 숫자만 허용
+    if (!contentId) {
+      console.warn("잘못된 contentId:", cidRaw);
+      return;
+    }
 
     // 2) API 호출
     try {
@@ -281,51 +283,208 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 // -------------------- (기존) 방 만들기 프리필 --------------------
+// document.addEventListener("DOMContentLoaded", () => {
+//   const btn = $("#btnMakeRoom");
+//   if (!btn) return;
+//
+//   btn.addEventListener("click", async (e) => {
+//     e.preventDefault();
+//
+//     let attractionId = Number(btn.dataset.attractionId) || null;
+//     const contentId = btn.dataset.contentId;
+//
+//     if (!attractionId && contentId) {
+//       try {
+//         const res = await fetch(`/api/attractions/content/${contentId}/detail`);
+//         if (res.ok) {
+//           const d = await res.json();
+//           const a = d.attraction || d.base || d;
+//           attractionId = Number(a?.attractionId) || null;
+//         }
+//       } catch (_) {}
+//     }
+//     if (!attractionId) {
+//       alert("관광지 정보를 불러오지 못했습니다.");
+//       return;
+//     }
+//
+//     let emotions = [];
+//     try {
+//       if (contentId) {
+//         const er = await fetch(`/api/attractions/content/${contentId}/emotion-tags`);
+//         if (er.ok) emotions = await er.json();
+//       }
+//     } catch (_) {}
+//     if (emotions.length === 0) {
+//       emotions = Array.from(document.querySelectorAll(".emotion-tag, .tag-item, .place-tag-list .tag"))
+//           .map((el) => (el.textContent || "").replace("#", "").trim())
+//           .filter(Boolean)
+//           .slice(0, 3);
+//     }
+//
+//     sessionStorage.setItem(
+//         "room_prefill",
+//         JSON.stringify({ source: "attraction-detail", attraction: { attractionId }, emotions })
+//     );
+//
+//     const redirect = btn.getAttribute("href") || "/companion-rooms/create";
+//     window.location.href = redirect;
+//   });
+// });
+
+// document.addEventListener("DOMContentLoaded", () => {
+//   const btn = document.getElementById("btnMakeRoom");
+//   if (!btn) return;
+//
+//   btn.addEventListener("click", async (e) => {
+//     e.preventDefault();
+//
+//     let attractionId = Number(btn.dataset.attractionId) || null;
+//     const contentId  = btn.dataset.contentId ? Number(btn.dataset.contentId) : null;
+//
+//     let detail = null, base = null;
+//     try {
+//       if (contentId) {
+//         const r = await fetch(`/api/attractions/content/${contentId}/detail`, { headers:{Accept:"application/json"} });
+//         if (r.ok) detail = await r.json(); // { title, image, addr, ... }
+//       }
+//     } catch (_) {}
+//
+//     try {
+//       const r2 = await fetch(`/api/attractions/content/${contentId}/detail`, { headers:{Accept:"application/json"} });
+//       if (r2.ok) {
+//         const d = await r2.json();
+//         base = d.attraction || d.base || null; // 지금 구조상 대부분 null일 수 있음
+//         attractionId = attractionId || Number(base?.attractionId) || null;
+//       }
+//     } catch (_) {}
+//
+//     // 👉 address(통합 주소) 확보
+//     const address = (detail?.addr || "").trim();
+//
+//     // addr1/addr2가 없을 때 address를 그대로 써도 되고, 간단히 두 토막으로 나눠도 됩니다.
+//     let addr1 = base?.addr1 || "";
+//     let addr2 = base?.addr2 || "";
+//     if (!addr1 && !addr2 && address) {
+//       const m = address.match(/^(\S+\s*\S*)(?:\s+(.+))?$/); // 대충 앞 1~2토막 + 나머지
+//       addr1 = m?.[1] || "";
+//       addr2 = m?.[2] || "";
+//     }
+//
+//     // 감정 태그 그대로
+//     let emotions = [];
+//     try {
+//       if (contentId) {
+//         const er = await fetch(`/api/attractions/content/${contentId}/emotion-tags`, { headers:{Accept:"application/json"} });
+//         if (er.ok) emotions = await er.json();
+//       }
+//     } catch (_) {}
+//     if (!Array.isArray(emotions) || emotions.length === 0) {
+//       emotions = Array.from(document.querySelectorAll(".place-tag .tag-item, .emotion-tag, .place-tag-list .tag"))
+//           .map(el => (el.textContent || "").replace(/^#/, "").trim())
+//           .filter(Boolean)
+//           .slice(0, 3);
+//     }
+//
+//     const attrForPrefill = {
+//       attractionId,
+//       contentId,
+//       title: base?.title || detail?.title || document.querySelector(".place-name")?.textContent || "",
+//       firstImage: base?.firstImage || detail?.image || "",
+//       address,        // 통합 주소 (NEW)
+//       addr1,          // 주소 앞부분
+//       addr2           // 주소 뒷부분
+//     };
+//
+//     const payload = { source: "attraction-detail", attraction: attrForPrefill, emotions };
+//     sessionStorage.setItem("room_prefill", JSON.stringify(payload));
+//     localStorage.setItem("room_prefill", JSON.stringify(payload));
+//
+//     window.location.href = btn.getAttribute("href") || "/companion-rooms/create";
+//   });
+// });
+
+// 1) 문자열 배열로 정규화
+function normalizeEmotionNames(arr) {
+  if (!Array.isArray(arr)) return [];
+  return [...new Set(arr.map(e => {
+    if (typeof e === 'string') return e.trim();
+    if (e && typeof e === 'object')
+      return String(e.tagName || e.name || e.text || '').trim();
+    return '';
+  }).filter(Boolean))];
+}
+
 document.addEventListener("DOMContentLoaded", () => {
-  const btn = $("#btnMakeRoom");
+  const btn = document.getElementById("btnMakeRoom");
   if (!btn) return;
 
   btn.addEventListener("click", async (e) => {
     e.preventDefault();
 
     let attractionId = Number(btn.dataset.attractionId) || null;
-    const contentId = btn.dataset.contentId;
+    const contentId  = btn.dataset.contentId ? Number(btn.dataset.contentId) : null;
 
-    if (!attractionId && contentId) {
-      try {
-        const res = await fetch(`/api/attractions/content/${contentId}/detail`);
-        if (res.ok) {
-          const d = await res.json();
-          const a = d.attraction || d.base || d;
-          attractionId = Number(a?.attractionId) || null;
-        }
-      } catch (_) {}
-    }
-    if (!attractionId) {
-      alert("관광지 정보를 불러오지 못했습니다.");
-      return;
+    let detail = null, base = null;
+    try {
+      if (contentId) {
+        const r = await fetch(`/api/attractions/content/${contentId}/detail`, { headers:{Accept:"application/json"} });
+        if (r.ok) detail = await r.json();
+      }
+    } catch (_) {}
+
+    try {
+      const r2 = await fetch(`/api/attractions/content/${contentId}/detail`, { headers:{Accept:"application/json"} });
+      if (r2.ok) {
+        const d = await r2.json();
+        base = d.attraction || d.base || null;
+        attractionId = attractionId || Number(base?.attractionId) || null;
+      }
+    } catch (_) {}
+
+    // 주소 보강
+    const address = (detail?.addr || "").trim();
+    let addr1 = base?.addr1 || "", addr2 = base?.addr2 || "";
+    if (!addr1 && !addr2 && address) {
+      const m = address.match(/^(\S+\s*\S*)(?:\s+(.+))?$/);
+      addr1 = m?.[1] || ""; addr2 = m?.[2] || "";
     }
 
+    // 감정 태그 수집 + 정규화 + 3개 제한
     let emotions = [];
     try {
       if (contentId) {
-        const er = await fetch(`/api/attractions/content/${contentId}/emotion-tags`);
+        const er = await fetch(`/api/attractions/content/${contentId}/emotion-tags`, { headers:{Accept:"application/json"} });
         if (er.ok) emotions = await er.json();
       }
     } catch (_) {}
-    if (emotions.length === 0) {
-      emotions = Array.from(document.querySelectorAll(".emotion-tag, .tag-item, .place-tag-list .tag"))
-          .map((el) => (el.textContent || "").replace("#", "").trim())
-          .filter(Boolean)
-          .slice(0, 3);
+    if (!Array.isArray(emotions) || emotions.length === 0) {
+      emotions = Array.from(document.querySelectorAll(".place-tag .tag-item, .emotion-tag, .place-tag-list .tag"))
+          .map(el => (el.textContent || "").replace(/^#/, "").trim())
+          .filter(Boolean);
     }
+    const emotionNames = normalizeEmotionNames(emotions).slice(0, 3);  // ← 중요
 
-    sessionStorage.setItem(
-        "room_prefill",
-        JSON.stringify({ source: "attraction-detail", attraction: { attractionId }, emotions })
-    );
+    const attrForPrefill = {
+      attractionId,
+      contentId,
+      title: base?.title || detail?.title || document.querySelector(".place-name")?.textContent || "",
+      firstImage: base?.firstImage || detail?.image || "",
+      address,
+      addr1,
+      addr2
+    };
 
-    const redirect = btn.getAttribute("href") || "/companion-rooms/create";
-    window.location.href = redirect;
+    const payload = {
+      source: "attraction-detail",
+      attraction: attrForPrefill,
+      contentId,                 // 선택 페이지에서 편하게 쓰라고 탑레벨도 넣음
+      emotions: emotionNames     // ← 감정 태그 전달 (문자열 배열)
+    };
+
+    sessionStorage.setItem("room_prefill", JSON.stringify(payload));
+    localStorage.setItem("room_prefill", JSON.stringify(payload));
+
+    window.location.href = btn.getAttribute("href") || "/companion-rooms/create";
   });
 });

@@ -13,6 +13,7 @@ import java.util.List;
 @Builder
 public class AttractionResponse {
     private Long id;
+    private Long attractionId;
     private Long contentId;
     private Integer contentTypeId;
     private String title;

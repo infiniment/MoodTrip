@@ -142,11 +142,10 @@
             <span>동행자 찾기</span><span class="btn-arrow">→</span>
           </a>
 
-          <!-- 프리필용 data-* 주입 -->
-          <a class="ask-btn"
-             id="btnMakeRoom"
-             th:href="@{/templates/recommand-tourist-attractions-detail/detail-page.html}"
-             th:attr="data-content-id=${contentId}, data-attraction-id=${attractionId}">
+          <!-- 관광지 id가 이미 있으면 data-attraction-id만 -->
+          <a id="btnMakeRoom"
+             th:href="@{/companion-rooms/create}"
+             th:attr="data-content-id=${contentId}">
             <span>방 만들기</span><span class="btn-plus">+</span>
           </a>
         </div>
