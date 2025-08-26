@@ -1673,60 +1673,6 @@ function drawRoutePreview(a, b) {
     map.setBounds(bounds);
 }
 
-// 길찾기 버튼
-// document.getElementById('routeBtn')?.addEventListener('click', () => {
-//     const sInput = document.getElementById('startInput');
-//     const eInput = document.getElementById('endInput');
-//
-//     const ensurePicked = (text, setter, done) => {
-//         if (!text) return done(false);
-//         if (kakao?.maps?.services && (!startPick || !endPick)) {
-//             const places = new kakao.maps.services.Places();
-//             places.keywordSearch(text, (data, status) => {
-//                 if (status === kakao.maps.services.Status.OK && data[0]) {
-//                     const d = data[0];
-//                     setter({ name: d.place_name, lon: parseFloat(d.x), lat: parseFloat(d.y) });
-//                     done(true);
-//                 } else done(false);
-//             });
-//         } else done(!!text);
-//     };
-//
-//     ensurePicked(sInput.value.trim(), v => startPick = v, (ok1) => {
-//         ensurePicked(eInput.value.trim(), v => endPick = v, (ok2) => {
-//             if (!ok1 || !ok2 || !startPick || !endPick) {
-//                 alert('출발지와 도착지를 모두 선택해 주세요.');
-//                 return;
-//             }
-//
-//             // 지도 프리뷰
-//             drawRoutePreview(startPick, endPick);
-//
-//             // 교통편 카드 갱신
-//             updateTransportCards(startPick, endPick);
-//
-//             // 최신 경로 저장 + 버튼 보이기
-//             lastStart = startPick;
-//             lastEnd   = endPick;
-//             showKakaoBtn();
-//
-//             // (자동 새 탭 열기는 원하면 유지/삭제)
-//             // const url = buildKakaoRouteUrl(startPick, endPick, 'transit');
-//             // window.open(url, '_blank', 'noopener');
-//         });
-//     });
-// });
-
-// // 출발/도착 스왑
-// document.getElementById('swapRouteBtn')?.addEventListener('click', () => {
-//     const sInput = document.getElementById('startInput');
-//     const eInput = document.getElementById('endInput');
-//     [sInput.value, eInput.value] = [eInput.value, sInput.value];
-//     [startPick, endPick] = [endPick, startPick];
-//     if (startPick && endPick) drawRoutePreview(startPick, endPick);
-//     hideKakaoBtn(); // ← 선택
-// });
-
 // 오토컴플리트 바인딩
 bindAutocomplete(
     document.getElementById('startInput'),
@@ -1867,3 +1813,47 @@ function renderTransitOptions(container, routes, s, e) {
     }).join('');
 }
 
+(function initBackNav() {
+    if (window.__backNavBound) return;
+    window.__backNavBound = true;
+
+    // 쿼리로 들어온 tab 값은 세션에 보관 (fallback 용)
+    try {
+        const url = new URL(window.location.href);
+        const tab = url.searchParams.get('tab');
+        if (tab) sessionStorage.setItem('myMatchingActiveTab', tab);
+    } catch (_) {}
+
+    // 실제 이동 함수 (HTML의 onclick에서 호출)
+    window.goBackToMyMatching = function (e) {
+        e?.preventDefault?.();
+
+        // 깔끔한 종료 (선택: 정의돼 있으면 호출)
+        try { typeof disconnectWebSocket === 'function' && disconnectWebSocket(); } catch (_) {}
+
+        const ref = document.referrer || '';
+        let tab = '';
+        try {
+            const url = new URL(window.location.href);
+            tab = url.searchParams.get('tab') ||
+                sessionStorage.getItem('myMatchingActiveTab') || '';
+        } catch (_) {}
+
+        // 히스토리가 마이페이지면 그 URL로 (상태/스크롤 복원 가능)
+        if (ref.includes('/mypage/my-matching')) {
+            window.location.href = ref;
+            return false;
+        }
+
+        // 아니면 안전하게 기본 경로로 (탭 복원 시도)
+        const target = '/mypage/my-matching' + (tab ? `?activeTab=${encodeURIComponent(tab)}` : '');
+        window.location.href = target;
+        return false;
+    };
+
+    // 혹시 onclick을 안 쓰는 버튼도 커버 (아이콘/텍스트 내부 클릭 포함)
+    document.addEventListener('click', (ev) => {
+        const btn = ev.target.closest('.back-btn, #backToMyMatchingBtn, [data-act="back"]');
+        if (btn) return window.goBackToMyMatching(ev);
+    });
+})();

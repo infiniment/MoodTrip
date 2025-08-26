@@ -47,7 +47,7 @@ public interface AttractionService {
     //관리자 감정 매핑 검색
     Page<Attraction> searchAttractions(String keyword, int page, int size);
 
-   List<AttractionCardDTO> findAttractionsByEmotionTag(Integer tagId, int limit);
+    List<AttractionCardDTO> findAttractionsByEmotionTag(Integer tagId, int limit);
 
     // 카드/초기 로딩
     List<AttractionCardDTO> findAttractionsByEmotionIds(List<Integer> emotionIds);

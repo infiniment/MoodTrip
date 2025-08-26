@@ -232,12 +232,13 @@ public class AttractionController {
     }
 
     @GetMapping("/content/{contentId}/detail")
-    public ResponseEntity<AttractionDetailResponse> getDetail(@PathVariable long contentId) {
+    public ResponseEntity<AttractionDetailResponse> getDetail(@PathVariable("contentId") long contentId) {
         return ResponseEntity.ok(attractionService.getDetailResponse(contentId));
     }
 
+
     @GetMapping("/content/{contentId}/emotion-tags")
-    public ResponseEntity<List<String>> getEmotionTags(@PathVariable long contentId) {
+    public ResponseEntity<List<String>> getEmotionTags(@PathVariable("contentId") long contentId) {
         return ResponseEntity.ok(attractionService.getEmotionTagNames(contentId));
     }
 }

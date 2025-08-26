@@ -40,7 +40,7 @@ public class EmotionService {
 
 
     public List<Emotion> getAllEmotions() {
-        return emotionRepository.findAll(); // EmotionRepository를 사용하여 모든 Emotion 엔티티 조회
+        return emotionRepository.findAll();
     }
 
 }
