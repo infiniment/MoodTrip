@@ -326,3 +326,27 @@ function toggleWishlist(itemId, itemData) {
 function isWishlisted(itemId) {
     return wishlistState.wishlistItems.some(item => item.id === itemId);
 }
+
+
+// 찜 버튼 클릭 이벤트 처리
+$(document).on("click", ".heart-button.active", function(event) {
+    event.preventDefault();
+    const attractionId = $(this).data("attraction-id");
+    const button = $(this);
+
+    $.ajax({
+        url: "/api/wishlist/" + attractionId, // 찜 삭제 API 경로
+        type: "DELETE",
+        success: function(response) {
+            console.log(response);
+            alert("찜을 취소했습니다.");
+            // 성공 시 버튼의 'active' 클래스 제거
+            button.removeClass("active");
+            // 여기에 SVG 색상을 변경하는 로직을 추가할 수 있습니다.
+        },
+        error: function(err) {
+            console.error(err);
+            alert("찜 취소에 실패했습니다.");
+        }
+    });
+});
