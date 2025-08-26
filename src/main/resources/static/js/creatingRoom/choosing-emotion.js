@@ -2,7 +2,7 @@
 let selectedEmotions = [];
 
 // DOM 로드 후 실행
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function () {
     const hasPeople = !!localStorage.getItem('selected_people');
     const hasName   = !!localStorage.getItem('room_name');
     const hasIntro  = !!localStorage.getItem('room_description');
@@ -10,8 +10,12 @@ document.addEventListener('DOMContentLoaded', function() {
         alert('먼저 기본 정보를 입력해주세요.');
         window.location.replace('/companion-rooms/create');
     }
+
     initializeCategoryButtons();
     restoreTemporaryEmotions();
+
+    await waitForEmotionData();
+
     applyEmotionPrefill();
     initializeNextButton();
 });
@@ -30,31 +34,22 @@ document.addEventListener('click', (e) => {
 
 // 프리필 감정 자동 적용(최대 3개, 이미 선택한 건 유지)
 function applyEmotionPrefill() {
-    // 이미 사용자가 뭔가 골라놓았으면 건드리지 않음(뒤로가기 등 중복 적용 방지)
     if (selectedEmotions.length > 0) return;
 
-    const p = getRoomPrefill();
+    const p = getRoomPrefill({ consume: false });
     if (!p || !Array.isArray(p.emotions) || p.emotions.length === 0) return;
 
-    // 최대 3개까지만 채움
     const remain = Math.max(0, 3 - selectedEmotions.length);
-    if (remain === 0) return;
-
     p.emotions.slice(0, remain).forEach(name => {
         const em = findEmotionByName(name);
         if (em) addEmotionTag(em, 'preset');
     });
 
-    // 현재 보이는 카테고리 그리드에 체크박스가 있다면 체크 상태와 동기화
-    document.querySelectorAll('#emotionTagsGrid input.emotion-checkbox').forEach(chk => {
-        const id = (chk.id || '').replace('emotion-', '');
-        if (selectedEmotions.some(e => String(e.id) === id)) chk.checked = true;
-    });
-
     updateSelectedEmotionsDisplay();
     updateCategoryButtonBadges();
-}
 
+    console.log('[prefill] applied:', selectedEmotions.map(e => e.text)); // ← 확인용
+}
 // 상세 페이지에서 sessionStorage에 저장한 프리필 읽기
 function getRoomPrefill(opts = { consume: true }) {
     try {
@@ -75,14 +70,21 @@ function getRoomPrefill(opts = { consume: true }) {
 
 // emotionCategoryData 안에서 '감정 이름'으로 태그(id, 이름) 찾기
 function findEmotionByName(name) {
-    const target = String(name || '').trim().toLowerCase();
+    // '#기쁨 ' 같은 입력도 맞춰지도록 정규화
+    const norm = (s) => String(s || '')
+        .replace(/^#/, '')        // 앞의 # 제거
+        .replace(/\s+/g, '')      // 공백 제거
+        .trim()
+        .toLowerCase();
+
+    const target = norm(name);
+
     for (const cat of (window.emotionCategoryData || [])) {
-        const em = (cat.emotions || []).find(e => {
-            const now = String(e.tagName || e.name || e.text || '')
-                .trim().toLowerCase();
+        const hit = (cat.emotions || []).find(e => {
+            const now = norm(e.tagName || e.name || e.text || '');
             return now === target;
         });
-        if (em) return { id: em.tagId ?? em.id, text: em.tagName ?? em.text };
+        if (hit) return { id: hit.tagId ?? hit.id, text: hit.tagName ?? hit.text };
     }
     return null;
 }
@@ -390,9 +392,21 @@ function initializeNextButton() {
 
 // 다음 페이지로 전달할 감정 데이터 저장
 function saveEmotionsForNextPage() {
+    // 2-1) 기존처럼 개별 저장 (필요 시 사용)
     localStorage.setItem('selected_emotions', JSON.stringify(selectedEmotions));
     sessionStorage.setItem('selected_emotions', JSON.stringify(selectedEmotions));
-    console.log('다음 페이지로 전달할 감정 데이터 저장 완료:', selectedEmotions);
+
+    // 2-2) room_prefill도 갱신해서 다음 스텝에서 한 방에 쓰도록
+    const prev = getRoomPrefill({ consume: false }) || {};
+    const payload = {
+        source: 'from-emotion',
+        attraction: prev.attraction || null,                 // 상세에서 넘어온 관광지 유지
+        emotions: selectedEmotions.map(e => e.text)          // 현재 선택한 감정 이름들
+    };
+    sessionStorage.setItem('room_prefill', JSON.stringify(payload));
+    localStorage.setItem('room_prefill', JSON.stringify(payload));
+
+    console.log('room_prefill updated for next step:', payload);
 }
 
 // 다음 페이지로 이동
@@ -418,6 +432,19 @@ function getSelectedEmotionsFromPreviousPage() {
         console.error('저장된 감정 데이터 불러오기 실패:', e);
         return [];
     }
+}
+
+function waitForEmotionData(maxWaitMs = 1500) {
+    return new Promise(resolve => {
+        const t0 = Date.now();
+        (function tick() {
+            if (Array.isArray(window.emotionCategoryData) && window.emotionCategoryData.length > 0) {
+                return resolve(true);
+            }
+            if (Date.now() - t0 > maxWaitMs) return resolve(false); // 타임아웃이면 그냥 진행
+            setTimeout(tick, 50);
+        })();
+    });
 }
 
 // 감정 데이터 정리
