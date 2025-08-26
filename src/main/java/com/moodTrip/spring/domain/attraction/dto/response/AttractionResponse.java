@@ -13,6 +13,7 @@ import java.util.List;
 @Builder
 public class AttractionResponse {
     private Long id;
+    private Long attractionId;
     private Long contentId;
     private Integer contentTypeId;
     private String title;
@@ -52,6 +53,10 @@ public class AttractionResponse {
                 .createdTime(a.getCreatedTime())
                 .modifiedTime(a.getModifiedTime())
                 .build();
+    }
+
+    public Long getAttractionId() {
+        return id;
     }
 }
 

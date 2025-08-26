@@ -16,8 +16,10 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeNextButton();
     initializeBackButton();
 
+    restoreSelectionOnLoad();
+
     // 나중에 관광지 상세 페이지에서 방만들기 버튼을 눌렀을 때 해당 관광지에 대한 정보 localstorage로 받았을 때 처리
-    preselectDestinationIfNeeded();
+    preselectDestinationIfNeeded({ consume: false });
 
     runSearchPaged('', 0); // 전체 목록 1페이지(9개) 서버에서 받아오기
 });
@@ -308,7 +310,8 @@ async function runSearchPaged(q, page = 0) {
         renderAttractions(data.content);
         initializeDestinationSelection();
         setupServerPagination(data.totalPages, data.page, data.totalElements);
-        preselectDestinationIfNeeded();
+        preselectDestinationIfNeeded({ consume: false });
+        recheckRadioFromSelected();
     } catch (e) {
         console.error(e);
         grid.innerHTML = `<div class="empty">검색 중 오류가 발생했습니다.</div>`;
@@ -423,17 +426,27 @@ function applyFilter(filterType) {
 function updateSelectedDestinationDisplay() {
     const container = document.getElementById('selectedDestinationContainer');
     const infoContainer = document.getElementById('selectedDestinationInfo');
-
     if (!selectedDestination || !infoContainer) {
         if (container) container.style.display = 'none';
         return;
     }
 
-    const imgSrc   = selectedDestination.image || '/image/creatingRoom/landscape-placeholder-svgrepo-com.svg';
-    const category = selectedDestination.category && selectedDestination.category !== 'null'
-        ? selectedDestination.category : '';
-    const desc     = selectedDestination.description && selectedDestination.description !== 'null'
-        ? selectedDestination.description : '';
+    const imgSrc = selectedDestination.image || '/image/creatingRoom/landscape-placeholder-svgrepo-com.svg';
+
+    // ① address/tel 을 우선 fallback 으로 사용
+    const address =
+        selectedDestination.address ||
+        [selectedDestination.addr1, selectedDestination.addr2].filter(Boolean).join(' ').trim();
+
+    const category =
+        (selectedDestination.category && selectedDestination.category !== 'null')
+            ? selectedDestination.category
+            : address || '';                           // ← addr 없으면 빈값
+
+    const desc =
+        (selectedDestination.description && selectedDestination.description !== 'null')
+            ? selectedDestination.description
+            : (selectedDestination.tel || '');         // ← tel 을 설명으로 fallback
 
     infoContainer.innerHTML = `
     <div class="destination-image">
@@ -446,7 +459,6 @@ function updateSelectedDestinationDisplay() {
       ${desc ? `<div class="destination-description">${desc}</div>` : ``}
     </div>
   `;
-
     container.style.display = 'block';
 }
 
@@ -488,27 +500,28 @@ function goToPreviousPage() {
 
 // 다음 페이지로 전달할 관광지 데이터 저장
 function saveDestinationForNextPage() {
-    const combinedData = {
+    const payload = {
         emotions: previousEmotions,
-        destination: selectedDestination,
+        destination: {
+            ...selectedDestination,
+            // 안전하게 address/tel이 비어 있으면 다시 구성
+            address:
+                selectedDestination.address ||
+                [selectedDestination.addr1, selectedDestination.addr2].filter(Boolean).join(' ').trim(),
+            tel: selectedDestination.tel || ''
+        },
         timestamp: new Date().toISOString()
     };
-    
-    // 로컬 스토리지에 저장
-    localStorage.setItem('selected_destination', JSON.stringify(selectedDestination));
-    localStorage.setItem('room_creation_data', JSON.stringify(combinedData));
-    
-    // 세션 스토리지에도 백업 저장
-    sessionStorage.setItem('selected_destination', JSON.stringify(selectedDestination));
-    sessionStorage.setItem('room_creation_data', JSON.stringify(combinedData));
 
-    console.log('[저장 완료] selectedDestination:', selectedDestination);
-    console.log('[저장 완료] room_creation_data:', combinedData);
-    console.log('다음 페이지로 전달할 데이터 저장 완료:', combinedData);
+    localStorage.setItem('selected_destination', JSON.stringify(payload.destination));
+    localStorage.setItem('room_creation_data', JSON.stringify(payload));
+    sessionStorage.setItem('selected_destination', JSON.stringify(payload.destination));
+    sessionStorage.setItem('room_creation_data', JSON.stringify(payload));
 }
 
 // 다음 페이지로 이동
 function goToNextPage() {
+    localStorage.removeItem('temp_selected_destination');
     window.location.href = '/companion-rooms/schedule';
 }
 
@@ -608,70 +621,120 @@ function filterByMood(mood) {
     closeHelpModal();
 }
 
-function preselectDestinationIfNeeded() {
+
+async function preselectDestinationIfNeeded(opts = { consume: false }) {
     const raw = sessionStorage.getItem('room_prefill') || localStorage.getItem('room_prefill');
-    if (raw) {
+    if (!raw) return;
+
+    let pf;
+    try { pf = JSON.parse(raw); } catch { pf = null; }
+    if (!pf) return;
+
+    const cid = Number(pf.contentId ?? pf.attraction?.contentId);
+    if (!Number.isFinite(cid)) return;
+
+    // 1) 그리드에 이미 렌더된 카드가 있으면 그대로 체크
+    let metaEl = document.querySelector(`.destination-card .hidden[data-content-id="${cid}"]`);
+    if (metaEl) {
+        const d = metaEl.dataset;
+        const cardInfo = metaEl.closest('.destination-card')?.querySelector('.destination-info');
+        const cardDesc = cardInfo?.querySelector('.destination-description')?.textContent?.trim() || '';
+        if (radio) radio.checked = true;
+
+        selectedDestination = {
+            attractionId: d.attractionId ? Number(d.attractionId) : null,
+            contentId:    cid,
+            name:         d.title || '',
+            image:        d.img || '',
+            addr1:        d.addr1 || '',
+            addr2:        d.addr2 || '',
+            address:      [d.addr1, d.addr2].filter(Boolean).join(' ').trim(),
+            category:     d.addr1 || '',
+            description:  cardDesc || d.addr2 || '',
+            tel:          cardDesc || '',   // 있으면 저장(없으면 '')
+            mapX:         d.mapx ? Number(d.mapx) : null,
+            mapY:         d.mapy ? Number(d.mapy) : null,
+            contentTypeId:d.type ? Number(d.type) : null,
+        };
+
+        // hidden 채우기
+        fillHiddenFromMeta(metaEl);
+        updateSelectedDestinationDisplay();
+    } else {
+        // 2) 카드가 현재 페이지에 없으면 상세 API로 보강해서 선택 영역만 채움
         try {
-            const a = JSON.parse(raw)?.attraction;
-            if (a && a.attractionId) {
-                // 카드가 없더라도 UI/hidden 채워지도록 selectedDestination 직접 세팅
+            const r = await fetch(`/api/attractions/content/${cid}/detail`, { headers: { Accept: "application/json" } });
+            if (r.ok) {
+                const d = await r.json(); // AttractionDetailResponse { title,image,tel,addr,... }
+
                 selectedDestination = {
-                    attractionId: a.attractionId,
-                    name: a.title || '',
-                    category: a.addr1 || '',
-                    description: a.addr2 || '',
-                    image: a.firstImage || '',
-                    contentId: a.contentId ?? null,
-                    addr1: a.addr1 || '',
-                    addr2: a.addr2 || '',
-                    mapX: a.mapX ?? null, // 경도
-                    mapY: a.mapY ?? null, // 위도
-                    contentTypeId: a.contentTypeId ?? null,
+                    attractionId: null,          // 필요하면 여기에 추가 조회
+                    contentId: cid,
+                    name: d.title || '',
+                    image: d.image || '',
+                    address: d.addr || '',
+                    tel: d.tel || '',
+                    // 선택 UI에서 바로 보이도록 category/description 채워줌
+                    category: d.addr || '',
+                    description: d.tel || ''
                 };
 
-                // hidden input 채우기
+                // hidden 채우기용 더미 dataset 생성
                 const dummy = document.createElement('div');
-                Object.assign(dummy, { dataset: {} });
-                dummy.dataset.attractionId = String(selectedDestination.attractionId);
-                dummy.dataset.title = selectedDestination.name;
-                dummy.dataset.addr1 = selectedDestination.addr1;
-                dummy.dataset.addr2 = selectedDestination.addr2;
-                dummy.dataset.img   = selectedDestination.image;
-                dummy.dataset.mapx  = selectedDestination.mapX;
-                dummy.dataset.mapy  = selectedDestination.mapY;
-                dummy.dataset.contentId = selectedDestination.contentId;
-                dummy.dataset.type  = selectedDestination.contentTypeId;
+                dummy.dataset.attractionId = selectedDestination.attractionId || '';
+                dummy.dataset.contentId    = String(cid);
+                dummy.dataset.title        = selectedDestination.name || '';
+                dummy.dataset.addr1        = selectedDestination.address || '';
+                dummy.dataset.addr2        = '';             // 필요 시 파싱해서 분리
+                dummy.dataset.img          = selectedDestination.image || '';
+                dummy.dataset.mapx         = '';
+                dummy.dataset.mapy         = '';
+                dummy.dataset.type         = '';
                 fillHiddenFromMeta(dummy);
 
                 updateSelectedDestinationDisplay();
-
-                // 현재 페이지에 해당 카드가 있다면 라디오까지 체크
-                const metaEl = document.querySelector(
-                    `.destination-card .hidden[data-attraction-id="${selectedDestination.attractionId}"]`
-                );
-                if (metaEl) {
-                    const radio = metaEl.closest('.destination-card')?.querySelector('.destination-radio');
-                    if (radio) radio.checked = true;
-                }
             }
-        } catch(e) { console.warn('room_prefill parse fail', e); }
-        sessionStorage.removeItem('room_prefill');
-        localStorage.removeItem('room_prefill');
-        return;
+        } catch (e) {
+            console.warn('prefill by contentId failed', e);
+        }
     }
 
-    // ② 이전 방식 호환: 이름으로 저장된 경우(가능하면 곧 제거)
-    const preselectedName = localStorage.getItem('preselected_destination_name');
-    if (preselectedName) {
-        const radios = document.querySelectorAll('.destination-radio');
-        for (const radio of radios) {
-            if (radio.value === preselectedName) {
-                radio.checked = true;
-                radio.dispatchEvent(new Event('change'));
-                break;
-            }
-        }
-        localStorage.removeItem('preselected_destination_name');
+    // 원하면 즉시 소비
+    if (opts.consume) {
+        sessionStorage.removeItem('room_prefill');
+        localStorage.removeItem('room_prefill');
+    }
+}
+
+function restoreSelectionOnLoad() {
+    const raw =
+        sessionStorage.getItem('selected_destination') ||
+        localStorage.getItem('selected_destination')  ||
+        localStorage.getItem('temp_selected_destination');
+
+    if (!raw) return;
+    try {
+        selectedDestination = JSON.parse(raw);
+        updateSelectedDestinationDisplay();
+    } catch (e) {
+        console.warn('restoreSelectionOnLoad parse fail', e);
+    }
+}
+
+function recheckRadioFromSelected() {
+    if (!selectedDestination) return;
+
+    const { contentId, attractionId } = selectedDestination;
+    let metaEl = null;
+    if (contentId) {
+        metaEl = document.querySelector(`.destination-card .hidden[data-content-id="${contentId}"]`);
+    }
+    if (!metaEl && attractionId) {
+        metaEl = document.querySelector(`.destination-card .hidden[data-attraction-id="${attractionId}"]`);
+    }
+    if (metaEl) {
+        const radio = metaEl.closest('.destination-card')?.querySelector('.destination-radio');
+        if (radio) radio.checked = true;
     }
 }
 

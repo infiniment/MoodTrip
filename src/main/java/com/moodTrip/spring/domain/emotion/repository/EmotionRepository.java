@@ -19,4 +19,5 @@ public interface EmotionRepository extends JpaRepository<Emotion, Long> {
         order by e.displayOrder asc, e.tagName asc
     """)
     List<Emotion> findByCategoryId(@Param("categoryId") Long categoryId);
+
 }

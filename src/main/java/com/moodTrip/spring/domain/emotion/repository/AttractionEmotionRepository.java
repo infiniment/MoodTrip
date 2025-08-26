@@ -34,6 +34,15 @@ public interface AttractionEmotionRepository extends JpaRepository<AttractionEmo
          """)
     List<String> findActiveEmotionNamesByContentId(@Param("contentId") long contentId);
 
-
+    @Query("""
+        select e.tagName
+        from AttractionEmotion ae
+        join ae.emotion e
+        join ae.attraction a
+        where a.contentId = :contentId
+          and ae.isActive = true
+        order by e.displayOrder asc
+        """)
+    List<String> findTagNamesByContentId(@Param("contentId") long contentId);
 
 }
