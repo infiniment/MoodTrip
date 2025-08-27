@@ -224,19 +224,19 @@ function handleInputKeyPress(event) {
 }
 
 // 하트 버튼 토글 기능
-function toggleLike(button) {
-    button.classList.toggle('liked');
-
-    if (button.classList.contains('liked')) {
-        button.innerHTML = '♥'; // 채워진 하트
-        button.style.color = '#ff4757'; // 빨간색
-        button.style.background = 'rgba(255, 255, 255, 0.95)';
-    } else {
-        button.innerHTML = '♡'; // 빈 하트
-        button.style.color = '#005792'; // 원래 색상
-        button.style.background = 'rgba(255, 255, 255, 0.9)';
-    }
-}
+// function toggleLike(button) {
+//     button.classList.toggle('liked');
+//
+//     if (button.classList.contains('liked')) {
+//         button.innerHTML = '♥'; // 채워진 하트
+//         button.style.color = '#ff4757'; // 빨간색
+//         button.style.background = 'rgba(255, 255, 255, 0.95)';
+//     } else {
+//         button.innerHTML = '♡'; // 빈 하트
+//         button.style.color = '#005792'; // 원래 색상
+//         button.style.background = 'rgba(255, 255, 255, 0.9)';
+//     }
+// }
 
 // 모든 태그 초기화
 function clearAllTags() {
@@ -263,11 +263,21 @@ function renderResults(attractions) {
     }
 
     attractions.forEach(attr => {
+        // 서버에서 isLikedByCurrentUser와 같은 이름으로 현재 사용자의 찜 상태를 전달받아야 합니다.
+        const isLiked = attr.isLikedByCurrentUser || false;
+
         const cardHTML = `
             <div class="destination-card">
                 <div class="card-image">
                     <img src="${attr.firstImage || '/static/image/emotion-search/default-image.png'}" alt="${attr.title}" />
-                    <button class="like-btn" onclick="toggleLike(this)">♡</button>
+                    
+                    <!-- [수정된 부분] -->
+                    <!-- 1. data-attraction-id 속성으로 관광지 ID를 저장 -->
+                    <!-- 2. isLiked 값에 따라 'liked' 클래스와 하트 아이콘(♥/♡) 결정 -->
+                    <!-- 3. onclick 속성 제거 -->
+                    <button class="like-btn ${isLiked ? 'liked' : ''}" data-attraction-id="${attr.attractionId}">
+                        ${isLiked ? '♥' : '♡'}
+                    </button>
                 </div>
                 <div class="card-content">
                     <div class="destination-header">
@@ -280,6 +290,7 @@ function renderResults(attractions) {
         `;
         destinationGrid.insertAdjacentHTML('beforeend', cardHTML);
     });
+
 }
 
 // 페이지 로드 시 실행
@@ -288,6 +299,18 @@ document.addEventListener('DOMContentLoaded', function() {
     updateTagCounter();
     updateInputState();
 
+    const destinationGrid = document.querySelector('.destination-grid');
+    if (destinationGrid) {
+        destinationGrid.addEventListener('click', function(event) {
+            // 클릭된 요소가 .like-btn이 맞는지 확인
+            const likeButton = event.target.closest('.like-btn');
+            if (likeButton) {
+                event.preventDefault();
+                event.stopPropagation();
+                handleLikeClick(likeButton); // 2단계에서 추가한 함수 호출
+            }
+        });
+    }
     // 감정 태그 클릭 시 ID와 이름을 함께 사용하여 태그 추가
     document.querySelectorAll('.emotion-tag').forEach(tag => {
         tag.addEventListener('click', function() {
@@ -320,14 +343,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // 하트 버튼 이벤트 리스너 추가
-    const likeButtons = document.querySelectorAll('.like-btn');
-    likeButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            toggleLike(this);
-        });
-    });
+    // const likeButtons = document.querySelectorAll('.like-btn');
+    // likeButtons.forEach(button => {
+    //     button.addEventListener('click', function(e) {
+    //         e.preventDefault();
+    //         e.stopPropagation();
+    //         toggleLike(this);
+    //     });
+    // });
+
 
     // 정렬 옵션 클릭 이벤트
     const sortOptions = document.querySelectorAll('.sort-option');
@@ -383,3 +407,42 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 });
+
+async function handleLikeClick(button) {
+    const attractionId = button.dataset.attractionId;
+    if (!attractionId) {
+        console.error('Attraction ID not found!');
+        return;
+    }
+
+    const isLiked = button.classList.contains('liked');
+    const method = isLiked ? 'DELETE' : 'POST';
+    const url = `/api/likes/${attractionId}`; // 백엔드 찜 API 주소
+
+    try {
+        const response = await fetch(url, {
+            method: method,
+            // headers: { 'X-CSRF-TOKEN': '...' } // Spring Security CSRF 보호 사용 시 필요
+        });
+
+        if (response.ok) {
+            // 서버 요청 성공 시, 버튼 UI 업데이트
+            button.classList.toggle('liked');
+            if (button.classList.contains('liked')) {
+                button.innerHTML = '♥';
+                button.style.color = '#ff4757';
+            } else {
+                button.innerHTML = '♡';
+                button.style.color = '#005792'; // 기본 색상으로 변경
+            }
+        } else {
+            // 서버가 오류를 반환한 경우
+            const errorData = await response.json().catch(() => null);
+            const errorMessage = errorData?.message || '요청에 실패했습니다.';
+            showNotification(errorMessage, 'warning');
+        }
+    } catch (error) {
+        console.error('Like Error:', error);
+        showNotification('네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'warning');
+    }
+}

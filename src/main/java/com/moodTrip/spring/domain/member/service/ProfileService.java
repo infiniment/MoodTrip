@@ -1,5 +1,10 @@
 package com.moodTrip.spring.domain.member.service;
 
+import com.moodTrip.spring.domain.attraction.dto.response.AttractionSearchResponseDto;
+import com.moodTrip.spring.domain.attraction.entity.Attraction;
+import com.moodTrip.spring.domain.attraction.entity.UserAttraction;
+import com.moodTrip.spring.domain.attraction.repository.AttractionRepository;
+import com.moodTrip.spring.domain.attraction.repository.UserAttractionRepository;
 import com.moodTrip.spring.domain.member.dto.request.IntroduceUpdateRequest;
 import com.moodTrip.spring.domain.member.dto.request.ProfileImageUpdateRequest;
 import com.moodTrip.spring.domain.member.dto.response.ProfileResponse;
@@ -9,6 +14,8 @@ import com.moodTrip.spring.domain.member.repository.MemberRepository;
 import com.moodTrip.spring.domain.member.repository.ProfileRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +29,8 @@ public class ProfileService {
 
     private final ProfileRepository profileRepository;
     private final MemberRepository memberRepository;
+    private final UserAttractionRepository userAttractionRepository;
+    private final AttractionRepository attractionRepository;
 
     private static final String DEFAULT_IMAGE = "/image/fix/moodtrip.png";
 
@@ -215,5 +224,29 @@ public class ProfileService {
         return resp;
     }
 
+
+
+    public Page<AttractionSearchResponseDto> getMyWishlist(Long memberPk, Pageable pageable) {
+
+        // 1. 페이지네이션 정보와 함께 찜 목록을 조회합니다.
+        Page<UserAttraction> userAttractionsPage = userAttractionRepository.findByMemberMemberPkWithAttraction(memberPk, pageable);
+
+        // 2. 조회된 Page<UserAttraction>을 Page<AttractionSearchResponseDto>로 변환합니다.
+        // .map() 메서드를 사용하면 페이징 정보(총 페이지 수, 현재 페이지 등)는 그대로 유지됩니다.
+        return userAttractionsPage.map(userAttraction ->
+                // 찜 목록 페이지이므로 isLiked는 항상 true입니다.
+                new AttractionSearchResponseDto(userAttraction.getAttraction(), true)
+        );
+    }
+    public void removeLike(Long memberPk, Long attractionId) {
+        // 1. 회원과 관광지 엔티티를 조회합니다.
+        Member member = memberRepository.findById(memberPk)
+                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다. ID: " + memberPk));
+        Attraction attraction = attractionRepository.findById(attractionId)
+                .orElseThrow(() -> new IllegalArgumentException("관광지를 찾을 수 없습니다. ID: " + attractionId));
+
+        // 2. Repository를 통해 조건에 맞는 찜 기록을 삭제합니다.
+        userAttractionRepository.deleteByMemberAndAttraction(member, attraction);
+    }
 
 }
