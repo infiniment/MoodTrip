@@ -598,8 +598,6 @@ async function submitApplication() {
     }
 }
 
-// 방 신고 관련 함수들 (API 연동)
-
 // 방 신고하기 (카드에서만)
 function reportRoomFromCard(roomId) {
     const room = roomsData.find(r => r.id === roomId);
