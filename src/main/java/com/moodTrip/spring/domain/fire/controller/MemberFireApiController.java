@@ -21,12 +21,8 @@ public class MemberFireApiController {
             @PathVariable Long roomId,
             @RequestBody MemberFireRequest request
     ) {
-        try {
-            MemberFireResponse response = memberFireService.reportMember(roomId, request);
-            return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
-            log.error("❌ 신고 실패: {}", e.getMessage());
-            return ResponseEntity.badRequest().body(MemberFireResponse.failure(e.getMessage()));
-        }
+        MemberFireResponse response = memberFireService.reportMember(roomId, request);
+        return ResponseEntity.ok(response); // 항상 200 OK
     }
+
 }

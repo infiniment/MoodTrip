@@ -16,7 +16,7 @@ let currentRegionFilter = 'all';
 let currentDetailRoomId = null;
 let currentReportRoomId = null;
 
-// 🔥 기존 변수들 아래에 추가
+// 기존 변수들 아래에 추가
 let currentPageNew = 1;
 const itemsPerPageNew = 5; // 방 카드는 5개씩 표시
 let totalItemsNew = 0;
@@ -31,7 +31,7 @@ const CACHE_DURATION_NEW = 5000; // 5초 캐시
 
 // 서버에서 방 목록 가져오기
 async function fetchRoomsFromServer(params = {}) {
-    console.log('🔍 서버에서 방 목록 가져오는 중...', params);
+    console.log('서버에서 방 목록 가져오는 중...', params);
 
     // URL 파라미터 생성
     const urlParams = new URLSearchParams();
@@ -41,18 +41,18 @@ async function fetchRoomsFromServer(params = {}) {
     if (params.urgent) urlParams.append('urgent', params.urgent);
 
     const url = `${API_BASE_URL}${urlParams.toString() ? '?' + urlParams.toString() : ''}`;
-    console.log('📡 API 호출 URL:', url);
+    console.log('API 호출 URL:', url);
 
     const response = await fetch(url);
     const data = await response.json();
 
-    console.log('✅ 서버에서 받은 데이터:', data);
+    console.log('서버에서 받은 데이터:', data);
     return data;
 }
 
-// 🔥 기존 함수에서 이 부분만 수정
+// 기존 함수에서 이 부분만 수정
 async function loadRoomsData(params = {}) {
-    // 🔥 추가: 캐시 무효화
+    // 추가: 캐시 무효화
     roomCardsCache = null;
 
     // 서버에서 데이터 가져오기 (기존 코드 유지)
@@ -66,15 +66,12 @@ async function loadRoomsData(params = {}) {
     renderRooms(); // 이미 수정된 함수 호출
     updateResultsCount();
 
-    // 🔥 제거: updatePagination(); <- 이 줄 삭제
-    // 🔥 제거: 기존 페이징 관련 코드들 모두 삭제
-
-    console.log('✅ 방 목록 로드 완료:', data.length + '개');
+    console.log('방 목록 로드 완료:', data.length + '개');
 }
 
 // DOM 로드 후 초기화
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 페이지 로드 - 초기화 시작');
+    console.log('페이지 로드 - 초기화 시작');
 
     initializeEventListeners();
     loadRoomsData(); // 기본 로드
@@ -138,7 +135,34 @@ function initializeEventListeners() {
         validateReportForm();
     }
 
-    console.log('🔥 모든 이벤트 리스너 등록 완료');
+    // 새로 추가: 글자 수 카운터 초기화
+    initializeMessageCounter();
+
+    console.log('모든 이벤트 리스너 등록 완료');
+}
+
+// 새로 추가: 글자 수 카운터 기능 추가
+function initializeMessageCounter() {
+    const messageInput = document.getElementById('applicationMessage');
+    const counter = document.getElementById('messageLength');
+
+    if (messageInput && counter) {
+        messageInput.addEventListener('input', function() {
+            const length = this.value.length;
+            counter.textContent = length;
+
+            const counterContainer = counter.parentElement;
+
+            // 300자 넘으면 경고 스타일
+            if (length > 300) {
+                counterContainer.classList.add('warning');
+                this.style.borderColor = '#dc3545';
+            } else {
+                counterContainer.classList.remove('warning');
+                this.style.borderColor = '#ced4da';
+            }
+        });
+    }
 }
 
 // 검색 처리 (서버 API 호출)
@@ -147,7 +171,7 @@ async function handleSearch() {
     if (!searchInput) return;
 
     const searchTerm = searchInput.value.trim();
-    console.log('🔍 검색 요청:', searchTerm);
+    console.log('검색 요청:', searchTerm);
 
     // 서버에서 검색 결과 가져오기
     await loadRoomsData({ search: searchTerm });
@@ -176,7 +200,7 @@ async function applyFilters() {
         params.urgent = true;
     }
 
-    console.log('🔄 필터 적용:', params);
+    console.log('필터 적용:', params);
 
     // 서버에서 필터링된 데이터 가져오기
     await loadRoomsData(params);
@@ -193,7 +217,7 @@ function viewRoomDetail(roomId) {
         .then(roomData => {
             console.log('받은 방 데이터:', roomData); // 디버깅용 로그 추가
 
-            // ✅ 이미지 세팅
+            // 이미지 세팅
             const imgEl = document.getElementById('detailRoomImage');
             if (roomData.image) {
                 imgEl.src = roomData.image;
@@ -202,7 +226,7 @@ function viewRoomDetail(roomId) {
             }
             imgEl.alt = roomData.title || '방 이미지';
 
-            // 🔥 나머지 필드 세팅
+            // 나머지 필드 세팅
             document.getElementById('detailRoomTitle').textContent = roomData.title;
             const locationText = roomData.category || roomData.location;
             document.getElementById('detailRoomLocation').textContent = locationText;
@@ -213,7 +237,7 @@ function viewRoomDetail(roomId) {
             document.getElementById('detailRoomPeriod').textContent = roomData.createdDate;
             document.getElementById('detailRoomDesc').textContent = roomData.description;
 
-            // 🔥 새로 추가: 감정 태그 처리
+            // 새로 추가: 감정 태그 처리
             const tagsContainer = document.getElementById('detailRoomTags');
             console.log('감정 데이터:', roomData.emotions); // 디버깅용 로그
 
@@ -238,7 +262,6 @@ function viewRoomDetail(roomId) {
             alert('방 정보를 불러올 수 없습니다.');
         });
 }
-
 
 // 상세보기 모달 열기
 function openDetailModal(room) {
@@ -367,18 +390,18 @@ function setActivePeopleFilter(peopleFilter) {
     if (activeTab) activeTab.classList.add('active');
 }
 
-// 🔥 기존 코드를 이렇게 수정
+// 기존 코드를 이렇게 수정
 function renderRooms() {
     const roomList = document.getElementById('roomList');
     if (!roomList) return;
 
     if (filteredRooms.length === 0) {
         roomList.innerHTML = `
-            <div style="text-align: center; padding: 60px 20px; color: #64748b;">
-                <h3>검색 결과가 없습니다</h3>
-                <p>다른 키워드로 검색해보세요.</p>
-            </div>
-        `;
+           <div style="text-align: center; padding: 60px 20px; color: #64748b;">
+               <h3>검색 결과가 없습니다</h3>
+               <p>다른 키워드로 검색해보세요.</p>
+           </div>
+       `;
         hidePaginationControlsNew();
         return;
     }
@@ -406,12 +429,58 @@ function updateResultsCount() {
     }
 }
 
-// 방 입장 신청하기
+// 방 입장 신청하기 - 수정된 함수
 function applyRoom(roomId) {
+    console.log('방 입장 신청 - roomId:', roomId);
+
     const room = roomsData.find(r => r.id === roomId);
-    if (room) {
-        openApplicationModal(room);
+    if (!room) {
+        console.error('방 정보를 찾을 수 없습니다.');
+        return;
     }
+
+    // 방 정보 설정
+    document.getElementById('modalRoomTitle').textContent = room.title;
+    document.getElementById('modalRoomMeta').textContent = `${room.location} · ${room.date}`;
+
+    // 새로 추가: 현재 사용자의 프로필 자기소개 가져오기
+    loadCurrentUserProfile();
+
+    // 모달 열기
+    document.getElementById('applicationModal').style.display = 'flex';
+    document.getElementById('applicationModal').setAttribute('data-room-id', room.id);
+    document.body.style.overflow = 'hidden';
+}
+
+// 새로 추가: 현재 사용자 프로필 정보 로드
+function loadCurrentUserProfile() {
+    fetch('/api/v1/profiles/me', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('프로필 조회 실패');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // 프로필 자기소개 표시
+            const profileBioElement = document.getElementById('currentProfileBio');
+            if (profileBioElement) {
+                profileBioElement.textContent = data.profileBio || '반갑습니다';
+            }
+            console.log('프로필 자기소개 로드 완료:', data.profileBio);
+        })
+        .catch(error => {
+            console.error('프로필 로드 실패:', error);
+            const profileBioElement = document.getElementById('currentProfileBio');
+            if (profileBioElement) {
+                profileBioElement.textContent = '반갑습니다';
+            }
+        });
 }
 
 // 신청 모달 열기
@@ -431,7 +500,7 @@ function openApplicationModal(room) {
     document.body.style.overflow = 'hidden';
 }
 
-// 신청 모달 닫기
+// 신청 모달 닫기 - 수정된 함수
 function closeApplicationModal() {
     const modal = document.getElementById('applicationModal');
     if (!modal) return;
@@ -442,7 +511,20 @@ function closeApplicationModal() {
 
     // 폼 초기화
     const applicationMessage = document.getElementById('applicationMessage');
-    if (applicationMessage) applicationMessage.value = '';
+    const messageLength = document.getElementById('messageLength');
+
+    if (applicationMessage) {
+        applicationMessage.value = '';
+        applicationMessage.style.borderColor = '#ced4da';
+    }
+
+    if (messageLength) {
+        messageLength.textContent = '0';
+        const counterContainer = messageLength.parentElement;
+        if (counterContainer) {
+            counterContainer.classList.remove('warning');
+        }
+    }
 }
 
 // 신청 제출 함수 - 실제 API 호출
@@ -473,7 +555,7 @@ async function submitApplication() {
     }
 
     try {
-        console.log('🚀 방 입장 신청 API 호출 시작 - roomId:', roomId);
+        console.log('방 입장 신청 API 호출 시작 - roomId:', roomId);
 
         // 실제 API 호출
         const response = await fetch(`${JOIN_API_BASE_URL}/${roomId}/join-requests`, {
@@ -488,7 +570,7 @@ async function submitApplication() {
 
         const result = await response.json();
 
-        console.log('✅ 방 입장 신청 API 응답:', result);
+        console.log('방 입장 신청 API 응답:', result);
 
         if (response.ok && result.success) {
             // 성공 시
@@ -504,7 +586,7 @@ async function submitApplication() {
         }
 
     } catch (error) {
-        console.error('❌ 방 입장 신청 API 오류:', error);
+        console.error('방 입장 신청 API 오류:', error);
         alert('네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
 
     } finally {
@@ -515,8 +597,6 @@ async function submitApplication() {
         }
     }
 }
-
-// 방 신고 관련 함수들 (API 연동)
 
 // 방 신고하기 (카드에서만)
 function reportRoomFromCard(roomId) {
@@ -596,8 +676,8 @@ async function submitReport() {
     }
 
     try {
-        console.log('🚀 방 신고 API 호출 시작 - roomId:', currentReportRoomId);
-        console.log('📋 신고 데이터:', {
+        console.log('방 신고 API 호출 시작 - roomId:', currentReportRoomId);
+        console.log('신고 데이터:', {
             roomId: currentReportRoomId,
             reportReason: reason,
             reportMessage: message
@@ -617,14 +697,14 @@ async function submitReport() {
 
         const result = await response.json();
 
-        console.log('✅ 방 신고 API 응답:', result);
+        console.log('방 신고 API 응답:', result);
 
         if (response.ok && result.success) {
             // 신고 성공
             alert(`"${room.title}" 방 신고가 접수되었습니다.\n${result.message}`);
             closeReportModal();
 
-            console.log('🔥 신고 완료 정보:', {
+            console.log('신고 완료 정보:', {
                 fireId: result.fireId,
                 roomTitle: result.roomTitle,
                 fireReason: result.fireReason,
@@ -635,11 +715,11 @@ async function submitReport() {
             // 신고 실패 (비즈니스 로직 오류)
             alert(result.message || '신고 접수 중 오류가 발생했습니다.');
 
-            console.warn('⚠️ 신고 실패:', result);
+            console.warn('신고 실패:', result);
         }
 
     } catch (error) {
-        console.error('❌ 방 신고 API 오류:', error);
+        console.error('방 신고 API 오류:', error);
 
         // 네트워크 오류인지 서버 오류인지 구분
         if (error.name === 'TypeError' && error.message.includes('fetch')) {
@@ -759,10 +839,10 @@ window.addEventListener('storage', function(e) {
     if (e.key === 'roomDataUpdate') {
         try {
             const updateData = JSON.parse(e.newValue);
-            console.log('📢 다른 탭에서 방 데이터 변경 감지:', updateData);
+            console.log('다른 탭에서 방 데이터 변경 감지:', updateData);
 
             if (updateData.type === 'MEMBER_LEFT') {
-                console.log(`🔄 방 ${updateData.roomTitle}에서 멤버 나가기 감지, 페이지 업데이트`);
+                console.log(`방 ${updateData.roomTitle}에서 멤버 나가기 감지, 페이지 업데이트`);
 
                 // 즉시 페이지 새로고침
                 showNotification('info', '방 정보가 업데이트되었습니다.');
@@ -800,7 +880,7 @@ function updateSpecificRoom(roomId) {
                 statusElement.style.background = '#10b981'; // 초록색으로 변경
             }
 
-            console.log(`✅ 방 ${roomId} 인원 업데이트: ${current} → ${newCurrent}`);
+            console.log(`방 ${roomId} 인원 업데이트: ${current} → ${newCurrent}`);
         }
     }
 }
@@ -810,17 +890,17 @@ function showNotification(type, message) {
     // 간단한 알림 구현
     const notification = document.createElement('div');
     notification.style.cssText = `
-       position: fixed;
-       top: 20px;
-       right: 20px;
-       background: ${type === 'info' ? '#3b82f6' : '#ef4444'};
-       color: white;
-       padding: 12px 20px;
-       border-radius: 6px;
-       z-index: 9999;
-       font-size: 14px;
-       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-   `;
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: ${type === 'info' ? '#3b82f6' : '#ef4444'};
+      color: white;
+      padding: 12px 20px;
+      border-radius: 6px;
+      z-index: 9999;
+      font-size: 14px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  `;
     notification.textContent = message;
 
     document.body.appendChild(notification);
@@ -848,64 +928,63 @@ function renderAllRoomCards() {
         // 감정 태그 HTML 생성
         const emotionsHtml = (room.emotions && room.emotions.length > 0)
             ? `<div class="room-emotions">
-         ${room.emotions.map(emotion => `<span class="emotion-tag"> #${emotion} </span>`).join('')}
-       </div>`
+        ${room.emotions.map(emotion => `<span class="emotion-tag"> #${emotion} </span>`).join('')}
+      </div>`
             : '';
 
-
         return `
-            <div class="room-card room-visible ${isUrgent ? 'urgent' : ''} ${isCompleted ? 'completed' : ''} ${isDateAdjustment ? 'date-adjustment' : ''} ${isRecruiting ? 'recruiting' : ''}" 
-                 data-room-id="${room.id}" 
-                 data-pagination="true">
-                <div class="room-image">
-                    <img src="${room.image || '/image/fix/moodtrip.png'}" alt="${room.title}" onerror="this.src='/image/fix/moodtrip.png'">
-                    <div class="room-status ${isUrgent ? 'urgent' : ''} ${isCompleted ? 'completed' : ''} ${isDateAdjustment ? 'date-adjustment' : ''}">${room.status}</div>
-                </div>
-                <div class="room-content">
-                    <div class="room-header">
-                        <h3 class="room-title">${room.title}</h3>
-                        <div class="room-meta">
-                            <span class="room-location">${room.location}</span>
-                            <span class="room-date">${room.date}</span>
-                            <span class="room-views">${room.views}</span>
-                        </div>
-                    </div>
-                    <div class="room-description">${room.description}</div>
-                    
-                    <div class="room-footer">
-                        <div class="room-participants-and-emotions">
-                            <div class="room-participants">
-                                <span class="participants-label">인원현재</span>
-                                <span class="participants-count">${room.currentParticipants} / ${room.maxParticipants}</span>
-                            </div>
-                            ${emotionsHtml}
-                        </div>
-                        
-                        <div class="room-date-info">
-                            <span class="created-date">${room.createdDate}</span>
-                        </div>
-                        <div class="room-actions">
-                            <button class="btn-detail" onclick="viewRoomDetail(${room.id})" aria-label="방 상세보기">상세보기</button>
-                            ${isCompleted ?
+           <div class="room-card room-visible ${isUrgent ? 'urgent' : ''} ${isCompleted ? 'completed' : ''} ${isDateAdjustment ? 'date-adjustment' : ''} ${isRecruiting ? 'recruiting' : ''}" 
+                data-room-id="${room.id}" 
+                data-pagination="true">
+               <div class="room-image">
+                   <img src="${room.image || '/image/fix/moodtrip.png'}" alt="${room.title}" onerror="this.src='/image/fix/moodtrip.png'">
+                   <div class="room-status ${isUrgent ? 'urgent' : ''} ${isCompleted ? 'completed' : ''} ${isDateAdjustment ? 'date-adjustment' : ''}">${room.status}</div>
+               </div>
+               <div class="room-content">
+                   <div class="room-header">
+                       <h3 class="room-title">${room.title}</h3>
+                       <div class="room-meta">
+                           <span class="room-location">${room.location}</span>
+                           <span class="room-date">${room.date}</span>
+                           <span class="room-views">${room.views}</span>
+                       </div>
+                   </div>
+                   <div class="room-description">${room.description}</div>
+                   
+                   <div class="room-footer">
+                       <div class="room-participants-and-emotions">
+                           <div class="room-participants">
+                               <span class="participants-label">인원현재</span>
+                               <span class="participants-count">${room.currentParticipants} / ${room.maxParticipants}</span>
+                           </div>
+                           ${emotionsHtml}
+                       </div>
+                       
+                       <div class="room-date-info">
+                           <span class="created-date">${room.createdDate}</span>
+                       </div>
+                       <div class="room-actions">
+                           <button class="btn-detail" onclick="viewRoomDetail(${room.id})" aria-label="방 상세보기">상세보기</button>
+                           ${isCompleted ?
             '<button class="btn-apply" disabled>모집완료</button>' :
             `<button class="btn-apply" onclick="applyRoom(${room.id})" aria-label="방 입장 신청">입장 신청</button>`
         }
-                            <button class="btn-report-card" onclick="reportRoomFromCard(${room.id})" aria-label="방 신고하기">신고</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
+                           <button class="btn-report-card" onclick="reportRoomFromCard(${room.id})" aria-label="방 신고하기">신고</button>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       `;
     }).join('');
 }
 
-// 🔥 페이징 초기화 함수
+// 페이징 초기화 함수
 function initializeRoomPaginationNew() {
-    console.log('📄 방 카드 페이징 시스템 초기화 시작');
+    console.log('방 카드 페이징 시스템 초기화 시작');
 
     const roomList = document.getElementById('roomList');
     if (!roomList) {
-        console.error('❌ #roomList를 찾을 수 없음');
+        console.error('#roomList를 찾을 수 없음');
         return;
     }
 
@@ -915,37 +994,6 @@ function initializeRoomPaginationNew() {
         showRoomPageNew(1);
         createRoomPaginationControlsNew();
     }
-}
-
-// 기존 renderRooms() 함수를 이렇게 수정하세요
-function renderRooms() {
-    const roomList = document.getElementById('roomList');
-    if (!roomList) return;
-
-    if (filteredRooms.length === 0) {
-        roomList.innerHTML = `
-            <div style="text-align: center; padding: 60px 20px; color: #64748b;">
-                <h3>검색 결과가 없습니다</h3>
-                <p>다른 키워드로 검색해보세요.</p>
-            </div>
-        `;
-        hidePaginationControlsNew();
-        return;
-    }
-
-    console.log('renderRooms 시작 - 총 방 개수:', filteredRooms.length);
-
-    // 전체 방 카드 렌더링
-    renderAllRoomCards();
-
-    // DOM이 완전히 렌더링된 후 페이징 초기화
-    // requestAnimationFrame을 두 번 사용해서 확실히 DOM 업데이트 완료 후 실행
-    requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-            console.log('페이징 초기화 시작');
-            initializeRoomPaginationNew();
-        });
-    });
 }
 
 // collectAllRoomCardsNew() 함수 수정
@@ -1013,7 +1061,6 @@ function collectAllRoomCardsNew() {
     lastCacheTimeNew = now;
 }
 
-
 // showRoomPageNew() 함수도 더 명확하게 수정
 function showRoomPageNew(pageNumber) {
     console.log(`페이지 ${pageNumber} 표시 시작 - 총 카드: ${allRoomCards.length}`);
@@ -1063,8 +1110,7 @@ function showRoomPageNew(pageNumber) {
     updateRoomPaginationButtonsNew();
 }
 
-
-// 🔥 페이징 컨트롤 생성 함수
+// 페이징 컨트롤 생성 함수
 function createRoomPaginationControlsNew() {
     const existingPagination = document.querySelector('.room-pagination-controls-new');
     if (existingPagination) existingPagination.remove();
@@ -1075,49 +1121,49 @@ function createRoomPaginationControlsNew() {
     if (!roomList) return;
 
     const paginationHtml = `
-        <div class="room-pagination-controls-new" style="
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            gap: 8px; 
-            margin: 3rem auto 2rem; 
-            padding: 1.5rem;
-            border: 1px solid #e5e7eb;
-            background: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        ">
-            <button class="room-prev-btn-new" onclick="goToPrevRoomPageNew()" style="
-                padding: 10px 20px;
-                border: 1px solid #e5e7eb;
-                background: white;
-                border-radius: 8px;
-                cursor: pointer;
-                transition: all 0.2s;
-                color: #374151;
-                font-weight: 600;
-            ">← 이전</button>
-            
-            <div class="room-page-numbers-new" style="display: flex; gap: 6px;"></div>
-            
-            <button class="room-next-btn-new" onclick="goToNextRoomPageNew()" style="
-                padding: 10px 20px;
-                border: 1px solid #e5e7eb;
-                background: white;
-                border-radius: 8px;
-                cursor: pointer;
-                transition: all 0.2s;
-                color: #374151;
-                font-weight: 600;
-            ">다음 →</button>
-        </div>
-    `;
+       <div class="room-pagination-controls-new" style="
+           display: flex; 
+           justify-content: center; 
+           align-items: center; 
+           gap: 8px; 
+           margin: 3rem auto 2rem; 
+           padding: 1.5rem;
+           border: 1px solid #e5e7eb;
+           background: #ffffff;
+           border-radius: 12px;
+           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+       ">
+           <button class="room-prev-btn-new" onclick="goToPrevRoomPageNew()" style="
+               padding: 10px 20px;
+               border: 1px solid #e5e7eb;
+               background: white;
+               border-radius: 8px;
+               cursor: pointer;
+               transition: all 0.2s;
+               color: #374151;
+               font-weight: 600;
+           ">← 이전</button>
+           
+           <div class="room-page-numbers-new" style="display: flex; gap: 6px;"></div>
+           
+           <button class="room-next-btn-new" onclick="goToNextRoomPageNew()" style="
+               padding: 10px 20px;
+               border: 1px solid #e5e7eb;
+               background: white;
+               border-radius: 8px;
+               cursor: pointer;
+               transition: all 0.2s;
+               color: #374151;
+               font-weight: 600;
+           ">다음 →</button>
+       </div>
+   `;
 
     roomList.insertAdjacentHTML('afterend', paginationHtml);
     createRoomPageNumbersNew();
 }
 
-// 🔥 페이지 번호 생성 함수
+// 페이지 번호 생성 함수
 function createRoomPageNumbersNew() {
     const container = document.querySelector('.room-page-numbers-new');
     if (!container) return;
@@ -1134,21 +1180,21 @@ function createRoomPageNumbersNew() {
         button.textContent = i;
         button.onclick = () => goToRoomPageNew(i);
         button.style.cssText = `
-            padding: 10px 15px;
-            border: 1px solid ${isActive ? '#005792' : '#e5e7eb'};
-            background: ${isActive ? '#005792' : 'white'};
-            color: ${isActive ? 'white' : '#374151'};
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            min-width: 45px;
-            font-weight: 600;
-        `;
+           padding: 10px 15px;
+           border: 1px solid ${isActive ? '#005792' : '#e5e7eb'};
+           background: ${isActive ? '#005792' : 'white'};
+           color: ${isActive ? 'white' : '#374151'};
+           border-radius: 8px;
+           cursor: pointer;
+           transition: all 0.2s;
+           min-width: 45px;
+           font-weight: 600;
+       `;
         container.appendChild(button);
     }
 }
 
-// 🔥 페이징 버튼 업데이트 함수
+// 페이징 버튼 업데이트 함수
 function updateRoomPaginationButtonsNew() {
     const prevBtn = document.querySelector('.room-prev-btn-new');
     const nextBtn = document.querySelector('.room-next-btn-new');
@@ -1166,13 +1212,13 @@ function updateRoomPaginationButtonsNew() {
     createRoomPageNumbersNew();
 }
 
-// 🔥 페이징 숨기기 함수
+// 페이징 숨기기 함수
 function hidePaginationControlsNew() {
     const pagination = document.querySelector('.room-pagination-controls-new');
     if (pagination) pagination.style.display = 'none';
 }
 
-// 🔥 네비게이션 함수들
+// 네비게이션 함수들
 function goToRoomPageNew(pageNumber) {
     if (pageNumber < 1 || pageNumber > totalPagesNew) return;
     showRoomPageNew(pageNumber);
@@ -1190,7 +1236,7 @@ function goToNextRoomPageNew() {
     }
 }
 
-// 🔥 전역 함수 노출
+// 전역 함수 노출
 window.goToRoomPageNew = goToRoomPageNew;
 window.goToPrevRoomPageNew = goToPrevRoomPageNew;
 window.goToNextRoomPageNew = goToNextRoomPageNew;

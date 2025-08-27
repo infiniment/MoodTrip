@@ -630,7 +630,6 @@ p {
     font-size: 16px;
     font-weight: 600;
     color: #1a202c;
-    margin-bottom: 12px;
 }
 
 .tags-container {
@@ -776,14 +775,15 @@ p {
 }
 
 .btn-cancel {
-    background: #f8fafc;
-    color: #64748b;
-    border: 1px solid #e2e8f0;
+    background: #005792;     /* 파란 배경 유지 */
+    color: #ffffff;          /* 흰색 글씨 (명확한 대비) */
+    border: 1px solid #005792; /* 파란 테두리 (통일감) */
 }
 
 .btn-cancel:hover {
-    background: #e2e8f0;
-    color: #374151;
+    background: #003d6b;     /* 더 진한 파란색 (자연스러운 변화) */
+    color: #ffffff;          /* 흰색 글씨 유지 (일관성) */
+    border: 1px solid #003d6b;
 }
 
 .btn-primary {
@@ -1318,4 +1318,84 @@ p {
     display: flex;
     flex-direction: column;
     font-size: 11px;
+}
+
+/* 프로필 미리보기 스타일 */
+.profile-preview {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid whitesmoke;
+}
+
+.profile-preview h5 {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #495057;
+}
+
+.profile-bio-preview {
+    background-color: #fff;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+    margin-bottom: 8px;
+}
+
+.profile-bio-preview p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.4;
+    color: #333;
+}
+
+.text-muted {
+    color: #6c757d !important;
+    font-size: 12px;
+}
+
+/* 선택사항 라벨 스타일 */
+.optional-label {
+    font-weight: 400;
+    color: #6c757d;
+    font-size: 12px;
+}
+
+/* 글자 수 카운터 스타일 */
+.character-count {
+    text-align: right;
+    margin-top: 5px;
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.character-count.warning {
+    color: #dc3545;
+}
+
+/* 신청 폼 스타일 개선 */
+.application-form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #495057;
+}
+
+.application-form textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 12px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 1.5;
+    resize: vertical;
+}
+
+.application-form textarea:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }

@@ -243,7 +243,6 @@
         </div>
         <div class="modal-footer">
             <button class="btn btn-cancel" onclick="closeDetailModal()">닫기</button>
-            <button class="btn btn-primary" onclick="applyFromModal()">입장 신청</button>
         </div>
     </div>
 </div>
@@ -257,18 +256,35 @@
             <button class="modal-close" onclick="closeApplicationModal()" aria-label="모달 닫기">×</button>
         </div>
         <div class="modal-body">
+            <!-- 방 정보 미리보기 -->
             <div class="room-info-preview">
                 <h4 id="modalRoomTitle">방 제목</h4>
                 <p id="modalRoomMeta">방 정보</p>
             </div>
+
+            <div class="profile-preview">
+                <h5>📝 내 자기소개 </h5>
+                <div class="profile-bio-preview" id="profileBioPreview">
+                    <p id="currentProfileBio">반갑습니다</p>
+                </div>
+                <small class="text-muted">※ 방장에게 위 자기소개가 함께 전달됩니다.</small>
+            </div>
+
+            <!-- 신청 메시지 입력 -->
             <div class="application-form">
-                <label for="applicationMessage">신청 메시지</label>
-                <textarea id="applicationMessage" placeholder="간단한 자기소개와 함께 여행에 대한 의지를 보여주세요!" rows="4"></textarea>
+                <label for="applicationMessage">
+                    💬 신청 메시지
+                    <span class="optional-label"></span>
+                </label>
+                <textarea id="applicationMessage" placeholder="여행에 대한 관심사나 함께하고 싶은 이유를 적어주세요!" rows="5"></textarea>
+                <div class="character-count">
+                    <span id="messageLength">0</span> / 300자
+                </div>
             </div>
         </div>
         <div class="modal-footer">
             <button class="btn btn-cancel" onclick="closeApplicationModal()">취소</button>
-            <button class="btn btn-primary" onclick="submitApplication()">신청하기</button>
+            <button class="btn btn-primary" onclick="submitApplication()">입장 신청하기</button>
         </div>
     </div>
 </div>
