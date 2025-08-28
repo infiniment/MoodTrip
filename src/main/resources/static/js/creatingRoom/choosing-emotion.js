@@ -11,6 +11,11 @@ document.addEventListener('DOMContentLoaded', async function () {
         window.location.replace('/companion-rooms/create');
     }
 
+    if (sessionStorage.getItem('prefill_from_detail') !== '1') {
+        sessionStorage.removeItem('room_prefill');
+        localStorage.removeItem('room_prefill');
+    }
+
     initializeCategoryButtons();
     restoreTemporaryEmotions();
 
@@ -37,7 +42,8 @@ function applyEmotionPrefill() {
     if (selectedEmotions.length > 0) return;
 
     const p = getRoomPrefill({ consume: false });
-    if (!p || !Array.isArray(p.emotions) || p.emotions.length === 0) return;
+    if (!p || p.source !== 'attraction-detail' || !Array.isArray(p.emotions) || p.emotions.length === 0) return;
+
 
     const remain = Math.max(0, 3 - selectedEmotions.length);
     p.emotions.slice(0, remain).forEach(name => {
@@ -51,21 +57,36 @@ function applyEmotionPrefill() {
     console.log('[prefill] applied:', selectedEmotions.map(e => e.text)); // ← 확인용
 }
 // 상세 페이지에서 sessionStorage에 저장한 프리필 읽기
-function getRoomPrefill(opts = { consume: true }) {
-    try {
-        const raw =
-            sessionStorage.getItem('room_prefill') ||
-            localStorage.getItem('room_prefill');
-        const data = raw ? JSON.parse(raw) : null;
+function getRoomPrefill({ consume = true, ttlMs = 2 * 60 * 1000 } = {}) {
+    const raw = sessionStorage.getItem('room_prefill') || localStorage.getItem('room_prefill');
+    if (!raw) return null;
 
-        if (opts.consume) {
-            sessionStorage.removeItem('room_prefill');
-            localStorage.removeItem('room_prefill');
-        }
-        return data;
-    } catch {
+    let p;
+    try { p = JSON.parse(raw); } catch { return null; }
+
+    const now = Date.now();
+    const fromDetail = sessionStorage.getItem('prefill_from_detail') === '1';
+    const okSource   = p?.source === 'attraction-detail';
+
+    // exp(우선) 또는 ts+ttl 검사
+    const exp = Number(p.exp || 0);
+    const ts  = Number(p.ts || 0);
+    const fresh = exp ? (now <= exp) : (ts ? (now - ts) <= ttlMs : true);
+
+    if (!fromDetail || !okSource || !fresh) {
+        // 만료/잘못된 경우 찌꺼기 정리하고 사용하지 않음
+        sessionStorage.removeItem('room_prefill');
+        sessionStorage.removeItem('prefill_from_detail');
+        localStorage.removeItem('room_prefill');
         return null;
     }
+
+    if (consume) {
+        sessionStorage.removeItem('room_prefill');
+        sessionStorage.removeItem('prefill_from_detail');
+        localStorage.removeItem('room_prefill');
+    }
+    return p;
 }
 
 // emotionCategoryData 안에서 '감정 이름'으로 태그(id, 이름) 찾기
@@ -312,7 +333,7 @@ function updateCategoryButtonBadges() {
 
 // 임시 저장된 감정 복원
 function restoreTemporaryEmotions() {
-    const tempEmotions = localStorage.getItem('temp_selected_emotions');
+    const tempEmotions = sessionStorage.getItem('temp_selected_emotions');
     if (tempEmotions) {
         try {
             const emotions = JSON.parse(tempEmotions);
@@ -323,7 +344,7 @@ function restoreTemporaryEmotions() {
             });
 
             // 임시 저장 데이터 삭제
-            localStorage.removeItem('temp_selected_emotions');
+            sessionStorage.removeItem('temp_selected_emotions');
         } catch (e) {
             console.error('임시 저장된 감정 데이터 복원 실패:', e);
         }
@@ -368,9 +389,9 @@ function validationPhase(form) {
 
 // 뒤로가기 함수
 function exitWithSubmit(formId, canSubmit) {
-    navIntent = 'back';                             // << 추가
+    navIntent = 'back';
     if (selectedEmotions.length > 0) {
-        localStorage.setItem('temp_selected_emotions', JSON.stringify(selectedEmotions));
+        sessionStorage.setItem('temp_selected_emotions', JSON.stringify(selectedEmotions));
     }
     window.location.href = '/companion-rooms/create';
 }
@@ -392,21 +413,7 @@ function initializeNextButton() {
 
 // 다음 페이지로 전달할 감정 데이터 저장
 function saveEmotionsForNextPage() {
-    // 2-1) 기존처럼 개별 저장 (필요 시 사용)
-    localStorage.setItem('selected_emotions', JSON.stringify(selectedEmotions));
     sessionStorage.setItem('selected_emotions', JSON.stringify(selectedEmotions));
-
-    // 2-2) room_prefill도 갱신해서 다음 스텝에서 한 방에 쓰도록
-    const prev = getRoomPrefill({ consume: false }) || {};
-    const payload = {
-        source: 'from-emotion',
-        attraction: prev.attraction || null,                 // 상세에서 넘어온 관광지 유지
-        emotions: selectedEmotions.map(e => e.text)          // 현재 선택한 감정 이름들
-    };
-    sessionStorage.setItem('room_prefill', JSON.stringify(payload));
-    localStorage.setItem('room_prefill', JSON.stringify(payload));
-
-    console.log('room_prefill updated for next step:', payload);
 }
 
 // 다음 페이지로 이동
@@ -449,9 +456,8 @@ function waitForEmotionData(maxWaitMs = 1500) {
 
 // 감정 데이터 정리
 function clearEmotionData() {
-    localStorage.removeItem('selected_emotions');
     sessionStorage.removeItem('selected_emotions');
-    localStorage.removeItem('temp_selected_emotions');
+    sessionStorage.removeItem('temp_selected_emotions');
 }
 
 // 도움말 모달 관련 함수들
@@ -548,9 +554,8 @@ function getEmotionStats() {
 
 window.addEventListener('beforeunload', function () {
     if (navIntent === 'next') {
-        // 다음 단계로 갈 때: 이미 saveEmotionsForNextPage()로 저장됨
         // 남아있을 수 있는 임시값은 정리
-        localStorage.removeItem('temp_selected_emotions');
+        sessionStorage.removeItem('temp_selected_emotions');
     } else if (navIntent === 'back') {
         // 이전 단계로 돌아갈 때: 임시값만 보존
         if (selectedEmotions.length > 0) {
