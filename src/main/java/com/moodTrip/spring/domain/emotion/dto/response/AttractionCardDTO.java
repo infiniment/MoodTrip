@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 public class AttractionCardDTO {
 
     // ✅ 필드 이름을 attractionId로 통일
+    private Long contentId;
     private Long attractionId;
     private String title;
     private String addr1;
@@ -21,11 +22,11 @@ public class AttractionCardDTO {
     private boolean isLikedByUser = false;
 
     @Builder
-    public AttractionCardDTO(Long attractionId, String title, String addr1, String firstImage, String description) {
+    public AttractionCardDTO(Long contentId, Long attractionId, String title, String addr1, String firstImage) {
+        this.contentId = contentId;
         this.attractionId = attractionId;
         this.title = title;
         this.addr1 = addr1;
         this.firstImage = firstImage;
-        this.description = description;
     }
 }

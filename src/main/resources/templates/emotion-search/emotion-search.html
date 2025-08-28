@@ -103,15 +103,13 @@
                     <div class="sort-dropdown-menu" id="sortDropdown">
                         <div class="sort-option active" data-sort="recommended">추천순</div>
                         <div class="sort-option" data-sort="popular">인기순</div>
-                        <div class="sort-option" data-sort="newest">최신순</div>
-                        <div class="sort-option" data-sort="rating">평점순</div>
-                        <div class="sort-option" data-sort="distance">거리순</div>
+
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="destination-grid">
+
             <!--
               [수정] th:each를 사용하여 컨트롤러에서 받은 initialAttractions 리스트를 순회합니다.
               각 AttractionCardDTO 객체는 'attraction' 변수에 담깁니다.
@@ -121,29 +119,28 @@
                   [수정] 모델 어트리뷰트 이름을 "attractions"로 통일하여
                   초기 목록과 검색 결과 모두 이 코드로 처리합니다.
                 -->
-                <div class="destination-card" th:each="attraction : ${attractions}">
-                    <div class="card-image">
-                        <img th:src="${attraction.firstImage != null ? attraction.firstImage : '/static/image/emotion-search/default-image.png'}"
-                             th:alt="${attraction.title}" />
-                        <button class="like-btn">♡</button>
-                        <span class="emotion-badge">추천 여행지</span>
-                    </div>
-                    <div class="card-content">
-                        <div class="destination-header">
-                            <h3 class="destination-name" th:text="${attraction.title}">여행지 이름</h3>
-                            <span class="destination-location" th:text="${attraction.addr1}">여행지 위치</span>
+                <!-- [수정] destination-card 전체를 a 태그로 감싸서 클릭 가능하게 만듭니다. -->
+                <a th:href="@{/attractions/detail/{contentId}(contentId=${attraction.contentId})}" class="destination-card-link" th:each="attraction : ${attractions}">
+                    <div class="destination-card">
+                        <div class="card-image">
+                            <img th:src="${attraction.firstImage != null ? attraction.firstImage : '/static/image/emotion-search/default-image.png'}"
+                                 th:alt="${attraction.title}" />
+                            <button class="like-btn" onclick="event.preventDefault(); alert('찜하기 기능!');">♡</button> <!-- 링크 이동 방지 -->
+                            <span class="emotion-badge">추천 여행지</span>
                         </div>
-                        <p class="destination-description">이곳에서 특별한 경험을 즐겨보세요.</p>
+                        <div class="card-content">
+                            <div class="destination-header">
+                                <h3 class="destination-name" th:text="${attraction.title}">여행지 이름</h3>
+                                <span class="destination-location" th:text="${attraction.addr1}">여행지 위치</span>
+                            </div>
+                            <p class="destination-description">이곳에서 특별한 경험을 즐겨보세요.</p>
+                        </div>
                     </div>
-                </div>
-            </div>
+                </a>
 
         </div>
 
-        <!-- 더보기 버튼 (정적 유지) -->
-        <div class="load-more-section">
-            <button class="load-more-btn">더 많은 여행지 보기</button>
-        </div>
+
     </div>
 </div>
 <script src="/js/emotion-search/emotion-search.js"></script>

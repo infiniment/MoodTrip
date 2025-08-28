@@ -23,26 +23,42 @@ function toggleSortDropdown() {
     const dropdown = document.querySelector('.sort-dropdown');
     dropdown.classList.toggle('active');
 }
+// 페이지 로드 시, 현재 정렬 상태를 드롭다운에 반영하는 로직 (선택 사항이지만 권장)
+document.addEventListener('DOMContentLoaded', function() {
+    const params = new URLSearchParams(window.location.search);
+    const currentSort = params.get('sort') || 'recommended'; // URL에 sort값이 없으면 recommended
 
+    const activeOption = document.querySelector(`.sort-option[data-sort="${currentSort}"]`);
+    if (activeOption) {
+        document.querySelector('.sort-text').textContent = activeOption.textContent;
+
+        document.querySelectorAll('.sort-option').forEach(opt => opt.classList.remove('active'));
+        activeOption.classList.add('active');
+    }
+
+    // ... 기존의 다른 DOMContentLoaded 리스너 내용들 ...
+});
 // 정렬 옵션 선택
-function selectSortOption(option, text) {
-    const sortText = document.querySelector('.sort-text');
+function selectSortOption(sortValue, sortText) {
+    const sortTextElement = document.querySelector('.sort-text');
     const dropdown = document.querySelector('.sort-dropdown');
-    const allOptions = document.querySelectorAll('.sort-option');
 
-    // 현재 선택된 옵션 업데이트
-    sortText.textContent = text;
-
-    // active 클래스 업데이트
-    allOptions.forEach(opt => opt.classList.remove('active'));
-    event.target.classList.add('active');
-
-    // 드롭다운 닫기
+    // UI 업데이트
+    sortTextElement.textContent = sortText;
     dropdown.classList.remove('active');
 
-    // 여기에 실제 정렬 로직 추가 가능
-    console.log('정렬 기준:', option, text);
+    // --- [핵심] URL을 변경하여 페이지를 다시 로드하는 로직 ---
+
+    // 1. 현재 URL의 쿼리 파라미터를 가져옵니다.
+    const currentParams = new URLSearchParams(window.location.search);
+
+    // 2. 'sort' 파라미터 값을 새로 선택한 값으로 설정합니다.
+    currentParams.set('sort', sortValue);
+
+    // 3. 새로운 URL로 페이지를 이동시킵니다. (기존 tagId 등은 유지됩니다)
+    window.location.href = window.location.pathname + '?' + currentParams.toString();
 }
+
 
 // 알림 메시지 표시 함수
 function showNotification(message, type = 'info') {
@@ -267,6 +283,7 @@ function renderResults(attractions) {
         const isLiked = attr.isLikedByCurrentUser || false;
 
         const cardHTML = `
+            <a href="/attractions/detail/${attr.contentId}" class="destination-card-link">
             <div class="destination-card">
                 <div class="card-image">
                     <img src="${attr.firstImage || '/static/image/emotion-search/default-image.png'}" alt="${attr.title}" />
@@ -287,6 +304,7 @@ function renderResults(attractions) {
                     <p class="destination-description">${attr.description || '여행지에 대한 설명이 준비중입니다.'}</p>
                 </div>
             </div>
+            </a>    
         `;
         destinationGrid.insertAdjacentHTML('beforeend', cardHTML);
     });

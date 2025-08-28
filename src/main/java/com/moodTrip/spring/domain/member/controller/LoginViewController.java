@@ -74,7 +74,7 @@ public class LoginViewController {
         Cookie jwtCookie = new Cookie("jwtToken", token);
         jwtCookie.setPath("/");
         jwtCookie.setHttpOnly(true);
-        jwtCookie.setMaxAge(24 * 60 * 60); // 1일
+        jwtCookie.setMaxAge(7200); // 2시간
         response.addCookie(jwtCookie);
 
         // 메인 페이지로 이동

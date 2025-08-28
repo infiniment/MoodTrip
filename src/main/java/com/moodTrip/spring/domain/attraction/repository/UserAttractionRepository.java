@@ -32,6 +32,11 @@ public interface UserAttractionRepository extends JpaRepository<UserAttraction, 
     @Query("SELECT ua FROM UserAttraction ua JOIN FETCH ua.attraction WHERE ua.member.memberPk = :memberPk")
     List<UserAttraction> findByMemberMemberPkWithAttraction(@Param("memberPk") Long memberPk);
 
-
+    @Query(value = "SELECT attractionid " +
+            "FROM muserattraction " +
+            "GROUP BY attractionid " +
+            "ORDER BY COUNT(attractionid) DESC",
+            nativeQuery = true)
+    List<Long> findPopularAttractionIds(Pageable pageable);
 
 }
