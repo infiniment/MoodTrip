@@ -12,28 +12,23 @@ document.addEventListener('DOMContentLoaded', function() {
 // 이전 단계들의 모든 데이터 불러오기
 function loadAllPreviousData() {
     try {
-        // 통합 데이터 먼저 시도
-        let roomCreationData = localStorage.getItem('room_creation_data');
-        if (roomCreationData) {
-            finalRoomData = JSON.parse(roomCreationData);
-        } else {
-            finalRoomData = {
-                emotions: getEmotionsData(),
-                destination: getDestinationData(),
-                schedule: getScheduleData(),
-                people: getPeopleData(),
-                roomName: getRoomNameData(),
-                roomIntro: getRoomDescriptionData()
-            };
-        }
+        const base = {
+            emotions: getEmotionsData(),
+            destination: getDestinationData(),
+            schedule: getScheduleData(),
+            people: getPeopleData(),
+            roomName: getRoomNameData(),
+            roomIntro: getRoomDescriptionData()
+        };
 
-        // 정규화
+        const saved = localStorage.getItem('room_creation_data');
+        finalRoomData = saved ? { ...base, ...JSON.parse(saved) } : base;
+
         if (finalRoomData?.destination) {
             finalRoomData.destination = normalizeDestination(finalRoomData.destination);
             console.log('[정규화 완료] destination:', finalRoomData.destination);
         }
 
-        // UI에 데이터 표시
         displayAllData();
 
     } catch (error) {
@@ -59,18 +54,54 @@ function getEmotionsData() {
 
 function getDestinationData() {
     try {
-        let destination = localStorage.getItem('selected_destination');
-        if (destination) return JSON.parse(destination);
+        // 1) 표준 키 우선
+        let d = localStorage.getItem('selected_destination');
+        if (d) return JSON.parse(d);
 
-        destination = sessionStorage.getItem('selected_destination');
-        if (destination) return JSON.parse(destination);
+        d = sessionStorage.getItem('selected_destination');
+        if (d) return JSON.parse(d);
+
+        // 2) 새로고침 유지용 임시값
+        d = sessionStorage.getItem('temp_selected_destination');
+        if (d) return JSON.parse(d);
+
+        // 3) 상세 → 방만들기 프리필(room_prefill)도 허용
+        const pfRaw = sessionStorage.getItem('room_prefill') || localStorage.getItem('room_prefill');
+        if (pfRaw) {
+            try {
+                const pf = JSON.parse(pfRaw);
+
+                // 만료되었으면 무시
+                if (pf.exp && Date.now() > pf.exp) return null;
+
+                // 우리가 저장한 구조: { attraction: {...}, ... }
+                if (pf.attraction) {
+                    const a = pf.attraction;
+                    return {
+                        attractionId: a.attractionId ?? a.contentId ?? a.id ?? pf.contentId ?? null,
+                        name: a.title || a.name || '',
+                        image: a.firstImage || a.image || '',
+                        addr1: a.addr1 || '',
+                        addr2: a.addr2 || '',
+                        category: a.category || '',
+                        description: a.description || '',
+                        contentTypeId: a.contentTypeId || null,
+                        mapX: a.mapX ?? a.mapx ?? a.lon ?? null,
+                        mapY: a.mapY ?? a.mapy ?? a.lat ?? null,
+                    };
+                }
+
+                // 혹시 다른 페이지가 { destination: {...} } 형태로 넣은 경우도 지원
+                if (pf.destination) return pf.destination;
+
+            } catch (_) {}
+        }
 
         return null;
     } catch (e) {
         return null;
     }
 }
-
 function getScheduleData() {
     try {
         let schedule = localStorage.getItem('travel_date_ranges');
@@ -153,6 +184,7 @@ function displayEmotionTags() {
     if (!emotionsList) return;
 
     const emotions = finalRoomData.emotions || getEmotionsData();
+    finalRoomData.emotions = emotions;
 
     if (!emotions || emotions.length === 0) {
         emotionsList.innerHTML = '<p style="color: #bdbdbd; text-align: center; padding: 20px;">선택된 감정 태그가 없습니다.</p>';
@@ -1094,6 +1126,11 @@ function validateRoomIntroFinal(textarea) {
 // 데이터 무결성 검사
 function validateDataIntegrity() {
     const issues = [];
+
+    // 목적지가 비어 있으면 한 번 더 시도
+    if (!finalRoomData.destination) {
+        finalRoomData.destination = getDestinationData();
+    }
 
     if (!finalRoomData.emotions || finalRoomData.emotions.length === 0) {
         issues.push('감정 태그 데이터가 없습니다.');
