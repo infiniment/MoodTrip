@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 🔥 새로 추가: 페이징 초기화
     initializePagination();
+    checkRoomNotification();
 });
 
 function initializePagination() {
@@ -43,6 +44,100 @@ function initializePagination() {
         // 키보드 네비게이션 활성화
         enableKeyboardNavigation();
     }
+}
+
+/**
+ * 방 입장 승인/거절 알림 체크
+ */
+function checkRoomNotification() {
+    // Thymeleaf에서 전달된 알림 데이터 확인
+    if (window.notificationData) {
+        console.log('알림 데이터 발견:', window.notificationData);
+        showRoomStatusModal(window.notificationData);
+        return;
+    }
+
+    // localStorage 방식으로도 체크 (다른 탭에서 승인/거절된 경우)
+    const savedNotification = localStorage.getItem('roomStatusNotification');
+    if (savedNotification) {
+        try {
+            const notificationData = JSON.parse(savedNotification);
+
+            // 5분 이내의 알림만 표시
+            const notificationTime = new Date(notificationData.timestamp);
+            const now = new Date();
+            const diffMinutes = (now - notificationTime) / (1000 * 60);
+
+            if (diffMinutes <= 5) {
+                showRoomStatusModal(notificationData);
+            }
+
+            // 표시 후 제거
+            localStorage.removeItem('roomStatusNotification');
+        } catch (error) {
+            console.error('알림 데이터 파싱 오류:', error);
+            localStorage.removeItem('roomStatusNotification');
+        }
+    }
+}
+
+/**
+ * 방 상태 모달 표시
+ */
+function showRoomStatusModal(notificationData) {
+    const modal = document.getElementById('roomStatusModal');
+    if (!modal || !notificationData) return;
+
+    const titleElement = modal.querySelector('#roomStatusTitle');
+    const messageElement = modal.querySelector('#roomStatusMessage');
+    const approvedIcon = modal.querySelector('#approvedIcon');
+    const rejectedIcon = modal.querySelector('#rejectedIcon');
+
+    // 알림 타입에 따라 모달 내용 설정
+    if (notificationData.type === 'ROOM_APPROVED') {
+        titleElement.textContent = '🎉 방 입장 승인';
+        titleElement.style.color = '#10b981';
+        messageElement.textContent = notificationData.message;
+        approvedIcon.style.display = 'block';
+        rejectedIcon.style.display = 'none';
+
+        // 모달 테두리 색상도 초록색으로
+        modal.querySelector('.modal-content').style.borderTop = '4px solid #10b981';
+
+    } else if (notificationData.type === 'ROOM_REJECTED') {
+        titleElement.textContent = '😔 방 입장 거절';
+        titleElement.style.color = '#ef4444';
+        messageElement.textContent = notificationData.message;
+        approvedIcon.style.display = 'none';
+        rejectedIcon.style.display = 'block';
+
+        // 모달 테두리 색상도 빨간색으로
+        modal.querySelector('.modal-content').style.borderTop = '4px solid #ef4444';
+    }
+
+    // 모달 표시
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+
+    console.log('방 상태 알림 모달 표시:', notificationData.type);
+}
+
+window.closeRoomStatusModal = closeRoomStatusModal;
+
+/**
+ * 방 상태 모달 닫기
+ */
+function closeRoomStatusModal() {
+    const modal = document.getElementById('roomStatusModal');
+    if (!modal) return;
+
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+
+    // 알림 확인 후 페이지 새로고침 (최신 상태 반영)
+    setTimeout(() => {
+        window.location.reload();
+    }, 500);
 }
 
 /**

@@ -1,6 +1,8 @@
 package com.moodTrip.spring.domain.mypageRoom.controller;
 
+import com.moodTrip.spring.domain.enteringRoom.dto.response.NotificationData;
 import com.moodTrip.spring.domain.enteringRoom.service.JoinRequestManagementService;
+import com.moodTrip.spring.domain.enteringRoom.service.NotificationDataService;
 import com.moodTrip.spring.domain.member.dto.response.ProfileResponse;
 import com.moodTrip.spring.domain.member.entity.Member;
 import com.moodTrip.spring.domain.member.service.ProfileService;
@@ -9,7 +11,6 @@ import com.moodTrip.spring.domain.mypageRoom.dto.response.JoinedRoomResponse;
 import com.moodTrip.spring.domain.mypageRoom.service.MypageRoomService;
 import com.moodTrip.spring.global.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,6 +28,7 @@ public class MypageViewController {
     private final ProfileService profileService;
     private final MypageRoomService mypageRoomService;
     private final JoinRequestManagementService joinRequestManagementService;
+    private final NotificationDataService notificationService;
 
     // 기본정보 프로필 페이지
     @GetMapping("/my-profile")
@@ -61,6 +63,15 @@ public class MypageViewController {
         Member currentMember = securityUtil.getCurrentMember();
 
         String validatedTab = validateAndNormalizeTab(tab);
+
+        // 알림 확인 및 모델에 추가
+        NotificationData notification = notificationService.getAndClearNotification(
+                currentMember.getMemberPk()
+        );
+
+        if (notification != null) {
+            model.addAttribute("notification", notification);
+        }
 
         // 기존 로직...
         List<JoinedRoomResponse> joinedRooms = null;

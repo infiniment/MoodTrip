@@ -118,19 +118,29 @@ window.closeDetailModal = function() {
   document.getElementById("detailModal").style.display = "none";
 };
 
-// 입장 신청 모달 열기
+
+// 메인페이지 mainpage.js에 추가할 코드
+
+// 방 입장 신청하기 - 수정된 함수 (최신 프로필 자기소개 포함)
 window.joinRoom = function(roomId) {
   console.log("입장 신청 클릭:", roomId);
 
   const modal = document.getElementById("applicationModal");
   if (!modal) return;
 
+  // 방 정보 가져오기
   fetch(`/entering-room/${roomId}/modal-data`)
       .then(res => res.json())
       .then(data => {
+        // 방 정보 설정
         document.getElementById("modalRoomTitle").textContent = data.title;
         document.getElementById("modalRoomMeta").textContent = `${data.location} | ${data.createdDate}`;
         modal.dataset.roomId = roomId;
+
+        // 새로 추가: 현재 사용자의 최신 프로필 자기소개 가져오기
+        loadCurrentUserProfile();
+
+        // 모달 표시
         modal.style.display = "flex";
       })
       .catch(err => {
@@ -138,6 +148,52 @@ window.joinRoom = function(roomId) {
         alert("방 정보를 불러올 수 없습니다.");
       });
 };
+
+// 새로 추가: 현재 사용자 프로필 정보 로드 (최신 자기소개 가져오기)
+function loadCurrentUserProfile() {
+  console.log("현재 사용자의 최신 프로필 정보 조회 중...");
+
+  fetch('/api/v1/profiles/me', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    credentials: 'include' // JWT 토큰 포함
+  })
+      .then(response => {
+        console.log("프로필 API 응답 상태:", response.status);
+
+        if (!response.ok) {
+          throw new Error('프로필 조회 실패');
+        }
+        return response.json();
+      })
+      .then(profileData => {
+        console.log("최신 프로필 데이터 수신:", profileData);
+
+        // 프로필 자기소개 업데이트 (최신 데이터로)
+        const profileBioElement = document.getElementById('currentProfileBio');
+        if (profileBioElement) {
+          const latestBio = profileData.profileBio || '안녕하세요! 여행을 좋아합니다.';
+          profileBioElement.textContent = latestBio;
+
+          console.log("자기소개 업데이트 완료:", latestBio);
+        } else {
+          console.error("currentProfileBio 엘리먼트를 찾을 수 없습니다.");
+        }
+      })
+      .catch(error => {
+        console.error('최신 프로필 로드 실패:', error);
+
+        // 오류 시 기본 자기소개 표시
+        const profileBioElement = document.getElementById('currentProfileBio');
+        if (profileBioElement) {
+          profileBioElement.textContent = '안녕하세요! 여행을 좋아합니다.';
+        }
+
+        console.warn("프로필을 불러올 수 없어 기본 자기소개를 표시합니다.");
+      });
+}
 
 // 입장 신청 모달 닫기
 window.closeApplicationModal = function() {
