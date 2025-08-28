@@ -629,10 +629,19 @@ function goToPreviousPage() {
     if (selectedDateRanges.length > 0) {
         localStorage.setItem('temp_selected_schedule', JSON.stringify(selectedDateRanges));
     }
-
+    sessionStorage.setItem('restore_attraction', '1');
     // 이전 페이지로 이동
     window.location.href = "/companion-rooms/attraction";
 }
+
+document.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href]');
+    if (!a) return;
+    const href = a.getAttribute('href') || '';
+    if (href.startsWith('/companion-rooms/attraction')) {
+        sessionStorage.setItem('restore_attraction', '1');
+    }
+});
 
 // 다음 페이지로 전달할 일정 데이터 저장
 function saveScheduleForNextPage() {

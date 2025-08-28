@@ -419,6 +419,22 @@ document.addEventListener("DOMContentLoaded", () => {
   const btn = document.getElementById("btnMakeRoom");
   if (!btn) return;
 
+  // 감정명 정규화(+중복 제거) 유틸
+  const normalizeEmotionNames = (list) => {
+    const seen = new Set();
+    const out  = [];
+    (list || []).forEach((raw) => {
+      const s = String(raw || "")
+          .replace(/^#/, "")   // 앞의 # 제거
+          .replace(/\s+/g, "") // 내부 공백 제거
+          .trim();
+      if (!s || seen.has(s)) return;
+      seen.add(s);
+      out.push(s);
+    });
+    return out;
+  };
+
   btn.addEventListener("click", async (e) => {
     e.preventDefault();
 
@@ -426,19 +442,24 @@ document.addEventListener("DOMContentLoaded", () => {
     const contentId  = btn.dataset.contentId ? Number(btn.dataset.contentId) : null;
 
     let detail = null, base = null;
+
+    // 상세(통합) 정보
     try {
       if (contentId) {
         const r = await fetch(`/api/attractions/content/${contentId}/detail`, { headers:{Accept:"application/json"} });
-        if (r.ok) detail = await r.json();
+        if (r.ok) detail = await r.json(); // { title,image,addr,tel,... }
       }
     } catch (_) {}
 
+    // (있다면) 엔티티 기반 정보
     try {
-      const r2 = await fetch(`/api/attractions/content/${contentId}/detail`, { headers:{Accept:"application/json"} });
-      if (r2.ok) {
-        const d = await r2.json();
-        base = d.attraction || d.base || null;
-        attractionId = attractionId || Number(base?.attractionId) || null;
+      if (contentId) {
+        const r2 = await fetch(`/api/attractions/content/${contentId}/detail`, { headers:{Accept:"application/json"} });
+        if (r2.ok) {
+          const d = await r2.json();
+          base = d.attraction || d.base || null;
+          attractionId = attractionId || Number(base?.attractionId) || null;
+        }
       }
     } catch (_) {}
 
@@ -446,45 +467,59 @@ document.addEventListener("DOMContentLoaded", () => {
     const address = (detail?.addr || "").trim();
     let addr1 = base?.addr1 || "", addr2 = base?.addr2 || "";
     if (!addr1 && !addr2 && address) {
+      // 앞부분(광역/시군구 추정) + 나머지
       const m = address.match(/^(\S+\s*\S*)(?:\s+(.+))?$/);
-      addr1 = m?.[1] || ""; addr2 = m?.[2] || "";
+      addr1 = m?.[1] || "";
+      addr2 = m?.[2] || "";
     }
 
-    // 감정 태그 수집 + 정규화 + 3개 제한
+    // 감정 태그 수집(최대 3개)
     let emotions = [];
     try {
       if (contentId) {
         const er = await fetch(`/api/attractions/content/${contentId}/emotion-tags`, { headers:{Accept:"application/json"} });
-        if (er.ok) emotions = await er.json();
+        if (er.ok) emotions = await er.json();  // 예: ["힐링","감성",...]
       }
     } catch (_) {}
+
+    // API가 비어있으면 화면 태그에서 수집
     if (!Array.isArray(emotions) || emotions.length === 0) {
       emotions = Array.from(document.querySelectorAll(".place-tag .tag-item, .emotion-tag, .place-tag-list .tag"))
-          .map(el => (el.textContent || "").replace(/^#/, "").trim())
+          .map(el => (el.textContent || ""))
           .filter(Boolean);
     }
-    const emotionNames = normalizeEmotionNames(emotions).slice(0, 3);  // ← 중요
+    const emotionNames = normalizeEmotionNames(emotions).slice(0, 3);
 
+    // 프리필 페이로드
     const attrForPrefill = {
       attractionId,
       contentId,
       title: base?.title || detail?.title || document.querySelector(".place-name")?.textContent || "",
       firstImage: base?.firstImage || detail?.image || "",
-      address,
+      address,  // 통합 주소
       addr1,
       addr2
     };
 
+    const TEST_TTL_MS = 60 * 10 * 1000;
     const payload = {
-      source: "attraction-detail",
+      source: "attraction-detail", // 상세에서 온 프리필임을 표시
+      ts: Date.now(),              // 타임스탬프
+      exp: Date.now() + TEST_TTL_MS,
       attraction: attrForPrefill,
-      contentId,                 // 선택 페이지에서 편하게 쓰라고 탑레벨도 넣음
-      emotions: emotionNames     // ← 감정 태그 전달 (문자열 배열)
+      contentId,                   // 선택 페이지에서 바로 쓰라고 탑레벨에도
+      emotions: emotionNames       // 정규화된 감정명(최대 3개)
     };
 
+    // 세션에만 저장 + 마커 남기기
     sessionStorage.setItem("room_prefill", JSON.stringify(payload));
-    localStorage.setItem("room_prefill", JSON.stringify(payload));
+    sessionStorage.setItem("prefill_from_detail", "1");
+    localStorage.removeItem("room_prefill");
 
+    // 혹시 남아있던 과거값은 정리
+    localStorage.removeItem("room_prefill");
+
+    // 이동
     window.location.href = btn.getAttribute("href") || "/companion-rooms/create";
   });
 });
