@@ -1325,3 +1325,59 @@ a:focus:not(:focus-visible) {
         transition-duration: 0.01ms !important;
     }
 }
+
+/* 방 상태 알림 모달 스타일 */
+#roomStatusModal .modal-content {
+    max-width: 400px;
+    text-align: center;
+}
+
+#roomStatusModal .status-icon-container {
+    margin: 1rem 0 1.5rem 0;
+}
+
+#roomStatusModal #roomStatusMessage {
+    font-weight: 500;
+    color: #374151;
+    margin: 0;
+    padding: 0 1rem;
+}
+
+#roomStatusModal .modal-header h3 {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+}
+
+#roomStatusModal .btn-confirm {
+    background: linear-gradient(135deg, #005792 0%, #001A2C 100%);
+    color: white;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 100px;
+}
+
+#roomStatusModal .btn-confirm:hover {
+    background: linear-gradient(135deg, #004773 0%, #000F1A 100%);
+    transform: translateY(-1px);
+}
+
+/* 애니메이션 효과 */
+#roomStatusModal.show {
+    animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
