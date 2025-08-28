@@ -1119,7 +1119,6 @@ function showReportModal(roomId, roomTitle, members) {
         `;
     }
 
-    // 확인 버튼 이벤트
     const confirmBtn = modal.querySelector('#submitReportBtn');
     confirmBtn.onclick = async () => {
         const selected = modal.querySelector("input[name='reportMember']:checked");
@@ -1127,8 +1126,7 @@ function showReportModal(roomId, roomTitle, members) {
             showNotification('info', '신고 대상을 선택하세요.');
             return;
         }
-
-        const reportedNickname = selected.value; // 🔥 닉네임 값
+        const reportedNickname = selected.value;
         const reason = modal.querySelector("#reportReasonSelect")?.value.toLowerCase();
         const message = modal.querySelector("#reportMessageTextarea")?.value.trim();
 
@@ -1144,18 +1142,31 @@ function showReportModal(roomId, roomTitle, members) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     reportedNickname: reportedNickname,
-                    reportReason: reason.toUpperCase(),  // 🔥 백엔드 ENUM 맞추기
+                    reportReason: reason.toUpperCase(),
                     reportMessage: message
                 })
             });
 
-            if (!res.ok) throw new Error('신고 실패');
-            showNotification('success', '신고가 접수되었습니다.');
-            hideModal('reportRoomModal');
+            // 🔥 400 에러라도 정상 처리 (에러로 던지지 않음)
+            const responseData = await res.json();
+
+            if (responseData.success) {
+                // 성공 케이스
+                showNotification('success', '신고가 접수되었습니다.');
+                hideModal('reportRoomModal');
+            } else {
+                // 실패 케이스 - 에러 메시지에 따라 알림 타입 구분
+                if (responseData.message && responseData.message.includes('자신을 신고할 수 없습니다')) {
+                    showNotification('error', '자기 자신은 신고할 수 없습니다.'); // 🔥 빨간색 error 타입
+                } else {
+                    showNotification('warning', responseData.message || '신고 처리 중 문제가 발생했습니다.');
+                }
+            }
 
         } catch (err) {
-            console.error(err);
-            showNotification('error', '신고 중 오류가 발생했습니다.');
+            // 🔥 네트워크 에러나 JSON 파싱 에러만 여기서 처리
+            console.error('신고 요청 실패:', err);
+            showNotification('error', '네트워크 오류가 발생했습니다.');
         }
     };
 

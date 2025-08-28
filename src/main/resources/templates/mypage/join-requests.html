@@ -140,7 +140,11 @@
                                                           th:text="${request.priority == 'HIGH'} ? '높음' : '보통'">보통</span>
                                                 </div>
 
-                                                <div class="request-message" th:text="${request.message}">신청 메시지</div>
+                                                <div class="application-message" th:text="${request.message}"
+                                                     style="white-space: pre-line; line-height: 1.5; padding: 12px;
+                                                     background-color: #f8f9fa;">
+                                                    신청 메시지
+                                                </div>
 
                                                 <div class="request-meta-detailed">
                                                     <span class="separator">|</span>

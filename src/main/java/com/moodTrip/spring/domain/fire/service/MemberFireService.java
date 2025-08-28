@@ -30,22 +30,36 @@ public class MemberFireService {
         request.validate();
 
         Member reporter = securityUtil.getCurrentMember();
-        Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new RuntimeException("존재하지 않는 방입니다."));
-
-        Member reportedMember = memberRepository.findByNickname(request.getReportedNickname())
-                .orElseThrow(() -> new RuntimeException("해당 닉네임의 멤버를 찾을 수 없습니다."));
-
-        // 자기 자신 신고 금지
-        if (reporter.getMemberPk().equals(reportedMember.getMemberPk())) {
-            throw new RuntimeException("자신을 신고할 수 없습니다.");
+        if (reporter == null) {
+            return MemberFireResponse.failure("로그인이 필요합니다.");
         }
 
-        // 중복 신고 체크
-        memberFireRepository.findByFireReporterAndReportedMemberAndTargetRoom(reporter, reportedMember, room)
-                .ifPresent(f -> { throw new RuntimeException("이미 신고한 멤버입니다."); });
+        Room room = roomRepository.findById(roomId)
+                .orElse(null);
+        if (room == null) {
+            return MemberFireResponse.failure("존재하지 않는 방입니다.");
+        }
 
-        MemberFire.FireReason fireReason = MemberFire.FireReason.fromString(request.getCleanedReportReason());
+        Member reportedMember = memberRepository.findByNickname(request.getReportedNickname())
+                .orElse(null);
+        if (reportedMember == null) {
+            return MemberFireResponse.failure("해당 닉네임의 멤버를 찾을 수 없습니다.");
+        }
+
+        if (reporter.getMemberPk().equals(reportedMember.getMemberPk())) {
+            return MemberFireResponse.failure("자신을 신고할 수 없습니다.");
+        }
+
+        if (memberFireRepository.findByFireReporterAndReportedMemberAndTargetRoom(reporter, reportedMember, room).isPresent()) {
+            return MemberFireResponse.failure("이미 신고한 멤버입니다.");
+        }
+
+        MemberFire.FireReason fireReason;
+        try {
+            fireReason = MemberFire.FireReason.fromString(request.getCleanedReportReason());
+        } catch (IllegalArgumentException e) {
+            return MemberFireResponse.failure("유효하지 않은 신고 사유입니다.");
+        }
 
         MemberFire fire = MemberFire.builder()
                 .fireReporter(reporter)

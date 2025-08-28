@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initMenuDropdowns();
 
     // 로그인 후 헤더 전용 감정 선택기 초기화
-    initLoggedInHeaderEmotionSelector();
+    //initLoggedInHeaderEmotionSelector();
 
     console.log('✅ header-after.js 초기화 완료');
   } catch (error) {
@@ -426,7 +426,7 @@ function isLoggedIn() {
 window.MoodTripHeaderAfter = {
   initProfileDropdown: initProfileDropdown,
   initMenuDropdowns: initMenuDropdowns,
-  initLoggedInHeaderEmotionSelector: initLoggedInHeaderEmotionSelector,
+  //initLoggedInHeaderEmotionSelector: initLoggedInHeaderEmotionSelector,
   handleLogout: handleLogout,
   performClientSideLogout: performClientSideLogout,
   isLoggedIn: isLoggedIn

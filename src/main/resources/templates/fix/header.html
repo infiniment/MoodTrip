@@ -43,16 +43,20 @@
                 <div class="left-nav-menu" data-menu="notice">
                     <div class="main-header text-header">공지사항</div>
                 </div>
-                <!-- 헤더 전용 검색바 (클래스명 변경됨) -->
+
+                <!-- 수정된 검색창 영역 -->
                 <div class="left-nav-menu pr-12 main-header text-header header-search-wrapper" style="margin-left: 100px;">
-                    <!-- 비회원용 안내 문구 및 로그인 링크 -->
-                    <div class="non-member-search-info">
-                        <!-- href를 제거해 링크 기능을 없애고, img를 빈 span으로 대체하여 여백 유지 -->
-                        <a class="login-prompt-link">
-                            <span>로그인 후 검색할 수 있습니다.</span>
-                            <!-- 이미지가 있던 자리에 보이지 않는 스페이서(spacer) 역할 -->
-                            <span class="header-search-icon"></span>
-                        </a>
+                    <div class="non-member-search-container">
+                        <!-- 실제 검색 입력창 (비활성화 상태) -->
+                        <input
+                                type="text"
+                                class="header-search-input"
+                                placeholder="로그인 후 검색할 수 있습니다"
+                                disabled
+                                readonly
+                                style="background-color: #ffffff; color: #333333; border: 1px solid #dee2e6; padding: 10px 15px; border-radius: 6px; width: 350px; cursor: not-allowed; font-size: 14px;"
+                        />
+                        <!-- 검색 버튼 제거됨 -->
                     </div>
                 </div>
 

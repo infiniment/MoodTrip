@@ -56,7 +56,7 @@ public class CompanionRoomListResponse {
                 .image(
                         (room.getAttraction() != null && room.getAttraction().getFirstImage() != null)
                                 ? room.getAttraction().getFirstImage()
-                                : "/static/image/default.png"
+                                : "/image/fix/moodtrip.png"
                 )
                 .urgent(calculateUrgent(room))
                 .status(calculateStatus(room))
