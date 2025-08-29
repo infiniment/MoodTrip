@@ -1,7 +1,10 @@
 package com.moodTrip.spring.domain.admin.controller;
 
+import com.moodTrip.spring.domain.admin.dto.response.AttractionAdminDto;
 import com.moodTrip.spring.domain.admin.service.FaqService;
 import com.moodTrip.spring.domain.admin.service.NotificationService;
+import com.moodTrip.spring.domain.attraction.service.AttractionService;
+import com.moodTrip.spring.global.common.util.PageResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -20,6 +23,7 @@ public class AdminController {
     private final NotificationService notificationService;
     private final FaqService faqService;
     private final MemberService memberService;
+    private final AttractionService attractionService;
 
     @GetMapping
     public String adminPage(Model model) {
@@ -31,6 +35,8 @@ public class AdminController {
 
         //회원 목록 추가
         model.addAttribute("members", memberService.getAllMembersForAdmin());
+
+        model.addAttribute("attractions", attractionService.getAttractionsForAdmin("", 0, 10).getContent());
 
 
         return "admin/admin";
@@ -87,6 +93,23 @@ public class AdminController {
         }
     }
 
+    @GetMapping("/attractions")
+    @ResponseBody
+    public ResponseEntity<PageResult<AttractionAdminDto>> getAttractions(
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "search", required = false) String search) {
+        var result = attractionService.getAttractionsForAdmin(search, page, size);
+        return ResponseEntity.ok(PageResult.of(result));
+    }
+
+    // 관광지 상세 조회
+    @GetMapping("/attractions/{attractionId}")
+    @ResponseBody
+    public ResponseEntity<AttractionAdminDto> getAttractionDetail(@PathVariable Long attractionId) {
+        // 일단 기본 응답
+        return ResponseEntity.ok(new AttractionAdminDto());
+    }
 
 
 }
