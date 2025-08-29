@@ -424,7 +424,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
+
+
+
 });
+
+
+
 
 async function handleLikeClick(button) {
     const attractionId = button.dataset.attractionId;
