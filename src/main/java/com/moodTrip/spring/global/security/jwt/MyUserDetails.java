@@ -25,6 +25,10 @@ public class MyUserDetails implements UserDetails {
         return java.util.Collections.emptyList();
     }
 
+    public String getProvider() {
+        return member.getProvider();
+    }
+
     @Override
     public String getPassword() {
         return member.getMemberPw();
