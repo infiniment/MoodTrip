@@ -285,14 +285,12 @@ function handleRejectRequest(requestId, roomId, buttonElement) {
     );
 }
 
-/**
- * 🔥 개별 요청 승인 처리 (실제 API 호출)
- */
+// join-requests.js의 processRequestApproval 함수 수정
 async function processRequestApproval(requestId, requestItem) {
     setButtonLoading(requestItem, 'approve', true);
 
     try {
-        console.log('🚀 개별 승인 API 호출 시작 - requestId:', requestId);
+        console.log('승인 API 호출 시작 - requestId:', requestId);
 
         const response = await fetch(`${API_BASE_URL}/${requestId}/approve`, {
             method: 'POST',
@@ -302,32 +300,36 @@ async function processRequestApproval(requestId, requestItem) {
         const result = await response.json();
 
         if (response.ok && result.success) {
-            console.log('✅ 개별 승인 성공:', result);
+            console.log('승인 성공:', result);
+
+            // 요청 아이템 제거 애니메이션
             animateRequestRemoval(requestItem, 'approve');
+
+            // 즉시 대기 카운트 업데이트 (핵심 수정 부분)
+            updateWaitingCountForRoom(requestItem);
+
             showToast('success', result.message);
+
+            // 전체 데이터 새로고침 (통계 등)
             await refreshData();
         } else {
-            console.error('❌ 개별 승인 실패:', result.message);
+            console.error('승인 실패:', result.message);
             showToast('error', result.message || '승인 처리에 실패했습니다.');
             setButtonLoading(requestItem, 'approve', false);
         }
 
     } catch (error) {
-        console.error('❌ 개별 승인 API 오류:', error);
+        console.error('승인 API 오류:', error);
         showToast('error', '네트워크 오류가 발생했습니다. 다시 시도해주세요.');
         setButtonLoading(requestItem, 'approve', false);
     }
 }
 
-/**
- * 🔥 개별 요청 거절 처리 (실제 API 호출)
- */
+// 거절 처리에서도 같은 로직 적용
 async function processRequestRejection(requestId, requestItem) {
     setButtonLoading(requestItem, 'reject', true);
 
     try {
-        console.log('🚀 개별 거절 API 호출 시작 - requestId:', requestId);
-
         const response = await fetch(`${API_BASE_URL}/${requestId}/reject`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
@@ -336,51 +338,23 @@ async function processRequestRejection(requestId, requestItem) {
         const result = await response.json();
 
         if (response.ok && result.success) {
-            console.log('✅ 개별 거절 성공:', result);
             animateRequestRemoval(requestItem, 'reject');
+
+            // 즉시 대기 카운트 업데이트 (거절도 동일하게 적용)
+            updateWaitingCountForRoom(requestItem);
+
             showToast('info', result.message);
             await refreshData();
         } else {
-            console.error('❌ 개별 거절 실패:', result.message);
+            console.error('거절 실패:', result.message);
             showToast('error', result.message || '거절 처리에 실패했습니다.');
             setButtonLoading(requestItem, 'reject', false);
         }
 
     } catch (error) {
-        console.error('❌ 개별 거절 API 오류:', error);
+        console.error('거절 API 오류:', error);
         showToast('error', '네트워크 오류가 발생했습니다. 다시 시도해주세요.');
         setButtonLoading(requestItem, 'reject', false);
-    }
-}
-
-/**
- * 🔥 데이터 새로고침 (통계 + 대기 카운트 등)
- */
-/**
- * 🔥 데이터 새로고침 (통계 + 대기 카운트 등) - 수정됨
- */
-async function refreshData() {
-    try {
-        console.log('🔄 데이터 새로고침 시작');
-
-        // 통계 데이터 새로고침
-        const statsData = await fetchRequestStats();
-        updateStatsDisplay(statsData);
-
-        // 🔥 페이징 데이터 다시 수집 추가
-        setTimeout(() => {
-            if (!isSingleRoomMode) {
-                collectAllRoomSections();
-                if (currentPage > totalPages && totalPages > 0) {
-                    showRoomPage(totalPages);
-                } else {
-                    showRoomPage(currentPage);
-                }
-                updateRoomPaginationButtons();
-            }
-        }, 100);
-    } catch (error) {
-        console.error("데이터 새로고침 실패:", error);
     }
 }
 
@@ -515,10 +489,8 @@ function setButtonLoading(requestItem, action, isLoading) {
     });
 }
 
-/**
- * 단일 요청 제거 애니메이션
- */
 function animateRequestRemoval(requestItem, action) {
+    const roomSection = requestItem.closest('.room-section');
     const direction = action === 'approve' ? '100%' : '-100%';
 
     requestItem.style.transform = `translateX(${direction})`;
@@ -526,30 +498,48 @@ function animateRequestRemoval(requestItem, action) {
     requestItem.style.transition = 'all 0.3s ease';
 
     setTimeout(() => {
-        if (requestItem.parentNode) requestItem.remove();
+        if (requestItem.parentNode) {
+            requestItem.remove();
+
+            // 마지막 요청이었는지 확인
+            const remainingRequests = roomSection ? roomSection.querySelectorAll('.request-item-detailed') : [];
+            if (remainingRequests.length === 0 && roomSection) {
+                const requestsContainer = roomSection.querySelector('.requests-container');
+                if (requestsContainer) {
+                    requestsContainer.innerHTML = createEmptySection();
+                }
+            }
+        }
     }, 300);
 }
 
-/**
- * 대기 건수 업데이트
- */
-function updateWaitingCounts() {
-    const sections = document.querySelectorAll('.room-section');
+function updateWaitingCountForRoom(requestItem) {
+    const roomSection = requestItem.closest('.room-section');
+    if (!roomSection) return;
 
-    sections.forEach(section => {
-        const requests = section.querySelectorAll('.request-item-detailed:not(.hidden)');
-        const waitingCount = section.querySelector('.waiting-count');
+    // 300ms 후 (animateRequestRemoval 완료 후 즉시)
+    setTimeout(() => {
+        const remainingRequests = roomSection.querySelectorAll('.request-item-detailed');
+        const waitingCountElement = roomSection.querySelector('.waiting-count');
+        const requestsContainer = roomSection.querySelector('.requests-container');
 
-        if (waitingCount) {
-            if (requests.length > 0) {
-                waitingCount.textContent = `${requests.length}건 대기`;
-                waitingCount.classList.remove('no-requests');
+        if (waitingCountElement) {
+            if (remainingRequests.length > 0) {
+                waitingCountElement.textContent = `${remainingRequests.length}건 대기`;
+                waitingCountElement.classList.remove('no-requests');
             } else {
-                waitingCount.textContent = '요청 없음';
-                waitingCount.classList.add('no-requests');
+                waitingCountElement.textContent = '요청 없음';
+                waitingCountElement.classList.add('no-requests');
+
+                // 빈 섹션이 아직 추가되지 않았다면 추가
+                if (requestsContainer && !requestsContainer.querySelector('.empty-section')) {
+                    requestsContainer.innerHTML = createEmptySection();
+                }
             }
         }
-    });
+
+        updateNotificationBadge();
+    }, 320); // animateRequestRemoval보다 약간 늦게
 }
 
 /**
@@ -734,38 +724,28 @@ function initializeRoomPagination() {
     }
 }
 
-/**
- * 모든 방 섹션 수집
- */
 function collectAllRoomSections() {
-    console.log('🔍 방 섹션 수집 시작');
-
     const allSections = document.querySelectorAll('.room-section');
-    console.log(`📂 찾은 방 섹션 수: ${allSections.length}`);
-
     allRoomSections = [];
 
     allSections.forEach((section, index) => {
         const roomTitle = section.querySelector('.room-title')?.textContent || '';
         const roomId = section.getAttribute('data-room-id') || '';
-        const requestCount = section.querySelectorAll('.request-item-detailed').length;
+        // 실제로 표시되는 요청만 카운트 (빈 섹션 제외)
+        const actualRequests = section.querySelectorAll('.request-item-detailed');
+        const requestCount = actualRequests.length;
 
-        const roomData = {
+        allRoomSections.push({
             element: section,
             roomTitle: roomTitle,
             roomId: roomId,
             requestCount: requestCount,
             index: index
-        };
-
-        allRoomSections.push(roomData);
-        console.log(`  📂 방 ${index + 1}: "${roomTitle}" (${requestCount}개 요청)`);
+        });
     });
 
     totalItems = allRoomSections.length;
     totalPages = Math.ceil(totalItems / itemsPerPage);
-
-    console.log(`✅ 방 수집 완료: ${totalItems}개 방, ${totalPages}페이지`);
 }
 
 /**
@@ -1059,36 +1039,30 @@ function goToNextRoomPage() {
     }
 }
 
-// ==========================================
-// 🔥 수정된 refreshData 함수 (방 페이징과 연동)
-// ==========================================
-
 async function refreshData() {
     try {
-        console.log('🔄 데이터 새로고침 시작');
+        console.log('데이터 새로고침 시작');
 
-        // 통계 데이터 새로고침
         const statsData = await fetchRequestStats();
         updateStatsDisplay(statsData);
 
-        // 🔥 올바른 함수 이름으로 수정
+        // 페이징 데이터 재수집 및 업데이트
         setTimeout(() => {
-            collectAllRoomSections();  // ✅ 방 섹션 수집 함수
-            if (currentPage > totalPages && totalPages > 0) {
-                showRoomPage(totalPages);  // ✅ 방 페이지 표시 함수
-            } else {
-                showRoomPage(currentPage);  // ✅ 현재 페이지 다시 표시
+            if (!isSingleRoomMode) {
+                collectAllRoomSections();
+                // 현재 페이지가 총 페이지수를 초과하면 마지막 페이지로
+                if (currentPage > totalPages && totalPages > 0) {
+                    showRoomPage(totalPages);
+                } else if (totalPages > 0) {
+                    showRoomPage(currentPage);
+                }
+                updateRoomPaginationButtons();
             }
-            updateRoomPaginationButtons();  // ✅ 방 페이징 버튼 업데이트
-        }, 100);
+        }, 350); // UI 업데이트 완료 후
 
-        // 알림 배지 업데이트
         updateNotificationBadge();
-
-        console.log('✅ 방 데이터 새로고침 완료');
-
     } catch (error) {
-        console.error('❌ 데이터 새로고침 실패:', error);
+        console.error("데이터 새로고침 실패:", error);
     }
 }
 

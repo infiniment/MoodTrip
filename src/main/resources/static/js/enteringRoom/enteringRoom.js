@@ -574,7 +574,7 @@ async function submitApplication() {
 
         if (response.ok && result.success) {
             // 성공 시
-            alert(`"${room.title}" 방에 입장 신청이 완료되었습니다!\n${result.resultMessage}`);
+            alert(`"${room.title}" 방에 입장 신청이 완료되었습니다!`);
             closeApplicationModal();
 
             // 방 목록 새로고침 (참여자 수 업데이트 등)
@@ -582,7 +582,7 @@ async function submitApplication() {
 
         } else {
             // 실패 시 (비즈니스 로직 오류)
-            alert(result.resultMessage || '입장 신청 중 오류가 발생했습니다.');
+            alert(result.resultMessage);
         }
 
     } catch (error) {
