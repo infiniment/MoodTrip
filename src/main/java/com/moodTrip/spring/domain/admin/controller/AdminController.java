@@ -96,9 +96,9 @@ public class AdminController {
     @GetMapping("/attractions")
     @ResponseBody
     public ResponseEntity<PageResult<AttractionAdminDto>> getAttractions(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String search) {
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "search", required = false) String search) {
         var result = attractionService.getAttractionsForAdmin(search, page, size);
         return ResponseEntity.ok(PageResult.of(result));
     }
