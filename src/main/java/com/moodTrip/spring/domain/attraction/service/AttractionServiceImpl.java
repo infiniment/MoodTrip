@@ -3,6 +3,7 @@ package com.moodTrip.spring.domain.attraction.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.moodTrip.spring.domain.admin.dto.response.AttractionAdminDto;
 import com.moodTrip.spring.domain.attraction.dto.request.AttractionInsertRequest;
 import com.moodTrip.spring.domain.attraction.dto.response.AttractionDetailResponse;
 import com.moodTrip.spring.domain.attraction.dto.response.AttractionRegionResponse;
@@ -739,5 +740,48 @@ public class AttractionServiceImpl implements AttractionService {
     public List<String> getEmotionTagNames(long contentId) {
         // Top 3만 원하면 .stream().limit(3) 추가
         return attractionEmotionRepository.findActiveEmotionNamesByContentId(contentId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<AttractionAdminDto> getAttractionsForAdmin(String search, int page, int size) {
+        Page<Attraction> attractions;
+
+        if (search != null && !search.trim().isEmpty()) {
+            attractions = searchAttractions(search.trim(), page, size);
+        } else {
+            attractions = findAttractions(page, size);
+        }
+
+        return attractions.map(this::convertToAdminDto);
+    }
+
+    private AttractionAdminDto convertToAdminDto(Attraction a) {
+        return AttractionAdminDto.builder()
+                .attractionId(a.getAttractionId())
+                .contentId(a.getContentId())
+                .title(a.getTitle())
+                .addr1(a.getAddr1())
+                .categoryName(getContentTypeName(a.getContentTypeId()))
+                .emotionTags(getEmotionTagsForAttraction(a.getAttractionId()))
+                .createdTime(a.getCreatedTime())
+                .status("공개")
+                .statusClass("status active")
+                .build();
+    }
+
+    private String getContentTypeName(Integer contentTypeId) {
+        if (contentTypeId == null) return "기타";
+        Map<Integer, String> types = Map.of(
+                12, "관광지", 14, "문화시설", 15, "축제공연",
+                25, "여행코스", 28, "레포츠", 32, "숙박", 38, "쇼핑", 39, "음식점"
+        );
+        return types.getOrDefault(contentTypeId, "기타");
+    }
+
+    private String getEmotionTagsForAttraction(Long attractionId) {
+        // attractionEmotionRepository를 통해 감정태그들을 가져와서 쉼표로 연결
+        // 일단 빈 문자열로 처리
+        return "";
     }
 }
