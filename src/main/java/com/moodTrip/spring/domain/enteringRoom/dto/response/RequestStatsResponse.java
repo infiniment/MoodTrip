@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class RequestStatsResponse {
-
     // 통계 데이터 dto
 
     private Integer totalRequests;      // 총 요청 수

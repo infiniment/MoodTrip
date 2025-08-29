@@ -28,7 +28,7 @@ public class JoinRequestListResponse {
     private boolean isVerified;          // 신원 인증 여부
     private boolean hasPhoneVerified;    // 연락처 인증 여부
 
-    // 🔥 엔티티에서 DTO로 변환하는 정적 메서드
+    // 엔티티에서 DTO로 변환하는 정적 메서드
     public static JoinRequestListResponse from(EnteringRoom entity) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         String formattedTime = entity.getCreatedAt().format(formatter);

@@ -14,7 +14,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class RoomWithRequestsResponse {
-
     // 방과 신청 통합 정보 dto
     private Long roomId;
     private String roomTitle;
