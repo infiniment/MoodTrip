@@ -718,12 +718,14 @@
             <section class="content-section" id="reports-section" style="display: none;">
                 <div class="section-header">
                     <h2>신고 관리</h2>
-                    <div class="filter-buttons">
-                        <!-- admin.js의 applyFilter는 버튼 텍스트로 필터함: '전체' | '대기' | '처리완료' | '거부' -->
-                        <button class="filter-btn active">전체</button>
-                        <button class="filter-btn">대기</button>
-                        <button class="filter-btn">처리완료</button>
-                        <button class="filter-btn">거부</button>
+                    <div class="section-actions">
+                        <div class="filter-buttons">
+                            <!-- admin.js의 applyFilter는 버튼 텍스트로 필터함: '전체' | '대기' | '처리완료' | '거부' -->
+                            <button class="filter-btn active">전체</button>
+                            <button class="filter-btn">대기</button>
+                            <button class="filter-btn">처리완료</button>
+                            <button class="filter-btn">거부</button>
+                        </div>
                     </div>
                 </div>
 
@@ -811,7 +813,9 @@
             <section class="content-section" id="notices-section" style="display: none;">
                 <div class="section-header">
                     <h2>공지사항 관리</h2>
-                    <button class="btn-primary" onclick="showNoticeForm()">새 공지사항 작성</button>
+                    <div class="section-actions">
+                        <button class="btn-primary" onclick="showNoticeForm()">새 공지사항 작성</button>
+                    </div>
                 </div>
                 
                 <!-- 공지사항 목록 -->
@@ -896,7 +900,9 @@
             <section class="content-section" id="faq-section" style="display: none;">
                 <div class="section-header">
                     <h2>FAQ 관리</h2>
-                    <button class="btn-primary" onclick="showFaqForm()">새 FAQ 작성</button>
+                    <div class="section-actions">
+                        <button class="btn-primary" onclick="showFaqForm()">새 FAQ 작성</button>
+                    </div>
                 </div>
 
                 <!-- FAQ 목록 -->
