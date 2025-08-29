@@ -1072,7 +1072,6 @@ function addLocationToTable(name, region, category, tags) {
 }
 
 
-
 // === 매칭 관리 함수들 ===
 
 function handleMatchingDetail(btn) {

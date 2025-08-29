@@ -29,10 +29,10 @@
                     <span class="menu-icon">👥</span>
                     <span class="menu-text">회원 관리</span>
                 </div>
-                <div class="menu-item" data-menu="content">
-                    <span class="menu-icon">📝</span>
-                    <span class="menu-text">콘텐츠 관리</span>
-                </div>
+<!--                <div class="menu-item" data-menu="content">-->
+<!--                    <span class="menu-icon">📝</span>-->
+<!--                    <span class="menu-text">콘텐츠 관리</span>-->
+<!--                </div>-->
                 <div class="menu-item" data-menu="matching">
                     <span class="menu-icon">🤝</span>
                     <span class="menu-text">매칭 관리</span>
@@ -296,472 +296,513 @@
                 </div>
             </section>
 
-            <!-- 콘텐츠 관리 섹션 -->
-            <section class="content-section" id="content-section" style="display: none;">
-                <div class="section-header">
-                    <h2>콘텐츠 관리</h2>
-                    <button class="btn-primary" onclick="showAddContentForm()">새 콘텐츠 추가</button>
-                </div>
-                
-                <div class="content-tabs">
-                    <div class="tab active" data-tab="locations">관광지 정보</div>
-                    <div class="tab" data-tab="emotions">감정 태그</div>
-                    <div class="tab" data-tab="reviews">리뷰 관리</div>
-                </div>
-                
-                <!-- 관광지 정보 탭 -->
-                <div class="tab-content active" id="locations-tab">
-                    <div class="table-container">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>제목</th>
-                                    <th>지역</th>
-                                    <th>카테고리</th>
-                                    <th>등록일</th>
-                                    <th>상태</th>
-                                    <th>관리</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>경복궁</td>
-                                    <td>서울</td>
-                                    <td>역사/문화</td>
-                                    <td>2024-06-01</td>
-                                    <td><span class="status active">공개</span></td>
-                                    <td>
-                                        <button class="btn-small" onclick="handleLocationEditFromList(this)">수정</button>
-                                        <button class="btn-small danger" onclick="handleLocationDelete(this)">삭제</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>해운대 해수욕장</td>
-                                    <td>부산</td>
-                                    <td>자연/휴양</td>
-                                    <td>2024-06-01</td>
-                                    <td><span class="status active">공개</span></td>
-                                    <td>
-                                        <button class="btn-small" onclick="handleLocationEditFromList(this)">수정</button>
-                                        <button class="btn-small danger" onclick="handleLocationDelete(this)">삭제</button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-               <!-- 감정 태그 탭 -->
-                <div class="tab-content" id="emotions-tab" style="display: none;">
-                    <div class="section-header">
-                        <h3>감정 태그 관리</h3>
-                        <button class="btn-primary" onclick="showAddEmotionTagModal()">새 태그 추가</button>
-                    </div>
-                    <div class="table-container">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>태그명</th>
-                                    <th>사용 횟수</th>
-                                    <th>생성일</th>
-                                    <th>상태</th>
-                                    <th>관리</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>휴식</td>
-                                    <td>1,234회</td>
-                                    <td>2024-01-01</td>
-                                    <td><span class="status active">활성</span></td>
-                                    <td>
-                                        <button class="btn-small" onclick="handleEmotionTagEdit(this)">수정</button>
-                                        <button class="btn-small danger" onclick="handleEmotionTagDeactivation(this)">비활성화</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>모험</td>
-                                    <td>987회</td>
-                                    <td>2024-01-01</td>
-                                    <td><span class="status active">활성</span></td>
-                                    <td>
-                                        <button class="btn-small" onclick="handleEmotionTagEdit(this)">수정</button>
-                                        <button class="btn-small danger" onclick="handleEmotionTagDeactivation(this)">비활성화</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>로맨틱</td>
-                                    <td>756회</td>
-                                    <td>2024-01-01</td>
-                                    <td><span class="status active">활성</span></td>
-                                    <td>
-                                        <button class="btn-small" onclick="handleEmotionTagEdit(this)">수정</button>
-                                        <button class="btn-small danger" onclick="handleEmotionTagDeactivation(this)">비활성화</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>자연</td>
-                                    <td>1,567회</td>
-                                    <td>2024-01-01</td>
-                                    <td><span class="status suspended">비활성</span></td>
-                                    <td>
-                                        <button class="btn-small" onclick="handleEmotionTagEdit(this)">수정</button>
-                                        <button class="btn-small success" onclick="handleEmotionTagDeactivation(this)">활성화</button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- 리뷰 관리 탭 -->
-                <div class="tab-content" id="reviews-tab" style="display: none;">
-                    <div class="section-header">
-                        <h3>리뷰 관리</h3>
-                        <div class="filter-buttons">
-                            <button class="filter-btn active">전체</button>
-                            <button class="filter-btn">승인대기</button>
-                            <button class="filter-btn">승인완료</button>
-                            <button class="filter-btn">거부</button>
-                        </div>
-                    </div>
-                    <div class="table-container">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>관광지</th>
-                                    <th>작성자</th>
-                                    <th>평점</th>
-                                    <th>리뷰 내용</th>
-                                    <th>작성일</th>
-                                    <th>상태</th>
-                                    <th>관리</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>경복궁</td>
-                                    <td>홍길동</td>
-                                    <td>⭐⭐⭐⭐⭐</td>
-                                    <td>정말 아름다운 곳이었습니다...</td>
-                                    <td>2024-07-01</td>
-                                    <td><span class="status pending">승인대기</span></td>
-                                    <td>
-                                        <button class="btn-small success" onclick="handleReviewApproval(this)">승인</button>
-                                        <button class="btn-small danger" onclick="handleReviewRejection(this)">거부</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>해운대 해수욕장</td>
-                                    <td>김영희</td>
-                                    <td>⭐⭐⭐⭐</td>
-                                    <td>바다가 정말 깨끗해요!</td>
-                                    <td>2024-06-30</td>
-                                    <td><span class="status active">승인완료</span></td>
-                                    <td>
-                                        <button class="btn-small" onclick="handleReviewDetail(this)">상세</button>
-                                        <button class="btn-small danger" onclick="handleReviewDelete(this)">삭제</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>제주 성산일출봉</td>
-                                    <td>박민수</td>
-                                    <td>⭐⭐⭐⭐⭐</td>
-                                    <td>일출이 정말 장관이었어요!</td>
-                                    <td>2024-06-28</td>
-                                    <td><span class="status suspended">거부</span></td>
-                                    <td>
-                                        <button class="btn-small" onclick="handleReviewDetail(this)">상세</button>
-                                        <button class="btn-small success" onclick="handleReviewReapproval(this)">재승인</button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 매칭 관리 섹션 -->
-            <section class="content-section" id="matching-section" style="display: none;">
-                <div class="section-header">
-                    <h2>매칭 관리</h2>
-                    <div class="filter-buttons">
-                        <button class="filter-btn active">전체</button>
-                        <button class="filter-btn">진행중</button>
-                        <button class="filter-btn">완료</button>
-                        <button class="filter-btn">취소</button>
-                    </div>
-                </div>
-                
-                <div class="matching-grid">
-                    <div class="matching-card">
-                        <div class="matching-header">
-                            <h4>부산 힐링 여행</h4>
-                            <span class="matching-status active">진행중</span>
-                        </div>
-                        <div class="matching-info">
-                            <p><strong>생성자:</strong> 홍길동</p>
-                            <p><strong>참여자:</strong> 3/4명</p>
-                            <p><strong>여행일:</strong> 2024-07-15 ~ 07-17</p>
-                            <p><strong>지역:</strong> 부산</p>
-                        </div>
-                        <div class="matching-actions">
-                            <button class="btn-small" onclick="handleMatchingDetail(this)">상세보기</button>
-                            <button class="btn-small danger" onclick="handleMatchingTerminate(this)">강제종료</button>
-                        </div>
-                    </div>
-                    
-                    <div class="matching-card">
-                        <div class="matching-header">
-                            <h4>제주도 감성 여행</h4>
-                            <span class="matching-status completed">완료</span>
-                        </div>
-                        <div class="matching-info">
-                            <p><strong>생성자:</strong> 김영희</p>
-                            <p><strong>참여자:</strong> 2/2명</p>
-                            <p><strong>여행일:</strong> 2024-07-01 ~ 07-03</p>
-                            <p><strong>지역:</strong> 제주</p>
-                        </div>
-                        <div class="matching-actions">
-                            <button class="btn-small" onclick="handleMatchingDetail(this)">상세보기</button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 관광지 관리 섹션 -->
-            <section class="content-section" id="locations-section" style="display: none;">  
-                <!-- 관광지 목록 -->
+            <!-- 관광지 관리 섹션 (Thymeleaf 서버렌더) -->
+            <section class="content-section" id="locations-section" style="display: none;">
                 <div class="section-header">
                     <h2>관광지 관리</h2>
-                    <button class="btn-primary" onclick="showLocationForm()">새 관광지 추가</button>
+                    <div class="section-actions">
+                        <!-- admin.js 의 검색 로직이 .search-input 클래스에 바인딩됨 -->
+                        <input type="text" class="search-input" placeholder="관광지명 / 지역 / 태그 검색..." />
+                        <button class="btn-primary" onclick="showLocationForm()">새 관광지 추가</button>
+                    </div>
                 </div>
-                
-                <!-- 관광지 목록 -->
+
+                <!-- 목록 뷰 -->
                 <div id="location-list-view">
                     <div class="table-container">
                         <table class="data-table">
                             <thead>
-                                <tr>
-                                    <th>관광지명</th>
-                                    <th>지역</th>
-                                    <th>카테고리</th>
-                                    <th>감정태그</th>
-                                    <th>등록일</th>
-                                    <th>상태</th>
-                                    <th>관리</th>
-                                </tr>
+                            <tr>
+                                <th>관광지명</th>
+                                <th>지역</th>
+                                <th>카테고리</th>
+                                <th>감정태그</th>
+                                <th>등록일</th>
+                                <th>상태</th>
+                                <th>관리</th>
+                            </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <td>경복궁</td>
-                                    <td>서울</td>
-                                    <td>역사/문화</td>
-                                    <td>감동, 힐링</td>
-                                    <td>2024-06-01</td>
-                                    <td><span class="status active">공개</span></td>
-                                    <td>
-                                        <button class="btn-small" onclick="handleLocationDetail(this)">상세</button>
-                                        <button class="btn-small" onclick="handleLocationEditFromList(this)">수정</button>
-                                        <button class="btn-small danger" onclick="handleLocationDeleteFromList(this)">삭제</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>해운대 해수욕장</td>
-                                    <td>부산</td>
-                                    <td>자연/휴양</td>
-                                    <td>휴식, 자연</td>
-                                    <td>2024-06-01</td>
-                                    <td><span class="status active">공개</span></td>
-                                    <td>
-                                        <button class="btn-small" onclick="handleLocationDetail(this)">상세</button>
-                                        <button class="btn-small" onclick="handleLocationEditFromList(this)">수정</button>
-                                        <button class="btn-small danger" onclick="handleLocationDeleteFromList(this)">삭제</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>제주 성산일출봉</td>
-                                    <td>제주</td>
-                                    <td>자연/휴양</td>
-                                    <td>모험, 자연, 감동</td>
-                                    <td>2024-05-15</td>
-                                    <td><span class="status active">공개</span></td>
-                                    <td>
-                                        <button class="btn-small" onclick="handleLocationDetail(this)">상세</button>
-                                        <button class="btn-small" onclick="handleLocationEditFromList(this)">수정</button>
-                                        <button class="btn-small danger" onclick="handleLocationDeleteFromList(this)">삭제</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>남산타워</td>
-                                    <td>서울</td>
-                                    <td>체험/액티비티</td>
-                                    <td>로맨틱, 전망</td>
-                                    <td>2024-05-20</td>
-                                    <td><span class="status pending">검토중</span></td>
-                                    <td>
-                                        <button class="btn-small" onclick="handleLocationDetail(this)">상세</button>
-                                        <button class="btn-small" onclick="handleLocationEditFromList(this)">수정</button>
-                                        <button class="btn-small danger" onclick="handleLocationDeleteFromList(this)">삭제</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>광안대교</td>
-                                    <td>부산</td>
-                                    <td>자연/휴양</td>
-                                    <td>야경, 로맨틱</td>
-                                    <td>2024-04-10</td>
-                                    <td><span class="status suspended">비공개</span></td>
-                                    <td>
-                                        <button class="btn-small" onclick="handleLocationDetail(this)">상세</button>
-                                        <button class="btn-small" onclick="handleLocationEditFromList(this)">수정</button>
-                                        <button class="btn-small danger" onclick="handleLocationDeleteFromList(this)">삭제</button>
-                                    </td>
-                                </tr>
+                            <tbody id="attractions-table-body">
+                            <!-- 서버가 내려주는 attractions 리스트 렌더 -->
+                            <tr th:each="a : ${attractions}" th:data-attraction-id="${a.attractionId}">
+                                <td th:text="${a.title}">관광지명</td>
+                                <td th:text="${a.addr1}">지역</td>
+                                <td th:text="${a.categoryName}">카테고리</td>
+                                <td th:text="${a.emotionTags != null && !#strings.isEmpty(a.emotionTags) ? a.emotionTags : '-'}">감정태그</td>
+                                <td th:text="${#temporals.format(a.createdTime, 'yyyy-MM-dd')}">등록일</td>
+                                <td>
+                                    <!-- statusClass 예: 'status active' / 'status suspended' / 'status pending' -->
+                                    <span th:class="${a.statusClass}" th:text="${a.status}">공개</span>
+                                </td>
+                                <td>
+                                    <!-- admin.js 에 구현된 핸들러와 이름을 정확히 맞춤 -->
+                                    <button class="btn-small" onclick="handleLocationDetail(this)">상세</button>
+                                    <button class="btn-small" onclick="handleLocationEditFromList(this)">수정</button>
+                                    <button class="btn-small danger" onclick="handleLocationDeleteFromList(this)">삭제</button>
+                                </td>
+                            </tr>
+
+                            <!-- 데이터 없을 때 -->
+                            <tr th:if="${#lists.isEmpty(attractions)}">
+                                <td colspan="7" style="text-align:center; padding:40px; color:#666;">
+                                    등록된 관광지가 없습니다.
+                                </td>
+                            </tr>
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- (선택) 페이지네이션 영역: 필요 시 서버/클라 방식 중 택1로 구성 -->
+                    <div class="pagination-container" style="margin-top: 20px; text-align: center;">
+                        <!-- 서버 페이징을 쓰면 Thymeleaf로 버튼 렌더,
+                             클라 페이징을 쓰면 admin.js 의 setupAttractionsPagination 활용 -->
+                    </div>
                 </div>
 
-                <!-- 관광지 추가/수정 폼 -->
-                <div class="location-form" id="location-form-view" style="display: none;">
+                <!-- 폼 뷰 (신규/수정 공용) -->
+                <div id="location-form-view" style="display:none;">
                     <div class="form-row">
                         <div class="form-group">
                             <label>관광지명</label>
-                            <input type="text" id="location-name" placeholder="관광지명을 입력하세요">
+                            <input type="text" id="location-name" />
                         </div>
                         <div class="form-group">
                             <label>지역</label>
                             <select id="location-region">
-                                <option>서울</option>
-                                <option>부산</option>
-                                <option>제주</option>
-                                <option>경기</option>
+                                <option>서울</option><option>부산</option><option>제주</option><option>경기</option>
+                                <option>강원</option><option>경남</option><option>전남</option><option>충남</option>
                             </select>
                         </div>
                     </div>
+
                     <div class="form-row">
                         <div class="form-group">
                             <label>카테고리</label>
                             <select id="location-category">
-                                <option>역사/문화</option>
-                                <option>자연/휴양</option>
-                                <option>체험/액티비티</option>
-                                <option>맛집/쇼핑</option>
+                                <option>역사/문화</option><option>자연/휴양</option>
+                                <option>체험/액티비티</option><option>맛집/쇼핑</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label>감정태그</label>
-                            <input type="text" id="location-tags" placeholder="관련 감정태그를 입력하세요">
+                            <input type="text" id="location-tags" placeholder="쉼표로 구분" />
                         </div>
                     </div>
+
                     <div class="form-group">
                         <label>설명</label>
-                        <textarea id="location-description" placeholder="관광지에 대한 설명을 입력하세요"></textarea>
+                        <textarea id="location-description" rows="4"></textarea>
                     </div>
-                    <div class="form-actions">
-                        <button class="btn-primary" onclick="saveLocation()">저장</button>
+
+                    <div class="modal-actions">
                         <button class="btn-secondary" onclick="cancelLocationForm()">취소</button>
+                        <button class="btn-primary" onclick="saveLocation()">저장</button>
                     </div>
                 </div>
             </section>
 
-            <!-- 신고 관리 섹션 -->
+
+            <!--            &lt;!&ndash; 매칭 관리 섹션 &ndash;&gt;-->
+<!--            <section class="content-section" id="matching-section" style="display: none;">-->
+<!--                <div class="section-header">-->
+<!--                    <h2>매칭 관리</h2>-->
+<!--                    <div class="filter-buttons">-->
+<!--                        <button class="filter-btn active">전체</button>-->
+<!--                        <button class="filter-btn">진행중</button>-->
+<!--                        <button class="filter-btn">완료</button>-->
+<!--                        <button class="filter-btn">취소</button>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--                -->
+<!--                <div class="matching-grid">-->
+<!--                    <div class="matching-card">-->
+<!--                        <div class="matching-header">-->
+<!--                            <h4>부산 힐링 여행</h4>-->
+<!--                            <span class="matching-status active">진행중</span>-->
+<!--                        </div>-->
+<!--                        <div class="matching-info">-->
+<!--                            <p><strong>생성자:</strong> 홍길동</p>-->
+<!--                            <p><strong>참여자:</strong> 3/4명</p>-->
+<!--                            <p><strong>여행일:</strong> 2024-07-15 ~ 07-17</p>-->
+<!--                            <p><strong>지역:</strong> 부산</p>-->
+<!--                        </div>-->
+<!--                        <div class="matching-actions">-->
+<!--                            <button class="btn-small" onclick="handleMatchingDetail(this)">상세보기</button>-->
+<!--                            <button class="btn-small danger" onclick="handleMatchingTerminate(this)">강제종료</button>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    -->
+<!--                    <div class="matching-card">-->
+<!--                        <div class="matching-header">-->
+<!--                            <h4>제주도 감성 여행</h4>-->
+<!--                            <span class="matching-status completed">완료</span>-->
+<!--                        </div>-->
+<!--                        <div class="matching-info">-->
+<!--                            <p><strong>생성자:</strong> 김영희</p>-->
+<!--                            <p><strong>참여자:</strong> 2/2명</p>-->
+<!--                            <p><strong>여행일:</strong> 2024-07-01 ~ 07-03</p>-->
+<!--                            <p><strong>지역:</strong> 제주</p>-->
+<!--                        </div>-->
+<!--                        <div class="matching-actions">-->
+<!--                            <button class="btn-small" onclick="handleMatchingDetail(this)">상세보기</button>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </section>-->
+
+<!--            &lt;!&ndash; 관광지 관리 섹션 &ndash;&gt;-->
+<!--            <section class="content-section" id="locations-section" style="display: none;">-->
+<!--&lt;!&ndash;                <tbody id="attractions-table-body">&ndash;&gt;-->
+<!--&lt;!&ndash;                <th:block th:each="attraction : ${attractions}">&ndash;&gt;-->
+<!--&lt;!&ndash;                    <tr th:data-attraction-id="${attraction.attractionId}">&ndash;&gt;-->
+<!--&lt;!&ndash;                        <td th:text="${attraction.title}">관광지명</td>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <td th:text="${attraction.addr1}">지역</td>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <td th:text="${attraction.categoryName}">카테고리</td>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <td th:text="${attraction.emotionTags}">감정태그</td>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <td th:text="${#temporals.format(attraction.createdTime, 'yyyy-MM-dd')}">등록일</td>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <td>&ndash;&gt;-->
+<!--&lt;!&ndash;                <span th:class="${attraction.statusClass}"&ndash;&gt;-->
+<!--&lt;!&ndash;                      th:text="${attraction.status}">상태</span>&ndash;&gt;-->
+<!--&lt;!&ndash;                        </td>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <td>&ndash;&gt;-->
+<!--&lt;!&ndash;                            <button class="btn-small" onclick="handleLocationDetail(this)">상세</button>&ndash;&gt;-->
+<!--&lt;!&ndash;                            <button class="btn-small" onclick="handleLocationEdit(this)">수정</button>&ndash;&gt;-->
+<!--&lt;!&ndash;                            <button class="btn-small danger" onclick="handleLocationDelete(this)">삭제</button>&ndash;&gt;-->
+<!--&lt;!&ndash;                        </td>&ndash;&gt;-->
+<!--&lt;!&ndash;                    </tr>&ndash;&gt;-->
+<!--&lt;!&ndash;                </th:block>&ndash;&gt;-->
+
+<!--&lt;!&ndash;                &lt;!&ndash; 데이터 없을 때 &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;                <tr th:if="${#lists.isEmpty(attractions)}">&ndash;&gt;-->
+<!--&lt;!&ndash;                    <td colspan="7" style="text-align: center; padding: 40px; color: #666;">&ndash;&gt;-->
+<!--&lt;!&ndash;                        등록된 관광지가 없습니다.&ndash;&gt;-->
+<!--&lt;!&ndash;                    </td>&ndash;&gt;-->
+<!--&lt;!&ndash;                </tr>&ndash;&gt;-->
+<!--&lt;!&ndash;                </tbody>&ndash;&gt;-->
+
+<!--                &lt;!&ndash; 관광지 목록 &ndash;&gt;-->
+<!--                <div class="section-header">-->
+<!--                    <h2>관광지 관리</h2>-->
+<!--                    <button class="btn-primary" onclick="showLocationForm()">새 관광지 추가</button>-->
+<!--                </div>-->
+
+<!--                &lt;!&ndash; 관광지 목록 &ndash;&gt;-->
+<!--                <div id="location-list-view">-->
+<!--                    <div class="table-container">-->
+<!--                        <table class="data-table">-->
+<!--                            <thead>-->
+<!--                                <tr>-->
+<!--                                    <th>관광지명</th>-->
+<!--                                    <th>지역</th>-->
+<!--                                    <th>카테고리</th>-->
+<!--                                    <th>감정태그</th>-->
+<!--                                    <th>등록일</th>-->
+<!--                                    <th>상태</th>-->
+<!--                                    <th>관리</th>-->
+<!--                                </tr>-->
+<!--                            </thead>-->
+<!--                            <tbody>-->
+<!--                                <tr>-->
+<!--                                    <td>경복궁</td>-->
+<!--                                    <td>서울</td>-->
+<!--                                    <td>역사/문화</td>-->
+<!--                                    <td>감동, 힐링</td>-->
+<!--                                    <td>2024-06-01</td>-->
+<!--                                    <td><span class="status active">공개</span></td>-->
+<!--                                    <td>-->
+<!--                                        <button class="btn-small" onclick="handleLocationDetail(this)">상세</button>-->
+<!--                                        <button class="btn-small" onclick="handleLocationEditFromList(this)">수정</button>-->
+<!--                                        <button class="btn-small danger" onclick="handleLocationDeleteFromList(this)">삭제</button>-->
+<!--                                    </td>-->
+<!--                                </tr>-->
+<!--                                <tr>-->
+<!--                                    <td>해운대 해수욕장</td>-->
+<!--                                    <td>부산</td>-->
+<!--                                    <td>자연/휴양</td>-->
+<!--                                    <td>휴식, 자연</td>-->
+<!--                                    <td>2024-06-01</td>-->
+<!--                                    <td><span class="status active">공개</span></td>-->
+<!--                                    <td>-->
+<!--                                        <button class="btn-small" onclick="handleLocationDetail(this)">상세</button>-->
+<!--                                        <button class="btn-small" onclick="handleLocationEditFromList(this)">수정</button>-->
+<!--                                        <button class="btn-small danger" onclick="handleLocationDeleteFromList(this)">삭제</button>-->
+<!--                                    </td>-->
+<!--                                </tr>-->
+<!--                                <tr>-->
+<!--                                    <td>제주 성산일출봉</td>-->
+<!--                                    <td>제주</td>-->
+<!--                                    <td>자연/휴양</td>-->
+<!--                                    <td>모험, 자연, 감동</td>-->
+<!--                                    <td>2024-05-15</td>-->
+<!--                                    <td><span class="status active">공개</span></td>-->
+<!--                                    <td>-->
+<!--                                        <button class="btn-small" onclick="handleLocationDetail(this)">상세</button>-->
+<!--                                        <button class="btn-small" onclick="handleLocationEditFromList(this)">수정</button>-->
+<!--                                        <button class="btn-small danger" onclick="handleLocationDeleteFromList(this)">삭제</button>-->
+<!--                                    </td>-->
+<!--                                </tr>-->
+<!--                                <tr>-->
+<!--                                    <td>남산타워</td>-->
+<!--                                    <td>서울</td>-->
+<!--                                    <td>체험/액티비티</td>-->
+<!--                                    <td>로맨틱, 전망</td>-->
+<!--                                    <td>2024-05-20</td>-->
+<!--                                    <td><span class="status pending">검토중</span></td>-->
+<!--                                    <td>-->
+<!--                                        <button class="btn-small" onclick="handleLocationDetail(this)">상세</button>-->
+<!--                                        <button class="btn-small" onclick="handleLocationEditFromList(this)">수정</button>-->
+<!--                                        <button class="btn-small danger" onclick="handleLocationDeleteFromList(this)">삭제</button>-->
+<!--                                    </td>-->
+<!--                                </tr>-->
+<!--                                <tr>-->
+<!--                                    <td>광안대교</td>-->
+<!--                                    <td>부산</td>-->
+<!--                                    <td>자연/휴양</td>-->
+<!--                                    <td>야경, 로맨틱</td>-->
+<!--                                    <td>2024-04-10</td>-->
+<!--                                    <td><span class="status suspended">비공개</span></td>-->
+<!--                                    <td>-->
+<!--                                        <button class="btn-small" onclick="handleLocationDetail(this)">상세</button>-->
+<!--                                        <button class="btn-small" onclick="handleLocationEditFromList(this)">수정</button>-->
+<!--                                        <button class="btn-small danger" onclick="handleLocationDeleteFromList(this)">삭제</button>-->
+<!--                                    </td>-->
+<!--                                </tr>-->
+<!--                            </tbody>-->
+<!--                        </table>-->
+<!--                    </div>-->
+<!--                </div>-->
+
+<!--                &lt;!&ndash; 관광지 추가/수정 폼 &ndash;&gt;-->
+<!--                <div class="location-form" id="location-form-view" style="display: none;">-->
+<!--                    <div class="form-row">-->
+<!--                        <div class="form-group">-->
+<!--                            <label>관광지명</label>-->
+<!--                            <input type="text" id="location-name" placeholder="관광지명을 입력하세요">-->
+<!--                        </div>-->
+<!--                        <div class="form-group">-->
+<!--                            <label>지역</label>-->
+<!--                            <select id="location-region">-->
+<!--                                <option>서울</option>-->
+<!--                                <option>부산</option>-->
+<!--                                <option>제주</option>-->
+<!--                                <option>경기</option>-->
+<!--                            </select>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    <div class="form-row">-->
+<!--                        <div class="form-group">-->
+<!--                            <label>카테고리</label>-->
+<!--                            <select id="location-category">-->
+<!--                                <option>역사/문화</option>-->
+<!--                                <option>자연/휴양</option>-->
+<!--                                <option>체험/액티비티</option>-->
+<!--                                <option>맛집/쇼핑</option>-->
+<!--                            </select>-->
+<!--                        </div>-->
+<!--                        <div class="form-group">-->
+<!--                            <label>감정태그</label>-->
+<!--                            <input type="text" id="location-tags" placeholder="관련 감정태그를 입력하세요">-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    <div class="form-group">-->
+<!--                        <label>설명</label>-->
+<!--                        <textarea id="location-description" placeholder="관광지에 대한 설명을 입력하세요"></textarea>-->
+<!--                    </div>-->
+<!--                    <div class="form-actions">-->
+<!--                        <button class="btn-primary" onclick="saveLocation()">저장</button>-->
+<!--                        <button class="btn-secondary" onclick="cancelLocationForm()">취소</button>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </section>-->
+
+<!--            &lt;!&ndash; 신고 관리 섹션 &ndash;&gt;-->
+<!--            <section class="content-section" id="reports-section" style="display: none;">-->
+<!--                <div class="section-header">-->
+<!--                    <h2>신고 관리</h2>-->
+<!--                    <div class="filter-buttons">-->
+<!--                        <button class="filter-btn active">전체</button>-->
+<!--                        <button class="filter-btn">미처리</button>-->
+<!--                        <button class="filter-btn">처리완료</button>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--                -->
+<!--                <div class="reports-list">-->
+<!--                    <div class="report-item urgent">-->
+<!--                        <div class="report-header">-->
+<!--                            <h4>부적절한 언어 사용</h4>-->
+<!--                            <span class="report-status pending">미처리</span>-->
+<!--                        </div>-->
+<!--                        <div class="report-info">-->
+<!--                            <p><strong>신고자:</strong> 김영희</p>-->
+<!--                            <p><strong>피신고자:</strong> 박철수</p>-->
+<!--                            <p><strong>신고일:</strong> 2024-07-01 14:30</p>-->
+<!--                            <p><strong>내용:</strong> 채팅방에서 욕설 및 성희롱 발언</p>-->
+<!--                        </div>-->
+<!--                        <div class="report-actions">-->
+<!--                            <button class="btn-small" onclick="handleReportDetail(this)">상세보기</button>-->
+<!--                            <button class="btn-small warning" onclick="handleReportWarning(this)">경고</button>-->
+<!--                            <button class="btn-small danger" onclick="handleReportSuspension(this)">계정정지</button>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    -->
+<!--                    <div class="report-item">-->
+<!--                        <div class="report-header">-->
+<!--                            <h4>스팸성 게시물</h4>-->
+<!--                            <span class="report-status resolved">처리완료</span>-->
+<!--                        </div>-->
+<!--                        <div class="report-info">-->
+<!--                            <p><strong>신고자:</strong> 이민수</p>-->
+<!--                            <p><strong>피신고자:</strong> 광고계정1</p>-->
+<!--                            <p><strong>신고일:</strong> 2024-06-30 09:15</p>-->
+<!--                            <p><strong>처리결과:</strong> 계정 삭제 처리</p>-->
+<!--                        </div>-->
+<!--                        <div class="report-actions">-->
+<!--                            <button class="btn-small" onclick="handleReportDetail(this)">상세보기</button>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    -->
+<!--                    <div class="report-item">-->
+<!--                        <div class="report-header">-->
+<!--                            <h4>허위 정보 유포</h4>-->
+<!--                            <span class="report-status pending">미처리</span>-->
+<!--                        </div>-->
+<!--                        <div class="report-info">-->
+<!--                            <p><strong>신고자:</strong> 정수진</p>-->
+<!--                            <p><strong>피신고자:</strong> 최민호</p>-->
+<!--                            <p><strong>신고일:</strong> 2024-07-02 11:20</p>-->
+<!--                            <p><strong>내용:</strong> 관광지에 대한 거짓 정보 게시</p>-->
+<!--                        </div>-->
+<!--                        <div class="report-actions">-->
+<!--                            <button class="btn-small" onclick="handleReportDetail(this)">상세보기</button>-->
+<!--                            <button class="btn-small warning" onclick="handleReportWarning(this)">경고</button>-->
+<!--                            <button class="btn-small danger" onclick="handleReportSuspension(this)">계정정지</button>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    -->
+<!--                    <div class="report-item">-->
+<!--                        <div class="report-header">-->
+<!--                            <h4>사기 행위</h4>-->
+<!--                            <span class="report-status warning-issued">경고처리</span>-->
+<!--                        </div>-->
+<!--                        <div class="report-info">-->
+<!--                            <p><strong>신고자:</strong> 한지민</p>-->
+<!--                            <p><strong>피신고자:</strong> 이상훈</p>-->
+<!--                            <p><strong>신고일:</strong> 2024-06-28 16:45</p>-->
+<!--                            <p><strong>내용:</strong> 가짜 여행 상품 판매 시도</p>-->
+<!--                        </div>-->
+<!--                        <div class="report-actions">-->
+<!--                            <button class="btn-small" onclick="handleReportDetail(this)">상세보기</button>-->
+<!--                            <button class="btn-small success" onclick="handleReportCancel(this)">처리취소</button>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    -->
+<!--                    <div class="report-item urgent">-->
+<!--                        <div class="report-header">-->
+<!--                            <h4>괴롭힘 및 혐오 발언</h4>-->
+<!--                            <span class="report-status suspended">계정정지</span>-->
+<!--                        </div>-->
+<!--                        <div class="report-info">-->
+<!--                            <p><strong>신고자:</strong> 윤서연</p>-->
+<!--                            <p><strong>피신고자:</strong> 강동욱</p>-->
+<!--                            <p><strong>신고일:</strong> 2024-06-25 19:30</p>-->
+<!--                            <p><strong>내용:</strong> 지속적인 괴롭힘 및 차별적 발언</p>-->
+<!--                        </div>-->
+<!--                        <div class="report-actions">-->
+<!--                            <button class="btn-small" onclick="handleReportDetail(this)">상세보기</button>-->
+<!--                            <button class="btn-small success" onclick="handleReportCancel(this)">처리취소</button>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </section>-->
+            <!-- 신고 관리 섹션 타임리프 적용-->
             <section class="content-section" id="reports-section" style="display: none;">
                 <div class="section-header">
                     <h2>신고 관리</h2>
                     <div class="filter-buttons">
+                        <!-- admin.js의 applyFilter는 버튼 텍스트로 필터함: '전체' | '대기' | '처리완료' | '거부' -->
                         <button class="filter-btn active">전체</button>
-                        <button class="filter-btn">미처리</button>
+                        <button class="filter-btn">대기</button>
                         <button class="filter-btn">처리완료</button>
+                        <button class="filter-btn">거부</button>
                     </div>
                 </div>
-                
-                <div class="reports-list">
-                    <div class="report-item urgent">
-                        <div class="report-header">
-                            <h4>부적절한 언어 사용</h4>
-                            <span class="report-status pending">미처리</span>
-                        </div>
-                        <div class="report-info">
-                            <p><strong>신고자:</strong> 김영희</p>
-                            <p><strong>피신고자:</strong> 박철수</p>
-                            <p><strong>신고일:</strong> 2024-07-01 14:30</p>
-                            <p><strong>내용:</strong> 채팅방에서 욕설 및 성희롱 발언</p>
-                        </div>
-                        <div class="report-actions">
-                            <button class="btn-small" onclick="handleReportDetail(this)">상세보기</button>
-                            <button class="btn-small warning" onclick="handleReportWarning(this)">경고</button>
-                            <button class="btn-small danger" onclick="handleReportSuspension(this)">계정정지</button>
-                        </div>
+
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                        <tr>
+                            <th>신고ID</th>
+                            <th>유형</th>
+                            <th>대상</th>
+                            <th>신고자</th>
+                            <th>피신고자</th>
+                            <th>사유</th>
+                            <th>일시</th>
+                            <th>상태</th>
+                            <th>관리</th>
+                        </tr>
+                        </thead>
+                        <tbody id="reports-table-body">
+                        <!-- 서버가 내려주는 reports 리스트 -->
+                        <tr th:each="r : ${reports}" class="report-item"
+                            th:data-report-id="${r.reportId}"
+                            th:data-type="${r.type}">
+                            <td th:text="${r.reportId}">1</td>
+                            <td th:text="${r.typeDisplay}">매칭방</td>
+                            <td th:text="${r.targetSummary}">부산 힐링 여행(ROOM#123)</td>
+                            <td th:text="${r.reporterNickname}">신고자닉</td>
+                            <td th:text="${r.reportedNickname}">피신고자닉</td>
+                            <td th:text="${r.reason}">욕설/비방</td>
+                            <td th:text="${#temporals.format(r.createdAt, 'yyyy-MM-dd HH:mm')}">2025-08-28 10:32</td>
+                            <td>
+                                <!-- statusClass: 'status pending' | 'status active' | 'status suspended' 등, 텍스트는 '대기' | '처리완료' | '거부' -->
+                                <span class="report-status"
+                                      th:classappend="${' ' + r.statusClass}"
+                                      th:text="${r.statusDisplay}">대기</span>
+                            </td>
+                            <td>
+                                <!-- 아래 핸들러 이름은 admin.js에 맞춰 쓰면 바로 연결 가능.
+                                     아직 없다면 추후 같은 이름으로 구현하면 됨. -->
+                                <button class="btn-small" onclick="handleReportDetail(this)">상세</button>
+                                <button class="btn-small success" onclick="handleReportResolve(this)">처리완료</button>
+                                <button class="btn-small danger" onclick="handleReportReject(this)">거부</button>
+                                <button class="btn-small danger" onclick="handleReportDelete(this)">삭제</button>
+                            </td>
+                        </tr>
+
+                        <!-- 데이터 없을 때 -->
+                        <tr th:if="${#lists.isEmpty(reports)}">
+                            <td colspan="9" style="text-align:center; padding:40px; color:#666;">
+                                접수된 신고가 없습니다.
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 페이지네이션 -->
+                <div class="pagination-container" style="margin-top:20px; text-align:center;">
+                    <div class="pagination" th:if="${page != null}">
+                        <!-- 이전 -->
+                        <a th:href="@{|/admin/reports?page=${page.number - 1}&size=${size}|}"
+                           th:classappend="${page.first} ? ' disabled'">&laquo; 이전</a>
+
+                        <!-- 번호 -->
+                        <span th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}">
+        <a th:href="@{|/admin/reports?page=${i}&size=${size}|}"
+           th:text="${i + 1}"
+           th:classappend="${i == page.number} ? ' active'"></a>
+      </span>
+
+                        <!-- 다음 -->
+                        <a th:href="@{|/admin/reports?page=${page.number + 1}&size=${size}|}"
+                           th:classappend="${page.last} ? ' disabled'">다음 &raquo;</a>
                     </div>
-                    
-                    <div class="report-item">
-                        <div class="report-header">
-                            <h4>스팸성 게시물</h4>
-                            <span class="report-status resolved">처리완료</span>
-                        </div>
-                        <div class="report-info">
-                            <p><strong>신고자:</strong> 이민수</p>
-                            <p><strong>피신고자:</strong> 광고계정1</p>
-                            <p><strong>신고일:</strong> 2024-06-30 09:15</p>
-                            <p><strong>처리결과:</strong> 계정 삭제 처리</p>
-                        </div>
-                        <div class="report-actions">
-                            <button class="btn-small" onclick="handleReportDetail(this)">상세보기</button>
-                        </div>
-                    </div>
-                    
-                    <div class="report-item">
-                        <div class="report-header">
-                            <h4>허위 정보 유포</h4>
-                            <span class="report-status pending">미처리</span>
-                        </div>
-                        <div class="report-info">
-                            <p><strong>신고자:</strong> 정수진</p>
-                            <p><strong>피신고자:</strong> 최민호</p>
-                            <p><strong>신고일:</strong> 2024-07-02 11:20</p>
-                            <p><strong>내용:</strong> 관광지에 대한 거짓 정보 게시</p>
-                        </div>
-                        <div class="report-actions">
-                            <button class="btn-small" onclick="handleReportDetail(this)">상세보기</button>
-                            <button class="btn-small warning" onclick="handleReportWarning(this)">경고</button>
-                            <button class="btn-small danger" onclick="handleReportSuspension(this)">계정정지</button>
-                        </div>
-                    </div>
-                    
-                    <div class="report-item">
-                        <div class="report-header">
-                            <h4>사기 행위</h4>
-                            <span class="report-status warning-issued">경고처리</span>
-                        </div>
-                        <div class="report-info">
-                            <p><strong>신고자:</strong> 한지민</p>
-                            <p><strong>피신고자:</strong> 이상훈</p>
-                            <p><strong>신고일:</strong> 2024-06-28 16:45</p>
-                            <p><strong>내용:</strong> 가짜 여행 상품 판매 시도</p>
-                        </div>
-                        <div class="report-actions">
-                            <button class="btn-small" onclick="handleReportDetail(this)">상세보기</button>
-                            <button class="btn-small success" onclick="handleReportCancel(this)">처리취소</button>
-                        </div>
-                    </div>
-                    
-                    <div class="report-item urgent">
-                        <div class="report-header">
-                            <h4>괴롭힘 및 혐오 발언</h4>
-                            <span class="report-status suspended">계정정지</span>
-                        </div>
-                        <div class="report-info">
-                            <p><strong>신고자:</strong> 윤서연</p>
-                            <p><strong>피신고자:</strong> 강동욱</p>
-                            <p><strong>신고일:</strong> 2024-06-25 19:30</p>
-                            <p><strong>내용:</strong> 지속적인 괴롭힘 및 차별적 발언</p>
-                        </div>
-                        <div class="report-actions">
-                            <button class="btn-small" onclick="handleReportDetail(this)">상세보기</button>
-                            <button class="btn-small success" onclick="handleReportCancel(this)">처리취소</button>
-                        </div>
+
+                    <div style="margin-top:8px; color:#666; font-size:13px;" th:if="${page != null}">
+                        총 <span th:text="${page.totalElements}">0</span>건 /
+                        <span th:text="${page.number + 1}">1</span> /
+                        <span th:text="${page.totalPages}">1</span> 페이지
                     </div>
                 </div>
             </section>
@@ -923,27 +964,27 @@
                 <div class="settings-grid">
                     <div class="setting-group">
                         <h3>일반 설정</h3>
-                        <div class="setting-item">
-                            <label>사이트명</label>
-                            <input type="text" value="여행 플랫폼">
-                        </div>
+<!--                        <div class="setting-item">-->
+<!--                            <label>사이트명</label>-->
+<!--                            <input type="text" value="여행 플랫폼">-->
+<!--                        </div>-->
                         <div class="setting-item">
                             <label>관리자 이메일</label>
                             <input type="email" value="admin@travel.com">
                         </div>
                     </div>
                     
-                    <div class="setting-group">
-                        <h3>매칭 설정</h3>
-                        <div class="setting-item">
-                            <label>최대 매칭 인원</label>
-                            <input type="number" value="6">
-                        </div>
-                        <div class="setting-item">
-                            <label>매칭 유효기간 (일)</label>
-                            <input type="number" value="30">
-                        </div>
-                    </div>
+<!--                    <div class="setting-group">-->
+<!--                        <h3>매칭 설정</h3>-->
+<!--                        <div class="setting-item">-->
+<!--                            <label>최대 매칭 인원</label>-->
+<!--                            <input type="number" value="6">-->
+<!--                        </div>-->
+<!--                        <div class="setting-item">-->
+<!--                            <label>매칭 유효기간 (일)</label>-->
+<!--                            <input type="number" value="30">-->
+<!--                        </div>-->
+<!--                    </div>-->
                     
                     <div class="setting-group">
                         <h3>보안 설정</h3>
