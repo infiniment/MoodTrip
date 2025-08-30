@@ -15,6 +15,7 @@ import java.util.List;
 public interface MypageRoomService {
 
     // 현재 로그인한 사용자가 참여 중인 방 목록 조회
+
     List<JoinedRoomResponse> getMyJoinedRooms(Member member);
 
     // 현재 로그인한 사용자가 생성한 방 목록 조회

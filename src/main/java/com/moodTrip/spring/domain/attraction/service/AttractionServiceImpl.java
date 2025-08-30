@@ -41,7 +41,7 @@ public class AttractionServiceImpl implements AttractionService {
     private final AttractionIntroRepository introRepository;
     private final AttractionEmotionRepository attractionEmotionRepository;
     private final RestTemplate restTemplate;
-
+    private final UserAttractionRepository userAttractionRepository;
 
 
     @Value("${attraction.apikey.decoding}")
