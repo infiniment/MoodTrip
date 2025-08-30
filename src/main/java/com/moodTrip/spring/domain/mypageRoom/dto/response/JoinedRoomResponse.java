@@ -47,7 +47,7 @@ public class JoinedRoomResponse {
 
         String image = (room.getAttraction() != null && room.getAttraction().getFirstImage() != null)
                 ? room.getAttraction().getFirstImage()
-                : "/static/image/default.png";
+                : "/image/fix/moodtrip.png";
 
         return JoinedRoomResponse.builder()
                 .roomId(room.getRoomId())

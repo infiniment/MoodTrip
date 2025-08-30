@@ -304,10 +304,6 @@ public class JoinRequestManagementService {
         return request.getCreatedAt().isAfter(twoHoursAgo);
     }
 
-    /**
-     * 사이드바 알림 배지용 - 총 대기 요청 수만 간단히 조회
-     * 다른 마이페이지들에서 사이드바에 배지 표시하기 위해 사용
-     */
     public Integer getTotalPendingRequestsForSidebar() {
         log.debug("사이드바 배지용 총 대기 요청 수 조회");
 

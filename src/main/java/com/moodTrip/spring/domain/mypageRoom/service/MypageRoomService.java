@@ -8,9 +8,6 @@ import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 //마이페이지 방 관련 서비스 인터페이스
-// 내가 입장한 방 목록 조회
-// 내가 만든 방 목록 조회 (추후 구현)
-// 방 나가기, 방 삭제 등 (추후 구현)
 
 public interface MypageRoomService {
 

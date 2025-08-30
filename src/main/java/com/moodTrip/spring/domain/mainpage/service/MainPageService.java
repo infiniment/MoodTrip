@@ -19,19 +19,12 @@ public class MainPageService {
 
     private final RoomRepository roomRepository;
 
-    /**
-     * 메인페이지용 인기 방 6개 조회
-     * - 조회수 기준 내림차순으로 상위 6개
-     * - 삭제되지 않은 방만 조회
-     * - Attraction, Creator 정보를 함께 조회해서 N+1 문제 방지
-     */
+    // 인가 방 6개 추출
     public List<MainPageRoomResponse> getPopularRooms() {
         log.info("메인페이지 인기 방 6개 조회 시작");
 
         try {
-            // Repository에서 조회수 기준 상위 6개 방 조회
-            // findTop6ByIsDeleteRoomFalseOrderByViewCountDescCreatedAtDesc()
-            // 이 메소드 하나로 모든 조건 처리됨 (삭제 안된 방 + 조회수 내림차순 + 상위 6개)
+
             List<Room> popularRooms = roomRepository.findTop6ByIsDeleteRoomFalseOrderByViewCountDescCreatedAtDesc();
 
             log.info("인기 방 {}개 조회 완료", popularRooms.size());
@@ -60,10 +53,7 @@ public class MainPageService {
         }
     }
 
-    /**
-     * 추가 메소드: 최신 방 6개 조회 (조회수가 모두 0인 경우를 대비)
-     * 필요시 컨트롤러에서 호출 가능
-     */
+    // 최신 방 6개 조회
     public List<MainPageRoomResponse> getLatestRooms() {
         log.info("메인페이지 최신 방 6개 조회 시작");
 
