@@ -28,17 +28,16 @@
                 <aside class="user-settings-nav">
                     <div class="account-settings">계정 설정</div>
                     <hr orientation="horizontal" class="horizontal-line">
-                    <a class="my_profile active" th:href="@{/mypage/my-profile}">내 정보</a>
+                    <a class="my_profile" th:href="@{/mypage/my-profile}">내 정보</a>
                     <a class="my_matching active" th:href="@{/mypage/my-matching}">매칭 정보</a>
-                    <a class="join_requests active" th:href="@{/mypage/join-requests}">
+                    <a class="join_requests" th:href="@{/mypage/join-requests}">
                         방 입장 요청 관리
-                        <!-- 🔥 서버에서 받은 총 대기 요청 수로 배지 표시 -->
                         <span class="notification-badge" id="join-requests-badge"
                               th:if="${totalPendingRequests > 0}"
                               th:text="${totalPendingRequests}">3</span>
                     </a>
-                    <a class="my_tourist_attraction_wishlist active" th:href="@{/mypage/my-tourist-attraction-wishlist}">관광지 찜 목록</a>
-                    <a class="change_password active"
+                    <a class="my_tourist_attraction_wishlist" th:href="@{/mypage/my-tourist-attraction-wishlist}">관광지 찜 목록</a>
+                    <a class="change_password"
                        th:if="${currentMember != null and #strings.isEmpty(currentMember.providerId)}"
                        th:href="@{/mypage/change-password}">비밀번호 변경 정보</a>
                 </aside>

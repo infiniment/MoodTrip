@@ -992,3 +992,47 @@
         width: 100%;
     }
 }
+
+/* ===========================
+   🔳 탈퇴 모달 컴팩트 & 정사각형화 패치
+   (my-profile.css 맨 아래에 추가)
+   =========================== */
+
+/* 1) 컨테이너를 거의 정사각형으로 고정 + 내부 스크롤 영역화 */
+.modal-container{
+    width: min(420px, 90vw) !important;    /* 가로 */
+    height: min(420px, 90vh) !important;   /* 세로 -> 정사각형 느낌 */
+    display: grid !important;
+    grid-template-rows: auto 1fr auto !important;  /* 헤더 / 내용(스크롤) / 푸터 */
+    padding: 0 !important;
+    border-radius: 16px !important;
+}
+
+/* 2) 내용 영역은 넘치면 스크롤 */
+.modal-content{
+    overflow: auto !important;
+}
+
+/* 3) 여백/타이포 컴팩트(전체 균형 잡기) */
+.modal-header, .modal-footer{ padding: 16px 20px !important; }
+.modal-title{ font-size: 18px !important; }
+.main-warning{ font-size: 16px !important; margin-bottom: 6px !important; }
+.sub-warning{ font-size: 13px !important; }
+.deletion-list{ padding: 12px !important; }
+.deletion-item{ padding: 6px 0 !important; }
+.final-warning{ padding: 10px 12px !important; font-size: 13px !important; }
+
+/* 4) 버튼도 살짝 슬림 */
+.cancel-btn, .confirm-btn{
+    height: 40px !important;
+    padding: 0 18px !important;
+}
+
+/* 5) 작은 폰에서는 화면 꽉 안 차게 약간 더 작게 */
+@media (max-width: 480px){
+    .modal-container{
+        width: 92vw !important;
+        height: 75vh !important; /* 세로 좀 더 줄임 */
+        border-radius: 14px !important;
+    }
+}
