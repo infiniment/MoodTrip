@@ -99,4 +99,8 @@ where (:areasEmpty = true or a.areaCode in :areas)
             @Param("cat3")       String cat3,
             Pageable pageable
     );
+
+
+
+
 }

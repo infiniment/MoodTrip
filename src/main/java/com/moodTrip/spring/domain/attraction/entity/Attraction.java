@@ -65,4 +65,6 @@ public class Attraction {
     @OneToMany(mappedBy = "attraction", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AttractionEmotion> attractionEmotions = new ArrayList<>();
 
+
+
 }
