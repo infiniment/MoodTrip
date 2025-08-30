@@ -26,13 +26,6 @@ public class MainPageRoomResponse {
     private String participantsInfo;   // "3 / 4" 형식
     private String periodInfo;         // "25/11/21 - 25/11/27" 형식
 
-    // 감정 태그들 (나중에 추가 예정)
-    // private List<String> emotionTags;
-
-    /**
-     * Room 엔티티를 MainPageRoomResponse DTO로 변환하는 정적 메소드
-     * 이 메소드에서 모든 데이터 변환 로직을 처리합니다
-     */
     public static MainPageRoomResponse from(Room room) {
         return MainPageRoomResponse.builder()
                 .roomId(room.getRoomId())
@@ -51,11 +44,8 @@ public class MainPageRoomResponse {
                 .build();
     }
 
-    /**
-     * 방 이미지 가져오기
-     * 1순위: Attraction의 firstImage 사용
-     * 2순위: roomId 기반 기본 이미지 선택 (일관성 유지)
-     */
+    // 방 이미지 가져오기
+
     private static String getRoomImage(Room room) {
         // Attraction에서 이미지 가져오기
         if (room.getAttraction() != null && room.getAttraction().getFirstImage() != null
@@ -73,10 +63,7 @@ public class MainPageRoomResponse {
         return defaultImages[imageIndex];
     }
 
-    /**
-     * Attraction에서 관광지 이름 가져오기
-     * 새로운 Attraction 연결이 있으면 사용, 없으면 기존 destinationName 사용 (하위 호환성)
-     */
+    // attraction에서 관광지 이름 가져오기
     private static String getAttractionName(Room room) {
         if (room.getAttraction() != null) {
             return room.getAttraction().getTitle(); // getAttractionName() → getTitle()로 변경
@@ -85,10 +72,7 @@ public class MainPageRoomResponse {
         return room.getDestinationName() != null ? room.getDestinationName() : "목적지 미정";
     }
 
-    /**
-     * 지역 정보 추출
-     * Attraction에는 Region 엔티티가 없고 areaCode만 있으므로 코드를 지역명으로 변환
-     */
+    // 지역 정보 추출
     private static String getLocation(Room room) {
         if (room.getAttraction() != null && room.getAttraction().getAreaCode() != null) {
             return convertAreaCodeToRegionName(room.getAttraction().getAreaCode());
@@ -97,10 +81,7 @@ public class MainPageRoomResponse {
         return "전국";
     }
 
-    /**
-     * 지역 코드를 지역명으로 변환
-     * 한국관광공사 API의 지역코드 기준
-     */
+    // 지역 코드를 지역명으로 변환
     private static String convertAreaCodeToRegionName(Integer areaCode) {
         switch (areaCode) {
             case 1: return "서울";
@@ -124,10 +105,7 @@ public class MainPageRoomResponse {
         }
     }
 
-    /**
-     * 여행 날짜를 "7월 셋째주" 형식으로 변환
-     * 프론트엔드에서 요구하는 형식에 맞춤
-     */
+    // 여행 날짜 형식 변경
     private static String formatTravelDate(Room room) {
         if (room.getTravelStartDate() == null) {
             return "날짜 미정";
@@ -145,9 +123,7 @@ public class MainPageRoomResponse {
         return month + "월 " + weekName;
     }
 
-    /**
-     * 기간 정보를 "25/11/21 - 25/11/27" 형식으로 변환
-     */
+    // 기간 정보 변환
     private static String formatPeriodInfo(Room room) {
         if (room.getTravelStartDate() == null) {
             return "날짜 미정";
@@ -164,9 +140,7 @@ public class MainPageRoomResponse {
         return startDate;
     }
 
-    /**
-     * 방 상태 계산 (모집중, 모집완료, 마감임박)
-     */
+    // 방 상태 계산 (모집중, 모집완료, 마감임박)
     private static String calculateStatus(Room room) {
         // 1순위: 정원이 가득 찬 경우
         if (room.getRoomCurrentCount() >= room.getRoomMaxCount()) {

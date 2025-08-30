@@ -38,7 +38,9 @@
                               th:text="${totalPendingRequests}">3</span>
                     </a>
                     <a class="my_tourist_attraction_wishlist active" th:href="@{/mypage/my-tourist-attraction-wishlist}">관광지 찜 목록</a>
-                    <a class="change_password active" th:href="@{/mypage/change-password}">비밀번호 변경 정보</a>
+                    <a class="change_password active"
+                       th:if="${currentMember != null and #strings.isEmpty(currentMember.providerId)}"
+                       th:href="@{/mypage/change-password}">비밀번호 변경 정보</a>
                 </aside>
                 <main class="mypage_info">
                     <div class="total-wrapper">
