@@ -19,5 +19,4 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     @EntityGraph(attributePaths = {"attraction"})
     Optional<Room> findWithAttractionByRoomId(Long roomId);
 
-
 }

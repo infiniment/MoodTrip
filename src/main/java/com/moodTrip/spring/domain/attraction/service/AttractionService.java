@@ -73,4 +73,5 @@ public interface AttractionService {
 
     List<String> getEmotionTagNames(long contentId);
 
+    Attraction getEntityByContentId(Long contentId);
 }

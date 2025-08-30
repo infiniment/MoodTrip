@@ -382,96 +382,29 @@
 
         <div class="weather-content">
           <div class="weather-slider" id="weatherSlider">
-            <!-- 날씨 카드들 -->
-            <div class="weather-card sunny" data-weather="맑음">
-              <div class="weather-image">
-                <img th:src="@{/image/mainpage/sample1.png}" alt="경복궁">
-                <div class="weather-overlay">
-                  <div class="weather-info">
-                    <span class="weather-icon">☀️</span>
-                    <span class="weather-temp">30°</span>
+            <!-- 템플릿 -->
+            <div class="weather-card sunny" id="weather-card-template" style="display:none" data-weather="맑음">
+              <a class="weather-link" href="#">
+                <div class="weather-image">
+                  <img src="/image/mainpage/sample1.png" alt="">
+                </div>
+                <div class="weather-content-area">
+                  <div class="weather-header">
+                    <h3 class="weather-title">제목</h3>
                   </div>
-                </div>
-              </div>
-              <div class="weather-content-area">
-                <div class="weather-header">
-                  <h3 class="weather-title">경복궁</h3>
-                  <span class="weather-day">화</span>
-                </div>
-                <div class="weather-location">
-                  📍 서울특별시 종로구
-                </div>
-                <p class="weather-description">
-                  조선 왕조의 법궁에서 역사의 숨결을 느끼며 맑은 날씨와 함께 궁궐 투어를 즐겨보세요.
-                </p>
-                <div class="weather-tags">
-                  <span class="tag">역사</span>
-                  <span class="tag">문화</span>
-                  <span class="tag">사진</span>
-                </div>
-              </div>
-            </div>
+                  <div class="weather-location">📍 주소</div>
 
-            <div class="weather-card sunny" data-weather="맑음">
-              <div class="weather-image">
-                <img th:src="@{/image/mainpage/sample2.png}" alt="한상수 자수 박물관">
-                <div class="weather-overlay">
-                  <div class="weather-info">
-                    <span class="weather-icon">☀️</span>
-                    <span class="weather-temp">25°</span>
+                  <p class="weather-description">설명</p>
+                  <div class="weather-tags">
+                    <span class="tag">태그1</span>
+                    <span class="tag">태그2</span>
                   </div>
                 </div>
-              </div>
-              <div class="weather-content-area">
-                <div class="weather-header">
-                  <h3 class="weather-title">한상수 자수 박물관</h3>
-                  <span class="weather-day">수</span>
-                </div>
-                <div class="weather-location">
-                  📍 서울특별시 성북구
-                  <span class="open-time">🕙 오전 10:00</span>
-                </div>
-                <p class="weather-description">
-                  전통 자수의 아름다움을 감상하며 조선시대 문화를 체험할 수 있는 특별한 공간입니다.
-                </p>
-                <div class="weather-tags">
-                  <span class="tag">전통</span>
-                  <span class="tag">예술</span>
-                  <span class="tag">체험</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="weather-card rainy" data-weather="비">
-              <div class="weather-image">
-                <img th:src="@{/image/mainpage/sample3.png}" alt="보문숲길 도서관">
-                <div class="weather-overlay">
-                  <div class="weather-info">
-                    <span class="weather-icon">🌧️</span>
-                    <span class="weather-temp">22°</span>
-                  </div>
-                </div>
-              </div>
-              <div class="weather-content-area">
-                <div class="weather-header">
-                  <h3 class="weather-title">보문숲길 도서관</h3>
-                  <span class="weather-day">목</span>
-                </div>
-                <div class="weather-location">
-                  📍 서울특별시 성북구 보문동
-                </div>
-                <p class="weather-description">
-                  비 오는 날에도 따뜻하고 아늑한 분위기에서 책과 함께 힐링하는 시간을 보내보세요.
-                </p>
-                <div class="weather-tags">
-                  <span class="tag">힐링</span>
-                  <span class="tag">독서</span>
-                  <span class="tag">카페</span>
-                </div>
-              </div>
+              </a>
             </div>
           </div>
         </div>
+
       </div>
     </section>
 

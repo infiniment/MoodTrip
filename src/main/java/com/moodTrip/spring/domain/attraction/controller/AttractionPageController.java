@@ -3,6 +3,7 @@ package com.moodTrip.spring.domain.attraction.controller;
 import com.moodTrip.spring.domain.attraction.dto.response.AttractionDetailResponse;
 import com.moodTrip.spring.domain.attraction.service.AttractionService;
 import com.moodTrip.spring.domain.emotion.service.AttractionEmotionService;
+import com.moodTrip.spring.domain.weather.service.WeatherService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,21 +19,14 @@ public class AttractionPageController {
 
     private final AttractionService attractionService;
     private final AttractionEmotionService attractionEmotionService;
-
+    private final WeatherService weatherService;
 
     @GetMapping("/attractions/detail/{contentId}")
     public String view(@PathVariable("contentId") long contentId, Model model) {
 
 
         AttractionDetailResponse detail = attractionService.getDetailResponse(contentId);
-
-
-        List<String> tags;
-        try {
-            tags = attractionEmotionService.findTagNamesByContentId(contentId);
-        } catch (Throwable t) {
-            tags = Collections.emptyList();
-        }
+        var tags   = attractionService.getEmotionTagNames(contentId); // 감정 태그들
 
         // 버튼 프리필용
         model.addAttribute("contentId", contentId);
@@ -43,4 +37,5 @@ public class AttractionPageController {
         // 템플릿 경로 (resources/templates/recommand-tourist-attractions-detail/detail-page.html)
         return "recommand-tourist-attractions-detail/detail-page";
     }
+
 }

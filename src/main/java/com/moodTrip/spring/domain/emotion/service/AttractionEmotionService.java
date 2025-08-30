@@ -1,5 +1,6 @@
 package com.moodTrip.spring.domain.emotion.service;
 
+import com.moodTrip.spring.domain.attraction.dto.response.AttractionResponse;
 import com.moodTrip.spring.domain.attraction.entity.Attraction;
 import com.moodTrip.spring.domain.attraction.repository.AttractionRepository;
 import com.moodTrip.spring.domain.emotion.dto.request.EmotionWeightDto;
@@ -112,4 +113,35 @@ public class AttractionEmotionService {
         return names != null ? names : Collections.emptyList();
     }
 
+    @Transactional(readOnly = true)
+    public List<String> findEmotionNamesByContentId(long contentId) {
+        return attractionEmotionRepository
+                .findByAttraction_ContentIdAndIsActiveTrue(contentId)
+                .stream()
+                .map(m -> m.getEmotion().getTagName()) // Emotion.tagName 사용
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .distinct()
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<AttractionResponse> findAttractionsByEmotion(Long emotionId) {
+        // 1) 특정 감정(emotionId)에 매핑된 모든 AttractionEmotion 찾기
+        List<AttractionEmotion> mappings =
+                attractionEmotionRepository.findByEmotion_TagIdAndIsActiveTrue(emotionId.intValue());
+
+        // 2) Attraction 엔티티 꺼내서 AttractionResponse로 변환
+        return mappings.stream()
+                .map(AttractionEmotion::getAttraction)
+                .filter(Objects::nonNull)
+                .map(attraction -> AttractionResponse.builder()
+                        .attractionId(attraction.getAttractionId())
+                        .title(attraction.getTitle())
+                        .addr1(attraction.getAddr1())
+                        .firstImage(attraction.getFirstImage()) // ✅ DTO 필드와 매핑
+                        .build())
+                .toList();
+    }
 }
