@@ -1,9 +1,6 @@
 package com.moodTrip.spring.domain.enteringRoom.service;
 
-import com.moodTrip.spring.domain.enteringRoom.dto.response.ActionResponse;
-import com.moodTrip.spring.domain.enteringRoom.dto.response.JoinRequestListResponse;
-import com.moodTrip.spring.domain.enteringRoom.dto.response.RequestStatsResponse;
-import com.moodTrip.spring.domain.enteringRoom.dto.response.RoomWithRequestsResponse;
+import com.moodTrip.spring.domain.enteringRoom.dto.response.*;
 import com.moodTrip.spring.domain.enteringRoom.entity.EnteringRoom;
 import com.moodTrip.spring.domain.enteringRoom.repository.JoinRepository;
 import com.moodTrip.spring.domain.member.entity.Member;
@@ -33,6 +30,7 @@ public class JoinRequestManagementService {
     private final RoomRepository roomRepository;
     private final RoomMemberRepository roomMemberRepository;
     private final SecurityUtil securityUtil;
+    private final NotificationDataService notificationService;
 
     // 방장의 모든 방과 각 방의 신청 목록 조회
     public List<RoomWithRequestsResponse> getMyRoomsWithRequests() {
@@ -80,16 +78,14 @@ public class JoinRequestManagementService {
         log.info("개별 신청 승인 시작 - requestId: {}", requestId);
 
         try {
-            // 신청 정보 조회 및 권한 확인
             EnteringRoom request = validateRequestOwnership(requestId);
             String applicantName = request.getApplicant().getNickname();
+            String roomName = request.getRoom().getRoomName(); // 방 이름 가져오기
 
-            // 이미 처리된 신청인지 확인
             if (request.getStatus() != EnteringRoom.EnteringStatus.PENDING) {
                 return ActionResponse.failure("이미 처리된 신청입니다.");
             }
 
-            // 방 정원 확인
             Room room = request.getRoom();
             Long currentApprovedCount = joinRepository.countApprovedByRoom(room);
             if (currentApprovedCount >= room.getRoomMaxCount()) {
@@ -98,24 +94,31 @@ public class JoinRequestManagementService {
 
             // 신청 승인 처리
             request.setStatus(EnteringRoom.EnteringStatus.APPROVED);
-
-            // RoomMember 테이블에 실제 참여자로 추가
             addApprovedMemberToRoom(request);
 
-            log.info("개별 신청 승인 완료 - 신청자: {}, 방: {}", applicantName, room.getRoomName());
+            // 승인된 회원에게 알림 저장
+            NotificationData approvalNotification = NotificationData.builder()
+                    .type("ROOM_APPROVED")
+                    .roomName(roomName)
+                    .message("축하합니다! \"" + roomName + "\" 방에 입장되셨습니다! 즐거운 여행 되세요!")
+                    .timestamp(LocalDateTime.now())
+                    .build();
+
+            notificationService.saveNotification(
+                    request.getApplicant().getMemberPk(),
+                    approvalNotification
+            );
+
+            log.info("개별 신청 승인 완료 + 알림 저장 - 신청자: {}, 방: {}", applicantName, roomName);
 
             return ActionResponse.success(
                     applicantName + "님의 입장을 승인했습니다.",
                     List.of(applicantName)
             );
 
-        } catch (RuntimeException e) {
+        } catch (Exception e) {
             log.error("개별 신청 승인 실패 - requestId: {}, 오류: {}", requestId, e.getMessage());
             return ActionResponse.failure(e.getMessage());
-
-        } catch (Exception e) {
-            log.error("예상치 못한 오류", e);
-            return ActionResponse.failure("신청 처리 중 오류가 발생했습니다.");
         }
     }
 
@@ -125,11 +128,10 @@ public class JoinRequestManagementService {
         log.info("개별 신청 거절 시작 - requestId: {}", requestId);
 
         try {
-            // 신청 정보 조회 및 권한 확인
             EnteringRoom request = validateRequestOwnership(requestId);
             String applicantName = request.getApplicant().getNickname();
+            String roomName = request.getRoom().getRoomName(); // 방 이름 가져오기
 
-            // 이미 처리된 신청인지 확인
             if (request.getStatus() != EnteringRoom.EnteringStatus.PENDING) {
                 return ActionResponse.failure("이미 처리된 신청입니다.");
             }
@@ -137,20 +139,29 @@ public class JoinRequestManagementService {
             // 신청 거절 처리
             request.setStatus(EnteringRoom.EnteringStatus.REJECTED);
 
-            log.info("개별 신청 거절 완료 - 신청자: {}, 방: {}", applicantName, request.getRoom().getRoomName());
+            // 거절된 회원에게 알림 저장
+            NotificationData rejectionNotification = NotificationData.builder()
+                    .type("ROOM_REJECTED")
+                    .roomName(roomName)
+                    .message("죄송합니다. 방장의 거절에 의해 \"" + roomName + "\" 방 입장이 거절되었습니다. 다른 여행을 찾아주세요!")
+                    .timestamp(LocalDateTime.now())
+                    .build();
+
+            notificationService.saveNotification(
+                    request.getApplicant().getMemberPk(),
+                    rejectionNotification
+            );
+
+            log.info("개별 신청 거절 완료 + 알림 저장 - 신청자: {}, 방: {}", applicantName, roomName);
 
             return ActionResponse.success(
                     applicantName + "님의 입장을 거절했습니다.",
                     List.of(applicantName)
             );
 
-        } catch (RuntimeException e) {
+        } catch (Exception e) {
             log.error("개별 신청 거절 실패 - requestId: {}, 오류: {}", requestId, e.getMessage());
             return ActionResponse.failure(e.getMessage());
-
-        } catch (Exception e) {
-            log.error("예상치 못한 오류", e);
-            return ActionResponse.failure("신청 처리 중 오류가 발생했습니다.");
         }
     }
 
@@ -293,10 +304,6 @@ public class JoinRequestManagementService {
         return request.getCreatedAt().isAfter(twoHoursAgo);
     }
 
-    /**
-     * 사이드바 알림 배지용 - 총 대기 요청 수만 간단히 조회
-     * 다른 마이페이지들에서 사이드바에 배지 표시하기 위해 사용
-     */
     public Integer getTotalPendingRequestsForSidebar() {
         log.debug("사이드바 배지용 총 대기 요청 수 조회");
 

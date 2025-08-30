@@ -94,7 +94,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
                             Cookie jwtCookie = new Cookie("jwtToken", token);
                             jwtCookie.setHttpOnly(true);
                             jwtCookie.setPath("/");
-                            jwtCookie.setMaxAge(24 * 60 * 60);
+                            //jwtCookie.setMaxAge(7200);
 
                             response.addCookie(jwtCookie);
                             response.sendRedirect("/signup/success");
@@ -129,7 +129,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
             Cookie jwtCookie = new Cookie("jwtToken", token);
             jwtCookie.setHttpOnly(true);
             jwtCookie.setPath("/");
-            jwtCookie.setMaxAge(24 * 60 * 60);
+            //jwtCookie.setMaxAge(24 * 60 * 60);
 
             response.addCookie(jwtCookie);
             response.sendRedirect("/signup/success");
@@ -150,7 +150,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
                 Cookie jwtCookie = new Cookie("jwtToken", token);
                 jwtCookie.setHttpOnly(true);
                 jwtCookie.setPath("/");
-                jwtCookie.setMaxAge(24 * 60 * 60);
+                //jwtCookie.setMaxAge(24 * 60 * 60);
                 response.addCookie(jwtCookie);
                 response.sendRedirect("/mainpage/mainpage");
             } else {

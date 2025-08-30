@@ -1,26 +1,32 @@
 package com.moodTrip.spring.domain.emotion.dto.response;
 
-
-import jakarta.persistence.Column;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
 
 @Getter
+@Setter // ✅ final 제거, Setter 추가
+@NoArgsConstructor // ✅ Builder와 함께 사용하기 위해 추가
 public class AttractionCardDTO {
 
-    @Column(name = "attraction_id")
+    // ✅ 필드 이름을 attractionId로 통일
+    private Long contentId;
     private Long attractionId;
-    private final String title;
-    private final String addr1;
-    private final String firstImage;
-    private final String description; // 필요 시 추가
+    private String title;
+    private String addr1;
+    private String firstImage;
+    private String description;
+
+    // ✅ '좋아요' 상태를 담을 필드 추가
+    private boolean isLikedByUser = false;
 
     @Builder
-    public AttractionCardDTO(Long attractionId,String title, String addr1, String firstImage, String description) {
+    public AttractionCardDTO(Long contentId, Long attractionId, String title, String addr1, String firstImage) {
+        this.contentId = contentId;
         this.attractionId = attractionId;
         this.title = title;
         this.addr1 = addr1;
         this.firstImage = firstImage;
-        this.description = description;
     }
 }

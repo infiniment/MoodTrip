@@ -13,6 +13,20 @@ function initializeAdminPanel() {
     setupSearchFunctionality();
     setupMobileMenu();
     initializeCharts();
+    initResponsiveTables();
+    setupUsersViewToggle();
+    setupLocationsPaging();
+
+    // 회원 관리
+    setupTableViewToggle({ sectionId: 'users-section',     storageKey: 'usersView' });
+    // 관광지 관리
+    setupTableViewToggle({ sectionId: 'locations-section', storageKey: 'locationsView' });
+    // 신고 관리
+    setupTableViewToggle({ sectionId: 'reports-section',   storageKey: 'reportsView' });
+    // 공지사항 관리
+    setupTableViewToggle({ sectionId: 'notices-section',   storageKey: 'noticesView' });
+    // faq 관리
+    setupTableViewToggle({ sectionId: 'faq-section',       storageKey: 'faqsView' });
 }
 
 // 1. 메뉴 네비게이션
@@ -404,13 +418,49 @@ function setupMobileMenu() {
 }
 
 function createMobileMenuToggle() {
+    const sidebar = document.querySelector('.sidebar');
+    if (!sidebar) return;
+
+    // 1) 버튼 만들기
     const menuToggle = document.createElement('button');
     menuToggle.className = 'menu-toggle';
+    menuToggle.type = 'button';
+    menuToggle.setAttribute('aria-label', '메뉴 열기/닫기');
+    menuToggle.setAttribute('aria-expanded', 'false');
     menuToggle.innerHTML = '☰';
     document.body.appendChild(menuToggle);
-    
-    menuToggle.addEventListener('click', function() {
-        document.querySelector('.sidebar').classList.toggle('open');
+
+    // 2) 오버레이 만들기(모바일에서만 보여짐)
+    let backdrop = document.querySelector('.sidebar-backdrop');
+    if (!backdrop) {
+        backdrop = document.createElement('div');
+        backdrop.className = 'sidebar-backdrop';
+        document.body.appendChild(backdrop);
+    }
+
+    const toggle = (open) => {
+        const willOpen = typeof open === 'boolean' ? open : !sidebar.classList.contains('open');
+        sidebar.classList.toggle('open', willOpen);
+        backdrop.classList.toggle('show', willOpen);
+        document.body.classList.toggle('sidebar-open', willOpen);
+        menuToggle.setAttribute('aria-expanded', String(willOpen));
+    };
+
+    // 클릭/터치 지원
+    menuToggle.addEventListener('click', () => toggle());
+    menuToggle.addEventListener('touchstart', (e) => { e.preventDefault(); toggle(); }, {passive:false});
+
+    // 오버레이/밖 클릭/ESC로 닫기
+    backdrop.addEventListener('click', () => toggle(false));
+    document.addEventListener('click', (e) => {
+        if (window.innerWidth > 1200) return;
+        if (sidebar.classList.contains('open') &&
+            !sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
+            toggle(false);
+        }
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') toggle(false);
     });
 }
 
@@ -1070,7 +1120,6 @@ function addLocationToTable(name, region, category, tags) {
     `;
     tbody.appendChild(newRow);
 }
-
 
 
 // === 매칭 관리 함수들 ===
@@ -4023,5 +4072,511 @@ function initializeMappingPageScripts() {
 }
 
 
+// == 사이드바 토글 ==
+(() => {
+    const toggle = document.getElementById('menuToggle');
+    const sidebar = document.querySelector('.sidebar');
+    if (!toggle || !sidebar) return;
+
+    const setExpanded = (open) => {
+        toggle.setAttribute('aria-expanded', String(open));
+        document.body.classList.toggle('sidebar-open', open);
+    };
+
+    toggle.addEventListener('click', () => {
+        const open = !sidebar.classList.contains('open');
+        sidebar.classList.toggle('open', open);
+        setExpanded(open);
+    });
+
+    // 오버레이 영역(메인 컨텐츠 클릭) 닫기
+    document.querySelector('.main-content')?.addEventListener('click', (e) => {
+        if (!sidebar.classList.contains('open')) return;
+        // 사이드바 영역 클릭은 무시
+        if (e.target.closest('.sidebar')) return;
+        sidebar.classList.remove('open'); setExpanded(false);
+    });
+
+    // ESC로 닫기
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && sidebar.classList.contains('open')) {
+            sidebar.classList.remove('open'); setExpanded(false);
+        }
+    });
+})();
+
+// 2-1) 표에 data-label 자동 주입 + .is-responsive 클래스 부여
+function makeTableResponsive(table){
+    if (!table) return;
+    const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent.trim());
+    table.querySelectorAll('tbody tr').forEach(tr => {
+        Array.from(tr.children).forEach((td, i) => {
+            td.setAttribute('data-label', headers[i] || '');
+        });
+    });
+    table.classList.add('is-responsive');
+}
+
+// 2-2) 현재 화면의 모든 표에 적용
+function applyResponsiveTables(){
+    document.querySelectorAll('.data-table').forEach(makeTableResponsive);
+}
+
+// 2-3) tbody가 동적으로 바뀌면 자동으로 다시 라벨링
+function observeTableBody(table){
+    const tbody = table.querySelector('tbody');
+    if (!tbody) return;
+    const mo = new MutationObserver(() => makeTableResponsive(table));
+    mo.observe(tbody, {childList: true, subtree: true});
+}
+
+// 2-4) 진입 시 1회 적용 + 감시 시작
+function initResponsiveTables(){
+    document.querySelectorAll('.data-table.is-responsive').forEach(table => {
+        const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent.trim());
+        table.querySelectorAll('tbody tr').forEach(tr => {
+            Array.from(tr.children).forEach((td, i) => td.setAttribute('data-label', headers[i] || ''));
+        });
+        const tbody = table.querySelector('tbody');
+        if (tbody){
+            new MutationObserver(() => {
+                table.querySelectorAll('tbody tr').forEach(tr => {
+                    Array.from(tr.children).forEach((td, i) => td.setAttribute('data-label', headers[i] || ''));
+                });
+            }).observe(tbody, {childList:true, subtree:true});
+        }
+    });
+}
+
+// 헤더 액션영역에 "표/카드" 버튼 주입 + 동작 연결
+function setupUsersViewToggle(){
+    const section   = document.getElementById('users-section');
+    if (!section) return;
+
+    // 토글 UI 주입 (이미 있으면 생략)
+    const actions = section.querySelector('.section-actions');
+    if (!actions) return;
+    let wrap = actions.querySelector('.view-toggle');
+    if (!wrap){
+        wrap = document.createElement('div');
+        wrap.className = 'view-toggle';
+        wrap.innerHTML = `
+      <button type="button" class="view-btn" data-view="table">표</button>
+      <button type="button" class="view-btn" data-view="cards">카드</button>
+    `;
+        actions.appendChild(wrap);
+    }
+
+    const table     = section.querySelector('.data-table');
+    const container = section.querySelector('.table-container');
+
+    const labelize = () => {
+        const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent.trim());
+        table.querySelectorAll('tbody tr').forEach(tr => {
+            Array.from(tr.children).forEach((td, i) => td.setAttribute('data-label', headers[i] || ''));
+        });
+    };
+
+    // persist=false면 localStorage에 사용자 설정을 덮어쓰지 않음(데스크톱 강제 표 모드용)
+    const applyMode = (mode, {persist=true} = {}) => {
+        wrap.querySelectorAll('.view-btn').forEach(b => b.classList.toggle('active', b.dataset.view === mode));
+        if (mode === 'cards'){
+            table.classList.add('is-responsive');
+            container.style.overflowX = 'visible';
+            labelize();
+        } else {
+            table.classList.remove('is-responsive');
+            container.style.overflowX = 'auto';
+        }
+        if (persist) localStorage.setItem('usersView', mode);
+    };
+
+    // 화면폭에 맞춰 버튼 표시/숨김 + 모드 강제
+    const DESKTOP_W = 1200;
+    const syncToViewport = () => {
+        if (window.innerWidth > DESKTOP_W){
+            // 데스크톱: 버튼 숨기고 무조건 표 모드(사용자 설정은 보존)
+            wrap.style.display = 'none';
+            applyMode('table', {persist:false});
+        } else {
+            // 모바일/태블릿: 버튼 보이고 저장된 모드(없으면 cards) 적용
+            wrap.style.display = 'flex';
+            const saved = localStorage.getItem('usersView') || 'cards';
+            applyMode(saved, {persist:false});
+        }
+    };
+
+    // 버튼 클릭으로 전환
+    wrap.addEventListener('click', (e) => {
+        const btn = e.target.closest('.view-btn'); if (!btn) return;
+        applyMode(btn.dataset.view);
+    });
+
+    // 동적 행 갱신 시 라벨 재주입
+    const tbody = table.querySelector('tbody');
+    if (tbody){
+        new MutationObserver(() => {
+            if (table.classList.contains('is-responsive')) labelize();
+        }).observe(tbody, {childList:true, subtree:true});
+    }
+
+    // 초기 적용 + 리사이즈 반영(간단 디바운스)
+    let t;
+    window.addEventListener('resize', () => { clearTimeout(t); t = setTimeout(syncToViewport, 120); });
+    syncToViewport();
+}
+
+function setupTableViewToggle({
+                                  sectionId,
+                                  storageKey,
+                                  tableSelector = '.data-table',
+                                  containerSelector = '.table-container',
+                                  desktopBreakpoint = 1200,   // ← 콤마 추가!
+                                  cardBuilder = null          // ← 섹션별 카드 커스터마이즈가 필요할 때만 전달
+                              }) {
+    const section = document.getElementById(sectionId);
+    if (!section) return;
+
+    // 헤더/액션 컨테이너 확보(없으면 생성)
+    const header = section.querySelector('.section-header');
+    if (!header) return;
+
+    let actions = section.querySelector('.section-actions');
+    if (!actions) {
+        actions = document.createElement('div');
+        actions.className = 'section-actions';
+        header.appendChild(actions); // 필터/검색 옆으로 붙습니다(헤더가 flex)
+    }
+
+    const container = section.querySelector(containerSelector);
+    const table = section.querySelector(tableSelector);
+    if (!container || !table) return;
+
+    // 토글 UI(중복 방지)
+    let wrap = actions.querySelector('.view-toggle');
+    if (!wrap) {
+        wrap = document.createElement('div');
+        wrap.className = 'view-toggle';
+        wrap.innerHTML = `
+      <button type="button" class="view-btn" data-view="table" title="표 보기">표</button>
+      <button type="button" class="view-btn" data-view="cards" title="카드 보기">카드</button>`;
+        actions.appendChild(wrap);
+    }
+
+    // 카드 컨테이너(한 번만 만들고 재사용)
+    let cardList = section.querySelector('.card-list');
+    if (!cardList) {
+        cardList = document.createElement('div');
+        cardList.className = 'card-list';
+        cardList.style.display = 'none';
+        container.after(cardList);
+    }
+
+    // 기본 카드 빌더(헤더/셀 자동 매핑). cardBuilder를 넘기면 그걸 사용.
+    function buildCards() {
+        cardList.innerHTML = '';
+        if (typeof cardBuilder === 'function') {
+            cardBuilder({ section, table, cardList });
+            return;
+        }
+        const headers = [...table.querySelectorAll('thead th')].map(th => th.textContent.trim());
+        table.querySelectorAll('tbody tr').forEach(tr => {
+            const tds = tr.querySelectorAll('td');
+            const card = document.createElement('div');
+            card.className = 'table-card';
+
+            const grid = document.createElement('div');
+            grid.className = 'card-grid';
+
+            // 마지막 열(관리)은 액션으로 분리
+            for (let i = 0; i < tds.length; i++) {
+                if (i === tds.length - 1) continue;
+                const item = document.createElement('div');
+                item.className = 'card-item';
+                item.innerHTML = `
+          <div class="card-label">${headers[i] || ''}</div>
+          <div class="card-value">${tds[i]?.innerHTML ?? '-'}</div>`;
+                grid.appendChild(item);
+            }
+
+            const actions = document.createElement('div');
+            actions.className = 'card-actions';
+            tds[tds.length - 1]?.querySelectorAll('button,a').forEach(btn => {
+                actions.appendChild(btn.cloneNode(true));
+            });
+
+            card.append(grid, actions);
+            cardList.appendChild(card);
+        });
+    }
+
+    // 모드 적용
+    function applyMode(mode, { persist = true } = {}) {
+        wrap.querySelectorAll('.view-btn').forEach(b => b.classList.toggle('active', b.dataset.view === mode));
+        if (mode === 'cards') {
+            buildCards();
+            container.style.display = 'none';
+            cardList.style.display = '';
+        } else {
+            container.style.display = '';
+            cardList.style.display = 'none';
+        }
+        if (persist) localStorage.setItem(storageKey, mode);
+    }
+
+    // 뷰포트에 맞춰 버튼/모드 동기화
+    function sync() {
+        if (window.innerWidth > desktopBreakpoint) {
+            wrap.style.display = 'none';
+            applyMode('table', { persist: false }); // 데스크탑은 항상 표
+        } else {
+            wrap.style.display = 'flex';
+            const saved = localStorage.getItem(storageKey) || 'cards';
+            applyMode(saved, { persist: false });
+        }
+    }
+
+    // 클릭 전환
+    wrap.addEventListener('click', (e) => {
+        const btn = e.target.closest('.view-btn'); if (!btn) return;
+        applyMode(btn.dataset.view);
+    });
+
+    // 표 내용이 바뀌면(검색/필터/서버렌더) 카드 재생성
+    const tbody = table.querySelector('tbody');
+    if (tbody) new MutationObserver(() => {
+        if (cardList.style.display !== 'none') buildCards();
+    }).observe(tbody, { childList: true, subtree: true });
+
+    // 초기/리사이즈
+    let t; const onResize = () => { clearTimeout(t); t = setTimeout(sync, 120); };
+    window.addEventListener('resize', onResize);
+    sync();
+}
+
+// 신고 관리 카드 뷰 생성기
+function buildReportCards(sectionEl) {
+    const table = sectionEl.querySelector('.table-container');
+    // 카드 목록 컨테이너가 없으면 생성
+    let cardWrap = sectionEl.querySelector('#reports-card-container');
+    if (!cardWrap) {
+        cardWrap = document.createElement('div');
+        cardWrap.id = 'reports-card-container';
+        cardWrap.className = 'card-list';
+        cardWrap.style.display = 'none';
+        table.after(cardWrap);
+    }
+    cardWrap.innerHTML = '';
+
+    const rows = sectionEl.querySelectorAll('#reports-table-body > tr');
+    rows.forEach(tr => {
+        const tds = tr.querySelectorAll('td');
+        if (tds.length < 9) return; // 빈 행 스킵
+
+        const card = document.createElement('div');
+        card.className = 'table-card report-card';
+        card.innerHTML = `
+      <div class="card-grid">
+        <div><b>신고ID</b><div>${tds[0].textContent.trim()}</div></div>
+        <div><b>유형</b><div>${tds[1].textContent.trim()}</div></div>
+        <div class="span-2"><b>대상</b><div>${tds[2].textContent.trim()}</div></div>
+        <div><b>신고자</b><div>${tds[3].textContent.trim()}</div></div>
+        <div><b>피신고자</b><div>${tds[4].textContent.trim()}</div></div>
+        <div class="span-2"><b>사유</b><div>${tds[5].textContent.trim()}</div></div>
+        <div><b>일시</b><div>${tds[6].textContent.trim()}</div></div>
+        <div><b>상태</b><div>${tds[7].innerHTML}</div></div>
+      </div>
+      <div class="card-actions"></div>
+    `;
+        // 관리 버튼은 복제해서 부착(테이블 쪽 버튼 안 뺏어가도록)
+        const actions = card.querySelector('.card-actions');
+        tds[8].querySelectorAll('button').forEach(btn => {
+            actions.appendChild(btn.cloneNode(true));
+        });
+        cardWrap.appendChild(card);
+    });
+
+    return cardWrap; // 토글 함수가 show/hide 할 수 있게 반환
+}
+
+// 관광지 페이징 처리 (5개씩 블록, 이벤트 위임, 견고한 메타 파싱)
+function setupLocationsPaging() {
+    const section = document.getElementById('locations-section');
+    if (!section) return;
+
+    const tbody       = section.querySelector('#attractions-table-body');
+    const pagerWrap   = section.querySelector('.pagination-container');
+    const searchInput = section.querySelector('.section-actions .search-input');
+
+    const state = { page: 0, size: 10, q: '' };
+    const BLOCK = 5; // 페이지 번호 5개씩
+
+    // 백엔드 응답(Page, PageResult 등) 표준화
+    function normalize(resp) {
+        const content = resp?.content ?? resp?.data ?? [];
+
+        // page 객체(혹은 meta) 우선
+        const p = resp?.page ?? resp?.meta ?? resp?.pagination ?? {};
+
+        // 현재 페이지 번호(여러 이름 대응)
+        let number =
+            p.number ?? p.pageNumber ?? p.page ?? p.index ??
+            resp.number ?? resp.pageNumber ?? resp.page ?? resp.index ?? 0;
+
+        // 한 페이지 크기
+        const size =
+            p.size ?? p.pageSize ?? resp.size ?? resp.pageSize ?? 10;
+
+        // 총건수
+        const totalElements =
+            p.totalElements ?? p.total ?? p.totalCount ??
+            resp.totalElements ?? resp.total ?? resp.totalCount ?? 0;
+
+        // 총페이지수
+        let totalPages =
+            p.totalPages ?? p.totalPage ?? p.totalPageCount ??
+            resp.totalPages ?? resp.totalPage ?? resp.totalPageCount;
+
+        if (!totalPages) totalPages = size ? Math.ceil(totalElements / size) : 0;
+
+        // 혹시 1-based로 오는 API가 있다면 보정 (ex: number==1 && 첫 페이지)
+        if (number >= totalPages && totalPages > 0 && number - 1 >= 0) {
+            // number가 totalPages와 동일하게 올 때 1-based 가능성 → 0-based로 보정
+            number = number - 1;
+        }
+
+        // 안전 범위 클램프
+        number = Math.max(0, Math.min(number, Math.max(totalPages - 1, 0)));
+
+        const first = (p.first ?? resp.first ?? (number <= 0));
+        const last  = (p.last  ?? resp.last  ?? (number >= Math.max(totalPages - 1, 0)));
+
+        return { content, number, size, totalElements, totalPages, first, last };
+    }
+
+    // XSS 방지 간단 escape
+    const esc = (s) => (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+    // 표 렌더
+    function renderRows(items) {
+        if (!items || !items.length) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:40px; color:#666;">등록된 관광지가 없습니다.</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = items.map(a => `
+      <tr data-attraction-id="${a.attractionId}">
+        <td>${esc(a.title)}</td>
+        <td>${esc(a.addr1) || '-'}</td>
+        <td>${esc(a.categoryName) || '기타'}</td>
+        <td>${esc(a.emotionTags) || '-'}</td>
+        <td>${(a.createdTime || '').toString().slice(0,10)}</td>
+        <td><span class="${a.statusClass || 'status active'}">${a.status || '공개'}</span></td>
+        <td>
+          <button class="btn-small" onclick="handleLocationDetail(this)">상세</button>
+          <button class="btn-small" onclick="handleLocationEditFromList(this)">수정</button>
+          <button class="btn-small danger" onclick="handleLocationDeleteFromList(this)">삭제</button>
+        </td>
+      </tr>
+    `).join('');
+        // 카드형일 때 라벨 유지 (반응형)
+        const table = section.querySelector('.data-table');
+        if (table && table.classList.contains('is-responsive')) {
+            const headers = Array.from(section.querySelectorAll('thead th')).map(th => th.textContent.trim());
+            tbody.querySelectorAll('tr').forEach(tr => {
+                Array.from(tr.children).forEach((td, i) => td.setAttribute('data-label', headers[i] || ''));
+            });
+        }
+    }
+
+    // 페이저 렌더 (1~5, 6~10 … 5개씩)
+    function renderPager(pg) {
+        if (!pagerWrap) return;
+
+        const totalPages = Math.max(1, pg.totalPages || Math.ceil((pg.totalElements || 0) / (pg.size || 10)));
+        // 결과가 없으면 번호 없이 정보만
+        if (!pg.totalElements) {
+            pagerWrap.innerHTML = `
+        <nav class="pagination" aria-label="페이지 탐색"></nav>
+        <div class="pagination-info">총 0건 / 1 / 1 페이지</div>`;
+            return;
+        }
+
+        const cur = Math.min(pg.number, totalPages - 1);
+        const blockStart = Math.floor(cur / BLOCK) * BLOCK;            // 0,5,10...
+        const blockEnd   = Math.min(totalPages - 1, blockStart + 4);   // 4,9,14...
+
+        const btn = (label, page, disabled, cls) =>
+            `<button class="page-btn ${cls}${disabled?' disabled':''}" ${disabled?'disabled':''} data-page="${disabled?'':page}">${label}</button>`;
+        const num = (page, active) =>
+            `<button class="page-btn number${active?' active':''}" data-page="${page}">${page + 1}</button>`;
+        const dots = `<span class="pagination-ellipsis">…</span>`;
+
+        let html = `<nav class="pagination" aria-label="페이지 탐색">`;
+        html += btn('« 처음', 0, cur === 0, 'first');
+        html += btn('‹ 이전', Math.max(0, cur - 1), cur === 0, 'prev');
+
+        html += `<div class="pagination-numbers">`;
+        if (blockStart > 0) { html += num(0, cur === 0) + dots; }
+
+        for (let p = blockStart; p <= blockEnd; p++) {
+            html += num(p, p === cur);
+        }
+
+        if (blockEnd < totalPages - 1) { html += dots + num(totalPages - 1, cur === totalPages - 1); }
+        html += `</div>`;
+
+        html += btn('다음 ›', Math.min(totalPages - 1, cur + 1), cur === totalPages - 1, 'next');
+        html += btn('끝 »', totalPages - 1, cur === totalPages - 1, 'last');
+        html += `</nav>`;
+
+        html += `<div class="pagination-info">총 ${pg.totalElements}건 / ${cur + 1} / ${totalPages} 페이지</div>`;
+        pagerWrap.innerHTML = html;
+    }
+
+    // 이벤트 위임(페이저를 다시 그려도 리스너 유지)
+    pagerWrap?.addEventListener('click', (e) => {
+        const t = e.target.closest('[data-page]');
+        if (!t || t.disabled) return;
+        const page = Number(t.dataset.page);
+        if (!Number.isFinite(page)) return;
+        e.preventDefault();
+        state.page = page;
+        load();
+    });
+
+    // 검색(디바운스)
+    if (searchInput) {
+        let timer;
+        searchInput.addEventListener('input', () => {
+            clearTimeout(timer);
+            timer = setTimeout(() => {
+                state.q = searchInput.value.trim();
+                state.page = 0;
+                load();
+            }, 250);
+        });
+    }
+
+    async function load() {
+        try {
+            const params = new URLSearchParams({ page: state.page, size: state.size });
+            if (state.q) params.append('search', state.q);
+
+            const res  = await fetch(`/admin/attractions?${params.toString()}`, { headers:{ 'Accept':'application/json' }});
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const json = await res.json();
+
+            const pg = normalize(json);
+            renderRows(pg.content);
+            renderPager(pg);
+        } catch (err) {
+            console.error('attractions load error:', err);
+            pagerWrap.innerHTML = `<div class="pagination-info">목록을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.</div>`;
+        }
+    }
+
+    // 최초 로드
+    load();
+}
 
 console.log('관리자 페이지 JavaScript 로딩 완료');

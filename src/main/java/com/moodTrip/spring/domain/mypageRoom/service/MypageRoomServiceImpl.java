@@ -10,8 +10,6 @@ import com.moodTrip.spring.domain.rooms.repository.RoomRepository;
 import com.moodTrip.spring.domain.schedule.entity.Schedule;
 import com.moodTrip.spring.domain.schedule.repository.ScheduleRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -88,7 +86,7 @@ public class MypageRoomServiceImpl implements MypageRoomService {
         roomRepository.save(room);
     }
 
-    // 방 나가기 (방 입장하기 기능 구현 시 추가 수정 예정)
+    // 방 나가기
     @Override
     @Transactional
     public void leaveRoom(Long roomId, Member currentMember) {
@@ -109,11 +107,10 @@ public class MypageRoomServiceImpl implements MypageRoomService {
             // 이전 인원 수 로깅
             int previousCount = room.getRoomCurrentCount();
 
-            // 1️⃣ 나가기 처리
+            // 나가기 처리
             roomMember.setIsActive(false);
             roomMemberRepository.save(roomMember);
 
-            // 2️⃣ 🔥 새로 추가: Room의 현재 인원 수 업데이트
             // 실제 활성 참여자 수 다시 계산
             Long actualParticipantCount = roomMemberRepository.countByRoomAndIsActiveTrue(room);
 
@@ -124,7 +121,7 @@ public class MypageRoomServiceImpl implements MypageRoomService {
             roomRepository.save(room);
 
         } catch (IllegalArgumentException | IllegalStateException e) {
-            throw e;  // 그대로 다시 던져서 컨트롤러에서 적절히 처리
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException("방 나가기 중 오류가 발생했습니다.");
         }

@@ -3,6 +3,7 @@ package com.moodTrip.spring.domain.attraction.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.moodTrip.spring.domain.admin.dto.response.AttractionAdminDto;
 import com.moodTrip.spring.domain.attraction.dto.request.AttractionInsertRequest;
 import com.moodTrip.spring.domain.attraction.dto.response.AttractionDetailResponse;
 import com.moodTrip.spring.domain.attraction.dto.response.AttractionRegionResponse;
@@ -11,6 +12,7 @@ import com.moodTrip.spring.domain.attraction.entity.Attraction;
 import com.moodTrip.spring.domain.attraction.entity.AttractionIntro;
 import com.moodTrip.spring.domain.attraction.repository.AttractionIntroRepository;
 import com.moodTrip.spring.domain.attraction.repository.AttractionRepository;
+import com.moodTrip.spring.domain.attraction.repository.UserAttractionRepository;
 import com.moodTrip.spring.domain.emotion.dto.response.AttractionCardDTO;
 import com.moodTrip.spring.domain.emotion.repository.AttractionEmotionRepository;
 import jakarta.annotation.PostConstruct;
@@ -39,7 +41,7 @@ public class AttractionServiceImpl implements AttractionService {
     private final AttractionIntroRepository introRepository;
     private final AttractionEmotionRepository attractionEmotionRepository;
     private final RestTemplate restTemplate;
-
+    private final UserAttractionRepository userAttractionRepository;
 
 
     @Value("${attraction.apikey.decoding}")
@@ -542,7 +544,7 @@ public class AttractionServiceImpl implements AttractionService {
                 .orElseThrow(() -> new IllegalArgumentException("Attraction not found: " + contentId));
 
         var intro = getIntro(contentId, base.getContentTypeId());       // 없으면 동기화 시도
-        var introNorm = normalizeIntro(intro);                          // TODO: 분기 필드 없앴다면 지워도 됨
+        var introNorm = normalizeIntro(intro);                          // null 안전
 
         AttractionDetailResponse.DetailCommon common;
         try {
@@ -600,7 +602,7 @@ public class AttractionServiceImpl implements AttractionService {
         String addr1 = asText(item, "addr1");
         String addr2 = asText(item, "addr2");
 
-        // 👇 DB에 overview 업데이트 추가
+
         introRepository.findById(contentId).ifPresent(intro -> {
             intro.setOverview(overview);
             intro.setSyncedAt(LocalDateTime.now());
@@ -718,4 +720,90 @@ public class AttractionServiceImpl implements AttractionService {
         return repository.findByContentId(contentId)
                 .orElseThrow(() -> new IllegalArgumentException("Attraction not found by contentId=" + contentId));
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<AttractionAdminDto> getAttractionsForAdmin(String search, int page, int size) {
+        Page<Attraction> attractions;
+
+        if (search != null && !search.trim().isEmpty()) {
+            attractions = searchAttractions(search.trim(), page, size);
+        } else {
+            attractions = findAttractions(page, size);
+        }
+
+        return attractions.map(this::convertToAdminDto);
+    }
+
+    private AttractionAdminDto convertToAdminDto(Attraction a) {
+        return AttractionAdminDto.builder()
+                .attractionId(a.getAttractionId())
+                .contentId(a.getContentId())
+                .title(a.getTitle())
+                .addr1(a.getAddr1())
+                .categoryName(getContentTypeName(a.getContentTypeId()))
+                .emotionTags(getEmotionTagsForAttraction(a.getAttractionId()))
+                .createdTime(a.getCreatedTime())
+                .status("공개")
+                .statusClass("status active")
+                .build();
+    }
+
+    private String getContentTypeName(Integer contentTypeId) {
+        if (contentTypeId == null) return "기타";
+        Map<Integer, String> types = Map.of(
+                12, "관광지", 14, "문화시설", 15, "축제공연",
+                25, "여행코스", 28, "레포츠", 32, "숙박", 38, "쇼핑", 39, "음식점"
+        );
+        return types.getOrDefault(contentTypeId, "기타");
+    }
+
+    private String getEmotionTagsForAttraction(Long attractionId) {
+        // attractionEmotionRepository를 통해 감정태그들을 가져와서 쉼표로 연결
+        // 일단 빈 문자열로 처리
+        return "";
+    }
+
+    @Override
+    public List<AttractionCardDTO> findPopularAttractions(int limit) {
+        // 1. UserAttractionRepository에서 인기순으로 정렬된 ID 목록을 가져옵니다.
+        Pageable pageable = PageRequest.of(0, limit);
+        List<Long> popularIds = userAttractionRepository.findPopularAttractionIds(pageable);
+
+        if (popularIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 2. ID 목록을 사용하여 Attraction 엔티티들을 조회합니다. (이때 순서는 보장되지 않습니다)
+        List<Attraction> unorderedAttractions = repository.findAllById(popularIds);
+
+        // 3. 자바 코드로 직접 정렬하기 위해, 조회된 엔티티들을 ID를 키로 하는 Map으로 변환합니다.
+        Map<Long, Attraction> attractionMap = unorderedAttractions.stream()
+                .collect(Collectors.toMap(Attraction::getAttractionId, attraction -> attraction));
+
+        // 4. 처음에 얻은 인기순 ID 목록(popularIds)을 순회하면서, Map에서 엔티티를 순서대로 꺼내 최종 리스트를 만듭니다.
+        List<Attraction> orderedAttractions = popularIds.stream()
+                .map(attractionMap::get)
+                .filter(Objects::nonNull) // 혹시 모를 null 값 제거
+                .collect(Collectors.toList());
+
+        // 5. 정렬된 최종 리스트를 DTO로 변환하여 반환합니다.
+        return orderedAttractions.stream()
+                .map(this::mapToAttractionCardDTO)
+                .collect(Collectors.toList());
+    }
+
+    // DTO 변환을 위한 헬퍼 메서드
+    private AttractionCardDTO mapToAttractionCardDTO(Attraction a) {
+        return AttractionCardDTO.builder()
+                .contentId(a.getContentId())
+                .attractionId(a.getAttractionId())
+                .title(a.getTitle())
+                .addr1(a.getAddr1())
+                .firstImage(a.getFirstImage())
+                .build();
+    }
+
+
+
 }

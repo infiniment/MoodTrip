@@ -1,5 +1,6 @@
 package com.moodTrip.spring.domain.member.controller;
 
+import com.moodTrip.spring.domain.attraction.dto.response.AttractionSearchResponseDto;
 import com.moodTrip.spring.domain.enteringRoom.service.JoinRequestManagementService;
 import com.moodTrip.spring.domain.member.dto.request.ChangePasswordForm;
 import com.moodTrip.spring.domain.member.dto.response.ProfileResponse;
@@ -7,10 +8,15 @@ import com.moodTrip.spring.domain.member.entity.Member;
 import com.moodTrip.spring.domain.member.service.MemberService;
 import com.moodTrip.spring.domain.member.service.ProfileService;
 import com.moodTrip.spring.global.common.util.SecurityUtil; // 🔥 새로 추가!
+import com.moodTrip.spring.global.security.jwt.MyUserDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -31,6 +37,7 @@ public class ProfileViewController {
     private final MemberService memberService;
     private final PasswordEncoder passwordEncoder;
     private final JoinRequestManagementService joinRequestManagementService;
+
 
     @GetMapping("/mypage/edit-profile")
     public String editMyProfile(Model model) {
@@ -167,6 +174,42 @@ public class ProfileViewController {
         return "redirect:/mypage/change-password";
     }
 
+
+
+    @GetMapping("/mypage/my-tourist-attraction-wishlist")
+    public String getMyWishlist(
+            @AuthenticationPrincipal MyUserDetails userDetails,
+            @PageableDefault(size = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable,
+            Model model) {
+
+        log.info("🌐 SSR 찜 목록 페이지 요청 - page: {}", pageable.getPageNumber());
+
+        if (userDetails == null) {
+            log.warn("🚨 비로그인 사용자가 찜 목록 페이지 접근 시도. 로그인 페이지로 리다이렉트.");
+            return "redirect:/login?error=로그인이+필요합니다&returnUrl=/mypage/my-tourist-attraction-wishlist";
+        }
+
+        try {
+            Long memberPk = userDetails.getMember().getMemberPk();
+
+            // ================== [디버깅용 로그 추가] ==================
+            log.info("✅ [디버깅] 찜 목록 조회 시작. 현재 로그인된 사용자의 memberPk: {}", memberPk);
+            // ==========================================================
+
+            Page<AttractionSearchResponseDto> wishlistPage = profileService.getMyWishlist(memberPk, pageable);
+
+            model.addAttribute("wishlist", wishlistPage);
+            model.addAttribute("isLoggedIn", true);
+
+            log.info("✅ SSR 찜 목록 페이지 렌더링 성공 - 회원ID: {}, 총 {}개 항목", userDetails.getUsername(), wishlistPage.getTotalElements());
+
+            return "mypage/my-tourist-attraction-wishlist";
+
+        } catch (Exception e) {
+            log.error("💥 찜 목록 페이지 로딩 중 오류 발생", e);
+            return "redirect:/?error=찜+목록을+불러오는+중+오류가+발생했습니다.";
+        }
+    }
 
 
 }

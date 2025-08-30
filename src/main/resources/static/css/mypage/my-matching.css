@@ -1325,3 +1325,214 @@ a:focus:not(:focus-visible) {
         transition-duration: 0.01ms !important;
     }
 }
+
+/* 방 상태 알림 모달 스타일 */
+#roomStatusModal .modal-content {
+    max-width: 400px;
+    text-align: center;
+}
+
+#roomStatusModal .status-icon-container {
+    margin: 1rem 0 1.5rem 0;
+}
+
+#roomStatusModal #roomStatusMessage {
+    font-weight: 500;
+    color: #374151;
+    margin: 0;
+    padding: 0 1rem;
+}
+
+#roomStatusModal .modal-header h3 {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+}
+
+#roomStatusModal .btn-confirm {
+    background: linear-gradient(135deg, #005792 0%, #001A2C 100%);
+    color: white;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 100px;
+}
+
+#roomStatusModal .btn-confirm:hover {
+    background: linear-gradient(135deg, #004773 0%, #000F1A 100%);
+    transform: translateY(-1px);
+}
+
+/* 애니메이션 효과 */
+#roomStatusModal.show {
+    animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ===========================
+   🔧 매칭 카드 - 버튼 레이아웃/반응형 오버라이드
+   (my-matching.css 맨 아래에 추가)
+   =========================== */
+
+/* 기본: 가로 정렬 + 동일 너비 + 줄바꿈 허용 */
+.action-buttons {
+    display: flex !important;
+    align-items: stretch !important;
+    justify-content: space-between;
+    gap: 10px !important;
+    flex-wrap: wrap;               /* 3개 이상이면 자연스럽게 다음 줄 */
+    margin-top: 12px;              /* 카드와 살짝 간격 */
+}
+
+
+/* 데스크탑에서 한 줄 유지(가능하면) */
+@media (min-width: 769px) {
+    .action-buttons { flex-wrap: nowrap; }
+}
+
+/* 모바일: 세로 스택 + 전체폭 */
+@media (max-width: 768px) {
+    .action-buttons {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+    .action-buttons > * {
+        width: 100% !important;
+    }
+}
+
+.action-buttons{
+    width: 100%;
+    max-width: 360px;          /* 버튼 묶음의 가로 한계 (원하면 320~380px로 조절) */
+    margin: 12px auto 0;       /* 좌우 auto로 가운데 */
+    display: flex;
+    flex-direction: column;    /* 모바일 기본 세로 스택 */
+    align-items: stretch;
+    gap: 8px;
+}
+
+
+/* 공통 버튼 높이/타이포 업 */
+.action-buttons > .btn-exit-room,
+.action-buttons > .btn-chat,
+.action-buttons > .btn-manage-requests,
+.action-buttons > .btn-delete-room,
+.action-buttons > .btn-report-room{
+    height: 40px !important;   /* ↙ 필요하면 38px까지 내려도 OK */
+    font-size: 13px !important;
+    padding: 0 14px !important;
+    border-radius: 12px;
+}
+
+/* 모바일 오버라이드 */
+@media (max-width: 768px) {
+    .action-buttons > .btn-report-room {
+        margin: 0 !important;
+    }
+}
+
+
+@media (max-width: 768px) {
+    .action-buttons button,
+    .action-buttons > .btn-exit-room,
+    .action-buttons > .btn-chat,
+    .action-buttons > .btn-manage-requests,
+    .action-buttons > .btn-delete-room,
+    .action-buttons > .btn-report-room {
+        height: 44px !important;    /* ← 28px → 44px */
+        font-size: 14px !important; /* ← 10~11px → 14px */
+        padding: 0 18px !important;
+    }
+}
+
+@media (min-width: 769px){
+    .action-buttons{
+        flex-direction: row;
+        justify-content: center; /* 가운데 정렬 */
+        max-width: 520px;        /* 한 줄에 2~3개 들어가도 과하지 않게 */
+    }
+    .action-buttons > *{
+        flex: 0 0 auto;
+        min-width: 160px;        /* 너무 길지 않게 */
+    }
+}
+
+/* 0) 컨테이너 반응형(선택: 가로 스크롤 제거) */
+.wrap { min-width: 0 !important; }
+.page-inner { width: 100% !important; max-width: 1200px; margin: 40px auto; }
+
+/* 1) 기본 세로 리스트 룩 */
+.user-settings-nav{
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+}
+.user-settings-nav a{
+    padding: 8px 20px;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #303441;
+    text-decoration: none;
+    font-weight: 400;
+    transition: all .3s ease;
+    border-radius: 8px;
+    margin-bottom: 4px;
+}
+.user-settings-nav a:hover{
+    background: linear-gradient(135deg, rgba(0,87,146,.05) 0%, rgba(0,26,44,.02) 100%);
+    color: #005792;
+}
+
+/* 2) active 배경을 모든 항목에 공통 적용 */
+.user-settings-nav a.active{
+    background: linear-gradient(135deg, rgba(0,87,146,.10) 0%, rgba(0,26,44,.05) 100%) !important;
+    color: #005792 !important;
+    font-weight: 600 !important;
+    border-radius: 8px;
+}
+
+/* 3) 모바일에서도 '세로 리스트 + 제목/구분선' 유지 (칩 네비 금지) */
+@media (max-width: 1200px){
+    .account-settings, .horizontal-line{ display: block !important; }
+
+    .user-settings-nav{
+        width: 100% !important;
+        max-width: 680px;
+        margin: 0 0 16px 0 !important;
+        flex-direction: column !important;
+        gap: 0 !important;
+        overflow-x: visible !important;   /* ← 가로 스크롤 제거 */
+    }
+    .user-settings-nav a{
+        white-space: normal !important;   /* 한글 줄바꿈 허용 */
+        border: none !important;          /* 칩 보더 제거 */
+        background: transparent !important; /* 기본은 투명, active만 위 규칙으로 */
+        min-width: 0 !important;          /* max-content 강제 해제 */
+        padding: 8px 20px !important;
+    }
+}
+
+/* 4) 이전 규칙 무력화 (기존 스타일 덮어쓰기)
+   - .my_matching 에 항상 배경 주던 규칙 제거
+   - 칩 네비를 만들던 행위 무효화
+*/
+.my_matching{
+    background: transparent !important;
+    font-weight: 400 !important;
+    color: #303441 !important;
+}

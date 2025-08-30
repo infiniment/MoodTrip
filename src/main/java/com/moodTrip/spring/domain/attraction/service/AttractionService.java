@@ -1,5 +1,6 @@
 package com.moodTrip.spring.domain.attraction.service;
 
+import com.moodTrip.spring.domain.admin.dto.response.AttractionAdminDto;
 import com.moodTrip.spring.domain.attraction.dto.request.AttractionInsertRequest;
 import com.moodTrip.spring.domain.attraction.dto.response.AttractionDetailResponse;
 import com.moodTrip.spring.domain.attraction.dto.response.AttractionRegionResponse;
@@ -74,4 +75,7 @@ public interface AttractionService {
     List<String> getEmotionTagNames(long contentId);
 
     Attraction getEntityByContentId(Long contentId);
+    List<AttractionCardDTO> findPopularAttractions(int limit);
+    Page<AttractionAdminDto> getAttractionsForAdmin(String search, int page, int size);
+
 }

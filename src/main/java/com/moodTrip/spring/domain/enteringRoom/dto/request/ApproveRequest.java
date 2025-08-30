@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class ApproveRequest {
-    // 개별 승인 요청 dto
+    // 승인 요청 dto
     private Long requestId;
-    private String approvalMessage; // 선택적 승인 메시지 (현재는 사용 안함)
+    private String approvalMessage; // 선택적 승인 메시지
 }

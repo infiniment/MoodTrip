@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 🔥 새로 추가: 페이징 초기화
     initializePagination();
+    checkRoomNotification();
 });
 
 function initializePagination() {
@@ -43,6 +44,100 @@ function initializePagination() {
         // 키보드 네비게이션 활성화
         enableKeyboardNavigation();
     }
+}
+
+/**
+ * 방 입장 승인/거절 알림 체크
+ */
+function checkRoomNotification() {
+    // Thymeleaf에서 전달된 알림 데이터 확인
+    if (window.notificationData) {
+        console.log('알림 데이터 발견:', window.notificationData);
+        showRoomStatusModal(window.notificationData);
+        return;
+    }
+
+    // localStorage 방식으로도 체크 (다른 탭에서 승인/거절된 경우)
+    const savedNotification = localStorage.getItem('roomStatusNotification');
+    if (savedNotification) {
+        try {
+            const notificationData = JSON.parse(savedNotification);
+
+            // 5분 이내의 알림만 표시
+            const notificationTime = new Date(notificationData.timestamp);
+            const now = new Date();
+            const diffMinutes = (now - notificationTime) / (1000 * 60);
+
+            if (diffMinutes <= 5) {
+                showRoomStatusModal(notificationData);
+            }
+
+            // 표시 후 제거
+            localStorage.removeItem('roomStatusNotification');
+        } catch (error) {
+            console.error('알림 데이터 파싱 오류:', error);
+            localStorage.removeItem('roomStatusNotification');
+        }
+    }
+}
+
+/**
+ * 방 상태 모달 표시
+ */
+function showRoomStatusModal(notificationData) {
+    const modal = document.getElementById('roomStatusModal');
+    if (!modal || !notificationData) return;
+
+    const titleElement = modal.querySelector('#roomStatusTitle');
+    const messageElement = modal.querySelector('#roomStatusMessage');
+    const approvedIcon = modal.querySelector('#approvedIcon');
+    const rejectedIcon = modal.querySelector('#rejectedIcon');
+
+    // 알림 타입에 따라 모달 내용 설정
+    if (notificationData.type === 'ROOM_APPROVED') {
+        titleElement.textContent = '🎉 방 입장 승인';
+        titleElement.style.color = '#10b981';
+        messageElement.textContent = notificationData.message;
+        approvedIcon.style.display = 'block';
+        rejectedIcon.style.display = 'none';
+
+        // 모달 테두리 색상도 초록색으로
+        modal.querySelector('.modal-content').style.borderTop = '4px solid #10b981';
+
+    } else if (notificationData.type === 'ROOM_REJECTED') {
+        titleElement.textContent = '😔 방 입장 거절';
+        titleElement.style.color = '#ef4444';
+        messageElement.textContent = notificationData.message;
+        approvedIcon.style.display = 'none';
+        rejectedIcon.style.display = 'block';
+
+        // 모달 테두리 색상도 빨간색으로
+        modal.querySelector('.modal-content').style.borderTop = '4px solid #ef4444';
+    }
+
+    // 모달 표시
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+
+    console.log('방 상태 알림 모달 표시:', notificationData.type);
+}
+
+window.closeRoomStatusModal = closeRoomStatusModal;
+
+/**
+ * 방 상태 모달 닫기
+ */
+function closeRoomStatusModal() {
+    const modal = document.getElementById('roomStatusModal');
+    if (!modal) return;
+
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+
+    // 알림 확인 후 페이지 새로고침 (최신 상태 반영)
+    setTimeout(() => {
+        window.location.reload();
+    }, 500);
 }
 
 /**
@@ -1119,7 +1214,6 @@ function showReportModal(roomId, roomTitle, members) {
         `;
     }
 
-    // 확인 버튼 이벤트
     const confirmBtn = modal.querySelector('#submitReportBtn');
     confirmBtn.onclick = async () => {
         const selected = modal.querySelector("input[name='reportMember']:checked");
@@ -1127,8 +1221,7 @@ function showReportModal(roomId, roomTitle, members) {
             showNotification('info', '신고 대상을 선택하세요.');
             return;
         }
-
-        const reportedNickname = selected.value; // 🔥 닉네임 값
+        const reportedNickname = selected.value;
         const reason = modal.querySelector("#reportReasonSelect")?.value.toLowerCase();
         const message = modal.querySelector("#reportMessageTextarea")?.value.trim();
 
@@ -1144,18 +1237,31 @@ function showReportModal(roomId, roomTitle, members) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     reportedNickname: reportedNickname,
-                    reportReason: reason.toUpperCase(),  // 🔥 백엔드 ENUM 맞추기
+                    reportReason: reason.toUpperCase(),
                     reportMessage: message
                 })
             });
 
-            if (!res.ok) throw new Error('신고 실패');
-            showNotification('success', '신고가 접수되었습니다.');
-            hideModal('reportRoomModal');
+            // 🔥 400 에러라도 정상 처리 (에러로 던지지 않음)
+            const responseData = await res.json();
+
+            if (responseData.success) {
+                // 성공 케이스
+                showNotification('success', '신고가 접수되었습니다.');
+                hideModal('reportRoomModal');
+            } else {
+                // 실패 케이스 - 에러 메시지에 따라 알림 타입 구분
+                if (responseData.message && responseData.message.includes('자신을 신고할 수 없습니다')) {
+                    showNotification('error', '자기 자신은 신고할 수 없습니다.'); // 🔥 빨간색 error 타입
+                } else {
+                    showNotification('warning', responseData.message || '신고 처리 중 문제가 발생했습니다.');
+                }
+            }
 
         } catch (err) {
-            console.error(err);
-            showNotification('error', '신고 중 오류가 발생했습니다.');
+            // 🔥 네트워크 에러나 JSON 파싱 에러만 여기서 처리
+            console.error('신고 요청 실패:', err);
+            showNotification('error', '네트워크 오류가 발생했습니다.');
         }
     };
 

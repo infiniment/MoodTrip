@@ -60,7 +60,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/login", "/api/login", "/signup",
+                                "/logout","/login", "/api/login", "/signup",
                                 "/css/**", "/js/**", "/image/**","/uploads/**",
                                 "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/api-docs/**",
                                 "/error", "/api/v1/room-online/**", "/api/v1/profiles/**", "/image/**", "/uploads/**"
@@ -83,6 +83,11 @@ public class SecurityConfig {
                                 )
                         )
                         .successHandler(customOAuth2SuccessHandler(memberService, jwtUtil))
+                ) .logout(logout -> logout
+                        .logoutUrl("/logout") // 로그아웃을 처리할 URL을 지정합니다.
+                        .logoutSuccessUrl("/login") // 로그아웃 성공 후 리다이렉트될 페이지입니다.
+                        .deleteCookies("jwtToken") // 로그아웃 시 삭제할 쿠키 이름을 명시합니다.
+                        .invalidateHttpSession(true) // HTTP 세션을 무효화합니다.
                 );
 
         http.addFilterBefore(
