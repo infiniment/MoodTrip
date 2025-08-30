@@ -74,6 +74,7 @@ public interface AttractionService {
 
     List<String> getEmotionTagNames(long contentId);
 
+    List<AttractionCardDTO> findPopularAttractions(int limit);
     Page<AttractionAdminDto> getAttractionsForAdmin(String search, int page, int size);
 
 }
