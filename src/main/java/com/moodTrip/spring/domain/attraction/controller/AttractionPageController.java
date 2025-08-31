@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.Collections;
 import java.util.List;
-
 @Controller
 @RequiredArgsConstructor
 public class AttractionPageController {
@@ -21,8 +20,15 @@ public class AttractionPageController {
 
 
     @GetMapping("/attractions/detail/{contentId}")
-    public String view(@PathVariable("contentId") long contentId, Model model) {
+    // 1. 파라미터 타입을 long -> Long 으로 변경
+    public String view(@PathVariable("contentId") Long contentId, Model model) {
 
+        // 2. contentId가 null일 경우를 처리하는 방어 코드 추가
+        if (contentId == null) {
+            // 예를 들어, 목록 페이지나 에러 페이지로 리다이렉트
+            // 혹은 적절한 에러 메시지를 담은 뷰를 반환
+            return "redirect:/attractions"; // 또는 "error/404" 등
+        }
 
         AttractionDetailResponse detail = attractionService.getDetailResponse(contentId);
 
@@ -34,13 +40,11 @@ public class AttractionPageController {
             tags = Collections.emptyList();
         }
 
-        // 버튼 프리필용
         model.addAttribute("contentId", contentId);
-        model.addAttribute("attractionId", detail.getAttractionId()); // 아래 DTO 수정 반영
+        model.addAttribute("attractionId", detail.getAttractionId());
         model.addAttribute("detail", detail);
         model.addAttribute("tags", tags);
 
-        // 템플릿 경로 (resources/templates/recommand-tourist-attractions-detail/detail-page.html)
         return "recommand-tourist-attractions-detail/detail-page";
     }
 }

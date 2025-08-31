@@ -284,31 +284,26 @@ function renderResults(attractions) {
 
         const cardHTML = `
             <a href="/attractions/detail/${attr.contentId}" class="destination-card-link">
-            <div class="destination-card">
-                <div class="card-image">
-                    <img src="${attr.firstImage || '/static/image/emotion-search/default-image.png'}" alt="${attr.title}" />
-                    
-                    <!-- [수정된 부분] -->
-                    <!-- 1. data-attraction-id 속성으로 관광지 ID를 저장 -->
-                    <!-- 2. isLiked 값에 따라 'liked' 클래스와 하트 아이콘(♥/♡) 결정 -->
-                    <!-- 3. onclick 속성 제거 -->
-                    <button class="like-btn ${isLiked ? 'liked' : ''}" data-attraction-id="${attr.attractionId}">
-                        ${isLiked ? '♥' : '♡'}
-                    </button>
-                </div>
-                <div class="card-content">
-                    <div class="destination-header">
-                        <h3 class="destination-name">${attr.title}</h3>
-                        <span class="destination-location">${attr.addr1 || '위치 정보 없음'}</span>
+                <div class="destination-card">
+                    <div class="card-image">
+                        <img src="${attr.firstImage || '/static/image/emotion-search/default-image.png'}" alt="${attr.title}" />
+                        
+                        <button class="like-btn ${isLiked ? 'liked' : ''}" data-attraction-id="${attr.attractionId}">
+                            <span>${isLiked ? '♥' : '♡'}</span>
+                        </button>
                     </div>
-                    <p class="destination-description">${attr.description || '여행지에 대한 설명이 준비중입니다.'}</p>
+                    <div class="card-content">
+                        <div class="destination-header">
+                            <h3 class="destination-name">${attr.title}</h3>
+                            <span class="destination-location">${attr.addr1 || '위치 정보 없음'}</span>
+                        </div>
+                        <p class="destination-description">${attr.description || '여행지에 대한 설명이 준비중입니다.'}</p>
+                    </div>
                 </div>
-            </div>
             </a>    
         `;
         destinationGrid.insertAdjacentHTML('beforeend', cardHTML);
     });
-
 }
 
 // 페이지 로드 시 실행
@@ -409,6 +404,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 const attractions = await response.json();
 
+
+                const resultsSubtitle = document.querySelector('.results-subtitle');
+                if (resultsSubtitle) {
+                    resultsSubtitle.textContent = `${attractions.length}개 결과가 있어요`;
+                }
+
+
                 // 결과 렌더링
                 renderResults(attractions);
 
@@ -450,12 +452,13 @@ async function handleLikeClick(button) {
         });
 
         if (response.ok) {
-            // 서버 요청 성공 시, 버튼 UI 업데이트
             button.classList.toggle('liked');
-            if (button.classList.contains('liked')) {
-                button.innerHTML = '♥';
-                button.style.color = '#ff4757';
-            } else {
+
+            // 버튼 안의 span 태그를 찾아서 내용만 변경
+            const heartSpan = button.querySelector('span');
+            if (heartSpan) {
+                // 버튼에 'liked' 클래스가 있는지 여부로 하트 모양 결정
+                heartSpan.textContent = button.classList.contains('liked') ? '♥' : '♡';   } else {
                 button.innerHTML = '♡';
                 button.style.color = '#005792'; // 기본 색상으로 변경
             }

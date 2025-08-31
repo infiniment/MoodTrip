@@ -458,6 +458,7 @@ public class AttractionServiceImpl implements AttractionService {
         return attractions.stream()
                 .map(a -> AttractionCardDTO.builder()
                         .attractionId(a.getAttractionId())
+                        .contentId(a.getContentId())
                         .title(a.getTitle())
                         .addr1(a.getAddr1())
                         .firstImage(a.getFirstImage())
@@ -475,6 +476,7 @@ public class AttractionServiceImpl implements AttractionService {
         return attractions.stream()
                 .map(a -> AttractionCardDTO.builder()
                         .attractionId(a.getAttractionId())
+                        .contentId(a.getContentId())
                         .title(a.getTitle())
                         .addr1(a.getAddr1())
                         .firstImage(a.getFirstImage())
@@ -506,6 +508,7 @@ public class AttractionServiceImpl implements AttractionService {
 
         return attractions.stream()
                 .map(attraction -> AttractionCardDTO.builder()
+                        .contentId(attraction.getContentId())
                         .attractionId(attraction.getAttractionId())
                         .title(attraction.getTitle())
                         .addr1(attraction.getAddr1())
