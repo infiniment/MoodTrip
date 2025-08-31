@@ -38,6 +38,7 @@ public class WeatherAttraction {
     @Column(length = 8, nullable = false)  // HH:mm:ss
     private String time;
 
+    private Long contentId;
     private double temperature;
     private double feelsLike;
     private int humidity;
