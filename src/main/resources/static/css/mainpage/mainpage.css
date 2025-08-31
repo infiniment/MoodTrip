@@ -984,6 +984,46 @@ body {
     padding: 40px 0;
 }
 
+/* 날씨 데이터 없을 때 메시지 스타일 */
+.no-weather-message {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: 20px;
+    border: 2px dashed #cbd5e1;
+    padding: 60px 20px;
+    margin: 40px 0;
+}
+
+.no-weather-message h3 {
+    color: #475569;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.no-weather-message p {
+    color: #64748b;
+    font-size: 1rem;
+    margin-bottom: 20px;
+}
+
+/* 날씨 에러 메시지 스타일 */
+.weather-error-message {
+    border: 1px solid #fecaca;
+    margin: 40px 0;
+    padding: 40px 20px;
+}
+
+.weather-error-message h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.weather-error-message p {
+    margin-bottom: 16px;
+}
+
+
 .weather-card {
     width: 100%;
     background: white;
@@ -1042,6 +1082,10 @@ body {
     gap: 8px;
 }
 
+.weather-overlay {
+    pointer-events: none;  /* 오버레이는 클릭 이벤트를 막지 않도록 */
+}
+
 .weather-info {
     display: flex;
     align-items: center;
@@ -1073,19 +1117,6 @@ body {
     font-size: 1.375rem;
     font-weight: 700;
     color: var(--neutral-900);
-}
-
-.weather-day {
-    background: linear-gradient(135deg, #005792 0%, #3b82f6 100%);
-    color: white;
-    font-size: 1rem;
-    font-weight: 700;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .weather-location {

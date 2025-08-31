@@ -27,8 +27,8 @@ public class AttractionEmotionController {
     private final EmotionService emotionService;
 
     @GetMapping
-    public String showMappingPage(@RequestParam(defaultValue = "0") int page,
-                                  @RequestParam(defaultValue = "10") int size,
+    public String showMappingPage(@RequestParam(name="page",defaultValue = "0") int page,
+                                  @RequestParam(name="size",defaultValue = "10") int size,
                                   Model model) {
         Page<Attraction> attractionPage = attractionService.findAttractions(page, size);
 
@@ -68,7 +68,7 @@ public class AttractionEmotionController {
     @GetMapping("/search")
     public String search(@RequestParam(defaultValue = "0") int page,
                          @RequestParam(defaultValue = "10") int size,
-                         @RequestParam String keyword,
+                         @RequestParam(name="keyword") String keyword,
                          Model model) {
         Page<Attraction> p = attractionService.searchAttractions(keyword.trim(), page, size);
         return buildModelAndView(p, page, size, keyword, model);
