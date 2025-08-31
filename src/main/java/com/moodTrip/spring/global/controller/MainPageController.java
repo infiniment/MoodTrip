@@ -6,6 +6,8 @@ import com.moodTrip.spring.domain.mainpage.service.MainPageService;
 import com.moodTrip.spring.domain.member.entity.Member;
 import com.moodTrip.spring.domain.member.repository.ProfileRepository;
 import com.moodTrip.spring.domain.rooms.service.RoomService;
+import com.moodTrip.spring.domain.weather.dto.response.MainPageWeatherAttractionResponse; // 추가
+import com.moodTrip.spring.domain.weather.service.WeatherAttractionService; // 추가
 import com.moodTrip.spring.global.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +26,8 @@ public class MainPageController {
     private final ProfileRepository profileRepository;
     private final RoomService roomService;
     private final JoinRequestManagementService joinRequestManagementService;
-    private final MainPageService mainPageService; // 새로 추가
+    private final MainPageService mainPageService;
+    private final WeatherAttractionService weatherAttractionService; // 새로 추가
 
     @GetMapping("/")
     public String mainPage(Model model) {
@@ -65,7 +68,7 @@ public class MainPageController {
             model.addAttribute("popularRooms", popularRooms);
             model.addAttribute("roomCount", popularRooms.size());
 
-            log.info("메인페이지 데이터 로드 완료 - 로그인: {}, 인기방: {}개",
+            log.info("메인페이지 인기방 데이터 로드 완료 - 로그인: {}, 인기방: {}개",
                     loggedIn, popularRooms.size());
 
         } catch (Exception e) {
@@ -73,6 +76,23 @@ public class MainPageController {
             model.addAttribute("popularRooms", List.of());
             model.addAttribute("roomCount", 0);
             model.addAttribute("roomError", "방 목록을 불러오는 중 오류가 발생했습니다.");
+        }
+
+        // 날씨별 여행지 추천 3개 데이터 추가
+        try {
+            List<MainPageWeatherAttractionResponse> weatherRecommendations =
+                    weatherAttractionService.getMainPageWeatherRecommendations();
+
+            model.addAttribute("weatherRecommendations", weatherRecommendations);
+            model.addAttribute("weatherCount", weatherRecommendations.size());
+
+            log.info("메인페이지 날씨 추천 데이터 로드 완료 - {}개", weatherRecommendations.size());
+
+        } catch (Exception e) {
+            log.error("날씨별 여행지 추천 데이터 조회 실패", e);
+            model.addAttribute("weatherRecommendations", List.of());
+            model.addAttribute("weatherCount", 0);
+            model.addAttribute("weatherError", "날씨별 추천을 불러오는 중 오류가 발생했습니다.");
         }
 
         return "mainpage/mainpage";
