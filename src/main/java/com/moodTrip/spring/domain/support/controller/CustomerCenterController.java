@@ -47,8 +47,8 @@ public class CustomerCenterController {
     // 공지사항 목록
     @GetMapping("/announcement")
     public String announcementPage(Model model,
-                                   @RequestParam(defaultValue = "1") int page,
-                                   @RequestParam(defaultValue = "10") int size) {
+                                   @RequestParam(name = "page", defaultValue = "1") int page,
+                                   @RequestParam(name = "size", defaultValue = "10") int size) {
         // 페이징 처리된 공지사항 목록
         List<NotificationResponse> notices = customerNotificationService.findAll().stream()
                 .filter(NotificationResponse::getIsVisible)
@@ -73,7 +73,7 @@ public class CustomerCenterController {
 
     // 공지사항 상세
     @GetMapping("/announcement-detail")
-    public String announcementDetailPage(@RequestParam Long id, Model model) {
+    public String announcementDetailPage(@RequestParam("id") Long id, Model model) {
         NotificationResponse notice = customerNotificationService.findById(id);
 
 
@@ -107,9 +107,9 @@ public class CustomerCenterController {
     // FAQ 목록
     @GetMapping("/faq")
     public String faqPage(Model model,
-                          @RequestParam(defaultValue = "1") int page,
-                          @RequestParam(defaultValue = "10") int size,
-                          @RequestParam(required = false) String category) {
+                          @RequestParam(name = "page", defaultValue = "1") int page,
+                          @RequestParam(name = "size", defaultValue = "10") int size,
+                          @RequestParam(name = "category", required = false) String category) {
 
         List<Faq> allFaqs;
         if (category != null && !category.isEmpty()) {
@@ -138,7 +138,7 @@ public class CustomerCenterController {
 
     // FAQ 상세 페이지
     @GetMapping("/faq-detail")
-    public String faqDetailPage(@RequestParam Long id, Model model) {
+    public String faqDetailPage(@RequestParam("id") Long id, Model model) {
         Faq faq = faqService.findById(id);
 
         // 조회수 증가
@@ -180,14 +180,14 @@ public class CustomerCenterController {
 
     @PostMapping("/faq/helpful/{id}")
     @ResponseBody
-    public ResponseEntity<Void> increaseHelpful(@PathVariable Long id) {
+    public ResponseEntity<Void> increaseHelpful(@PathVariable("id") Long id) {
         faqService.increaseHelpful(id);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/faq/not-helpful/{id}")
     @ResponseBody
-    public ResponseEntity<Void> increaseNotHelpful(@PathVariable Long id) {
+    public ResponseEntity<Void> increaseNotHelpful(@PathVariable("id") Long id) {
         faqService.increaseNotHelpful(id);
         return ResponseEntity.ok().build();
     }
@@ -195,7 +195,7 @@ public class CustomerCenterController {
     // FAQ 데이터 API
     @GetMapping("/faq/data")
     @ResponseBody
-    public List<FaqResponse> getFaqData(@RequestParam(required = false) String category) {
+    public List<FaqResponse> getFaqData(@RequestParam(name = "category", required = false) String category) {
         List<Faq> faqs;
         if (category != null) {
             faqs = faqService.findByCategory(category);
@@ -223,13 +223,13 @@ public class CustomerCenterController {
     }
 
     @GetMapping("/search")
-    public String searchPage(@RequestParam(required = false) String query, Model model) {
+    public String searchPage(@RequestParam(name = "query", required = false) String query, Model model) {
         model.addAttribute("query", query);
         return "customer-center/customer-center-search";
     }
     @GetMapping("/search/api")
     @ResponseBody
-    public Map<String, Object> searchAll(@RequestParam String query) {
+    public Map<String, Object> searchAll(@RequestParam("query") String query) {
         // 직접 서비스 호출로 수정
         List<Faq> faqs = faqService.searchByTitleOrContent(query);
         List<FaqResponse> faqResults = faqs.stream()
