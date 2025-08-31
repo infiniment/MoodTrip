@@ -53,6 +53,8 @@ public class Weather {
 
     private double lat;   // 보존(백필/백업/디버깅용)
     private double lon;
+    private Long contentId;
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "attraction_id", nullable = false)
