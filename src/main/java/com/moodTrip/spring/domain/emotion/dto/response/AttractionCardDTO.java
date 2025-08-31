@@ -1,16 +1,21 @@
 package com.moodTrip.spring.domain.emotion.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 @Getter
 @Setter // ✅ final 제거, Setter 추가
 @NoArgsConstructor // ✅ Builder와 함께 사용하기 위해 추가
+@JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public class AttractionCardDTO {
 
     // ✅ 필드 이름을 attractionId로 통일
+    @JsonProperty("contentId")
     private Long contentId;
     private Long attractionId;
     private String title;
