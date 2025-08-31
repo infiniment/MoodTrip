@@ -33,18 +33,29 @@ public class AttractionPageController {
         AttractionDetailResponse detail = attractionService.getDetailResponse(contentId);
 
 
-        List<String> tags;
+        List<String> tagList;
         try {
-            tags = attractionEmotionService.findTagNamesByContentId(contentId);
+            tagList = attractionEmotionService.findTagNamesByContentId(contentId);
         } catch (Throwable t) {
-            tags = Collections.emptyList();
+            tagList = Collections.emptyList();
         }
+
+        var tags   = attractionService.getEmotionTagNames(contentId); // 감정
+
 
         model.addAttribute("contentId", contentId);
         model.addAttribute("attractionId", detail.getAttractionId());
         model.addAttribute("detail", detail);
+        model.addAttribute("tags", tagList);
         model.addAttribute("tags", tags);
+
+
+        attractionService.getEmotionTagNames(contentId);
 
         return "recommand-tourist-attractions-detail/detail-page";
     }
+
+
+
+
 }
