@@ -16,19 +16,19 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class SecurityUtil {
 
-    private final ProfileRepository profileRepository;
+   // private final ProfileRepository profileRepository;
 
     /**
      * 🎯 현재 로그인한 회원의 Member 엔티티를 반환
      */
     public Member getCurrentMember() {
-        log.debug("🔍 현재 로그인한 사용자 정보 조회 시작");
+        log.debug("🔍 현재 세션에서 사용자 정보 조회 시작");
 
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-            if (authentication == null || !authentication.isAuthenticated()) {
-                log.warn("❌ 인증 정보가 없음 - 로그인이 필요합니다");
+            if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+                log.warn("❌ 인증 정보가 없음");
                 throw new RuntimeException("로그인이 필요합니다.");
             }
 
@@ -40,7 +40,7 @@ public class SecurityUtil {
             }
 
             MyUserDetails userDetails = (MyUserDetails) principal;
-            Member member = userDetails.getMember();
+            Member member = userDetails.getMember(); // <-- 세션에 저장된 객체를 그대로 반환
 
             if (member == null) {
                 log.warn("❌ UserDetails에 Member 정보가 없음");
@@ -52,24 +52,22 @@ public class SecurityUtil {
                 throw new WithdrawnMemberException("탈퇴하신 회원입니다.");
             }
 
-            // ✅ 프로필 자동 생성 로직
+            // ▼▼▼ 2. 프로필 자동 생성 로직 ★완전 삭제★ ▼▼▼
+            /*
             profileRepository.findByMember(member).orElseGet(() -> {
-                log.info("🌱 프로필이 존재하지 않아 새로 생성합니다 - memberId: {}", member.getMemberId());
-                Profile newProfile = Profile.builder()
-                        .member(member)
-                        .profileImage("/image/fix/moodtrip.png")
-                        .profileBio("반갑습니다")
-                        .build();
-                return profileRepository.save(newProfile);
+                // ... (이 블록 전체를 삭제) ...
             });
+            */
 
-            log.debug("✅ 현재 로그인한 사용자 조회 성공 - memberId: {}, nickname: {}",
+            log.debug("✅ 현재 세션 사용자 조회 성공 - memberId: {}, nickname: {}",
                     member.getMemberId(), member.getNickname());
 
+            // DB 조회 없이 세션의 객체를 그대로 반환합니다.
+            // 이 객체는 로그인 시점에 생성된 완전한 객체입니다.
             return member;
 
         } catch (Exception e) {
-            log.error("💥 현재 사용자 정보 조회 중 오류 발생: {}", e.getMessage());
+            log.error("💥 현재 사용자 정보 조회 중 오류 발생: {}", e.getMessage(), e); // 스택 트레이스 포함
             throw new RuntimeException("사용자 인증 정보를 가져올 수 없습니다: " + e.getMessage());
         }
     }
@@ -100,6 +98,7 @@ public class SecurityUtil {
             return false;
         }
     }
+
 
     public boolean isCurrentMember(Long memberPk) {
         try {

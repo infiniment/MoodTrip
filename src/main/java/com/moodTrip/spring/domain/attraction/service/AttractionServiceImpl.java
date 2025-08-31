@@ -310,19 +310,6 @@ public class AttractionServiceImpl implements AttractionService {
                 asText(it,"restdateculture"), asText(it,"restdateshopping"),
                 asText(it,"restdateleports")
         ));
-        intro.setChkcreditcard(firstNonEmpty(
-                asText(it,"chkcreditcard"), asText(it,"chkcreditcardfood"),
-                asText(it,"chkcreditcardculture"), asText(it,"chkcreditcardshopping"),
-                asText(it,"chkcreditcardleports")
-        ));
-        intro.setChkbabycarriage(firstNonEmpty(
-                asText(it,"chkbabycarriage"), asText(it,"chkbabycarriageshopping"),
-                asText(it,"chkbabycarriageleports"), asText(it,"chkbabycarriageculture")
-        ));
-        intro.setChkpet(firstNonEmpty(
-                asText(it,"chkpet"), asText(it,"chkpetculture"),
-                asText(it,"chkpetshopping"), asText(it,"chkpetleports")
-        ));
 
         try { intro.setRawJson(om.writeValueAsString(it)); }
         catch (JsonProcessingException e) { intro.setRawJson(it.toString()); }
@@ -458,6 +445,7 @@ public class AttractionServiceImpl implements AttractionService {
         return attractions.stream()
                 .map(a -> AttractionCardDTO.builder()
                         .attractionId(a.getAttractionId())
+                        .contentId(a.getContentId())
                         .title(a.getTitle())
                         .addr1(a.getAddr1())
                         .firstImage(a.getFirstImage())
@@ -475,6 +463,7 @@ public class AttractionServiceImpl implements AttractionService {
         return attractions.stream()
                 .map(a -> AttractionCardDTO.builder()
                         .attractionId(a.getAttractionId())
+                        .contentId(a.getContentId())
                         .title(a.getTitle())
                         .addr1(a.getAddr1())
                         .firstImage(a.getFirstImage())
@@ -506,6 +495,7 @@ public class AttractionServiceImpl implements AttractionService {
 
         return attractions.stream()
                 .map(attraction -> AttractionCardDTO.builder()
+                        .contentId(attraction.getContentId())
                         .attractionId(attraction.getAttractionId())
                         .title(attraction.getTitle())
                         .addr1(attraction.getAddr1())
@@ -564,50 +554,28 @@ public class AttractionServiceImpl implements AttractionService {
             common = fetchDetailCommon(contentId, base.getContentTypeId());
         } catch (Exception e) {
             log.warn("detailCommon2 fetch failed. contentId={}, msg={}", contentId, e.getMessage());
-            common = AttractionDetailResponse.DetailCommon.builder().build(); // tel/overview/addr 폴백
+            common = AttractionDetailResponse.DetailCommon.builder().build();
         }
 
-        return AttractionDetailResponse.of(base, introNorm, common);    // DTO는 프런트 최소 9필드만
+        return AttractionDetailResponse.of(base, introNorm, common);
     }
-
-
+    // ===== intro 정규화 =====
     private AttractionDetailResponse.IntroNormalized normalizeIntro(AttractionIntro i) {
         if (i == null) return AttractionDetailResponse.IntroNormalized.builder().build();
 
-        String infocenter = firstNonEmpty(
-                i.getInfocenter(), i.getInfocenterfood(), i.getInfocenterlodging(),
-                i.getInfocenterculture(), i.getInfocentershopping(),
-                i.getInfocenterleports(), i.getInfocentertourcourse()
-        );
-
-        String usetime = firstNonEmpty(
-                i.getUsetime(), i.getUsetimeculture(), i.getUsetimefestival(),
-                i.getUsetimeleports(), i.getOpentime(), i.getOpentimefood()
-        );
-
-        String rest = firstNonEmpty(
-                i.getRestdate(), i.getRestdatefood(), i.getRestdateculture(),
-                i.getRestdateshopping(), i.getRestdateleports()
-        );
-
-        String parking = firstNonEmpty(
-                i.getParking(), i.getParkingfood(), i.getParkingculture(),
-                i.getParkingshopping(), i.getParkinglodging(), i.getParkingleports()
-        );
-
-        String age = firstNonEmpty(
-                i.getExpagerange(), i.getExpagerangeleports(), i.getAgelimit()
-        );
-
+        // ✅ 예전에는 분기별 필드(firstNonEmpty) 사용 → 현재는 단일 필드만 남겨둔 상태
         return AttractionDetailResponse.IntroNormalized.builder()
-                .infocenter(infocenter)
-                .usetime(usetime)
-                .restdate(rest)
-                .parking(parking)
-                .age(age)
+                .infocenter(i.getInfocenter())
+                .usetime(i.getUsetime())
+                .restdate(i.getRestdate())
+                .parking(i.getParking())
+                .age(i.getExpagerange() != null ? i.getExpagerange() : i.getAgelimit())
                 .build();
     }
 
+
+
+    // ===== detailCommon 호출 + overview 저장 =====
     private AttractionDetailResponse.DetailCommon fetchDetailCommon(long contentId, Integer contentTypeId) {
         var uri = UriComponentsBuilder.fromUriString(BASE + "/detailCommon2")
                 .queryParam("serviceKey", apiKey)
@@ -636,6 +604,13 @@ public class AttractionServiceImpl implements AttractionService {
         String overview = asText(item, "overview");
         String addr1 = asText(item, "addr1");
         String addr2 = asText(item, "addr2");
+
+
+        introRepository.findById(contentId).ifPresent(intro -> {
+            intro.setOverview(overview);
+            intro.setSyncedAt(LocalDateTime.now());
+            introRepository.save(intro);
+        });
 
         return AttractionDetailResponse.DetailCommon.builder()
                 .tel(tel)
@@ -741,6 +716,12 @@ public class AttractionServiceImpl implements AttractionService {
     public List<String> getEmotionTagNames(long contentId) {
         // Top 3만 원하면 .stream().limit(3) 추가
         return attractionEmotionRepository.findActiveEmotionNamesByContentId(contentId);
+    }
+
+    @Override
+    public Attraction getEntityByContentId(Long contentId) {
+        return repository.findByContentId(contentId)
+                .orElseThrow(() -> new IllegalArgumentException("Attraction not found by contentId=" + contentId));
     }
 
     @Override

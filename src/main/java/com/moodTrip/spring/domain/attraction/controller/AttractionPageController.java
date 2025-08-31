@@ -3,6 +3,7 @@ package com.moodTrip.spring.domain.attraction.controller;
 import com.moodTrip.spring.domain.attraction.dto.response.AttractionDetailResponse;
 import com.moodTrip.spring.domain.attraction.service.AttractionService;
 import com.moodTrip.spring.domain.emotion.service.AttractionEmotionService;
+import com.moodTrip.spring.domain.weather.service.WeatherService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -11,36 +12,42 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.Collections;
 import java.util.List;
-
 @Controller
 @RequiredArgsConstructor
 public class AttractionPageController {
 
     private final AttractionService attractionService;
     private final AttractionEmotionService attractionEmotionService;
-
+    private final WeatherService weatherService;
 
     @GetMapping("/attractions/detail/{contentId}")
-    public String view(@PathVariable("contentId") long contentId, Model model) {
+    // 1. 파라미터 타입을 long -> Long 으로 변경
+    public String view(@PathVariable("contentId") Long contentId, Model model) {
 
-
-        AttractionDetailResponse detail = attractionService.getDetailResponse(contentId);
-
-
-        List<String> tags;
-        try {
-            tags = attractionEmotionService.findTagNamesByContentId(contentId);
-        } catch (Throwable t) {
-            tags = Collections.emptyList();
+        // 2. contentId가 null일 경우를 처리하는 방어 코드 추가
+        if (contentId == null) {
+            // 예를 들어, 목록 페이지나 에러 페이지로 리다이렉트
+            // 혹은 적절한 에러 메시지를 담은 뷰를 반환
+            return "redirect:/attractions"; // 또는 "error/404" 등
         }
 
-        // 버튼 프리필용
-        model.addAttribute("contentId", contentId);
-        model.addAttribute("attractionId", detail.getAttractionId()); // 아래 DTO 수정 반영
-        model.addAttribute("detail", detail);
-        model.addAttribute("tags", tags);
+        AttractionDetailResponse detail = attractionService.getDetailResponse(contentId);
+        List<String> tagList;
+        try {
+            tagList = attractionEmotionService.findTagNamesByContentId(contentId);
+        } catch (Throwable t) {
+            tagList = Collections.emptyList();
+        }
+      
+        var tags   = attractionService.getEmotionTagNames(contentId); // 감정 태그들
 
-        // 템플릿 경로 (resources/templates/recommand-tourist-attractions-detail/detail-page.html)
+        model.addAttribute("contentId", contentId);
+        model.addAttribute("attractionId", detail.getAttractionId());
+        model.addAttribute("detail", detail);
+//         model.addAttribute("tags", tags);
+        model.addAttribute("tags", tagList);
+
         return "recommand-tourist-attractions-detail/detail-page";
     }
 }
+
