@@ -282,11 +282,10 @@ body {
     align-items: center;
 }
 
-/* 중앙 메인 텍스트 */
 .emotion-center {
-    position: absolute;  /* relative에서 absolute로 변경 */
-    left: 43%;          /* X축 위치 (50% = 중앙) */
-    top: 35%;           /* Y축 위치 (50% = 중앙) */
+    position: absolute;
+    left: 43%;
+    top: 35%;
     z-index: 10;
     text-align: center;
     background: rgba(255, 255, 255, 0.15);
@@ -295,11 +294,14 @@ body {
     border-radius: 24px;
     padding: 40px 60px;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease; /* 부드러운 전환 효과 추가 */
+    transform: scale(1.1); /* 기본 크기 */
+    transform-origin: center; /* 변환 기준점을 중앙으로 설정 */
 }
 
-/* 버튼 눌렀을 때 */
 .emotion-center:hover {
-    transform: translate(-50%, -50%) scale(1.1); /* 1.1 → 1.15로 살짝 더 크게 */
+    transform: scale(1.15); /* 호버 시 크기만 변경, translate 제거 */
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15); /* 그림자도 약간 변경 */
 }
 
 .emotion-main-text {
@@ -400,7 +402,6 @@ body {
         transform: translateY(-8px) scale(1.02);
     }
 }
-
 /* 감정 연결선 효과 */
 .emotion-connections {
     position: absolute;
