@@ -43,17 +43,13 @@
                  th:alt="${detail != null ? detail.title : '이미지'}"
                  src="/static/image/recommand-tourist-attractions-detail/SaryeoniForestTrail.png"
                  alt="">
-            <div class="image-overlay">
-              <div class="overlay-content">
-                <h3>신성한 숲의 향기</h3>
-                <p>제주의 숨은 비경을 걸어보세요</p>
-              </div>
+            <div class="image-overlay">=
             </div>
           </section>
 
           <section class="place-tag-info">
             <div class="place-tag" th:if="${tags != null and !#lists.isEmpty(tags)}">
-              <span class="tag-item" th:each="t : ${tags}" th:text="'#' + ${t}">#힐링</span>
+              <span class="tag-item" th:each="t : ${tags}" th:text="'#' + ${t}">#태그</span>
             </div>
           </section>
         </div>
@@ -158,44 +154,6 @@
     </section>
   </div>
 
-  <!-- 후기 섹션 (기존 그대로) -->
-  <div class="container-review">
-    <div class="container-title">
-      <span class="review-icon">📝</span>
-      <span>관광지 리뷰</span>
-    </div>
-
-    <section class="review-section">
-      <form class="review-form">
-        <div class="review-list">
-          <div class="review-wrapper">
-            <div class="review-zip">등록된 리뷰</div>
-            <div class="divider"></div>
-            <div class="review-more" id="moreBtn">더보기 ❯</div>
-          </div>
-          <div class="review-count" id="reviewcount"></div>
-          <ul id="reviewContainer"></ul>
-        </div>
-
-        <div class="divider"></div>
-        <div class="my-review">
-          <label for="review">나의 리뷰 등록하기</label>
-          <div class="star-rating" id="starRating">
-            <div class="star" data-index="0"></div>
-            <div class="star" data-index="1"></div>
-            <div class="star" data-index="2"></div>
-            <div class="star" data-index="3"></div>
-            <div class="star" data-index="4"></div>
-            <input type="hidden" id="ratingValue" name="rating" />
-          </div>
-          <textarea id="review" name="review" maxlength="400" placeholder="이곳에서의 경험을 공유해 주세요!"></textarea>
-        </div>
-        <div class="form-footer">
-          <button type="submit" class="submit-review-btn">후기 등록</button>
-        </div>
-      </form>
-    </section>
-  </div>
 </div>
 </body>
 </html>

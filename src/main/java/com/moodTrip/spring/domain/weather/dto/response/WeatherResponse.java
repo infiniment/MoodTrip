@@ -12,6 +12,7 @@ import java.time.format.DateTimeFormatter;
 @Builder
 public class WeatherResponse {
 
+    private String formattedDateTime;
     private String dateTime;
     private String date;
     private String time;
@@ -40,4 +41,20 @@ public class WeatherResponse {
         this.lat = weather.getLat();
         this.lon = weather.getLon();
     }
+    public WeatherResponse(com.moodTrip.spring.domain.weather.entity.WeatherAttraction w) {
+        this.dateTime = String.valueOf(w.getDateTime());
+        this.formattedDateTime = w.getDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+
+        this.date = w.getDate();
+        this.time = w.getTime();
+        this.temperature = w.getTemperature();
+        this.feelsLike = w.getFeelsLike();
+        this.humidity = w.getHumidity();
+        this.weather = w.getWeather();
+        this.description = w.getDescription();
+        this.icon = w.getIcon();
+        this.lat = w.getLat();
+        this.lon = w.getLon();
+    }
+
 }

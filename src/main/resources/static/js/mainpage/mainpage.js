@@ -29,6 +29,7 @@ function initScrollAnimations() {
 function initWeatherHoverEffects() {
   const weatherCards = document.querySelectorAll('.weather-card');
   const weatherSection = document.querySelector('.weather-travel');
+
   if (!weatherCards.length || !weatherSection) return;
 
   const backgroundColors = {

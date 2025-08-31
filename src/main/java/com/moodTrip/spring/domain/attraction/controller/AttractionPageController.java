@@ -3,6 +3,7 @@ package com.moodTrip.spring.domain.attraction.controller;
 import com.moodTrip.spring.domain.attraction.dto.response.AttractionDetailResponse;
 import com.moodTrip.spring.domain.attraction.service.AttractionService;
 import com.moodTrip.spring.domain.emotion.service.AttractionEmotionService;
+import com.moodTrip.spring.domain.weather.service.WeatherService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,7 +18,7 @@ public class AttractionPageController {
 
     private final AttractionService attractionService;
     private final AttractionEmotionService attractionEmotionService;
-
+    private final WeatherService weatherService;
 
     @GetMapping("/attractions/detail/{contentId}")
     // 1. 파라미터 타입을 long -> Long 으로 변경
@@ -31,20 +32,22 @@ public class AttractionPageController {
         }
 
         AttractionDetailResponse detail = attractionService.getDetailResponse(contentId);
-
-
-        List<String> tags;
+        List<String> tagList;
         try {
-            tags = attractionEmotionService.findTagNamesByContentId(contentId);
+            tagList = attractionEmotionService.findTagNamesByContentId(contentId);
         } catch (Throwable t) {
-            tags = Collections.emptyList();
+            tagList = Collections.emptyList();
         }
+      
+        var tags   = attractionService.getEmotionTagNames(contentId); // 감정 태그들
 
         model.addAttribute("contentId", contentId);
         model.addAttribute("attractionId", detail.getAttractionId());
         model.addAttribute("detail", detail);
-        model.addAttribute("tags", tags);
+//         model.addAttribute("tags", tags);
+        model.addAttribute("tags", tagList);
 
         return "recommand-tourist-attractions-detail/detail-page";
     }
 }
+

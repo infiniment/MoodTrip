@@ -21,7 +21,7 @@ public interface AttractionEmotionRepository extends JpaRepository<AttractionEmo
 
     Optional<AttractionEmotion> findByAttraction_AttractionIdAndEmotion_TagId(Long attractionId, Long tagId);
     List<AttractionEmotion> findByAttraction_AttractionIdAndIsActiveTrue(Long attractionId);
-
+    List<AttractionEmotion> findByAttraction_ContentIdAndIsActiveTrue(Long contentId);
 
     // contentId 기준: 활성화된 감정 이름을 가중치 내림차순으로
     @Query("""
@@ -44,5 +44,5 @@ public interface AttractionEmotionRepository extends JpaRepository<AttractionEmo
         order by e.displayOrder asc
         """)
     List<String> findTagNamesByContentId(@Param("contentId") long contentId);
-
+    List<AttractionEmotion> findByEmotion_TagIdAndIsActiveTrue(Integer emotionId);
 }

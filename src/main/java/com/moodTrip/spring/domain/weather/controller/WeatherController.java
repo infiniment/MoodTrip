@@ -1,12 +1,19 @@
 package com.moodTrip.spring.domain.weather.controller;
 
+import com.moodTrip.spring.domain.attraction.dto.response.AttractionDetailResponse;
+import com.moodTrip.spring.domain.attraction.dto.response.AttractionResponse;
+import com.moodTrip.spring.domain.attraction.service.AttractionService;
+import com.moodTrip.spring.domain.emotion.dto.response.AttractionCardDTO;
 import com.moodTrip.spring.domain.rooms.repository.RoomRepository;
 import com.moodTrip.spring.domain.weather.dto.response.WeatherResponse;
+import com.moodTrip.spring.domain.weather.service.WeatherAttractionService;
 import com.moodTrip.spring.domain.weather.service.WeatherService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 @RestController
@@ -16,6 +23,8 @@ public class WeatherController {
 
     private final WeatherService weatherService;
     private final RoomRepository roomRepository; // ★ 임시로 주입
+    private final WeatherAttractionService weatherAttractionService;
+    private final AttractionService attractionService;
 
     private static final double DEFAULT_LAT = 37.5665;
     private static final double DEFAULT_LON = 126.9780;
@@ -97,5 +106,26 @@ public class WeatherController {
     @GetMapping("/current/by-coord")
     public WeatherResponse getCurrentByCoord(@RequestParam double lat, @RequestParam double lon) {
         return weatherService.getCurrentWeather(lat, lon);
+    }
+
+    @GetMapping("/recommend/attractions")
+    public List<AttractionCardDTO> recommend(@RequestParam Double lat, @RequestParam Double lon) {
+        return weatherAttractionService.recommendByCoord(lat, lon);
+    }
+
+
+    @GetMapping("/detail")
+    public Map<String, Object> detailApi(@RequestParam("contentId") Long contentId) {
+        WeatherResponse weather = weatherService.getSeoulCurrentWeather(contentId);
+        List<AttractionResponse> recommended = weatherAttractionService.getSeoulAttractionsByWeather(contentId);
+        AttractionDetailResponse detail = attractionService.getDetailResponse(contentId);
+        List<String> tags = attractionService.getEmotionTagNames(contentId);
+
+        return Map.of(
+                "weather", weather,
+                "detail", detail,
+                "tags", tags,
+                "recommended", recommended
+        );
     }
 }
