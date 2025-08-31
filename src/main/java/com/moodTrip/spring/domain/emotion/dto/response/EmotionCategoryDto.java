@@ -24,6 +24,7 @@ public class EmotionCategoryDto {
 
     // Entity를 DTO로 변환하는 정적 팩토리 메서드
     public static EmotionCategoryDto from(EmotionCategory category) {
+
         // Emotion 리스트를 EmotionDto 리스트로 변환
         List<EmotionDto> emotionDtos = category.getEmotions().stream()
                 .map(EmotionDto::from)

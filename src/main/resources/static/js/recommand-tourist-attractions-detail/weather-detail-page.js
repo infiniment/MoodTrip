@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const icon = btn.querySelector("img");
   const heartImg = document.querySelector(".heart-img-wrapper img");
   const allSections = document.querySelectorAll(".section-content");
-  const placeName = "사려니숲길";
+  const placeName = document.querySelector(".region-name span")?.textContent || "";
 
   // ✅ 1. 새로고침 시 섹션 초기화
   allSections.forEach(sec => sec.classList.remove("active"));

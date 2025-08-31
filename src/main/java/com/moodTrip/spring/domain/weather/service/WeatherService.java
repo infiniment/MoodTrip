@@ -1,9 +1,10 @@
 package com.moodTrip.spring.domain.weather.service;
 
 import com.moodTrip.spring.domain.weather.dto.response.WeatherResponse;
+import com.moodTrip.spring.domain.weather.entity.Weather;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Objects;
 
 public interface WeatherService {
 
@@ -21,5 +22,8 @@ public interface WeatherService {
     List<WeatherResponse> getDailyByRoom(Long roomId);
     List<WeatherResponse> getHourlyByRoom(Long roomId, String date);
     WeatherResponse getCurrentByRoom(Long roomId);
+
+    //weather-detail-page
+    WeatherResponse getSeoulCurrentWeather(Long contentId);
 
 }

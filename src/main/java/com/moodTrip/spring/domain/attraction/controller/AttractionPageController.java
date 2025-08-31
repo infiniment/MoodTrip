@@ -17,7 +17,7 @@ public class AttractionPageController {
 
     private final AttractionService attractionService;
     private final AttractionEmotionService attractionEmotionService;
-
+    private final WeatherService weatherService;
 
     @GetMapping("/attractions/detail/{contentId}")
     // 1. 파라미터 타입을 long -> Long 으로 변경
@@ -31,8 +31,6 @@ public class AttractionPageController {
         }
 
         AttractionDetailResponse detail = attractionService.getDetailResponse(contentId);
-
-
         List<String> tagList;
         try {
             tagList = attractionEmotionService.findTagNamesByContentId(contentId);
@@ -40,7 +38,8 @@ public class AttractionPageController {
             tagList = Collections.emptyList();
         }
 
-        var tags   = attractionService.getEmotionTagNames(contentId); // 감정
+        var tags   = attractionService.getEmotionTagNames(contentId); // 감정 태그들
+
 
 
         model.addAttribute("contentId", contentId);
@@ -50,12 +49,7 @@ public class AttractionPageController {
         model.addAttribute("tags", tags);
 
 
-        attractionService.getEmotionTagNames(contentId);
 
         return "recommand-tourist-attractions-detail/detail-page";
     }
-
-
-
-
 }

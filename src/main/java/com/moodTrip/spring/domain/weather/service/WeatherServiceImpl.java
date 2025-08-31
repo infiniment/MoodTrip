@@ -2,23 +2,36 @@ package com.moodTrip.spring.domain.weather.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.moodTrip.spring.domain.attraction.entity.Attraction;
+import com.moodTrip.spring.domain.attraction.repository.AttractionRepository;
+import com.moodTrip.spring.domain.attraction.service.AttractionService;
 import com.moodTrip.spring.domain.rooms.entity.Room;
 import com.moodTrip.spring.domain.rooms.repository.RoomRepository;
 import com.moodTrip.spring.domain.weather.dto.response.WeatherResponse;
 import com.moodTrip.spring.domain.weather.entity.Weather;
+import com.moodTrip.spring.domain.weather.entity.WeatherAttraction;
+import com.moodTrip.spring.domain.weather.repository.WeatherAttractionRepository;
 import com.moodTrip.spring.domain.weather.repository.WeatherRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static org.hibernate.cfg.JdbcSettings.URL;
+import static org.springframework.data.redis.core.RedisCommand.TTL;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +41,9 @@ public class WeatherServiceImpl implements WeatherService {
     private final WeatherRepository weatherRepository;
     private final RestTemplate restTemplate = new RestTemplate();
     private final RoomRepository roomRepository;
+    private final AttractionRepository attractionRepository;
+    private final AttractionService attractionService;
+    private final WeatherAttractionRepository  weatherAttractionRepository;
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private double toDouble(BigDecimal bd, String field) {
@@ -37,6 +53,7 @@ public class WeatherServiceImpl implements WeatherService {
         }
         return bd.setScale(7, RoundingMode.HALF_UP).doubleValue();
     }
+
     private Room getRoom(Long roomId) {
         return roomRepository.findWithAttractionByRoomId(roomId)
                 .orElseThrow(() -> new NoSuchElementException("Room not found: " + roomId));
@@ -136,7 +153,7 @@ public class WeatherServiceImpl implements WeatherService {
         List<WeatherResponse> hourlyList = new ArrayList<>();
         List<Weather> weatherEntities = new ArrayList<>();
 
-        for (JsonNode node : list)  {
+        for (JsonNode node : list) {
             String dtTxt = node.get("dt_txt").asText();
             LocalDateTime dt = LocalDateTime.parse(dtTxt, formatter);
             String date = dtTxt.split(" ")[0];
@@ -274,7 +291,7 @@ public class WeatherServiceImpl implements WeatherService {
             if (list == null || !list.isArray() || list.isEmpty()) return List.of();
 
             String firstDate = list.get(0).get("dt_txt").asText().split(" ")[0];
-            String lastDate  = list.get(list.size() - 1).get("dt_txt").asText().split(" ")[0];
+            String lastDate = list.get(list.size() - 1).get("dt_txt").asText().split(" ")[0];
 
             List<Weather> cachedRange =
                     weatherRepository.findByRoom_RoomIdAndDateBetweenOrderByDateAscTimeAsc(roomId, firstDate, lastDate);
@@ -369,5 +386,99 @@ public class WeatherServiceImpl implements WeatherService {
 
         throw new IllegalStateException("날씨 예보 리스트가 비어 있습니다.");
     }
+
+    // 캐시 유효기간 (30분)
+    private static final Duration TTL = Duration.ofMinutes(60);
+    private static final double SEOUL_LAT = 37.5665;
+    private static final double SEOUL_LON = 126.9780;
+    private static final long DEFAULT_ROOM_ID = 1L;
+
+    // @Transactional  // ⛔ 이 줄 삭제
+    private WeatherAttraction upsertWeatherAttraction(WeatherAttraction entity) {
+        Long attractionId = entity.getAttraction().getAttractionId();
+        LocalDateTime dt = entity.getDateTime();
+
+        var found = weatherAttractionRepository
+                .findByAttraction_AttractionIdAndDateTime(attractionId, dt);
+        if (found.isPresent()) return found.get();
+
+        try {
+            return weatherAttractionRepository.save(entity);
+        } catch (DataIntegrityViolationException dup) {
+            return weatherAttractionRepository
+                    .findByAttraction_AttractionIdAndDateTime(attractionId, dt)
+                    .orElseThrow(() -> dup);
+        }
+    }
+
+    @Override
+    public WeatherResponse getSeoulCurrentWeather(Long contentId) {
+        // 1) 캐시(최근 30분 이내)가 있으면 재사용
+        var thirtyMinutesAgo = LocalDateTime.now().minusMinutes(30);
+        var cached = weatherAttractionRepository
+                .findTopByAttraction_AttractionIdAndDateTimeGreaterThanEqualOrderByDateTimeDesc(
+                        contentId, thirtyMinutesAgo
+                );
+        if (cached.isPresent()) {
+            return new WeatherResponse(cached.get());
+        }
+
+        // 2) API 호출 (서울 고정)
+        var root = callOpenWeather(SEOUL_LAT, SEOUL_LON);
+
+        // 3) 파싱(가장 가까운 1개만 저장)
+        var list = root.path("list");
+        if (!list.isArray() || list.size() == 0) {
+            throw new IllegalStateException("OpenWeather 응답에 list가 없습니다.");
+        }
+
+        var first = list.get(0);
+        var dt = first.get("dt").asLong(); // unix
+        var main = first.get("main");
+        var weather0 = first.withArray("weather").get(0);
+
+        LocalDateTime dtLocal = LocalDateTime.ofEpochSecond(dt, 0, java.time.ZoneOffset.ofHours(9));
+        String date = dtLocal.toLocalDate().toString();
+        String time = dtLocal.toLocalTime().withNano(0).toString();
+
+        var attraction = attractionService.getEntityByContentId(contentId);
+
+        WeatherAttraction toSave = WeatherAttraction.builder()
+                .dateTime(dtLocal)
+                .date(date)
+                .time(time)
+                .temperature(main.get("temp").asDouble())
+                .feelsLike(main.get("feels_like").asDouble())
+                .humidity(main.get("humidity").asInt())
+                .weather(weather0.get("main").asText(null))
+                .description(weather0.get("description").asText(null))
+                .icon(weather0.get("icon").asText(null))
+                .lat(SEOUL_LAT)
+                .lon(SEOUL_LON)
+                .attraction(attraction)
+                .build();
+
+        WeatherAttraction saved = upsertWeatherAttraction(toSave);
+        return new WeatherResponse(saved);
+    }
+
+    // 공용 API 호출(네가 기존에 쓰던 것 그대로 재사용)
+    private com.fasterxml.jackson.databind.JsonNode callOpenWeather(double lat, double lon) {
+        String url = String.format(
+                "https://api.openweathermap.org/data/2.5/forecast?lat=%f&lon=%f&units=metric&lang=kr&appid=%s",
+                lat, lon, apiKey
+        );
+        try {
+            String json = restTemplate.getForObject(url, String.class);
+            return new com.fasterxml.jackson.databind.ObjectMapper().readTree(json);
+        } catch (org.springframework.web.client.RestClientResponseException e) {
+            log.error("[weather] API {} failed: status={}, body={}", url, e.getRawStatusCode(), e.getResponseBodyAsString(), e);
+            throw new RuntimeException("날씨 API 호출 실패: " + e.getRawStatusCode(), e);
+        } catch (Exception e) {
+            log.error("[weather] API {} failed", url, e);
+            throw new RuntimeException("날씨 API 호출 실패", e);
+        }
+    }
+
 
 }
