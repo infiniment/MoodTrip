@@ -145,6 +145,16 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
                     return;
                 }
 
+
+                // memberPk가 1이면 관리자용 스타일을 추가
+                if (member.getMemberPk() == 1) {
+                    request.getSession().setAttribute("isAdmin", true); // 세션에 관리자 플래그 추가
+                    log.info("관리자 로그인: isAdmin = true, memberPk = {}", member.getMemberPk()); // 관리자일 때 로그 출력
+                } else {
+                    request.getSession().setAttribute("isAdmin", false); // 일반 사용자로 설정
+                    log.info("일반 사용자 로그인: isAdmin = false, memberPk = {}", member.getMemberPk()); // 일반 사용자일 때 로그 출력
+                }
+
                 // JWT 발급
                 String token = jwtUtil.generateToken(member.getMemberId(), member.getMemberPk());
                 Cookie jwtCookie = new Cookie("jwtToken", token);
@@ -152,7 +162,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
                 jwtCookie.setPath("/");
                 //jwtCookie.setMaxAge(24 * 60 * 60);
                 response.addCookie(jwtCookie);
-                response.sendRedirect("/mainpage/mainpage");
+                response.sendRedirect("/");
             } else {
                 response.sendRedirect("/signup?error=NOT_REGISTERED");
             }

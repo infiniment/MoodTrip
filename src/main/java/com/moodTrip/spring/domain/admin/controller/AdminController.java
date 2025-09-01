@@ -27,6 +27,8 @@ public class AdminController {
 
     @GetMapping
     public String adminPage(Model model) {
+
+
         // 공지사항 목록 가져오기
         model.addAttribute("notices", new ArrayList<>());
 
