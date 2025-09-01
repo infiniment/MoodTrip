@@ -32,6 +32,8 @@ public interface AttractionService {
     List<AttractionResponse> findByRegionCodes(List<String> regionCodes, String sort);
     List<Attraction> find(int areaCode, Integer sigunguCode, Integer contentTypeId);
 
+    int syncAreaBasedListOnly12And14(int areaCode, Integer sigunguCode, int pageSize, long pauseMillis);
+
     // 수동 등록
     AttractionResponse create(AttractionInsertRequest req);
 
