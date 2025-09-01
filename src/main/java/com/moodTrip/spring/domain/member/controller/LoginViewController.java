@@ -88,7 +88,7 @@ public class LoginViewController {
         //jwtCookie.setMaxAge(7200); // 2시간
         response.addCookie(jwtCookie);
 
-        // 메인 페이지로 이동
+        // 메인 페이지로 이동dd
         return "redirect:/";
     }
 
