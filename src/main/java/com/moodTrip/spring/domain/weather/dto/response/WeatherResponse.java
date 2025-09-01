@@ -12,6 +12,7 @@ import java.time.format.DateTimeFormatter;
 @Builder
 public class WeatherResponse {
 
+    private Long contentId;
     private String formattedDateTime;
     private String dateTime;
     private String date;
@@ -40,6 +41,7 @@ public class WeatherResponse {
         this.icon = weather.getIcon();
         this.lat = weather.getLat();
         this.lon = weather.getLon();
+        this.contentId = weather.getContentId();
     }
     public WeatherResponse(com.moodTrip.spring.domain.weather.entity.WeatherAttraction w) {
         this.dateTime = String.valueOf(w.getDateTime());
@@ -55,6 +57,7 @@ public class WeatherResponse {
         this.icon = w.getIcon();
         this.lat = w.getLat();
         this.lon = w.getLon();
+        this.contentId = w.getContentId();
     }
 
 }

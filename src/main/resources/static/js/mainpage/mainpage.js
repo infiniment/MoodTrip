@@ -4,6 +4,8 @@ document.addEventListener('DOMContentLoaded', function() {
   initWeatherHoverEffects();
   initSmoothScroll();
   initializeMessageCounter();
+  initEmotionInteractions();
+  initWeatherCardClickHandlers(); // 새로 추가
 });
 
 // 1. 스크롤 애니메이션
@@ -25,7 +27,7 @@ function initScrollAnimations() {
   elements.forEach(el => observer.observe(el));
 }
 
-// 2. 날씨 호버 효과
+// 2. 날씨 호버 효과 - 동적 카드 지원으로 수정
 function initWeatherHoverEffects() {
   const weatherCards = document.querySelectorAll('.weather-card');
   const weatherSection = document.querySelector('.weather-travel');
@@ -41,10 +43,29 @@ function initWeatherHoverEffects() {
 
   weatherCards.forEach(card => {
     card.addEventListener('mouseenter', () => {
+      // 동적으로 생성된 카드에서 날씨 타입 확인
       const weatherType = [...card.classList].find(cls =>
           ['sunny','rainy','cloudy','snowy'].includes(cls)
       );
-      weatherSection.style.background = backgroundColors[weatherType] || backgroundColors.sunny;
+
+      // data-weather 속성에서도 확인
+      const dataWeather = card.dataset.weather;
+      let bgKey = weatherType;
+
+      // data-weather로 매핑 (한글 → 영문)
+      if (!bgKey && dataWeather) {
+        switch(dataWeather) {
+          case '맑음': bgKey = 'sunny'; break;
+          case '비':
+          case '이슬비': bgKey = 'rainy'; break;
+          case '흐림':
+          case '안개': bgKey = 'cloudy'; break;
+          case '눈': bgKey = 'snowy'; break;
+          default: bgKey = 'sunny';
+        }
+      }
+
+      weatherSection.style.background = backgroundColors[bgKey] || backgroundColors.sunny;
       weatherSection.style.transition = 'background 0.3s ease';
     });
 
@@ -54,7 +75,218 @@ function initWeatherHoverEffects() {
   });
 }
 
-// 3. 감정 인터랙션 (생략 - 기존 코드 동일)
+document.addEventListener('click', function(e) {
+  const card = e.target.closest('.weather-card');
+  if (card) {
+    const contentId = card.dataset.contentId;
+    console.log("카드 클릭됨:", contentId);
+    if (contentId) {
+      window.location.href = `/attraction/weather/detail?contentId=${contentId}`;
+    }
+  }
+});
+
+// 날씨 카드 클릭 피드백
+function showWeatherCardFeedback(attractionName, weatherType) {
+  const feedback = document.createElement('div');
+  feedback.className = 'weather-card-feedback';
+  feedback.innerHTML = `
+    <div style="
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.9);
+      color: white;
+      padding: 20px 40px;
+      border-radius: 16px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      z-index: 9999;
+      backdrop-filter: blur(10px);
+      animation: fadeInScale 0.3s ease-out;
+      text-align: center;
+    ">
+      ${attractionName}<br>
+      <small style="font-size: 0.9rem; opacity: 0.8;">${weatherType} 날씨 추천</small>
+    </div>
+  `;
+
+  document.body.appendChild(feedback);
+
+  // 1.5초 후 제거
+  setTimeout(() => {
+    feedback.style.animation = 'fadeInScale 0.3s ease-out reverse';
+    setTimeout(() => feedback.remove(), 300);
+  }, 1500);
+}
+
+// 3. 감정 인터랙션 기능 (기존과 동일)
+function initEmotionInteractions() {
+  const emotionItems = document.querySelectorAll('.emotion-item');
+  const emotionCenter = document.querySelector('.emotion-center');
+  const emotionBrand = document.querySelector('.emotion-brand');
+  const emotionSubtitle = document.querySelector('.emotion-subtitle');
+
+  if (!emotionItems.length || !emotionCenter) return;
+
+  // 감정별 메시지 매핑
+  const emotionMessages = {
+    '행복': {
+      brand: 'HAPPY MOMENT',
+      subtitle: '행복의 순간',
+      color: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)'
+    },
+    '설레임': {
+      brand: 'EXCITING',
+      subtitle: '설레는 마음',
+      color: 'linear-gradient(135deg, #ec4899 0%, #be185d 100%)'
+    },
+    '평온': {
+      brand: 'PEACEFUL',
+      subtitle: '마음의 평화',
+      color: 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+    },
+    '신남': {
+      brand: 'AMAZING',
+      subtitle: '신나는 여행',
+      color: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)'
+    },
+    '힐링': {
+      brand: 'HEALING',
+      subtitle: '힐링의 시간',
+      color: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)'
+    },
+    '모험': {
+      brand: 'ADVENTURE',
+      subtitle: '모험의 세계로',
+      color: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)'
+    },
+    '로맨틱': {
+      brand: 'ROMANTIC',
+      subtitle: '연인과 함께',
+      color: 'linear-gradient(135deg, #f43f5e 0%, #e11d48 100%)'
+    },
+    '자유': {
+      brand: 'FREEDOM',
+      subtitle: '자유의 순간',
+      color: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)'
+    }
+  };
+
+  const defaultMessage = {
+    brand: 'MOOD TRIP',
+    subtitle: '감정을 찾아보세요',
+    color: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)'
+  };
+
+  // 감정 아이템 호버 이벤트
+  emotionItems.forEach(item => {
+    const emotion = item.dataset.emotion;
+
+    item.addEventListener('mouseenter', () => {
+      const message = emotionMessages[emotion] || defaultMessage;
+
+      // 텍스트 변경
+      emotionBrand.textContent = message.brand;
+      emotionSubtitle.textContent = message.subtitle;
+
+      // 색상 변경
+      emotionBrand.style.background = message.color;
+      emotionBrand.style.webkitBackgroundClip = 'text';
+      emotionBrand.style.webkitTextFillColor = 'transparent';
+      emotionBrand.style.backgroundClip = 'text';
+
+      // 중앙 카드 효과
+      emotionCenter.style.transform = 'scale(1.15)';
+      emotionCenter.style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.15)';
+    });
+
+    item.addEventListener('mouseleave', () => {
+      // 기본 상태로 복원
+      emotionBrand.textContent = defaultMessage.brand;
+      emotionSubtitle.textContent = defaultMessage.subtitle;
+      emotionBrand.style.background = defaultMessage.color;
+      emotionBrand.style.webkitBackgroundClip = 'text';
+      emotionBrand.style.webkitTextFillColor = 'transparent';
+      emotionBrand.style.backgroundClip = 'text';
+
+      emotionCenter.style.transform = 'scale(1.1)';
+      emotionCenter.style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.1)';
+    });
+
+    // 클릭 이벤트 (감정 선택)
+    item.addEventListener('click', () => {
+      const emotion = item.dataset.emotion;
+      console.log(`${emotion} 감정이 선택되었습니다!`);
+
+      // 선택된 감정으로 페이지 이동 (실제 구현 시)
+      // window.location.href = `/emotion-search?emotion=${encodeURIComponent(emotion)}`;
+
+      // 임시 피드백
+      showEmotionFeedback(emotion);
+    });
+  });
+}
+
+// 감정 선택 피드백 표시
+function showEmotionFeedback(emotion) {
+  // 기존 피드백 제거
+  const existingFeedback = document.querySelector('.emotion-feedback');
+  if (existingFeedback) {
+    existingFeedback.remove();
+  }
+
+  // 새 피드백 생성
+  const feedback = document.createElement('div');
+  feedback.className = 'emotion-feedback';
+  feedback.innerHTML = `
+    <div style="
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.9);
+      color: white;
+      padding: 20px 40px;
+      border-radius: 16px;
+      font-size: 1.2rem;
+      font-weight: 600;
+      z-index: 9999;
+      backdrop-filter: blur(10px);
+      animation: fadeInScale 0.3s ease-out;
+    ">
+      ${emotion} 감정이 선택되었습니다!
+    </div>
+  `;
+
+  // 애니메이션 스타일 추가
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes fadeInScale {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+    }
+  `;
+  document.head.appendChild(style);
+
+  document.body.appendChild(feedback);
+
+  // 2초 후 제거
+  setTimeout(() => {
+    feedback.style.animation = 'fadeInScale 0.3s ease-out reverse';
+    setTimeout(() => {
+      feedback.remove();
+      style.remove();
+    }, 300);
+  }, 2000);
+}
 
 // 4. 부드러운 스크롤
 function initSmoothScroll() {
@@ -66,11 +298,18 @@ function initSmoothScroll() {
   };
 }
 
-// ... (중간 기능 부분 동일) ...
+// 5. 새로 추가: 모든 날씨 여행지 보기 함수
+window.showAllWeatherSpots = function() {
+  console.log("모든 날씨 여행지 보기 클릭");
 
-// 15. 방 상세보기 / 입장 신청 / 신고 모달 기능
+  // 실제 구현시에는 날씨별 여행지 전체 페이지로 이동
+  // window.location.href = '/weather-attractions';
 
-// 상세보기 모달 열기
+  // 임시로 감정 검색 페이지로 이동
+  window.location.href = '/emotion-search';
+};
+
+// 방 상세보기 모달 열기
 window.viewRoomDetail = function(roomId) {
   console.log("상세보기 클릭:", roomId);
 
@@ -119,10 +358,7 @@ window.closeDetailModal = function() {
   document.getElementById("detailModal").style.display = "none";
 };
 
-
-// 메인페이지 mainpage.js에 추가할 코드
-
-// 방 입장 신청하기 - 수정된 함수 (최신 프로필 자기소개 포함)
+// 방 입장 신청하기
 window.joinRoom = function(roomId) {
   console.log("입장 신청 클릭:", roomId);
 
@@ -138,7 +374,7 @@ window.joinRoom = function(roomId) {
         document.getElementById("modalRoomMeta").textContent = `${data.location} | ${data.createdDate}`;
         modal.dataset.roomId = roomId;
 
-        // 새로 추가: 현재 사용자의 최신 프로필 자기소개 가져오기
+        // 현재 사용자의 최신 프로필 자기소개 가져오기
         loadCurrentUserProfile();
 
         // 모달 표시
@@ -150,7 +386,7 @@ window.joinRoom = function(roomId) {
       });
 };
 
-// 새로 추가: 현재 사용자 프로필 정보 로드 (최신 자기소개 가져오기)
+// 현재 사용자 프로필 정보 로드
 function loadCurrentUserProfile() {
   console.log("현재 사용자의 최신 프로필 정보 조회 중...");
 
@@ -159,7 +395,7 @@ function loadCurrentUserProfile() {
     headers: {
       'Content-Type': 'application/json'
     },
-    credentials: 'include' // JWT 토큰 포함
+    credentials: 'include'
   })
       .then(response => {
         console.log("프로필 API 응답 상태:", response.status);
@@ -172,7 +408,6 @@ function loadCurrentUserProfile() {
       .then(profileData => {
         console.log("최신 프로필 데이터 수신:", profileData);
 
-        // 프로필 자기소개 업데이트 (최신 데이터로)
         const profileBioElement = document.getElementById('currentProfileBio');
         if (profileBioElement) {
           const latestBio = profileData.profileBio || '안녕하세요! 여행을 좋아합니다.';
@@ -186,7 +421,6 @@ function loadCurrentUserProfile() {
       .catch(error => {
         console.error('최신 프로필 로드 실패:', error);
 
-        // 오류 시 기본 자기소개 표시
         const profileBioElement = document.getElementById('currentProfileBio');
         if (profileBioElement) {
           profileBioElement.textContent = '안녕하세요! 여행을 좋아합니다.';
@@ -212,7 +446,7 @@ window.submitApplication = function() {
     return;
   }
 
-  fetch(`/api/v1/companion-rooms/${roomId}/join-requests`, {   // ✅ 수정
+  fetch(`/api/v1/companion-rooms/${roomId}/join-requests`, {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
@@ -230,28 +464,13 @@ window.submitApplication = function() {
           alert(result.resultMessage);
         }
       })
-
+      .catch(err => {
+        console.error("입장 신청 오류:", err);
+        alert("입장 신청 중 오류가 발생했습니다.");
+      });
 };
 
-// 신고 사유 변경 시 유효성 체크
-function validateReportForm() {
-  const reasonElement = document.getElementById('reportReason');
-  const submitButton = document.querySelector('#reportModal .btn-danger');
-
-  if (reasonElement && submitButton) {
-    const reason = reasonElement.value;
-
-    if (reason && reason !== '') {
-      submitButton.disabled = false;
-      submitButton.style.opacity = '1';
-    } else {
-      submitButton.disabled = true;
-      submitButton.style.opacity = '0.6';
-    }
-  }
-}
-
-// 새로 추가: 글자 수 카운터 기능 추가
+// 글자 수 카운터 기능
 function initializeMessageCounter() {
   const messageInput = document.getElementById('applicationMessage');
   const counter = document.getElementById('messageLength');
@@ -263,7 +482,6 @@ function initializeMessageCounter() {
 
       const counterContainer = counter.parentElement;
 
-      // 300자 넘으면 경고 스타일
       if (length > 300) {
         counterContainer.classList.add('warning');
         this.style.borderColor = '#dc3545';
@@ -313,12 +531,12 @@ window.submitReport = function() {
     return;
   }
 
-  fetch(`/api/v1/fires/rooms/${roomId}`, {    // ✅ 수정
+  fetch(`/api/v1/fires/rooms/${roomId}`, {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      reportReason: reason,   // ✅ 키 이름 변경
+      reportReason: reason,
       reportMessage: message
     })
   })
@@ -326,12 +544,11 @@ window.submitReport = function() {
         const data = await res.json().catch(() => null);
 
         if (!res.ok) {
-          // 실패해도 서버에서 준 메시지 있으면 그대로 에러로 던짐
           const errorMsg = data?.message || data?.error || "신고 실패";
           throw new Error(errorMsg);
         }
 
-        return data; // 성공 시 정상 데이터 반환
+        return data;
       })
       .then(result => {
         if (result.success) {
@@ -343,7 +560,6 @@ window.submitReport = function() {
       })
       .catch(err => {
         console.error("신고 오류:", err);
-        alert(err.message); // 이제 "신고 실패" 대신 서버 메시지가 그대로 뜸
+        alert(err.message);
       });
-
 };
