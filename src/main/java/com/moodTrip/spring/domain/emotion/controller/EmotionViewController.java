@@ -24,8 +24,8 @@ public class EmotionViewController {
 
     @GetMapping("/emotion-search")
     public String emotionSearch(
-            @RequestParam(required = false) Integer tagId,
-            @RequestParam(required = false, defaultValue = "recommended") String sort,
+            @RequestParam(name = "tagId", required = false) Integer tagId,
+            @RequestParam(name = "sort", required = false, defaultValue = "recommended") String sort,
             Model model) {
 
         // 항상 필요한 감정 카테고리 목록은 미리 추가

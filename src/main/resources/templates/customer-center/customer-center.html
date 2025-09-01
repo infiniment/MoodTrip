@@ -87,12 +87,14 @@
                     </div>
 
                     <ul class="notice-list">
-                        <li th:each="notice : ${notices}" class="notice-item">
+                        <li th:each="notice : ${notices}"
+                            class="notice-item"
+                            th:onclick="|location.href='@{/customer-center/announcement-detail(id=${notice.id})}'|"
+                            role="link" tabindex="0" style="cursor:pointer">
                             <div class="notice-label">공지</div>
-                            <div class="notice-title">
-                                <a th:href="@{/customer-center/announcement-detail(id=${notice.id})}" class="notice-link" th:text="${notice.title}"></a>
-                            </div>
-                            <div class="notice-date" th:text="${#temporals.format(notice.registeredDate, 'yyyy.MM.dd')}"></div>
+                            <div class="notice-title" th:text="${notice.title}"></div>
+                            <div class="notice-date"
+                                 th:text="${#temporals.format(notice.registeredDate, 'yyyy.MM.dd')}"></div>
                         </li>
                     </ul>
                 </article>
