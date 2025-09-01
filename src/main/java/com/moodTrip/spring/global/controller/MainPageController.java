@@ -5,8 +5,10 @@ import com.moodTrip.spring.domain.mainpage.dto.response.MainPageRoomResponse;
 import com.moodTrip.spring.domain.mainpage.service.MainPageService;
 import com.moodTrip.spring.domain.member.entity.Member;
 import com.moodTrip.spring.domain.member.repository.ProfileRepository;
+import com.moodTrip.spring.domain.rooms.dto.response.RoomResponse;
 import com.moodTrip.spring.domain.rooms.service.RoomService;
 import com.moodTrip.spring.global.common.util.SecurityUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -27,10 +29,12 @@ public class MainPageController {
     private final MainPageService mainPageService; // 새로 추가
 
     @GetMapping("/")
-    public String mainPage(Model model) {
+    public String mainPage(HttpServletRequest request, Model model) {
         log.info("메인페이지 요청 시작");
 
         boolean loggedIn = false;
+        Boolean isAdmin = (Boolean) request.getSession().getAttribute("isAdmin");
+        model.addAttribute("isAdmin", isAdmin);
 
         // 로그인 상태 확인 및 사용자 정보 설정
         if (securityUtil.isAuthenticated()) {
@@ -74,6 +78,10 @@ public class MainPageController {
             model.addAttribute("roomCount", 0);
             model.addAttribute("roomError", "방 목록을 불러오는 중 오류가 발생했습니다.");
         }
+
+        List<RoomResponse> rooms = roomService.getAllRooms();
+        log.info("rooms 개수: {}", rooms.size());
+        model.addAttribute("rooms", rooms);
 
         return "mainpage/mainpage";
     }

@@ -17,7 +17,7 @@ public class AttractionPageController {
 
     private final AttractionService attractionService;
     private final AttractionEmotionService attractionEmotionService;
-    private final WeatherService weatherService;
+    //private final WeatherService weatherService;
 
     @GetMapping("/attractions/detail/{contentId}")
     // 1. 파라미터 타입을 long -> Long 으로 변경

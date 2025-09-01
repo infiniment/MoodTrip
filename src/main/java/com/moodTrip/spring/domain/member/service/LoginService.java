@@ -19,6 +19,8 @@ public class LoginService {
     private final PasswordEncoder passwordEncoder;
 
     public String login(LoginRequest loginRequest) {
+
+
         log.info("로그인 시도: memberId={}", loginRequest.getMemberId());
         Optional<Member> optionalMember = memberRepository.findByMemberId(loginRequest.getMemberId());
         if (optionalMember.isEmpty()) {

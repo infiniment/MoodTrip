@@ -7,7 +7,7 @@
     <!-- CSS 경로는 static 폴더를 기준으로 합니다. -->
     <link rel="stylesheet" href="/css/mypage/my-tourist-attraction-wishlist.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <link rel=" stylesheet" th:href="@{/css/fix/header.css}">
+    <link rel="stylesheet" th:href="@{/css/fix/header.css}">
     <link rel="stylesheet" th:href="@{/css/fix/footer.css}">
     <link rel="stylesheet" th:href="@{/css/fix/header-after.css}">
 
@@ -59,7 +59,7 @@
                             <!-- [수정] th:each를 사용해 컨트롤러에서 받은 'wishlist'를 반복 -->
                             <div class="wishlist-card" th:each="attraction : ${wishlist}">
                                 <div class="card-image-wrapper">
-                                    <a th:href="@{/attractions/{id}(id=${attraction.attractionId})}">
+                                    <a th:href="@{/attractions/detail/{contentId}(contentId=${attraction.contentId})}">
                                         <img th:src="${attraction.firstImage != null && !attraction.firstImage.isEmpty() ? attraction.firstImage : '/image/emotion-search/default-image.png'}"
                                              th:alt="${attraction.title}" class="card-image">
                                     </a>
