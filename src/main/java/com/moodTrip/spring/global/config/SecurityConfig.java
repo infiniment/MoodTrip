@@ -6,75 +6,108 @@ import com.moodTrip.spring.global.security.jwt.JwtAuthenticationFilter;
 import com.moodTrip.spring.global.security.jwt.JwtUtil;
 import com.moodTrip.spring.global.security.oauth.CustomOAuth2SuccessHandler;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
 public class SecurityConfig {
 
-    //단방향 PassWordEncoder 사용
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() { // 프로필 변경 업로드 시 사용
+    public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring()
                 .requestMatchers("/uploads/**")
                 .requestMatchers("/css/**", "/js/**", "/image/**");
     }
 
-
-    //  소셜 로그인에서 SuccessHandler를 Bean으로  등록 MemberService 주입 필요
     @Bean
     public AuthenticationSuccessHandler customOAuth2SuccessHandler(MemberService memberService, JwtUtil jwtUtil) {
         return new CustomOAuth2SuccessHandler(memberService, jwtUtil);
     }
 
-    // Security 필터 체인: SuccessHandler 붙이기 (Bean 인자로 주입)
+    /**
+     * 커스텀 AuthenticationEntryPoint - HTML과 JSON 요청을 구분해서 처리
+     */
+    @Bean
+    public AuthenticationEntryPoint customAuthenticationEntryPoint() {
+        return new AuthenticationEntryPoint() {
+            @Override
+            public void commence(HttpServletRequest request, HttpServletResponse response,
+                                 AuthenticationException authException) throws IOException {
+
+                String requestURI = request.getRequestURI();
+                String acceptHeader = request.getHeader("Accept");
+
+                System.out.println("인증되지 않은 접근 - URI: " + requestURI + ", Accept: " + acceptHeader);
+
+                // API 요청인 경우 JSON 응답
+                if (requestURI.startsWith("/api/") ||
+                        (acceptHeader != null && acceptHeader.contains("application/json"))) {
+
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.getWriter().write("{\"error\":\"로그인이 필요합니다.\",\"redirect\":\"/login\"}");
+
+                } else {
+                    // HTML 페이지 요청인 경우 로그인 페이지로 리다이렉트
+                    System.out.println("로그인 페이지로 리다이렉트: " + requestURI);
+                    response.sendRedirect("/login?returnUrl=" + java.net.URLEncoder.encode(requestURI, "UTF-8"));
+                }
+            }
+        };
+    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            ClientRegistrationRepository clientRegistrationRepository,
                                            MemberService memberService,
                                            JwtUtil jwtUtil,
-                                           UserDetailsService userDetailsService,
-                                           JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint  // ✅ 추가
-    ) throws Exception { // uploads 폴더 추가(프로필 변경에서 사용)
+                                           UserDetailsService userDetailsService
+    ) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/logout","/login", "/api/login", "/signup",
-                                "/css/**", "/js/**", "/image/**","/uploads/**",
+                                "/logout", "/login", "/api/login", "/signup",
+                                "/css/**", "/js/**", "/image/**", "/uploads/**",
                                 "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/api-docs/**",
-                                "/error", "/api/v1/room-online/**", "/api/v1/profiles/**", "/image/**", "/uploads/**"
+                                "/error", "/api/v1/room-online/**", "/api/v1/profiles/**"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/attractions/content/*/emotion-tags").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/attractions/content/*/detail").permitAll()
+
+                        // 마이페이지 인증 필요 설정
                         .requestMatchers("/mypage/**").authenticated()
+
                         .anyRequest().permitAll()
                 )
                 .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint(jwtAuthenticationEntryPoint)  // ✅ 설정
+                        .authenticationEntryPoint(customAuthenticationEntryPoint()) // 커스텀 EntryPoint 사용
                 )
                 .formLogin(form -> form.disable())
-                // 소셜 로그인 커스터 마이징
                 .oauth2Login(oauth2 -> oauth2
                         .loginPage("/login")
                         .authorizationEndpoint(endpoint ->
@@ -83,11 +116,12 @@ public class SecurityConfig {
                                 )
                         )
                         .successHandler(customOAuth2SuccessHandler(memberService, jwtUtil))
-                ) .logout(logout -> logout
-                        .logoutUrl("/logout") // 로그아웃을 처리할 URL을 지정합니다.
-                        .logoutSuccessUrl("/login") // 로그아웃 성공 후 리다이렉트될 페이지입니다.
-                        .deleteCookies("jwtToken") // 로그아웃 시 삭제할 쿠키 이름을 명시합니다.
-                        .invalidateHttpSession(true) // HTTP 세션을 무효화합니다.
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login")
+                        .deleteCookies("jwtToken")
+                        .invalidateHttpSession(true)
                 );
 
         http.addFilterBefore(
@@ -102,10 +136,8 @@ public class SecurityConfig {
     public OAuth2AuthorizationRequestResolver customAuthorizationRequestResolver(
             ClientRegistrationRepository clientRegistrationRepository) {
 
-        //디폴트 리졸버
         DefaultOAuth2AuthorizationRequestResolver defaultResolver =
                 new DefaultOAuth2AuthorizationRequestResolver(clientRegistrationRepository, "/oauth2/authorization");
-
 
         return new OAuth2AuthorizationRequestResolver() {
             @Override
@@ -120,7 +152,6 @@ public class SecurityConfig {
                 return customize(authorizationRequest);
             }
 
-            //커스터 마이즈 함수
             private org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest customize(
                     org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest original) {
                 if (original == null) return null;
@@ -132,7 +163,4 @@ public class SecurityConfig {
             }
         };
     }
-
-
-
 }
