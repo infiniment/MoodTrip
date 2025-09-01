@@ -9,6 +9,7 @@ public class AttractionSearchResponseDto {
 
     // JavaScript의 renderResults 함수에서 사용하는 필드들
     private Long attractionId;
+    private Long contentId;
     private String title;
     private String firstImage;
     private String addr1;
@@ -19,6 +20,7 @@ public class AttractionSearchResponseDto {
 
     // 생성자: Attraction 엔티티와 찜 여부(boolean)를 받아 DTO를 생성
     public AttractionSearchResponseDto(Attraction attraction, boolean isLiked) {
+        this.contentId = attraction.getContentId();
         this.attractionId = attraction.getAttractionId(); // Attraction 엔티티의 ID getter
         this.title = attraction.getTitle(); // ERD 기반 'attractionname'
         this.firstImage = attraction.getFirstImage(); // Attraction 엔티티의 이미지 getter (필요시 추가)

@@ -8,6 +8,7 @@ import com.moodTrip.spring.domain.rooms.service.RoomService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +47,7 @@ public class LoginViewController {
     @Operation(summary = "로그인 처리", description = "회원 로그인 요청(폼 전송 방식)을 처리한다")
     @PostMapping("/login")
     public String login(@ModelAttribute LoginRequest loginRequest,
-                        HttpServletResponse response, Model model) {
+                        HttpServletResponse response, Model model, HttpServletRequest request) {
 
         log.info("로그인 요청: id={}, pw={}", loginRequest.getMemberId(), loginRequest.getMemberPw());
 
@@ -70,6 +71,16 @@ public class LoginViewController {
             return "login/withdraw"; // templates/login/withdraw.html
         }
 
+        // 🔹 memberPk가 1이면 관리자용 스타일을 추가
+        if (member.getMemberPk() == 1) {
+            request.getSession().setAttribute("isAdmin", true); // 세션에 관리자 플래그 추가
+            log.info("관리자 로그인: isAdmin = true, memberPk = {}", member.getMemberPk()); // 관리자일 때 로그 출력
+        } else {
+            request.getSession().setAttribute("isAdmin", false); // 일반 사용자로 설정
+            log.info("일반 사용자 로그인: isAdmin = false, memberPk = {}", member.getMemberPk()); // 일반 사용자일 때 로그 출력
+        }
+
+
         // 정상 회원 → JWT 쿠키 발급
         Cookie jwtCookie = new Cookie("jwtToken", token);
         jwtCookie.setPath("/");
@@ -77,19 +88,19 @@ public class LoginViewController {
         //jwtCookie.setMaxAge(7200); // 2시간
         response.addCookie(jwtCookie);
 
-        // 메인 페이지로 이동
+        // 메인 페이지로 이동dd
         return "redirect:/";
     }
 
 
-    //소셜 로그인 성공 시
-    @GetMapping("/mainpage/mainpage")
-    public String mainPage(Model model) {
-        log.info("==== [RoomController] /mainpage/mainpage 진입 ====");
-        List<RoomResponse> rooms = roomService.getAllRooms();
-        log.info("rooms 개수: {}", rooms.size());
-        model.addAttribute("rooms", rooms);
-        return "mainpage/mainpage"; // 뷰 파일명
-    }
+    //소셜 로그인 성공 시dd
+//    @GetMapping("/mainpage/mainpage")
+//    public String mainPage(Model model) {
+//        log.info("==== [RoomController] /mainpage/mainpage 진입 ====");
+//        List<RoomResponse> rooms = roomService.getAllRooms();
+//        log.info("rooms 개수: {}", rooms.size());
+//        model.addAttribute("rooms", rooms);
+//        return "mainpage/mainpage"; // 뷰 파일명
+//    }
 
 }

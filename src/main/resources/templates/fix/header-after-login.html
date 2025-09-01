@@ -43,6 +43,11 @@
                     <div class="main-header text-header">공지사항</div>
                 </div>
 
+                <div th:if="${isAdmin}" class="left-nav-menu">
+                    <a th:href="@{/admin}" class="main-header text-header">관리자</a>
+                </div>
+
+
                 <!-- 로그인 후 헤더 전용 검색바 (클래스명 변경됨) -->
                 <!-- 기존 위치 그대로 대체 -->
                 <div class="left-nav-menu pr-12 main-header text-header logged-in-header-search-wrapper" style="margin-left: 100px;">
@@ -74,7 +79,15 @@
                             <img th:src="@{/image/default-common/search.png}" alt="검색" class="logged-in-header-search-icon"/>
                         </button>
                     </form>
+
+
+
                 </div>
+
+
+
+
+
 
                 <!-- 꼭: 직렬화를 위해 th:inline="javascript" -->
                 <script th:inline="javascript">
@@ -103,7 +116,6 @@
                         });
                     })();
                 </script>
-
 
             </div>
 
