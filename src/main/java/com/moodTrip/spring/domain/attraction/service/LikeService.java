@@ -47,4 +47,13 @@ public class LikeService {
         // 찜 기록을 삭제합니다.
         userAttractionRepository.deleteByMemberAndAttraction(member, attraction);
     }
+
+    @Transactional(readOnly = true)
+    public boolean isLiked(Long memberPk, Long attractionId) {
+        Member member = memberRepository.findById(memberPk)
+                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+        Attraction attraction = attractionRepository.findById(attractionId)
+                .orElseThrow(() -> new IllegalArgumentException("관광지를 찾을 수 없습니다."));
+        return userAttractionRepository.existsByMemberAndAttraction(member, attraction);
+    }
 }
