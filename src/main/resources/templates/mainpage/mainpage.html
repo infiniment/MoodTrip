@@ -11,8 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@100;200;300;400;500;600;700;800;900&family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <!-- CSS 파일들 - Thymeleaf 방식으로 변경 -->
-
-  <link rel=" stylesheet" th:href="@{/css/fix/header.css}">
+  <link rel="stylesheet" th:href="@{/css/fix/header.css}">
   <link rel="stylesheet" th:href="@{/css/fix/footer.css}">
   <link rel="stylesheet" th:href="@{/css/fix/header-after.css}">
   <link rel="stylesheet" th:href="@{/css/mainpage/mainpage.css}">
@@ -132,7 +131,6 @@
 </section>
 
 <!-- 동행 매칭 섹션 -->
-<!-- 동행 매칭 섹션 -->
 <section class="travel-matching" id="travel-matching">
   <div class="section-container">
     <div class="section-header">
@@ -218,29 +216,27 @@
         </div>
 
         <!-- 방이 없을 때 표시할 메시지 -->
-        <div th:if="${#lists.isEmpty(popularRooms)}" class="no-rooms-message"
-             style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: #64748b;">
+        <div th:if="${#lists.isEmpty(popularRooms)}" class="no-rooms-message">
           <h3>아직 등록된 방이 없습니다</h3>
           <p>새로운 동행자 모집방을 만들어보세요!</p>
-          <a th:href="@{/companion-rooms/create}" class="btn-primary-large" style="margin-top: 20px;">
+          <a th:href="@{/companion-rooms/create}" class="btn-primary-large">
             <span class="btn-icon">🏠</span>
             방 만들기
           </a>
         </div>
 
         <!-- 에러가 발생한 경우 표시 -->
-        <div th:if="${roomError}" class="error-message"
-             style="grid-column: 1 / -1; text-align: center; padding: 40px 20px; color: #ef4444; background: #fef2f2; border-radius: 12px;">
+        <div th:if="${roomError}" class="error-message">
           <h3>데이터를 불러올 수 없습니다</h3>
           <p th:text="${roomError}">오류 메시지</p>
-          <button onclick="location.reload()" class="btn-outline" style="margin-top: 16px;">
+          <button onclick="location.reload()" class="btn-outline">
             다시 시도
           </button>
         </div>
       </div>
     </div>
 
-    <!-- 🔥 travel-matching 섹션 맨 아래에 추가: "더 많은 방 보기" 버튼 -->
+    <!-- travel-matching 섹션 맨 아래에 추가: "더 많은 방 보기" 버튼 -->
     <div class="more-rooms-section" th:if="${!#lists.isEmpty(popularRooms)}">
       <div class="more-rooms-container">
         <p class="more-rooms-text">
@@ -319,23 +315,19 @@
         </div>
 
         <!-- 날씨 추천 데이터가 없을 때 표시할 메시지 -->
-        <div th:if="${#lists.isEmpty(weatherRecommendations)}"
-             class="no-weather-message"
-             style="text-align: center; padding: 60px 20px; color: #64748b;">
+        <div th:if="${#lists.isEmpty(weatherRecommendations)}" class="no-weather-message">
           <h3>날씨 정보를 불러올 수 없습니다</h3>
           <p>잠시 후 다시 시도해주세요.</p>
-          <button onclick="location.reload()" class="btn-outline" style="margin-top: 16px;">
+          <button onclick="location.reload()" class="btn-outline">
             다시 시도
           </button>
         </div>
 
         <!-- 에러가 발생한 경우 표시 -->
-        <div th:if="${weatherError}"
-             class="weather-error-message"
-             style="text-align: center; padding: 40px 20px; color: #ef4444; background: #fef2f2; border-radius: 12px;">
+        <div th:if="${weatherError}" class="weather-error-message">
           <h3>날씨 데이터를 불러올 수 없습니다</h3>
           <p th:text="${weatherError}">오류 메시지</p>
-          <button onclick="location.reload()" class="btn-outline" style="margin-top: 16px;">
+          <button onclick="location.reload()" class="btn-outline">
             다시 시도
           </button>
         </div>

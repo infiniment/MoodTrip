@@ -133,6 +133,13 @@ function initMenuDropdowns() {
  * 실제로는 서버 API에서 데이터를 가져와야 함
  */
 function loadUserProfile() {
+  // 로그인 상태인지 먼저 확인
+  const hasJwtToken = document.cookie.includes('jwtToken');
+
+  if (!hasJwtToken) {
+    console.log('비로그인 상태 - 프로필 로딩 건너뜀');
+    return; // 비로그인 상태면 API 호출하지 않음
+  }
   fetch('/api/v1/profiles/me', {
     method: 'GET',
     credentials: 'include',

@@ -1,15 +1,21 @@
-header.header {
-    min-width: 1080px;
-    background : white;
-}
-
+/* 기본 설정 */
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'NotoSansKR', Sans-serif;
+    font-family: 'SUIT', 'NotoSansKR', sans-serif !important;
     line-height: 1rem;
     -webkit-font-smoothing: antialiased;
+}
+
+body {
+    font-family: 'SUIT', 'Noto Sans KR', sans-serif;
+}
+
+/* 헤더 스타일 */
+header.header {
+    min-width: 1080px;
+    background: white;
 }
 
 header.header .header-nav {
@@ -19,18 +25,11 @@ header.header .header-nav {
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     position: relative;
-}
-
-header.header .header-nav{
     min-height: 65px;
     border-bottom: 1px solid #eee;
 }
 
 header.header .container {
-    width: 1080px;
-}
-
-.container {
     width: 1080px;
     margin: 0 auto;
 }
@@ -40,8 +39,8 @@ a {
     color: #212121;
 }
 
-/* MOOD TRIP 로고 스타일 - 수정된 부분 */
-header.header .header-nav .nav-logo-wrapper{
+/* MOOD TRIP 로고 스타일 */
+header.header .header-nav .nav-logo-wrapper {
     float: left;
     padding: 22px 12px;
     margin-right: 16px;
@@ -49,7 +48,7 @@ header.header .header-nav .nav-logo-wrapper{
     box-sizing: border-box;
 }
 
-header.header .header-nav .nav-logo-wrapper .nav-logo{
+header.header .header-nav .nav-logo-wrapper .nav-logo {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -84,215 +83,57 @@ header.header .header-nav .nav-logo-wrapper .nav-logo{
     line-height: 1.1;
 }
 
-header.header .header-nav .left-nav{
+/* 네비게이션 메뉴 */
+header.header .header-nav .left-nav {
     display: flex;
 }
 
-header.header .header-nav .left-nav{
-    float: left;
-}
-
-header.header .base-nav-guest-renewal .left-nav .nav-divider, header.header .header-nav .left-nav .nav-divider, header.header .base-nav-landing-renewal .left-nav .nav-divider, header.header .base-nav-client-renewal .left-nav .nav-divider, header.header .base-nav-partner-renewal .left-nav .nav-divider {
-    margin: 25px 4px 0 4px;
-    height: 14px;
-    border-left: 1px solid #e0e0e0;
-}
-
-/* 수정된 부분: right-nav 위치 조정 */
-header.header .header-nav .right-nav{
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    height: 64px;               /* 기존 height 유지 */
-    position: relative;
-    padding-top: 8px;           /* 위쪽 여백 추가로 아래로 이동 */
-    margin-top: 4px;            /* 추가 아래 이동 */
-}
-
-div {
-    unicode-bidi: isolate;
-}
-
-header.header .header-nav .left-nav .left-nav-menu{
+header.header .header-nav .left-nav .left-nav-menu {
     padding: 20px 16px;
     display: flex;
     cursor: pointer;
     align-items: center;
-}
-
-.header-nav .left-nav .left-nav-menu.pr-12{
-    padding-right: 12px;
 }
 
 .text-header {
     color: #212121;
 }
 
-.main-header{
+.main-header {
     font-size: 14px;
     line-height: 24px;
     font-weight: 400;
 }
 
-header.header .header-nav .left-nav .left-nav-menu .img-container{
+header.header .header-nav .right-nav {
     display: flex;
     align-items: center;
-    margin-left: 4px;
-}
-
-header.header .base-nav-guest-renewal .left-nav .left-nav-menu .img-container img+img, header.header .header-nav .left-nav .left-nav-menu .img-container img+img, header.header .base-nav-landing-renewal .left-nav .left-nav-menu .img-container img+img, header.header .base-nav-client-renewal .left-nav .left-nav-menu .img-container img+img, header.header .base-nav-partner-renewal .left-nav .left-nav-menu .img-container img+img, header.header .base-nav-guest-renewal .left-nav .dropdown-container.left-nav-menu .img-container img+img {
-    margin-left: 4px;
-}
-
-header.header .header-nav .left-nav .left-nav-menu{
-    padding: 20px 16px;
-    display: flex;
-    cursor: pointer;
-    align-items: center;
-}
-
-/* 수정된 부분: 로그인 버튼 위치 조정 */
-header.header .header-nav .right-nav .log-in-section{
-    display: flex;
-    align-items: center;
-    padding: 12px 16px;         /* 기존 8px → 12px로 증가 */
-    gap: 4px;
-    margin-bottom: 2px;         /* 아래쪽 여백 추가 */
-}
-
-/* 가운데 줄(nav-divider) 제거 */
-.header .left-nav .nav-divider {
-    display: none;
-}
-
-/* 네비게이션 메뉴 텍스트를 세로 중앙 정렬 */
-.header .left-nav,
-.header .right-nav {
-    display: flex;
-    align-items: center;
-    height: 100%;
-    justify-content: center;
-}
-
-/* 각 메뉴 항목도 세로 중앙 정렬 */
-.header .left-nav .left-nav-menu{
-    display: flex;
-    align-items: center;
-    height: 100%;
-    font-size: 1.15rem; /* 필요시 크기 조절 */
-    position: static;   /* top 보정 제거 */
-    line-height: normal;
-}
-
-/* ==== 헤더 전용 검색 영역 (다른 페이지와 충돌 방지) ==== */
-.header-search-wrapper {
-    width: 350px;
-    margin-left: auto;
-}
-
-.header-search-form {
+    justify-content: flex-end;
+    height: 64px;
     position: relative;
-    width: 100%;
+    padding-top: 8px;
+    margin-top: 4px;
+}
+
+/* 로그인 및 회원가입 버튼 스타일 */
+header.header .header-nav .right-nav .log-in-section,
+header.header .header-nav .right-nav .sign-up-button {
     display: flex;
     align-items: center;
+    gap: 4px;
+    padding: 12px 16px;
+    margin-bottom: 2px;
 }
 
-/* 헤더 전용 감정 검색 입력창 - 구체적인 클래스명 사용 */
-.header-emotion-search-input {
-    width: 100%;
-    height: 36px;
-    border: 1px solid #ccc;
-    border-radius: 18px;
-    font-size: 16px;
-    padding: 0 40px 0 12px; /* 오른쪽에 아이콘 공간 확보 */
-    box-sizing: border-box;
-    background: #fff;
-    outline: none;
-    transition: border-color 0.2s ease;
-}
-
-/* 헤더 검색 입력창 포커스 시 스타일 */
-.header-emotion-search-input:focus {
-    border-color: #005792;
-    box-shadow: 0 0 0 2px rgba(0, 87, 146, 0.1);
-}
-
-/* 헤더 전용 검색 버튼 */
-.header-emotion-search-btn {
-    position: absolute;
-    right: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    padding: 0;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 32px;   /* 버튼 높이 input보다 약간 작게 */
-    width: 32px;    /* 버튼 너비 이미지와 맞춤 */
-    border-radius: 50%;
-    transition: background-color 0.2s ease;
-}
-
-/* 헤더 검색 버튼 호버 효과 */
-.header-emotion-search-btn:hover {
-    background-color: rgba(0, 87, 146, 0.1);
-}
-
-/* 헤더 전용 검색 아이콘 */
-.header-search-icon {
-    width: 24px;    /* 아이콘 크기 */
-    height: 24px;
-    display: block;
-}
-
-/* 수정된 검색창 스타일 */
-.header-search-input {
-    background-color: #ffffff;  /* 흰색 배경으로 변경 */
-    color: #333333;             /* 검정색 글씨로 변경 */
-    border: 1px solid #dee2e6;
-    padding: 10px 15px;         /* 여백을 더 넓게 (8px 12px → 10px 15px) */
-    border-radius: 6px;         /* 모서리를 더 둥글게 (4px → 6px) */
-    width: 350px;               /* 더 길게 (250px → 350px) */
-    cursor: not-allowed;
-    font-size: 14px;            /* 글자 크기 명시 */
-    font-family: inherit;       /* 부모 요소의 폰트 상속 */
-    transition: all 0.2s ease;  /* 부드러운 전환 효과 */
-}
-
-.header-search-input:focus {
-    outline: none;              /* 포커스 시 외곽선 제거 */
-    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25); /* 포커스 시 파란색 그림자 효과 */
-}
-
-/* 추가: 호버 효과 (마우스 올렸을 때) */
-.header-search-input:hover {
-    border-color: #adb5bd;      /* 테두리 색상을 조금 더 진하게 */
-}
-
-/* 추가: 플레이스홀더 스타일링 */
-.header-search-input::placeholder {
-    color: #666666;             /* 플레이스홀더 글씨색 */
-    font-style: italic;         /* 기울임체로 구분 */
-    opacity: 1;                 /* 투명도 100% (기본값이 브라우저마다 다를 수 있음) */
-}
-
-/* 수정된 부분: 회원가입 버튼 위치 조정 */
-header.header .header-nav .right-nav .sign-up-button{
+header.header .header-nav .right-nav .sign-up-button {
     margin-left: 12px;
-    margin-bottom: 2px;         /* 아래쪽 여백 추가 */
-    display: flex;
-    padding: 10px 18px;         /* 기존 8px 16px → 10px 18px로 조금 더 크게 */
-    align-items: center;
     border-radius: 8px;
     color: #fff;
     background: linear-gradient(to right, #005792, #001A2C);
     cursor: pointer;
 }
 
-/*드롭 확인하는 구간*/
+/* 드롭다운 메뉴 */
 header.header .dropdown-nav-container {
     border-radius: 0px 0px 16px 16px;
     background: #fff;
@@ -300,17 +141,10 @@ header.header .dropdown-nav-container {
     width: 100%;
     max-height: 0px;
     overflow: hidden;
-    transition:
-            max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-            opacity 0.3s,
-            transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s, transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     opacity: 0;
     position: absolute;
-    transform: translateY(-24px); /* 위에서 살짝 내려오게 */
-}
-
-body, .header, .dropdown-nav-container, .dropdown-menu-item {
-    font-family: 'SUIT', 'Noto Sans KR', sans-serif !important;
+    transform: translateY(-24px);
 }
 
 header.header .dropdown-nav-container.active {
@@ -336,8 +170,6 @@ header.header .dropdown-nav-container .dropdown-nav .dropdown-menu-container .dr
     flex-direction: column;
     position: relative;
     gap: 12px;
-    row-gap: 12px;
-    column-gap: 12px;
 }
 
 header.header .dropdown-nav-container .dropdown-nav .dropdown-menu-container .dropdown-menu-list .dropdown-menu-item {
@@ -349,10 +181,6 @@ header.header .dropdown-nav-container .dropdown-nav .dropdown-menu-container .dr
     color: #424242;
 }
 
-header.header .dropdown-nav-container .dropdown-banner.client {
-    background-color: #f2fcff;
-}
-
 header.header .dropdown-nav-container .dropdown-banner {
     position: relative;
     padding: 20px 24px 44px 24px;
@@ -360,95 +188,51 @@ header.header .dropdown-nav-container .dropdown-banner {
     border-radius: 16px;
 }
 
-header.header .dropdown-nav-container .dropdown-banner .dropdown-banner-subtitle {
-    margin-bottom: 4px;
+.header-search-input {
+    background-color: rgb(255, 255, 255);
+    color: rgb(51, 51, 51);
+    width: 350px;
+    cursor: not-allowed;
+    font-size: 14px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(222, 226, 230);
+    padding: 10px 15px;
+    border-radius: 6px;
 }
 
-.text-dropdown {
-    color: #757575;
+.header-search-input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
-.body-drop {
-    font-size: 13px;
-    line-height: 20px;
-    font-weight: 400;
-}
-
-header.header .dropdown-nav-container .dropdown-banner .dropdown-banner-title {
-    margin-bottom: 8px;
-}
-
-.text-drop-2 {
-    color: #424242;
-}
-
-.body-1-dropdown {
-    font-weight: 500;
-}
-
-.body-1, #profile_image_edit_modal .modal__footer button, .body-1-bold, .body-1-dropdown, .body-1-light {
-    font-size: 16px;
-}
-
-header.header .dropdown-nav-container .dropdown-banner img {
+/* 추가된 부분: 검색 버튼 */
+.header-emotion-search-btn {
     position: absolute;
-    right: 12px;
-    bottom: 12px;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 32px;
+    width: 32px;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
 }
 
-.body-2-medium {
-    font-weight: 500;
-}
-
-.header-nav::before{
-    display: table;
-    content: "";
-    clear: both;
+/* 헤더 검색 아이콘 */
+.header-search-icon {
+    width: 24px;
+    height: 24px;
+    display: block;
 }
 
 img {
     overflow-clip-margin: content-box;
     overflow: clip;
-}
-
-header.header .dropdown-nav-container .dropdown-nav .dropdown-menu-container .dropdown-menu-list .bubble-img {
-    display: block;
-    position: absolute;
-    top: 64px;
-}
-
-header.header .dropdown-nav-container .dropdown-banner .dropdown-banner-link {
-    color: #3ba3c7;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 2px;
-}
-
-.body-3, .body-3-bold, .body-3-medium, .body-3-light {
-    font-size: 13px;
-    line-height: 20px;
-}
-
-.body-3 {
-    font-size: 13px;
-}
-
-.container::before {
-    content: "";
-    display: table;
-    clear: both;
-}
-
-.left-nav-menu-wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    /* width는 인라인 style로 각 메뉴별로 다르게 지정 */
-}
-
-.dropdown-nav-container {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }

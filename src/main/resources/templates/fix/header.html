@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" th:href="@{/css/fix/header.css}">
     <script th:src="@{/js/fix/header.js}"></script>
+    <link href="https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/static/woff2/SUIT.css" rel="stylesheet">
 </head>
-<link href="https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/static/woff2/SUIT.css" rel="stylesheet">
 
 <body>
 
@@ -45,21 +45,12 @@
                 </div>
 
                 <!-- 수정된 검색창 영역 -->
-                <div class="left-nav-menu pr-12 main-header text-header header-search-wrapper" style="margin-left: 100px;">
+                <div class="left-nav-menu pr-12 main-header text-header header-search-wrapper">
                     <div class="non-member-search-container">
                         <!-- 실제 검색 입력창 (비활성화 상태) -->
-                        <input
-                                type="text"
-                                class="header-search-input"
-                                placeholder="로그인 후 검색할 수 있습니다"
-                                disabled
-                                readonly
-                                style="background-color: #ffffff; color: #333333; border: 1px solid #dee2e6; padding: 10px 15px; border-radius: 6px; width: 350px; cursor: not-allowed; font-size: 14px;"
-                        />
-                        <!-- 검색 버튼 제거됨 -->
+                        <input type="text" class="header-search-input" placeholder="로그인 후 검색할 수 있습니다" disabled readonly />
                     </div>
                 </div>
-
             </div>
 
             <div class="right-nav">
@@ -75,24 +66,24 @@
         </div>
 
         <!-- 드롭다운 메뉴 -->
-        <div class="dropdown-nav-container" style="top: 65px;">
+        <div class="dropdown-nav-container">
             <div class="dropdown-nav">
-                <div class="dropdown-menu-container" style="margin-left: 130px;">
+                <div class="dropdown-menu-container">
                     <!-- 감정여행 드롭다운 -->
-                    <div class="dropdown-menu-list" id="emotions-dropdown" style="width: 145px;">
+                    <div class="dropdown-menu-list" id="emotions-dropdown">
                         <a class="dropdown-menu-item" th:href="@{/emotion-search}">감정 관광지 찾기</a>
                         <a class="dropdown-menu-item" th:href="@{/emotions/weather-spots}">날씨별 관광지 찾기</a>
                     </div>
 
                     <!-- 동행매칭 드롭다운 -->
-                    <div class="dropdown-menu-list" id="companion-dropdown" style="width: 109px;">
+                    <div class="dropdown-menu-list" id="companion-dropdown">
                         <a class="dropdown-menu-item" th:href="@{/companion-rooms/create}">방 만들기</a>
                         <a class="dropdown-menu-item" th:href="@{/entering-room}">방 입장하기</a>
                         <a class="dropdown-menu-item" th:href="@{/mypage/my-matching}">스케줄 짜기</a>
                     </div>
 
                     <!-- 공지사항 드롭다운 -->
-                    <div class="dropdown-menu-list" id="notice-dropdown" style="width: 113px;">
+                    <div class="dropdown-menu-list" id="notice-dropdown">
                         <a class="dropdown-menu-item" th:href="@{/customer-center/announcement}">공지사항</a>
                         <a class="dropdown-menu-item" th:href="@{/customer-center/faq}">자주 묻는 질문</a>
                     </div>
