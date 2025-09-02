@@ -28,42 +28,38 @@
                 </div>
             </a>
 
+            <!-- 메뉴 -->
             <div class="left-nav">
-                <!-- 감정여행 -->
                 <div class="left-nav-menu" data-menu="emotions">
                     <div class="main-header text-header">감정여행</div>
                 </div>
-
-                <!-- 동행매칭 -->
                 <div class="left-nav-menu" data-menu="companion">
                     <div class="main-header text-header">동행매칭</div>
                 </div>
-
-                <!-- 공지사항 -->
                 <div class="left-nav-menu" data-menu="notice">
                     <div class="main-header text-header">공지사항</div>
                 </div>
+            </div>
 
-                <!-- 수정된 검색창 영역 -->
-                <div class="left-nav-menu pr-12 main-header text-header header-search-wrapper">
-                    <div class="non-member-search-container">
-                        <!-- 실제 검색 입력창 (비활성화 상태) -->
-                        <input type="text" class="header-search-input" placeholder="로그인 후 검색할 수 있습니다" disabled readonly />
-                    </div>
+            <!-- 검색창 (분리됨) -->
+            <div class="search-nav">
+                <div class="non-member-search-container">
+                    <input type="text" class="header-search-input"
+                           placeholder="로그인 후 검색할 수 있습니다" disabled readonly />
                 </div>
             </div>
 
+            <!-- 로그인/회원가입 -->
             <div class="right-nav">
-                <!-- 로그인 링크 -->
                 <a th:href="@{/login}">
                     <div class="log-in-section main-header text-header">로그인</div>
                 </a>
-                <!-- 회원가입 링크 -->
                 <a th:href="@{/signup}">
                     <div class="sign-up-button body-2-medium">회원가입</div>
                 </a>
             </div>
         </div>
+
 
         <!-- 드롭다운 메뉴 -->
         <div class="dropdown-nav-container">
