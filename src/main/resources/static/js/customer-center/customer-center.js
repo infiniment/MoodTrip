@@ -117,3 +117,27 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 });
+
+// 공지 카드 전체 클릭 가능하게
+document.querySelectorAll('.notice-item-card').forEach((card) => {
+    // 카드 안에 상세 링크가 이미 있을 때 그 링크를 따라감
+    const link = card.querySelector('a[href*="/customer-center/announcement-detail"]');
+    if (!link) return;
+
+    card.style.cursor = 'pointer';
+
+    // 버튼/링크 등 인터랙티브 요소 클릭은 예외
+    card.addEventListener('click', (e) => {
+        if (e.target.closest('a, button, [role="button"], input, select, textarea')) return;
+        window.location.href = link.href;
+    });
+
+    // 키보드 접근성
+    card.setAttribute('tabindex', '0');
+    card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            window.location.href = link.href;
+        }
+    });
+});
