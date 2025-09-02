@@ -5,7 +5,7 @@
 // --- 페이지/블록 상태 ---
 let currentPage = 1;            // 1-base (컨트롤러 pageNo와 동일)
 const pageSize = 20;            // 5 x 4 = 20개
-const blockSize = 10;           // 페이지네이션 10단위 블록
+const blockSize = 5;           // 페이지네이션 10단위 블록
 
 // --- 지역 선택 상태 ---
 const selectedRegionCodes = new Set();
@@ -150,10 +150,10 @@ function renderPagination(totalPages, pageNow1Base) {
   const start = blockIdx * blockSize + 1;
   const end = Math.min(totalPages, start + blockSize - 1);
 
-  // 점프/이동 버튼
-  wrap.appendChild(makeBtn("«", page === 1, 1));
-  wrap.appendChild(makeBtn("‹", page === 1, Math.max(1, page - 1)));
-  wrap.appendChild(makeBtn("⟪", start === 1, Math.max(1, start - blockSize)));
+
+  wrap.appendChild(makeBtn("⟪", page === 1, 1)); // 첫 페이지
+  wrap.appendChild(makeBtn("«", start === 1, Math.max(1, start - blockSize))); // 이전 블록
+  wrap.appendChild(makeBtn("‹", page === 1, Math.max(1, page - 1))); // 이전 페이지
 
   // 숫자 버튼
   for (let p = start; p <= end; p++) {
@@ -162,9 +162,10 @@ function renderPagination(totalPages, pageNow1Base) {
     wrap.appendChild(btn);
   }
 
-  wrap.appendChild(makeBtn("⟫", end === totalPages, Math.min(totalPages, end + 1)));
-  wrap.appendChild(makeBtn("›", page === totalPages, Math.min(totalPages, page + 1)));
-  wrap.appendChild(makeBtn("»", page === totalPages, totalPages));
+// 오른쪽 컨트롤
+  wrap.appendChild(makeBtn("›", page === totalPages, Math.min(totalPages, page + 1))); // 다음 페이지
+  wrap.appendChild(makeBtn("»", end === totalPages, Math.min(totalPages, end + 1)));   // 다음 블록
+  wrap.appendChild(makeBtn("⟫", page === totalPages, totalPages)); // 마지막 페이지
 }
 
 // --- 메인: 카드/페이지 갱신 ---
@@ -334,7 +335,6 @@ function populateReviewSlider() {
     slider.appendChild(slide);
   });
 
-  // 이미 프로젝트에 slick 초기화가 있으면 그걸 사용 (중복 초기화 방지)
   if (typeof $ !== "undefined" && !$(slider).hasClass("slick-initialized")) {
     $(slider).slick({
       slidesToShow: 1,

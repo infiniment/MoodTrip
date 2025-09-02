@@ -11,6 +11,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Map;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/likes")
@@ -54,8 +56,24 @@ public class LikeController {
         return ResponseEntity.ok().build(); // 성공 시 200 OK 응답
     }
 
+    @GetMapping("/{attractionId}")
+    public ResponseEntity<Map<String, Object>> isLiked(
+            @PathVariable Long attractionId,
+            @AuthenticationPrincipal MyUserDetails userDetails) {
 
+        boolean loggedIn = (userDetails != null);
+        boolean liked = false;
 
+        if (loggedIn) {
+            Long memberPk = userDetails.getMember().getMemberPk();
+            liked = likeService.isLiked(memberPk, attractionId);
+        }
+
+        return ResponseEntity.ok(Map.of(
+                "liked", liked,
+                "loggedIn", loggedIn
+        ));
+    }
 
 
 }

@@ -299,4 +299,20 @@ public class RoomServiceImpl implements RoomService {
                 .createDate(room.getCreatedAt() != null ? room.getCreatedAt().toString() : null)
                 .build();
     }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<RoomCardDto> searchRooms(String region, String keyword) {
+        return roomRepository.findAll().stream()
+                .filter(r -> {
+                    if (keyword == null || keyword.isBlank()) return true;
+                    String dn = r.getDestinationName();
+                    String rn = r.getRoomName();
+                    return (dn != null && dn.contains(keyword))
+                            || (rn != null && rn.contains(keyword));
+                })
+                .map(this::toRoomCardDto)
+                .collect(Collectors.toList());
+    }
 }
