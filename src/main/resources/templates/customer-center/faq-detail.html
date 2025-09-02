@@ -7,137 +7,154 @@
     <link rel="stylesheet" href="/css/customer-center/faq-detail.css">
 </head>
 <body>
-<div class="faq-detail-layout">
-    <div class="faq-detail-main">
-        <main role="main">
-            <div class="section-page">
-                <div class="faq-detail-container">
+    <div class="faq-detail-layout">
+        <div class="faq-detail-main">
+            <main role="main">
+                <div class="section-page">
+                    <div class="faq-detail-container">
 
-                    <!-- 상단 네비게이션 -->
-                    <nav class="breadcrumb-nav">
-                        <div class="breadcrumb">
-                            <a href="/customer-center" class="breadcrumb-link">고객센터</a>
-                            <span class="breadcrumb-separator">&gt;</span>
-                            <a href="/customer-center/faq" class="breadcrumb-link">자주 묻는 질문</a>
-                            <span class="breadcrumb-separator">&gt;</span>
-                            <span class="breadcrumb-current">상세</span>
-                        </div>
-
-                        <div class="nav-actions">
-                            <button class="back-button" onclick="history.back()">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <polyline points="15,18 9,12 15,6"></polyline>
-                                </svg>
-                                목록으로
-                            </button>
-                        </div>
-                    </nav>
-
-                    <!-- FAQ 헤더 -->
-                    <header class="faq-header">
-                        <div class="faq-category-badge" th:text="${faq.category}">서비스 소개</div>
-                        <h1 class="faq-title" th:text="${faq.title}">
-                            FAQ 제목
-                        </h1>
-
-                        <div class="faq-meta">
-                            <div class="meta-left">
-                                    <span class="meta-item">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                            <circle cx="12" cy="12" r="3"></circle>
-                                        </svg>
-                                        <span th:text="|조회 ${faq.viewCount}|">조회 0</span>
-                                    </span>
-                                <span class="meta-item helpful-rate">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
-                                        </svg>
-                                        <span th:text="|도움됨 ${helpfulPercentage}%|">도움됨 0%</span>
-                                    </span>
+                        <!-- 상단 네비게이션 -->
+                        <nav class="breadcrumb-nav">
+                            <div class="breadcrumb">
+                                <a href="/customer-center" class="breadcrumb-link">고객센터</a>
+                                <span class="breadcrumb-separator">&gt;</span>
+                                <a href="/customer-center/faq" class="breadcrumb-link">자주 묻는 질문</a>
+                                <span class="breadcrumb-separator">&gt;</span>
+                                <span class="breadcrumb-current">상세</span>
                             </div>
 
-                            <div class="meta-right">
-                                <div class="user-type-indicator">
-                                    <span class="user-type">관리자</span>
-                                </div>
-                            </div>
-                        </div>
-                    </header>
-
-                    <!-- FAQ 답변 내용 -->
-                    <article class="faq-content">
-                        <div class="content-body">
-                            <div th:utext="${faq.content}">
-                                FAQ 내용이 여기에 표시됩니다.
-                            </div>
-                        </div>
-                    </article>
-
-                    <!-- 하단 액션 버튼 -->
-                    <footer class="faq-footer">
-                        <div class="footer-actions">
-                            <div class="helpful-section">
-                                <p class="helpful-question">이 답변이 도움이 되었나요?</p>
-                                <div class="helpful-buttons">
-                                    <button class="helpful-button yes" id="helpful-yes" th:data-faq-id="${faq.id}">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
-                                        </svg>
-                                        도움됨
-                                    </button>
-
-                                    <button class="helpful-button no" id="helpful-no" th:data-faq-id="${faq.id}">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                            <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"></path>
-                                        </svg>
-                                        도움안됨
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="navigation-buttons">
-                                <button class="nav-btn prev-btn" th:if="${prevFaq}" th:onclick="|location.href='/customer-center/faq-detail?id=${prevFaq.id}'|">
+                            <div class="nav-actions">
+                                <a class="back-button" th:href="@{/customer-center}" style="display:inline-flex; text-decoration:none;">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                         <polyline points="15,18 9,12 15,6"></polyline>
                                     </svg>
-                                    이전 FAQ
-                                </button>
-
-                                <button class="nav-btn next-btn" th:if="${nextFaq}" th:onclick="|location.href='/customer-center/faq-detail?id=${nextFaq.id}'|">
-                                    다음 FAQ
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                        <polyline points="9,18 15,12 9,6"></polyline>
-                                    </svg>
-                                </button>
+                                    목록으로
+                                </a>
                             </div>
-                        </div>
-                    </footer>
+                        </nav>
 
-                    <!-- 관련 FAQ -->
-                    <section class="related-faqs" th:if="${relatedFaqs != null and !relatedFaqs.isEmpty()}">
-                        <h3 class="related-title">관련 FAQ</h3>
-                        <div class="related-list">
-                            <a th:each="relatedFaq : ${relatedFaqs}"
-                               th:href="@{/customer-center/faq-detail(id=${relatedFaq.id})}"
-                               class="related-faq-item">
-                                <div class="related-category" th:text="${relatedFaq.category}">카테고리</div>
-                                <div class="related-content">
-                                    <div class="related-question" th:text="|[${relatedFaq.category}] ${relatedFaq.title}|">관련 질문</div>
-                                    <div class="related-meta">
-                                        <span class="related-views" th:text="|조회 ${relatedFaq.viewCount}|">조회 0</span>
-                                        <span class="related-helpful" th:text="|도움됨 ${relatedFaq.helpful}|">도움됨 0</span>
+                        <!-- FAQ 헤더 -->
+                        <header class="faq-header">
+                            <div class="faq-category-badge" th:text="${faq.category}">서비스 소개</div>
+                            <h1 class="faq-title" th:text="${faq.title}">
+                                FAQ 제목
+                            </h1>
+
+                            <div class="faq-meta">
+                                <div class="meta-left">
+                                        <span class="meta-item">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                <circle cx="12" cy="12" r="3"></circle>
+                                            </svg>
+                                            <span th:text="|조회 ${faq.viewCount}|">조회 0</span>
+                                        </span>
+                                    <span class="meta-item helpful-rate">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+                                            </svg>
+                                            <span th:text="|도움됨 ${helpfulPercentage}%|">도움됨 0%</span>
+                                        </span>
+                                </div>
+
+                                <div class="meta-right">
+                                    <div class="user-type-indicator">
+                                        <span class="user-type">관리자</span>
                                     </div>
                                 </div>
-                            </a>
-                        </div>
-                    </section>
-                </div>
-            </div>
-        </main>
-    </div>
-</div>
+                            </div>
+                        </header>
 
-<script src="/js/customer-center/faq-detail.js"></script>
+                        <!-- FAQ 답변 내용 -->
+                        <article class="faq-content">
+                            <div class="content-body">
+                                <div th:utext="${faq.content}">
+                                    FAQ 내용이 여기에 표시됩니다.
+                                </div>
+                            </div>
+                        </article>
+
+                        <!-- 하단 액션 버튼 -->
+                        <footer class="faq-footer">
+                            <div class="footer-actions">
+                                <div class="helpful-section">
+                                    <p class="helpful-question">이 답변이 도움이 되었나요?</p>
+                                    <div class="helpful-buttons">
+                                        <button class="helpful-button yes" id="helpful-yes" th:data-faq-id="${faq.id}"
+                                                th:classappend="${userVote == 'YES'} ? ' active' : ''">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+                                            </svg>
+                                            도움됨
+                                        </button>
+
+                                        <button class="helpful-button no" id="helpful-no" th:data-faq-id="${faq.id}"
+                                                th:classappend="${userVote == 'NO'} ? ' active' : ''">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"></path>
+                                            </svg>
+                                            도움안됨
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="navigation-buttons">
+                                    <button class="nav-btn prev-btn" th:if="${prevFaq}" th:onclick="|location.href='/customer-center/faq-detail?id=${prevFaq.id}'|">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <polyline points="15,18 9,12 15,6"></polyline>
+                                        </svg>
+                                        이전 FAQ
+                                    </button>
+
+                                    <button class="nav-btn next-btn" th:if="${nextFaq}" th:onclick="|location.href='/customer-center/faq-detail?id=${nextFaq.id}'|">
+                                        다음 FAQ
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <polyline points="9,18 15,12 9,6"></polyline>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </footer>
+
+                        <!-- 관련 FAQ -->
+                        <section class="related-faqs" th:if="${relatedFaqs != null and !relatedFaqs.isEmpty()}">
+                            <h3 class="related-title">관련 FAQ</h3>
+                            <div class="related-list">
+                                <a th:each="relatedFaq : ${relatedFaqs}"
+                                   th:href="@{/customer-center/faq-detail(id=${relatedFaq.id})}"
+                                   class="related-faq-item">
+                                    <div class="related-category" th:text="${relatedFaq.category}">카테고리</div>
+                                    <div class="related-content">
+                                        <div class="related-question" th:text="|[${relatedFaq.category}] ${relatedFaq.title}|">관련 질문</div>
+                                        <div class="related-meta">
+                                            <span class="related-views" th:text="|조회 ${relatedFaq.viewCount}|">조회 0</span>
+                                            <span class="related-helpful" th:text="|도움됨 ${relatedFaq.helpful}|">도움됨 0</span>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <div id="login-modal" class="modal hidden" aria-hidden="true">
+        <div class="modal__card" role="dialog" aria-modal="true" aria-labelledby="login-title">
+            <div class="modal__icon">🔒</div>
+            <h3 id="login-title" class="modal__title">로그인이 필요합니다</h3>
+            <p class="modal__desc">도움됨/도움안됨은 로그인 후 이용할 수 있어요.</p>
+            <div class="modal__actions">
+                <button id="login-btn" class="btn btn-primary">로그인하기</button>
+                <button id="close-btn" class="btn btn-ghost" data-close>뒤로가기</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/customer-center/faq-detail.js"></script>
+    <script>
+        document.getElementById('login-btn').onclick = () => location.href = '/login';
+        document.getElementById('close-btn').onclick = () => document.getElementById('login-modal').classList.add('hidden');
+    </script>
 </body>
 </html>

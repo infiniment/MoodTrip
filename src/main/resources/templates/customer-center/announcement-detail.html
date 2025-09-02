@@ -7,6 +7,18 @@
     <link rel="stylesheet" href="/css/customer-center/announcement-detail.css">
 </head>
 <body>
+    <!-- 로그인 모달 -->
+    <div id="login-modal" class="modal hidden" aria-hidden="true">
+        <div class="modal__card" role="dialog" aria-modal="true" aria-labelledby="login-title">
+            <div class="modal__icon">🔒</div>
+            <h3 id="login-title" class="modal__title">로그인이 필요합니다</h3>
+            <p class="modal__desc">도움이 되었어요/도움이 안돼요는 로그인 후 이용할 수 있어요.</p>
+            <div class="modal__actions">
+                <button id="login-btn" class="btn btn-primary">로그인하기</button>
+                <button id="close-btn" class="btn btn-ghost" data-close>뒤로가기</button>
+            </div>
+        </div>
+    </div>
     <div class="announcement-detail-layout">
         <div class="announcement-detail-main">
             <main role="main">
@@ -18,7 +30,7 @@
                             <div class="breadcrumb">
                                 <a href="/customer-center" class="breadcrumb-link">고객센터</a>
                                 <span class="breadcrumb-separator">&gt;</span>
-                                <a href="/announcement" class="breadcrumb-link">공지사항</a>
+                                <a href="/customer-center/announcement" class="breadcrumb-link">공지사항</a>
                                 <span class="breadcrumb-separator">&gt;</span>
                                 <span class="breadcrumb-current">공지사항 상세</span>
                             </div>
@@ -248,11 +260,20 @@
                         <!-- 하단 액션 버튼 -->
                         <footer class="announcement-footer">
                             <div class="footer-actions">
-                                <button class="helpful-button" id="helpful-button">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <button class="helpful-button" id="helpful-button"
+                                        th:data-notice-id="${notice.id}"
+                                        th:classappend="${userHelpful} ? ' active' : ''">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
                                         <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
                                     </svg>
-                                    도움이 되었나요?
+                                    <span id="helpful-text"
+                                          th:text="${userHelpful} ? '도움이 되었어요!' : '도움이 되었나요?'">
+                                    </span>
+
+                                    <!-- 카운트 뱃지 -->
+                                      <span class="count-badge" id="helpful-count"
+                                            th:text="${helpfulCount}"
+                                            th:classappend="${helpfulCount == 0} ? ' is-zero' : ''">0</span>
                                 </button>
 
                                 <!-- 이전/다음 글 버튼 -->
