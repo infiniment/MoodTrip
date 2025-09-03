@@ -10,6 +10,39 @@
     <script src="/js/admin/adminMapping.js" defer></script>
     <meta name="_csrf" th:content="${_csrf?.token}"/>
     <meta name="_csrf_header" th:content="${_csrf?.headerName}"/>
+    <!--불안정 수정 ver1-->
+<!--    <script>-->
+<!--        const matchingMembersData = {-->
+<!--        <th:block th:each="matching : ${matchings}">-->
+<!--            '<th:block th:text="${matching.roomId}"></th:block>': {-->
+<!--            participants: [<th:block th:each="participant : ${matching.participants}">'<th:block th:text="${participant}"></th:block>',</th:block>],-->
+<!--            createdAt: '<th:block th:text="${matching.createdAt}"></th:block>'-->
+<!--        },-->
+<!--        </th:block>-->
+<!--        };-->
+
+<!--        console.log("matchingMembersData:", matchingMembersData);-->
+<!--    </script>-->
+    <!--불안정 수정 ver2-->
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const matchingMembersData = {
+            /*[# th:each="m, stat : ${matchings}"]*/
+            '/*[[${m.roomId}]]*/': {
+                // List<String>면 자동으로 JS 배열로 직렬화됨
+                participants: /*[[${m.participants}]]*/,
+                // 필요 시 포맷팅
+                createdAt: '/*[[${#temporals.format(m.createdAt, "yyyy-MM-dd HH:mm:ss")}]]*/'
+            }/*[[${stat.last} ? '' : ',' ]]*/
+            /*[/]*/
+        };
+
+        console.log('matchingMembersData:', matchingMembersData);
+        /*]]>*/
+    </script>
+
+
+
 </head>
 <body>
     <!-- 관리자 페이지 컨테이너 -->
@@ -84,41 +117,52 @@
 
             <!-- 대시보드 섹션 -->
             <section class="content-section" id="dashboard-section">
-                <!-- 통계 카드 -->
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-icon">👥</div>
                         <div class="stat-info">
                             <h3>총 회원수</h3>
-                            <p class="stat-number">1,245</p>
-                            <span class="stat-change positive">+12% 이번 달</span>
+                            <p class="stat-number"
+                               th:text="${#numbers.formatInteger(memberCount, 0, 'COMMA')}">1,245</p>
+                            <span class="stat-change positive" th:if="${memberMoM != null}"
+                                  th:text="${memberMoM}">+12% 이번 달</span>
                         </div>
                     </div>
+
                     <div class="stat-card">
                         <div class="stat-icon">🤝</div>
                         <div class="stat-info">
                             <h3>매칭 성사</h3>
-                            <p class="stat-number">456</p>
-                            <span class="stat-change positive">+8% 이번 달</span>
+                            <p class="stat-number"
+                               th:text="${#numbers.formatInteger(matchingCount, 0, 'COMMA')}">456</p>
+                            <span class="stat-change positive" th:if="${matchingMoM != null}"
+                                  th:text="${matchingMoM}">+8% 이번 달</span>
                         </div>
                     </div>
+
                     <div class="stat-card">
                         <div class="stat-icon">📍</div>
                         <div class="stat-info">
                             <h3>등록 관광지</h3>
-                            <p class="stat-number">89</p>
-                            <span class="stat-change neutral">변동 없음</span>
+                            <p class="stat-number"
+                               th:text="${#numbers.formatInteger(attractionCount, 0, 'COMMA')}">89</p>
+                            <span class="stat-change neutral" th:if="${attractionDelta != null}"
+                                  th:text="${attractionDelta}">변동 없음</span>
                         </div>
                     </div>
+
                     <div class="stat-card">
                         <div class="stat-icon">⚠️</div>
                         <div class="stat-info">
                             <h3>미처리 신고</h3>
-                            <p class="stat-number">3</p>
-                            <span class="stat-change negative">처리 필요</span>
+                            <p class="stat-number"
+                               th:text="${#numbers.formatInteger(unresolvedReportCount, 0, 'COMMA')}">3</p>
+                            <span class="stat-change negative" th:if="${unresolvedHint != null}"
+                                  th:text="${unresolvedHint}">처리 필요</span>
                         </div>
                     </div>
                 </div>
+
 
                 <!-- 차트 영역 -->
                 <div class="charts-grid">
@@ -151,6 +195,7 @@
                     </div>
                 </div>
             </section>
+
             <!-- 회원 관리 섹션 -->
             <section class="content-section" id="users-section" style="display: none;">
                 <div class="section-header">
@@ -158,39 +203,10 @@
                     <div class="section-actions">
                         <input type="text" placeholder="회원ID, 닉네임, 이메일로 검색..." class="search-input" id="member-search-input">
                         <button class="btn-primary" onclick="searchMembers()">검색</button>
-                        <button class="btn-secondary" onclick="resetMemberSearch()">전체보기</button>
                     </div>
                 </div>
 
-                <!-- 회원 현황 요약 -->
-                <div class="member-summary" style="margin-bottom: 20px;">
-                    <div class="summary-cards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-                        <div class="summary-card" style="background: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid #10b981;">
-                            <h4 style="margin: 0 0 5px 0; color: #065f46;">활성 회원</h4>
-                            <p style="margin: 0; font-size: 18px; font-weight: bold;">
-                                <span th:text="${#lists.size(members)}">0</span>명
-                            </p>
-                        </div>
-                        <div class="summary-card" style="background: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid #f59e0b;">
-                            <h4 style="margin: 0 0 5px 0; color: #92400e;">정지 회원</h4>
-                            <p style="margin: 0; font-size: 18px; font-weight: bold;">
-                                <span th:text="${#lists.size(members)}">0</span>명
-                            </p>
-                        </div>
-                        <div class="summary-card" style="background: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid #ef4444;">
-                            <h4 style="margin: 0 0 5px 0; color: #991b1b;">탈퇴 회원</h4>
-                            <p style="margin: 0; font-size: 18px; font-weight: bold;">
-                                <span th:text="${#lists.size(members)}">0</span>명
-                            </p>
-                        </div>
-                        <div class="summary-card" style="background: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid #ef4444;">
-                            <h4 style="margin: 0 0 5px 0; color: #991b1b;">신고 다수 회원</h4>
-                            <p style="margin: 0; font-size: 18px; font-weight: bold;">
-                                <span th:text="${#lists.size(members)}">0</span>명
-                            </p>
-                        </div>
-                    </div>
-                </div>
+
 
                 <!-- 필터 버튼 -->
                 <div class="filter-section" style="margin-bottom: 15px;">
@@ -212,7 +228,7 @@
                             <th>이메일</th>
                             <th>가입일</th>
                             <th>매칭참여</th>
-                            <th>신고받음</th>
+<!--                            <th>신고받음</th>-->
                             <th>상태</th>
                             <th>관리</th>
                         </tr>
@@ -239,11 +255,7 @@
                             <td>
                                 <span th:text="${member.matchingParticipationCount ?: 0} + '회'">0회</span>
                             </td>
-                            <td>
-                                    <span th:text="${member.rptRcvdCnt ?: 0} + '건'"
-                                          th:style="${(member.rptRcvdCnt ?: 0) >= 3 ? 'color: #ef4444; font-weight: bold;' : ''}"
-                                          th:title="${(member.rptRcvdCnt ?: 0) >= 3 ? '주의 필요 회원' : ''}">0건</span>
-                            </td>
+
                             <td>
                                 <span th:class="${member.statusClass}" th:text="${member.statusDisplay}">활성</span>
                             </td>
@@ -285,14 +297,14 @@
                         (<span id="visible-members-count" th:text="${#lists.size(members)}">0</span>명 표시 중)
                     </div>
                     <div class="table-actions">
-                        <button class="btn-small" onclick="refreshMemberList()">새로고침</button>
                         <button class="btn-small" onclick="exportMemberList()">목록 내보내기</button>
                     </div>
                 </div>
 
-                <!-- 페이지네이션 (추후 구현시 사용) -->
+                <!-- 페이지네이션 -->
                 <div class="pagination-container" style="margin-top: 20px; text-align: center;">
-                    <!-- 페이지네이션 버튼들이 여기 올 예정 -->
+
+
                 </div>
             </section>
 
@@ -401,54 +413,56 @@
                 </div>
             </section>
 
+            <!---매칭 관리 섹션--->
+            <section class="content-section" id="matching-section">
+                <div class="section-header">
+                    <h2>매칭 관리</h2>
+                    <div class="filter-buttons">
+                        <button class="filter-btn active">전체</button>
+                        <button class="filter-btn">진행중</button>
+                        <button class="filter-btn">완료</button>
+                        <button class="filter-btn">취소</button>
+                    </div>
+                </div>
 
-            <!--            &lt;!&ndash; 매칭 관리 섹션 &ndash;&gt;-->
-<!--            <section class="content-section" id="matching-section" style="display: none;">-->
-<!--                <div class="section-header">-->
-<!--                    <h2>매칭 관리</h2>-->
-<!--                    <div class="filter-buttons">-->
-<!--                        <button class="filter-btn active">전체</button>-->
-<!--                        <button class="filter-btn">진행중</button>-->
-<!--                        <button class="filter-btn">완료</button>-->
-<!--                        <button class="filter-btn">취소</button>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--                -->
-<!--                <div class="matching-grid">-->
-<!--                    <div class="matching-card">-->
-<!--                        <div class="matching-header">-->
-<!--                            <h4>부산 힐링 여행</h4>-->
-<!--                            <span class="matching-status active">진행중</span>-->
-<!--                        </div>-->
-<!--                        <div class="matching-info">-->
-<!--                            <p><strong>생성자:</strong> 홍길동</p>-->
-<!--                            <p><strong>참여자:</strong> 3/4명</p>-->
-<!--                            <p><strong>여행일:</strong> 2024-07-15 ~ 07-17</p>-->
-<!--                            <p><strong>지역:</strong> 부산</p>-->
-<!--                        </div>-->
-<!--                        <div class="matching-actions">-->
-<!--                            <button class="btn-small" onclick="handleMatchingDetail(this)">상세보기</button>-->
-<!--                            <button class="btn-small danger" onclick="handleMatchingTerminate(this)">강제종료</button>-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--                    -->
-<!--                    <div class="matching-card">-->
-<!--                        <div class="matching-header">-->
-<!--                            <h4>제주도 감성 여행</h4>-->
-<!--                            <span class="matching-status completed">완료</span>-->
-<!--                        </div>-->
-<!--                        <div class="matching-info">-->
-<!--                            <p><strong>생성자:</strong> 김영희</p>-->
-<!--                            <p><strong>참여자:</strong> 2/2명</p>-->
-<!--                            <p><strong>여행일:</strong> 2024-07-01 ~ 07-03</p>-->
-<!--                            <p><strong>지역:</strong> 제주</p>-->
-<!--                        </div>-->
-<!--                        <div class="matching-actions">-->
-<!--                            <button class="btn-small" onclick="handleMatchingDetail(this)">상세보기</button>-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--            </section>-->
+                <div class="matching-grid">
+                    <div class="matching-card" th:each="matching : ${matchings}"
+                         th:data-room-id="${matching.roomId}"
+                         th:data-created-at="${matching.createdAt}">
+                        <div class="matching-header">
+                            <h4 th:text="${matching.roomName}">방 이름</h4>
+                            <span class="matching-status"
+                                  th:classappend="${matching.status == '진행중'} ? ' active' :
+                                      (${matching.status == '완료'} ? ' completed' : ' cancelled')"
+                                  th:text="${matching.status}">
+                    진행중
+                </span>
+                        </div>
+                        <div class="matching-info">
+                            <p><strong>생성자:</strong> <span th:text="${matching.creatorNickname}">홍길동</span></p>
+                            <p><strong>참여자:</strong>
+                                <span th:text="${matching.currentCount}">2</span> /
+                                <span th:text="${matching.maxCount}">4</span>명
+                            </p>
+                            <p><strong>여행일:</strong>
+                                <span th:text="${matching.travelStartDate}">2025-08-05</span> ~
+                                <span th:text="${matching.travelEndDate}">2025-08-08</span>
+                            </p>
+                            <p><strong>여행기간:</strong>
+                                <span th:text="${matching.travelPeriod}"></span>일
+                            </p>
+                            <p><strong>지역:</strong> <span th:text="${matching.regionName}">강원</span></p>
+                            <p><strong>관광지:</strong> <span th:text="${matching.attractionTitle}">춘천연극제</span></p>
+                        </div>
+                        <div class="matching-actions">
+                            <button class="btn-small" onclick="handleMatchingDetail(this)">상세보기</button>
+                            <button class="btn-small danger" onclick="handleMatchingTerminate(this)"
+                                    th:if="${matching.status == '진행중'}">강제종료</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
 
 <!--            &lt;!&ndash; 관광지 관리 섹션 &ndash;&gt;-->
 <!--            <section class="content-section" id="locations-section" style="display: none;">-->
@@ -970,27 +984,12 @@
                 <div class="settings-grid">
                     <div class="setting-group">
                         <h3>일반 설정</h3>
-<!--                        <div class="setting-item">-->
-<!--                            <label>사이트명</label>-->
-<!--                            <input type="text" value="여행 플랫폼">-->
-<!--                        </div>-->
                         <div class="setting-item">
                             <label>관리자 이메일</label>
                             <input type="email" value="admin@travel.com">
                         </div>
                     </div>
-                    
-<!--                    <div class="setting-group">-->
-<!--                        <h3>매칭 설정</h3>-->
-<!--                        <div class="setting-item">-->
-<!--                            <label>최대 매칭 인원</label>-->
-<!--                            <input type="number" value="6">-->
-<!--                        </div>-->
-<!--                        <div class="setting-item">-->
-<!--                            <label>매칭 유효기간 (일)</label>-->
-<!--                            <input type="number" value="30">-->
-<!--                        </div>-->
-<!--                    </div>-->
+
                     
                     <div class="setting-group">
                         <h3>보안 설정</h3>

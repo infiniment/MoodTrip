@@ -40,4 +40,6 @@ public interface RoomMemberRepository extends JpaRepository<RoomMember, Long> {
     // 활성 멤버 여부만 체크 (가장 추천)
     boolean existsByMember_MemberPkAndRoom_RoomIdAndIsActiveTrue(Long memberPk, Long roomId);
 
+    // 특정 멤버가 참여 중인 방 개수 (isActive = true 기준)
+    Long countByMemberAndIsActiveTrue(Member member);
 }
