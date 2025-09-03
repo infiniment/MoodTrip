@@ -11,7 +11,7 @@ body {
 }
 
 .container {
-    margin: 180px auto 0; /* 위 100px, 좌우 자동, 아래 0 */
+    margin: 50px auto 0; /* 위 100px, 좌우 자동, 아래 0 */
     max-width: 1200px;
     background: rgba(255, 255, 255, 0.98);
     border-radius: 20px;

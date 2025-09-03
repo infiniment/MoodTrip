@@ -164,7 +164,7 @@ function loadUserProfile() {
         if (profileImgElement) {
           profileImgElement.src = userData.profileImage && userData.profileImage.trim() !== ''
               ? userData.profileImage
-              : '/static/image/fix/moodtrip.png'; // 정확한 경로로 수정
+              : '/image/fix/moodtrip.png'; // 정확한 경로로 수정
         }
 
         console.log('✅ 사용자 프로필 로드 완료');
