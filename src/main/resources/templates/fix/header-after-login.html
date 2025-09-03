@@ -28,95 +28,50 @@
                 </div>
             </a>
 
+            <!-- 좌측 메뉴 -->
             <div class="left-nav">
                 <div class="left-nav-menu" data-menu="emotions">
                     <div class="main-header text-header">감정여행</div>
                 </div>
-
-                <!-- 동행매칭 -->
                 <div class="left-nav-menu" data-menu="companion">
                     <div class="main-header text-header">동행매칭</div>
                 </div>
-
-                <!-- 공지사항 -->
                 <div class="left-nav-menu" data-menu="notice">
                     <div class="main-header text-header">공지사항</div>
                 </div>
-
                 <div th:if="${isAdmin}" class="left-nav-menu">
                     <a th:href="@{/admin}" class="main-header text-header">관리자</a>
                 </div>
+            </div>
 
+            <!-- 검색창 (독립 영역) -->
+            <div class="search-nav">
+                <form class="logged-in-header-search-form" th:action="@{/emotion-search}" method="get" id="headerEmotionForm">
+                    <!-- 대분류 -->
+                    <select name="categoryId" id="headerCategorySelect" aria-label="감정 카테고리"
+                            style="height:40px; padding:0 10px; border:1px solid #e5e7eb; border-radius:8px; margin-right:8px; min-width:150px;">
+                        <option value="" disabled selected hidden>대분류 선택</option>
+                        <option th:each="c : ${headerEmotionCategories}"
+                                th:value="${c.emotionCategoryId}"
+                                th:text="${c.emotionCategoryName}">
+                        </option>
+                    </select>
 
-                <!-- 로그인 후 헤더 전용 검색바 (클래스명 변경됨) -->
-                <!-- 기존 위치 그대로 대체 -->
-                <div class="left-nav-menu pr-12 main-header text-header logged-in-header-search-wrapper" style="margin-left: 100px;">
-                    <form class="logged-in-header-search-form" th:action="@{/emotion-search}" method="get" id="headerEmotionForm">
-                        <!-- 대분류 -->
-                        <select name="categoryId" id="headerCategorySelect" aria-label="감정 카테고리"
-                                style="height:40px; padding:0 10px; border:1px solid #e5e7eb; border-radius:8px; margin-right:8px; min-width:150px;">
-                            <!-- hidden 속성 추가 -->
-                            <option value="" disabled selected hidden>대분류 선택</option>
-                            <option th:each="c : ${headerEmotionCategories}"
-                                    th:value="${c.emotionCategoryId}"
-                                    th:text="${c.emotionCategoryName}">
-                            </option>
-                        </select>
+                    <!-- 소분류 -->
+                    <select name="tagId" id="headerEmotionSelect" aria-label="감정(소분류)"
+                            style="height:40px; padding:0 10px; border:1px solid #e5e7eb; border-radius:8px; margin-right:8px; min-width:150px;">
+                        <option value="" disabled selected hidden>소분류 선택</option>
+                    </select>
 
-                        <!-- 소분류 -->
-                        <select name="tagId" id="headerEmotionSelect" aria-label="감정(소분류)"
-                                style="height:40px; padding:0 10px; border:1px solid #e5e7eb; border-radius:8px; margin-right:8px; min-width:150px;">
-                            <!-- hidden 속성 추가 -->
-                            <option value="" disabled selected hidden>소분류 선택</option>
-                        </select>
+                    <!-- 기존 input은 숨김 -->
+                    <input type="text" name="q" placeholder="감정을 입력하세요"
+                           class="logged-in-header-emotion-search-input" id="loggedInHeaderEmotionSearchInput"
+                           style="display:none;" aria-hidden="true" tabindex="-1" />
 
-                        <!-- 기존 input은 레이아웃 영향 없도록 숨김(서버 전송에도 영향 없음) -->
-                        <input type="text" name="q" placeholder="감정을 입력하세요"
-                               class="logged-in-header-emotion-search-input" id="loggedInHeaderEmotionSearchInput"
-                               style="display:none;" aria-hidden="true" tabindex="-1" />
-
-                        <button type="submit" class="logged-in-header-emotion-search-btn" aria-label="검색">
-                            <img th:src="@{/image/default-common/search.png}" alt="검색" class="logged-in-header-search-icon"/>
-                        </button>
-                    </form>
-
-
-
-                </div>
-
-
-
-
-
-
-                <!-- 꼭: 직렬화를 위해 th:inline="javascript" -->
-                <script th:inline="javascript">
-                    (function () {
-                        // 서버가 내려준 DTO (카테고리 + 내부 emotions[{tagId, tagName}...])
-                        const categories = /*[[${headerEmotionCategories}]]*/ [];
-
-                        const catSel = document.getElementById('headerCategorySelect');
-                        const emoSel = document.getElementById('headerEmotionSelect');
-
-                        function renderEmotions(categoryId){
-                            emoSel.innerHTML = '<option value="" disabled selected hidden>소분류 선택</option>';
-                            if(!categoryId) return;
-                            const cat = (categories || []).find(c => String(c.emotionCategoryId) === String(categoryId));
-                            if(!cat || !cat.emotions) return;
-                            cat.emotions.forEach(e => {
-                                const opt = document.createElement('option');
-                                opt.value = e.tagId;
-                                opt.textContent = e.tagName;
-                                emoSel.appendChild(opt);
-                            });
-                        }
-
-                        catSel && catSel.addEventListener('change', () => {
-                            renderEmotions(catSel.value);
-                        });
-                    })();
-                </script>
-
+                    <button type="submit" class="logged-in-header-emotion-search-btn" aria-label="검색">
+                        <img th:src="@{/image/default-common/search.png}" alt="검색" class="logged-in-header-search-icon"/>
+                    </button>
+                </form>
             </div>
 
             <!-- 로그인된 사용자 프로필 메뉴 -->
@@ -134,17 +89,15 @@
                     </div>
 
                     <!-- 드롭다운 -->
-                    <!-- 드롭다운 -->
                     <div class="profile-dropdown" id="profileDropdown">
                         <div class="profile-info">
                             <div class="profile-nickname" th:text="${currentMember.nickname}">닉네임</div>
                             <div class="profile-email" th:text="${currentMember.email}">이메일</div>
                         </div>
 
-                        <!-- 프로필 관리 버튼에 배지 추가 -->
+                        <!-- 프로필 관리 버튼 + 배지 -->
                         <button class="header-profile-btn profile-manage-with-badge" id="profileManageBtn">
                             <span>프로필 관리</span>
-                            <!-- 배지를 버튼 안에 추가 -->
                             <span class="header-notification-badge"
                                   th:if="${totalPendingRequests > 0}"
                                   th:text="${totalPendingRequests}">3</span>
@@ -178,5 +131,31 @@
         </div>
     </div>
 </header>
+
+<!-- 검색창 카테고리/소분류 제어 스크립트 -->
+<script th:inline="javascript">
+    (function () {
+        const categories = /*[[${headerEmotionCategories}]]*/ [];
+        const catSel = document.getElementById('headerCategorySelect');
+        const emoSel = document.getElementById('headerEmotionSelect');
+
+        function renderEmotions(categoryId) {
+            emoSel.innerHTML = '<option value="" disabled selected hidden>소분류 선택</option>';
+            if (!categoryId) return;
+            const cat = (categories || []).find(c => String(c.emotionCategoryId) === String(categoryId));
+            if (!cat || !cat.emotions) return;
+            cat.emotions.forEach(e => {
+                const opt = document.createElement('option');
+                opt.value = e.tagId;
+                opt.textContent = e.tagName;
+                emoSel.appendChild(opt);
+            });
+        }
+
+        catSel && catSel.addEventListener('change', () => {
+            renderEmotions(catSel.value);
+        });
+    })();
+</script>
 </body>
 </html>
