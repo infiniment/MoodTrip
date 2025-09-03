@@ -386,17 +386,19 @@ public List<MemberAdminDto> getAllMembersForAdmin() {
     private MemberAdminDto mapToAdminDto(Member member) {
         // ✅ 참여 횟수 계산 (RoomMember 기준)
         Long participationCount = roomMemberRepository.countByMemberAndIsActiveTrue(member);
-
+        String statusName = (member.getStatus() != null) ? member.getStatus().name() : Member.MemberStatus.ACTIVE.name();
         return MemberAdminDto.builder()
                 .memberPk(member.getMemberPk())
                 .memberId(member.getMemberId())
                 .nickname(member.getNickname())
                 .email(member.getEmail())
                 .createdAt(member.getCreatedAt())
-                .status(member.getStatus().name())
+                .status(statusName)
+//                .status(member.getStatus().name())
                 .isWithdraw(member.getIsWithdraw())
                 .rptRcvdCnt(member.getRptRcvdCnt() == null ? 0 : member.getRptRcvdCnt())
                 .matchingParticipationCount(participationCount == null ? 0 : participationCount)
+
                 .build();
     }
 
