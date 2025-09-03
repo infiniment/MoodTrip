@@ -94,7 +94,7 @@ public class LoginViewController {
 
 
     //소셜 로그인 성공 시dd
-//    @GetMapping("/mainpage/mainpage")
+//    @GetMapping("/mainpage/mainpage")d
 //    public String mainPage(Model model) {
 //        log.info("==== [RoomController] /mainpage/mainpage 진입 ====");
 //        List<RoomResponse> rooms = roomService.getAllRooms();
