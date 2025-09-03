@@ -394,7 +394,7 @@ public List<MemberAdminDto> getAllMembersForAdmin() {
                 .email(member.getEmail())
                 .createdAt(member.getCreatedAt())
                 .status(statusName)
-//                .status(member.getStatus().name())
+//      d          .status(member.getStatus().name())
                 .isWithdraw(member.getIsWithdraw())
                 .rptRcvdCnt(member.getRptRcvdCnt() == null ? 0 : member.getRptRcvdCnt())
                 .matchingParticipationCount(participationCount == null ? 0 : participationCount)
