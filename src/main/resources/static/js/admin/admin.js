@@ -16,6 +16,7 @@ function initializeAdminPanel() {
     initResponsiveTables();
     setupUsersViewToggle();
     setupLocationsPaging();
+    setupMembersPaging();
 
     // 회원 관리
     setupTableViewToggle({ sectionId: 'users-section',     storageKey: 'usersView' });
@@ -1124,17 +1125,65 @@ function addLocationToTable(name, region, category, tags) {
 
 // === 매칭 관리 함수들 ===
 
+// function handleMatchingDetail(btn) {
+//     const matchingCard = btn.closest('.matching-card');
+//     const title = matchingCard.querySelector('h4').textContent;
+//     const status = matchingCard.querySelector('.matching-status').textContent;
+//     const info = matchingCard.querySelectorAll('.matching-info p');
+//
+//     let creator = '';
+//     let participants = '';
+//     let travelDate = '';
+//     let location = '';
+//
+//     info.forEach(p => {
+//         const text = p.textContent;
+//         if (text.includes('생성자:')) creator = text.split(':')[1].trim();
+//         if (text.includes('참여자:')) participants = text.split(':')[1].trim();
+//         if (text.includes('여행일:')) travelDate = text.split(':')[1].trim();
+//         if (text.includes('지역:')) location = text.split(':')[1].trim();
+//     });
+//
+//     const content = `
+//         <h3>매칭 상세 정보</h3>
+//         <div class="matching-detail">
+//             <p><strong>매칭명:</strong> ${title}</p>
+//             <p><strong>상태:</strong> ${status}</p>
+//             <p><strong>생성자:</strong> ${creator}</p>
+//             <p><strong>참여자:</strong> ${participants}</p>
+//             <p><strong>여행일:</strong> ${travelDate}</p>
+//             <p><strong>지역:</strong> ${location}</p>
+//             <p><strong>생성일:</strong> 2024-07-10 14:30</p>
+//             <p><strong>마지막 활동:</strong> 2024-07-12 09:15</p>
+//             <p><strong>채팅 메시지:</strong> 47개</p>
+//             <p><strong>참여자 목록:</strong></p>
+//             <ul style="margin-left: 20px; margin-top: 8px;">
+//                 <li>홍길동 (생성자)</li>
+//                 <li>김영희</li>
+//                 <li>이민수</li>
+//             </ul>
+//         </div>
+//         <div class="modal-actions">
+//             <button class="btn-secondary" onclick="closeModal()">닫기</button>
+//             <button class="btn-primary" onclick="exportMatchingData('${title}')">데이터 내보내기</button>
+//         </div>
+//     `;
+//     showModal(content);
+// }
 function handleMatchingDetail(btn) {
     const matchingCard = btn.closest('.matching-card');
+    const roomId = matchingCard.dataset.roomId;
+    const createdAt = matchingCard.dataset.createdAt; // 생성일 가져오기
+
     const title = matchingCard.querySelector('h4').textContent;
     const status = matchingCard.querySelector('.matching-status').textContent;
     const info = matchingCard.querySelectorAll('.matching-info p');
-    
+
     let creator = '';
     let participants = '';
     let travelDate = '';
     let location = '';
-    
+
     info.forEach(p => {
         const text = p.textContent;
         if (text.includes('생성자:')) creator = text.split(':')[1].trim();
@@ -1142,71 +1191,155 @@ function handleMatchingDetail(btn) {
         if (text.includes('여행일:')) travelDate = text.split(':')[1].trim();
         if (text.includes('지역:')) location = text.split(':')[1].trim();
     });
-    
-    const content = `
-        <h3>매칭 상세 정보</h3>
-        <div class="matching-detail">
-            <p><strong>매칭명:</strong> ${title}</p>
-            <p><strong>상태:</strong> ${status}</p>
-            <p><strong>생성자:</strong> ${creator}</p>
-            <p><strong>참여자:</strong> ${participants}</p>
-            <p><strong>여행일:</strong> ${travelDate}</p>
-            <p><strong>지역:</strong> ${location}</p>
-            <p><strong>생성일:</strong> 2024-07-10 14:30</p>
-            <p><strong>마지막 활동:</strong> 2024-07-12 09:15</p>
-            <p><strong>채팅 메시지:</strong> 47개</p>
-            <p><strong>참여자 목록:</strong></p>
-            <ul style="margin-left: 20px; margin-top: 8px;">
-                <li>홍길동 (생성자)</li>
-                <li>김영희</li>
-                <li>이민수</li>
-            </ul>
-        </div>
-        <div class="modal-actions">
-            <button class="btn-secondary" onclick="closeModal()">닫기</button>
-            <button class="btn-primary" onclick="exportMatchingData('${title}')">데이터 내보내기</button>
-        </div>
-    `;
+
+    const content = '<h3>매칭 상세 정보</h3>' +
+        '<div class="matching-detail">' +
+        '<p><strong>매칭명:</strong> ' + title + '</p>' +
+        '<p><strong>상태:</strong> ' + status + '</p>' +
+        '<p><strong>생성자:</strong> ' + creator + '</p>' +
+        '<p><strong>참여자:</strong> ' + participants + '</p>' +
+        '<p><strong>여행일:</strong> ' + travelDate + '</p>' +
+        '<p><strong>지역:</strong> ' + location + '</p>' +
+        '<p><strong>생성일:</strong> ' + (createdAt || '정보 없음') + '</p>' +
+        '<p><strong>참여자 목록:</strong></p>' +
+        '<ul id="membersList" style="margin-left: 20px; margin-top: 8px;">' +
+        '<li>로딩 중...</li>' +
+        '</ul>' +
+        '</div>' +
+        '<div class="modal-actions">' +
+        '<button class="btn-secondary" onclick="closeModal()">닫기</button>' +
+        '<button class="btn-primary" onclick="exportMatchingData(\'' + title + '\')">데이터 내보내기</button>' +
+        '</div>';
+
     showModal(content);
+
+    // AJAX로 실제 멤버 데이터 가져오기
+    fetch('/api/v1/room-members/' + roomId + '/members')
+        .then(response => {
+            console.log('Response status:', response.status);
+            if (!response.ok) {
+                throw new Error('HTTP ' + response.status);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Response data:', data); // 디버깅용
+            if (Array.isArray(data)) {
+                const membersList = data.map(member => '<li>' + member.nickname + '</li>').join('');
+                document.getElementById('membersList').innerHTML = membersList;
+            } else {
+                document.getElementById('membersList').innerHTML = '<li>데이터 형식 오류</li>';
+            }
+        })
+        .catch(error => {
+            console.error('멤버 목록 가져오기 실패:', error);
+            document.getElementById('membersList').innerHTML = '<li>API 호출 실패: ' + error.message + '</li>';
+        });
 }
+//
+// function handleMatchingTerminate(btn) {
+//     const matchingCard = btn.closest('.matching-card');
+//     const title = matchingCard.querySelector('h4').textContent;
+//
+//     showConfirmModal(`'${title}' 매칭을 강제 종료하시겠습니까?`, function() {
+//         const status = matchingCard.querySelector('.matching-status');
+//         status.textContent = '강제종료';
+//         status.className = 'matching-status terminated';
+//
+//         // 버튼 업데이트
+//         const actionButtons = matchingCard.querySelector('.matching-actions');
+//         actionButtons.innerHTML = `
+//             <button class="btn-small" onclick="handleMatchingDetail(this)">상세보기</button>
+//             <button class="btn-small success" onclick="handleMatchingRestore(this)">복구</button>
+//         `;
+//
+//         showSuccessMessage('매칭이 강제 종료되었습니다.');
+//     });
+// }
+//
+// function handleMatchingRestore(btn) {
+//     const matchingCard = btn.closest('.matching-card');
+//     const title = matchingCard.querySelector('h4').textContent;
+//
+//     showConfirmModal(`'${title}' 매칭을 복구하시겠습니까?`, function() {
+//         const status = matchingCard.querySelector('.matching-status');
+//         status.textContent = '진행중';
+//         status.className = 'matching-status active';
+//
+//         // 버튼 업데이트
+//         const actionButtons = matchingCard.querySelector('.matching-actions');
+//         actionButtons.innerHTML = `
+//             <button class="btn-small" onclick="handleMatchingDetail(this)">상세보기</button>
+//             <button class="btn-small danger" onclick="handleMatchingTerminate(this)">강제종료</button>
+//         `;
+//
+//         showSuccessMessage('매칭이 복구되었습니다.');
+//     });
+// }
 
 function handleMatchingTerminate(btn) {
     const matchingCard = btn.closest('.matching-card');
+    const roomId = matchingCard.dataset.roomId;
     const title = matchingCard.querySelector('h4').textContent;
-    
+
     showConfirmModal(`'${title}' 매칭을 강제 종료하시겠습니까?`, function() {
-        const status = matchingCard.querySelector('.matching-status');
-        status.textContent = '강제종료';
-        status.className = 'matching-status terminated';
-        
-        // 버튼 업데이트
-        const actionButtons = matchingCard.querySelector('.matching-actions');
-        actionButtons.innerHTML = `
-            <button class="btn-small" onclick="handleMatchingDetail(this)">상세보기</button>
-            <button class="btn-small success" onclick="handleMatchingRestore(this)">복구</button>
-        `;
-        
-        showSuccessMessage('매칭이 강제 종료되었습니다.');
+        fetch('/admin/matchings/' + roomId + '/terminate', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => response.text())
+            .then(message => {
+                const status = matchingCard.querySelector('.matching-status');
+                status.textContent = '강제종료';
+                status.className = 'matching-status terminated';
+
+                const actionButtons = matchingCard.querySelector('.matching-actions');
+                actionButtons.innerHTML = `
+                <button class="btn-small" onclick="handleMatchingDetail(this)">상세보기</button>
+                <button class="btn-small success" onclick="handleMatchingRestore(this)">복구</button>
+            `;
+
+                showSuccessMessage(message);
+            })
+            .catch(error => {
+                console.error('강제 종료 실패:', error);
+                showErrorMessage('강제 종료 중 오류가 발생했습니다.');
+            });
     });
 }
 
 function handleMatchingRestore(btn) {
     const matchingCard = btn.closest('.matching-card');
+    const roomId = matchingCard.dataset.roomId;
     const title = matchingCard.querySelector('h4').textContent;
-    
+
     showConfirmModal(`'${title}' 매칭을 복구하시겠습니까?`, function() {
-        const status = matchingCard.querySelector('.matching-status');
-        status.textContent = '진행중';
-        status.className = 'matching-status active';
-        
-        // 버튼 업데이트
-        const actionButtons = matchingCard.querySelector('.matching-actions');
-        actionButtons.innerHTML = `
-            <button class="btn-small" onclick="handleMatchingDetail(this)">상세보기</button>
-            <button class="btn-small danger" onclick="handleMatchingTerminate(this)">강제종료</button>
-        `;
-        
-        showSuccessMessage('매칭이 복구되었습니다.');
+        fetch('/admin/matchings/' + roomId + '/restore', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => response.text())
+            .then(message => {
+                const status = matchingCard.querySelector('.matching-status');
+                status.textContent = '진행중';
+                status.className = 'matching-status active';
+
+                const actionButtons = matchingCard.querySelector('.matching-actions');
+                actionButtons.innerHTML = `
+                <button class="btn-small" onclick="handleMatchingDetail(this)">상세보기</button>
+                <button class="btn-small danger" onclick="handleMatchingTerminate(this)">강제종료</button>
+            `;
+
+                showSuccessMessage(message);
+            })
+            .catch(error => {
+                console.error('복구 실패:', error);
+                showErrorMessage('복구 중 오류가 발생했습니다.');
+            });
     });
 }
 
@@ -1907,493 +2040,698 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeNoticeTable();
 });
 
+//
+// // === 신고 관리 함수들 ===
+// //
+// // function handleReportDetail(btn) {
+// //     const reportItem = btn.closest('.report-item');
+// //     const title = reportItem.querySelector('h4').textContent;
+// //     const status = reportItem.querySelector('.report-status').textContent;
+// //     const info = reportItem.querySelectorAll('.report-info p');
+// //
+// //     let reporter = '';
+// //     let reported = '';
+// //     let reportDate = '';
+// //     let content = '';
+// //     let result = '';
+// //
+// //     info.forEach(p => {
+// //         const text = p.textContent;
+// //         if (text.includes('신고자:')) reporter = text.split(':')[1].trim();
+// //         if (text.includes('피신고자:')) reported = text.split(':')[1].trim();
+// //         if (text.includes('신고일:')) reportDate = text.split(':')[1].trim();
+// //         if (text.includes('내용:')) content = text.split(':')[1].trim();
+// //         if (text.includes('처리결과:')) result = text.split(':')[1].trim();
+// //     });
+// //
+// //     // 신고 상세 정보 표시
+// //     const detailContent = `
+// //         <h3>신고 상세 정보</h3>
+// //         <div class="report-detail">
+// //             <div class="detail-section">
+// //                 <h4>기본 정보</h4>
+// //                 <p><strong>신고 유형:</strong> ${title}</p>
+// //                 <p><strong>처리 상태:</strong> <span class="status-badge ${getStatusClass(status)}">${status}</span></p>
+// //                 <p><strong>신고 접수일:</strong> ${reportDate}</p>
+// //                 <p><strong>처리 담당자:</strong> 관리자</p>
+// //             </div>
+// //
+// //             <div class="detail-section">
+// //                 <h4>당사자 정보</h4>
+// //                 <p><strong>신고자:</strong> ${reporter}</p>
+// //                 <p><strong>피신고자:</strong> ${reported}</p>
+// //                 <p><strong>관련 채팅방:</strong> ${getRelatedChatRoom(title)}</p>
+// //             </div>
+// //
+// //             <div class="detail-section">
+// //                 <h4>신고 내용</h4>
+// //                 <div class="report-content">
+// //                     <p><strong>신고 사유:</strong></p>
+// //                     <div class="content-box">${content || '상세한 신고 내용이 여기에 표시됩니다.'}</div>
+// //                     <p><strong>증거 자료:</strong> ${getEvidenceInfo(title)}</p>
+// //                 </div>
+// //             </div>
+// //
+// //             ${result ? `
+// //                 <div class="detail-section">
+// //                     <h4>처리 결과</h4>
+// //                     <p><strong>처리 결과:</strong> ${result}</p>
+// //                     <p><strong>처리일:</strong> ${getProcessedDate(status)}</p>
+// //                     <p><strong>처리 사유:</strong> ${getProcessReason(title)}</p>
+// //                 </div>
+// //             ` : ''}
+// //
+// //             <div class="detail-section">
+// //                 <h4>추가 정보</h4>
+// //                 <p><strong>이전 신고 이력:</strong> ${getPreviousReports(reported)}</p>
+// //                 <p><strong>유사 신고:</strong> ${getSimilarReports(title)}</p>
+// //                 <p><strong>신고자 신뢰도:</strong> ${getReporterCredibility(reporter)}</p>
+// //             </div>
+// //         </div>
+// //
+// //         <div class="modal-actions">
+// //             <button class="btn-secondary" onclick="closeModal()">닫기</button>
+// //             ${getDetailModalActions(status, title, reported)}
+// //         </div>
+// //     `;
+// //
+// //     showModal(detailContent);
+// // }
+// function handleReportDetail(reportId) {
+//     fetch(`/api/v1/admin/reports/${reportId}`)
+//         .then(res => res.json())
+//         .then(report => {
+//             showModal(`
+//                 <h3>신고 상세</h3>
+//                 <p><strong>신고자:</strong> ${report.reporterNickname}</p>
+//                 <p><strong>피신고자:</strong> ${report.targetNickname}</p>
+//                 <p><strong>사유:</strong> ${report.reason}</p>
+//                 <p><strong>상세내용:</strong> ${report.detail}</p>
+//                 <p><strong>상태:</strong> ${report.status}</p>
+//                 <div class="modal-actions">
+//                     <button class="btn-secondary" onclick="closeModal()">닫기</button>
+//                 </div>
+//             `);
+//         });
+// }
+//
+// function handleReportResolve(reportId) {
+//     fetch(`/api/v1/admin/reports/${reportId}/resolve`, { method: 'POST' })
+//         .then(() => {
+//             alert('신고가 처리되었습니다.');
+//             location.reload();
+//         });
+// }
+//
+// function handleReportWarning(btn) {
+//     const reportItem = btn.closest('.report-item');
+//     const title = reportItem.querySelector('h4').textContent;
+//     const reported = getReportedUser(reportItem);
+//
+//     const warningContent = `
+//         <h3>경고 처리</h3>
+//         <div class="warning-form">
+//             <p><strong>신고 유형:</strong> ${title}</p>
+//             <p><strong>피신고자:</strong> ${reported}</p>
+//
+//             <div class="form-group">
+//                 <label>경고 사유</label>
+//                 <select id="warning-reason">
+//                     <option value="inappropriate_language">부적절한 언어 사용</option>
+//                     <option value="spam">스팸 행위</option>
+//                     <option value="harassment">괴롭힘</option>
+//                     <option value="false_info">허위 정보</option>
+//                     <option value="other">기타</option>
+//                 </select>
+//             </div>
+//
+//             <div class="form-group">
+//                 <label>경고 메시지</label>
+//                 <textarea id="warning-message" rows="4" placeholder="사용자에게 전달할 경고 메시지를 입력하세요">커뮤니티 가이드라인을 위반하는 행위가 확인되어 경고를 발송합니다. 계속해서 문제가 될 경우 계정 제재가 있을 수 있습니다.</textarea>
+//             </div>
+//
+//             <div class="warning-info">
+//                 <p><strong>이전 경고 횟수:</strong> ${getPreviousWarnings(reported)}회</p>
+//                 <p><strong>경고 누적 시 조치:</strong> 3회 누적 시 계정 정지</p>
+//             </div>
+//         </div>
+//
+//         <div class="modal-actions">
+//             <button class="btn-secondary" onclick="closeModal()">취소</button>
+//             <button class="btn-warning" onclick="confirmWarning('${title}', '${reported}')">경고 발송</button>
+//         </div>
+//     `;
+//
+//     showModal(warningContent);
+// }
+//
+// function handleReportSuspension(btn) {
+//     const reportItem = btn.closest('.report-item');
+//     const title = reportItem.querySelector('h4').textContent;
+//     const reported = getReportedUser(reportItem);
+//
+//     const suspensionContent = `
+//         <h3>계정 정지 처리</h3>
+//         <div class="suspension-form">
+//             <p><strong>신고 유형:</strong> ${title}</p>
+//             <p><strong>피신고자:</strong> ${reported}</p>
+//
+//             <div class="form-group">
+//                 <label>정지 기간</label>
+//                 <select id="suspension-period">
+//                     <option value="1">1일</option>
+//                     <option value="3">3일</option>
+//                     <option value="7">7일</option>
+//                     <option value="14">14일</option>
+//                     <option value="30">30일</option>
+//                     <option value="permanent">영구정지</option>
+//                 </select>
+//             </div>
+//
+//             <div class="form-group">
+//                 <label>정지 사유</label>
+//                 <select id="suspension-reason">
+//                     <option value="severe_harassment">심각한 괴롭힘</option>
+//                     <option value="hate_speech">혐오 발언</option>
+//                     <option value="repeated_violations">반복적 위반</option>
+//                     <option value="fraud">사기 행위</option>
+//                     <option value="spam">악성 스팸</option>
+//                     <option value="other">기타</option>
+//                 </select>
+//             </div>
+//
+//             <div class="form-group">
+//                 <label>정지 통지 메시지</label>
+//                 <textarea id="suspension-message" rows="4" placeholder="사용자에게 전달할 정지 통지 메시지를 입력하세요">커뮤니티 가이드라인을 심각하게 위반하여 계정이 정지되었습니다.</textarea>
+//             </div>
+//
+//             <div class="suspension-warning">
+//                 <p><strong>⚠️ 주의사항:</strong></p>
+//                 <ul>
+//                     <li>계정 정지 시 모든 서비스 이용이 제한됩니다</li>
+//                     <li>진행 중인 매칭은 자동으로 종료됩니다</li>
+//                     <li>정지 기간 중에는 로그인이 불가능합니다</li>
+//                 </ul>
+//             </div>
+//         </div>
+//
+//         <div class="modal-actions">
+//             <button class="btn-secondary" onclick="closeModal()">취소</button>
+//             <button class="btn-danger" onclick="confirmSuspension('${title}', '${reported}')">계정 정지</button>
+//         </div>
+//     `;
+//
+//     showModal(suspensionContent);
+// }
+//
+// function handleReportCancel(btn) {
+//     const reportItem = btn.closest('.report-item');
+//     const title = reportItem.querySelector('h4').textContent;
+//     const reported = getReportedUser(reportItem);
+//     const status = reportItem.querySelector('.report-status').textContent;
+//
+//     const action = status.includes('경고') ? '경고 처리' : '계정 정지';
+//
+//     showConfirmModal(
+//         `${reported}님에 대한 "${title}" 신고의 ${action}를 취소하시겠습니까?\n\n취소 시 해당 처리가 철회되고 계정 상태가 복구됩니다.`,
+//         function() {
+//             // 신고 상태를 미처리로 변경
+//             const statusElement = reportItem.querySelector('.report-status');
+//             statusElement.textContent = '미처리';
+//             statusElement.className = 'report-status pending';
+//
+//             // 버튼 상태 변경
+//             const actionsContainer = reportItem.querySelector('.report-actions');
+//             actionsContainer.innerHTML = `
+//                 <button class="btn-small" onclick="handleReportDetail(this)">상세보기</button>
+//                 <button class="btn-small warning" onclick="handleReportWarning(this)">경고</button>
+//                 <button class="btn-small danger" onclick="handleReportSuspension(this)">계정정지</button>
+//             `;
+//
+//             // 실제로는 서버에 처리 취소 요청
+//             console.log(`신고 처리 취소: ${title} - ${reported}`);
+//
+//             showSuccessMessage(`${action}가 취소되었습니다. 계정 상태가 복구되었습니다.`);
+//         }
+//     );
+// }
+//
+// // 경고 처리 확인
+// function confirmWarning(title, reported) {
+//     const reason = document.getElementById('warning-reason').value;
+//     const message = document.getElementById('warning-message').value.trim();
+//
+//     if (!message) {
+//         showErrorMessage('경고 메시지를 입력해주세요.');
+//         return;
+//     }
+//
+//     showConfirmModal(
+//         `${reported}님에게 경고를 발송하시겠습니까?`,
+//         function() {
+//             // 실제로는 서버에 경고 처리 요청
+//             console.log('경고 처리:', { title, reported, reason, message });
+//
+//             // 신고 아이템 상태 업데이트
+//             updateReportStatus(title, reported, 'warning-issued', '경고처리');
+//
+//             closeModal();
+//             showSuccessMessage('경고가 발송되었습니다.');
+//         }
+//     );
+// }
+//
+// // 계정 정지 처리 확인
+// function confirmSuspension(title, reported) {
+//     const period = document.getElementById('suspension-period').value;
+//     const reason = document.getElementById('suspension-reason').value;
+//     const message = document.getElementById('suspension-message').value.trim();
+//
+//     if (!message) {
+//         showErrorMessage('정지 통지 메시지를 입력해주세요.');
+//         return;
+//     }
+//
+//     const periodText = period === 'permanent' ? '영구정지' : `${period}일 정지`;
+//
+//     showConfirmModal(
+//         `${reported}님의 계정을 ${periodText} 처리하시겠습니까?\n\n이 작업은 즉시 적용되며, 사용자는 해당 기간 동안 서비스를 이용할 수 없습니다.`,
+//         function() {
+//             // 실제로는 서버에 계정 정지 요청
+//             console.log('계정 정지 처리:', { title, reported, period, reason, message });
+//
+//             // 신고 아이템 상태 업데이트
+//             updateReportStatus(title, reported, 'suspended', '계정정지');
+//
+//             closeModal();
+//             showSuccessMessage(`계정이 ${periodText} 처리되었습니다.`);
+//         }
+//     );
+// }
+//
+// // 신고 상태 업데이트 함수
+// function updateReportStatus(title, reported, statusClass, statusText) {
+//     const reportItems = document.querySelectorAll('.report-item');
+//
+//     reportItems.forEach(item => {
+//         const itemTitle = item.querySelector('h4').textContent;
+//         const itemReported = getReportedUser(item);
+//
+//         if (itemTitle === title && itemReported === reported) {
+//             const statusElement = item.querySelector('.report-status');
+//             statusElement.textContent = statusText;
+//             statusElement.className = `report-status ${statusClass}`;
+//
+//             // 버튼 상태 변경
+//             const actionsContainer = item.querySelector('.report-actions');
+//             actionsContainer.innerHTML = `
+//                 <button class="btn-small" onclick="handleReportDetail(this)">상세보기</button>
+//                 <button class="btn-small success" onclick="handleReportCancel(this)">처리취소</button>
+//             `;
+//         }
+//     });
+// }
+//
+// // 헬퍼 함수들
+// function getReportedUser(reportItem) {
+//     const info = reportItem.querySelectorAll('.report-info p');
+//     for (let p of info) {
+//         if (p.textContent.includes('피신고자:')) {
+//             return p.textContent.split(':')[1].trim();
+//         }
+//     }
+//     return '';
+// }
+//
+// function getStatusClass(status) {
+//     if (status.includes('미처리')) return 'pending';
+//     if (status.includes('처리완료')) return 'resolved';
+//     if (status.includes('경고')) return 'warning-issued';
+//     if (status.includes('정지')) return 'suspended';
+//     return 'pending';
+// }
+//
+// function getRelatedChatRoom(title) {
+//     const chatRooms = {
+//         '부적절한 언어 사용': '부산 힐링 여행',
+//         '스팸성 게시물': '전체 공지방',
+//         '허위 정보 유포': '제주도 맛집 투어',
+//         '사기 행위': '서울 당일치기',
+//         '괴롭힘 및 혐오 발언': '강원도 겨울여행'
+//     };
+//     return chatRooms[title] || '일반 채팅방';
+// }
+//
+// function getEvidenceInfo(title) {
+//     const evidence = {
+//         '부적절한 언어 사용': '스크린샷 3장, 채팅 로그',
+//         '스팸성 게시물': '게시물 캡처 5장',
+//         '허위 정보 유포': '관련 링크 2개, 스크린샷 4장',
+//         '사기 행위': '결제 내역, 대화 기록',
+//         '괴롭힘 및 혐오 발언': '채팅 로그, 신고자 진술서'
+//     };
+//     return evidence[title] || '관련 자료 첨부됨';
+// }
+//
+// function getProcessedDate(status) {
+//     if (status.includes('처리완료') || status.includes('경고') || status.includes('정지')) {
+//         return new Date().toLocaleDateString();
+//     }
+//     return '-';
+// }
+//
+// function getProcessReason(title) {
+//     const reasons = {
+//         '부적절한 언어 사용': '커뮤니티 가이드라인 위반 확인',
+//         '스팸성 게시물': '반복적인 광고성 게시물 확인',
+//         '허위 정보 유포': '사실과 다른 정보 유포 확인',
+//         '사기 행위': '금전적 피해 발생 우려',
+//         '괴롭힘 및 혐오 발언': '지속적인 괴롭힘 행위 확인'
+//     };
+//     return reasons[title] || '신고 내용 확인 후 조치';
+// }
+//
+// function getPreviousReports(reported) {
+//     // 실제로는 데이터베이스에서 조회
+//     const reportCounts = {
+//         '박철수': '1건',
+//         '광고계정1': '15건',
+//         '최민호': '0건',
+//         '이상훈': '2건',
+//         '강동욱': '3건'
+//     };
+//     return reportCounts[reported] || '0건';
+// }
+//
+// function getSimilarReports(title) {
+//     const similar = {
+//         '부적절한 언어 사용': '최근 30일 내 5건',
+//         '스팸성 게시물': '최근 7일 내 12건',
+//         '허위 정보 유포': '최근 30일 내 2건',
+//         '사기 행위': '최근 30일 내 1건',
+//         '괴롭힘 및 혐오 발언': '최근 30일 내 3건'
+//     };
+//     return similar[title] || '최근 30일 내 0건';
+// }
+//
+// function getReporterCredibility(reporter) {
+//     const credibility = {
+//         '김영희': '높음 (정확한 신고 이력)',
+//         '이민수': '매우 높음 (모범 회원)',
+//         '정수진': '보통 (일반 회원)',
+//         '한지민': '높음 (신뢰할 만한 신고)',
+//         '윤서연': '높음 (상세한 증거 제공)'
+//     };
+//     return credibility[reporter] || '보통';
+// }
+//
+// function getPreviousWarnings(reported) {
+//     const warnings = {
+//         '박철수': 0,
+//         '광고계정1': 2,
+//         '최민호': 0,
+//         '이상훈': 1,
+//         '강동욱': 2
+//     };
+//     return warnings[reported] || 0;
+// }
+//
+// function getDetailModalActions(status, title, reported) {
+//     if (status.includes('미처리')) {
+//         return `
+//             <button class="btn-warning" onclick="processReportWarning('${title}', '${reported}')">경고 처리</button>
+//             <button class="btn-danger" onclick="processReportSuspension('${title}', '${reported}')">계정 정지</button>
+//         `;
+//     } else if (status.includes('경고') || status.includes('정지')) {
+//         return `
+//             <button class="btn-success" onclick="processReportCancel('${title}', '${reported}')">처리 취소</button>
+//         `;
+//     } else {
+//         return `
+//             <button class="btn-primary" onclick="exportReportData('${title}', '${reported}')">데이터 내보내기</button>
+//         `;
+//     }
+// }
+//
+// // 모달에서 신고 처리 함수들
+// function processReportWarning(title, reported) {
+//     closeModal();
+//     // 해당 신고 아이템 찾아서 경고 처리 모달 표시
+//     const reportItems = document.querySelectorAll('.report-item');
+//     reportItems.forEach(item => {
+//         const itemTitle = item.querySelector('h4').textContent;
+//         const itemReported = getReportedUser(item);
+//         if (itemTitle === title && itemReported === reported) {
+//             const warningBtn = item.querySelector('.report-actions button.warning');
+//             if (warningBtn) {
+//                 handleReportWarning(warningBtn);
+//             }
+//         }
+//     });
+// }
+//
+// function processReportSuspension(title, reported) {
+//     closeModal();
+//     // 해당 신고 아이템 찾아서 계정정지 처리 모달 표시
+//     const reportItems = document.querySelectorAll('.report-item');
+//     reportItems.forEach(item => {
+//         const itemTitle = item.querySelector('h4').textContent;
+//         const itemReported = getReportedUser(item);
+//         if (itemTitle === title && itemReported === reported) {
+//             const suspensionBtn = item.querySelector('.report-actions button.danger');
+//             if (suspensionBtn) {
+//                 handleReportSuspension(suspensionBtn);
+//             }
+//         }
+//     });
+// }
+//
+// function processReportCancel(title, reported) {
+//     closeModal();
+//     // 해당 신고 아이템 찾아서 처리취소
+//     const reportItems = document.querySelectorAll('.report-item');
+//     reportItems.forEach(item => {
+//         const itemTitle = item.querySelector('h4').textContent;
+//         const itemReported = getReportedUser(item);
+//         if (itemTitle === title && itemReported === reported) {
+//             const cancelBtn = item.querySelector('.report-actions button.success');
+//             if (cancelBtn) {
+//                 handleReportCancel(cancelBtn);
+//             }
+//         }
+//     });
+// }
+//
+// function exportReportData(title, reported) {
+//     console.log(`신고 데이터 내보내기: ${title} - ${reported}`);
+//     closeModal();
+//     showSuccessMessage('신고 데이터 내보내기가 시작되었습니다.');
+// }
+//
+// // 신고 필터링 함수 (기존 applyFilter 함수에서 분리)
+// function applyReportFilter(filterType) {
+//     const reportItems = document.querySelectorAll('.report-item');
+//     reportItems.forEach(item => {
+//         const status = item.querySelector('.report-status').textContent;
+//         let shouldShow = false;
+//
+//         switch(filterType) {
+//             case '전체':
+//                 shouldShow = true;
+//                 break;
+//             case '미처리':
+//                 shouldShow = status.includes('미처리');
+//                 break;
+//             case '처리완료':
+//                 shouldShow = status.includes('처리완료') || status.includes('경고') || status.includes('정지');
+//                 break;
+//             default:
+//                 shouldShow = status.includes(filterType);
+//         }
+//
+//         item.style.display = shouldShow ? 'block' : 'none';
+//     });
+// }
 
-// === 신고 관리 함수들 ===
+// === 신고 관리 (reports-section) 전용 JS 최소본 ===
 
+// CSRF 헤더 유틸
+function getCsrfHeaders() {
+    const token = document.querySelector('meta[name="_csrf"]')?.content;
+    const header = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
+    return token ? { [header]: token } : {};
+}
+
+// 버튼에서 행/메타 추출
+function getRowMeta(btn) {
+    const tr = btn.closest('.report-item');
+    const reportId = tr?.dataset?.reportId;
+    const type = tr?.dataset?.type; // "ROOM" | "MEMBER"
+    if (!reportId || !type) throw new Error('행 메타데이터가 없습니다.');
+    return { tr, reportId, type };
+}
+
+// 상태 텍스트 ↔ 클래스 매핑
+function statusToClass(statusName /* enum name */) {
+    switch (statusName) {
+        case 'PENDING': return 'status pending';
+        case 'INVESTIGATING': return 'status active';
+        case 'RESOLVED': return 'status success';
+        case 'DISMISSED': return 'status suspended';
+        default: return 'status pending';
+    }
+}
+
+// 필터 버튼 클릭 핸들러
+document.addEventListener('DOMContentLoaded', () => {
+    const container = document.querySelector('#reports-section');
+    if (!container) return;
+
+    const btns = container.querySelectorAll('.filter-btn');
+    btns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            // active 토글
+            btns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            const filterText = btn.textContent.trim(); // "전체" | "대기" | "처리완료" | "거부"
+            const rows = container.querySelectorAll('tbody#reports-table-body .report-item');
+            rows.forEach(row => {
+                const statusText = row.querySelector('.report-status')?.textContent?.trim() || '';
+                let show = true;
+                if (filterText === '대기') {
+                    // 백엔드 statusDisplay 예: "처리 대기"
+                    show = statusText.includes('대기');
+                } else if (filterText === '처리완료') {
+                    // "처리 완료" 포함
+                    show = statusText.includes('처리완료') || statusText.includes('처리 완료');
+                } else if (filterText === '거부') {
+                    // "기각"이 백엔드 표시
+                    show = statusText.includes('기각') || statusText.includes('거부');
+                } else {
+                    show = true; // 전체
+                }
+                row.style.display = show ? '' : 'none';
+            });
+        });
+    });
+});
+
+// 상세 보기
 function handleReportDetail(btn) {
-    const reportItem = btn.closest('.report-item');
-    const title = reportItem.querySelector('h4').textContent;
-    const status = reportItem.querySelector('.report-status').textContent;
-    const info = reportItem.querySelectorAll('.report-info p');
-    
-    let reporter = '';
-    let reported = '';
-    let reportDate = '';
-    let content = '';
-    let result = '';
-    
-    info.forEach(p => {
-        const text = p.textContent;
-        if (text.includes('신고자:')) reporter = text.split(':')[1].trim();
-        if (text.includes('피신고자:')) reported = text.split(':')[1].trim();
-        if (text.includes('신고일:')) reportDate = text.split(':')[1].trim();
-        if (text.includes('내용:')) content = text.split(':')[1].trim();
-        if (text.includes('처리결과:')) result = text.split(':')[1].trim();
-    });
-    
-    // 신고 상세 정보 표시
-    const detailContent = `
-        <h3>신고 상세 정보</h3>
-        <div class="report-detail">
-            <div class="detail-section">
-                <h4>기본 정보</h4>
-                <p><strong>신고 유형:</strong> ${title}</p>
-                <p><strong>처리 상태:</strong> <span class="status-badge ${getStatusClass(status)}">${status}</span></p>
-                <p><strong>신고 접수일:</strong> ${reportDate}</p>
-                <p><strong>처리 담당자:</strong> 관리자</p>
-            </div>
-            
-            <div class="detail-section">
-                <h4>당사자 정보</h4>
-                <p><strong>신고자:</strong> ${reporter}</p>
-                <p><strong>피신고자:</strong> ${reported}</p>
-                <p><strong>관련 채팅방:</strong> ${getRelatedChatRoom(title)}</p>
-            </div>
-            
-            <div class="detail-section">
-                <h4>신고 내용</h4>
-                <div class="report-content">
-                    <p><strong>신고 사유:</strong></p>
-                    <div class="content-box">${content || '상세한 신고 내용이 여기에 표시됩니다.'}</div>
-                    <p><strong>증거 자료:</strong> ${getEvidenceInfo(title)}</p>
-                </div>
-            </div>
-            
-            ${result ? `
-                <div class="detail-section">
-                    <h4>처리 결과</h4>
-                    <p><strong>처리 결과:</strong> ${result}</p>
-                    <p><strong>처리일:</strong> ${getProcessedDate(status)}</p>
-                    <p><strong>처리 사유:</strong> ${getProcessReason(title)}</p>
-                </div>
-            ` : ''}
-            
-            <div class="detail-section">
-                <h4>추가 정보</h4>
-                <p><strong>이전 신고 이력:</strong> ${getPreviousReports(reported)}</p>
-                <p><strong>유사 신고:</strong> ${getSimilarReports(title)}</p>
-                <p><strong>신고자 신뢰도:</strong> ${getReporterCredibility(reporter)}</p>
-            </div>
-        </div>
-        
-        <div class="modal-actions">
+    try {
+        const { reportId, type } = getRowMeta(btn);
+        fetch(`/admin/reports/${reportId}?type=${encodeURIComponent(type)}`, {
+            headers: { ...getCsrfHeaders() }
+        })
+            .then(r => r.ok ? r.json() : Promise.reject(r))
+            .then(report => {
+                const html = `
+          <h3>신고 상세</h3>
+          <div class="report-detail">
+            <p><strong>유형:</strong> ${report.typeDisplay || report.type || '-'}</p>
+            <p><strong>대상:</strong> ${report.targetSummary || '-'}</p>
+            <p><strong>신고자:</strong> ${report.reporterNickname || '-'}</p>
+            <p><strong>피신고자:</strong> ${report.reportedNickname || '-'}</p>
+            <p><strong>사유:</strong> ${report.reason || '-'}</p>
+            <p><strong>내용:</strong> ${report.fireMessage || '-'}</p>
+            <p><strong>상태:</strong> <span class="${report.statusClass || ''}">${report.statusDisplay || '-'}</span></p>
+            ${report.roomName ? `<p><strong>방:</strong> ${report.roomName} (ID: ${report.roomId ?? '-'})</p>` : ''}
+            ${report.adminMemo ? `<p><strong>관리자 메모:</strong> ${report.adminMemo}</p>` : ''}
+          </div>
+          <div class="modal-actions">
             <button class="btn-secondary" onclick="closeModal()">닫기</button>
-            ${getDetailModalActions(status, title, reported)}
-        </div>
-    `;
-    
-    showModal(detailContent);
-}
-
-function handleReportWarning(btn) {
-    const reportItem = btn.closest('.report-item');
-    const title = reportItem.querySelector('h4').textContent;
-    const reported = getReportedUser(reportItem);
-    
-    const warningContent = `
-        <h3>경고 처리</h3>
-        <div class="warning-form">
-            <p><strong>신고 유형:</strong> ${title}</p>
-            <p><strong>피신고자:</strong> ${reported}</p>
-            
-            <div class="form-group">
-                <label>경고 사유</label>
-                <select id="warning-reason">
-                    <option value="inappropriate_language">부적절한 언어 사용</option>
-                    <option value="spam">스팸 행위</option>
-                    <option value="harassment">괴롭힘</option>
-                    <option value="false_info">허위 정보</option>
-                    <option value="other">기타</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label>경고 메시지</label>
-                <textarea id="warning-message" rows="4" placeholder="사용자에게 전달할 경고 메시지를 입력하세요">커뮤니티 가이드라인을 위반하는 행위가 확인되어 경고를 발송합니다. 계속해서 문제가 될 경우 계정 제재가 있을 수 있습니다.</textarea>
-            </div>
-            
-            <div class="warning-info">
-                <p><strong>이전 경고 횟수:</strong> ${getPreviousWarnings(reported)}회</p>
-                <p><strong>경고 누적 시 조치:</strong> 3회 누적 시 계정 정지</p>
-            </div>
-        </div>
-        
-        <div class="modal-actions">
-            <button class="btn-secondary" onclick="closeModal()">취소</button>
-            <button class="btn-warning" onclick="confirmWarning('${title}', '${reported}')">경고 발송</button>
-        </div>
-    `;
-    
-    showModal(warningContent);
-}
-
-function handleReportSuspension(btn) {
-    const reportItem = btn.closest('.report-item');
-    const title = reportItem.querySelector('h4').textContent;
-    const reported = getReportedUser(reportItem);
-    
-    const suspensionContent = `
-        <h3>계정 정지 처리</h3>
-        <div class="suspension-form">
-            <p><strong>신고 유형:</strong> ${title}</p>
-            <p><strong>피신고자:</strong> ${reported}</p>
-            
-            <div class="form-group">
-                <label>정지 기간</label>
-                <select id="suspension-period">
-                    <option value="1">1일</option>
-                    <option value="3">3일</option>
-                    <option value="7">7일</option>
-                    <option value="14">14일</option>
-                    <option value="30">30일</option>
-                    <option value="permanent">영구정지</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label>정지 사유</label>
-                <select id="suspension-reason">
-                    <option value="severe_harassment">심각한 괴롭힘</option>
-                    <option value="hate_speech">혐오 발언</option>
-                    <option value="repeated_violations">반복적 위반</option>
-                    <option value="fraud">사기 행위</option>
-                    <option value="spam">악성 스팸</option>
-                    <option value="other">기타</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label>정지 통지 메시지</label>
-                <textarea id="suspension-message" rows="4" placeholder="사용자에게 전달할 정지 통지 메시지를 입력하세요">커뮤니티 가이드라인을 심각하게 위반하여 계정이 정지되었습니다.</textarea>
-            </div>
-            
-            <div class="suspension-warning">
-                <p><strong>⚠️ 주의사항:</strong></p>
-                <ul>
-                    <li>계정 정지 시 모든 서비스 이용이 제한됩니다</li>
-                    <li>진행 중인 매칭은 자동으로 종료됩니다</li>
-                    <li>정지 기간 중에는 로그인이 불가능합니다</li>
-                </ul>
-            </div>
-        </div>
-        
-        <div class="modal-actions">
-            <button class="btn-secondary" onclick="closeModal()">취소</button>
-            <button class="btn-danger" onclick="confirmSuspension('${title}', '${reported}')">계정 정지</button>
-        </div>
-    `;
-    
-    showModal(suspensionContent);
-}
-
-function handleReportCancel(btn) {
-    const reportItem = btn.closest('.report-item');
-    const title = reportItem.querySelector('h4').textContent;
-    const reported = getReportedUser(reportItem);
-    const status = reportItem.querySelector('.report-status').textContent;
-    
-    const action = status.includes('경고') ? '경고 처리' : '계정 정지';
-    
-    showConfirmModal(
-        `${reported}님에 대한 "${title}" 신고의 ${action}를 취소하시겠습니까?\n\n취소 시 해당 처리가 철회되고 계정 상태가 복구됩니다.`,
-        function() {
-            // 신고 상태를 미처리로 변경
-            const statusElement = reportItem.querySelector('.report-status');
-            statusElement.textContent = '미처리';
-            statusElement.className = 'report-status pending';
-            
-            // 버튼 상태 변경
-            const actionsContainer = reportItem.querySelector('.report-actions');
-            actionsContainer.innerHTML = `
-                <button class="btn-small" onclick="handleReportDetail(this)">상세보기</button>
-                <button class="btn-small warning" onclick="handleReportWarning(this)">경고</button>
-                <button class="btn-small danger" onclick="handleReportSuspension(this)">계정정지</button>
-            `;
-            
-            // 실제로는 서버에 처리 취소 요청
-            console.log(`신고 처리 취소: ${title} - ${reported}`);
-            
-            showSuccessMessage(`${action}가 취소되었습니다. 계정 상태가 복구되었습니다.`);
-        }
-    );
-}
-
-// 경고 처리 확인
-function confirmWarning(title, reported) {
-    const reason = document.getElementById('warning-reason').value;
-    const message = document.getElementById('warning-message').value.trim();
-    
-    if (!message) {
-        showErrorMessage('경고 메시지를 입력해주세요.');
-        return;
-    }
-    
-    showConfirmModal(
-        `${reported}님에게 경고를 발송하시겠습니까?`,
-        function() {
-            // 실제로는 서버에 경고 처리 요청
-            console.log('경고 처리:', { title, reported, reason, message });
-            
-            // 신고 아이템 상태 업데이트
-            updateReportStatus(title, reported, 'warning-issued', '경고처리');
-            
-            closeModal();
-            showSuccessMessage('경고가 발송되었습니다.');
-        }
-    );
-}
-
-// 계정 정지 처리 확인
-function confirmSuspension(title, reported) {
-    const period = document.getElementById('suspension-period').value;
-    const reason = document.getElementById('suspension-reason').value;
-    const message = document.getElementById('suspension-message').value.trim();
-    
-    if (!message) {
-        showErrorMessage('정지 통지 메시지를 입력해주세요.');
-        return;
-    }
-    
-    const periodText = period === 'permanent' ? '영구정지' : `${period}일 정지`;
-    
-    showConfirmModal(
-        `${reported}님의 계정을 ${periodText} 처리하시겠습니까?\n\n이 작업은 즉시 적용되며, 사용자는 해당 기간 동안 서비스를 이용할 수 없습니다.`,
-        function() {
-            // 실제로는 서버에 계정 정지 요청
-            console.log('계정 정지 처리:', { title, reported, period, reason, message });
-            
-            // 신고 아이템 상태 업데이트
-            updateReportStatus(title, reported, 'suspended', '계정정지');
-            
-            closeModal();
-            showSuccessMessage(`계정이 ${periodText} 처리되었습니다.`);
-        }
-    );
-}
-
-// 신고 상태 업데이트 함수
-function updateReportStatus(title, reported, statusClass, statusText) {
-    const reportItems = document.querySelectorAll('.report-item');
-    
-    reportItems.forEach(item => {
-        const itemTitle = item.querySelector('h4').textContent;
-        const itemReported = getReportedUser(item);
-        
-        if (itemTitle === title && itemReported === reported) {
-            const statusElement = item.querySelector('.report-status');
-            statusElement.textContent = statusText;
-            statusElement.className = `report-status ${statusClass}`;
-            
-            // 버튼 상태 변경
-            const actionsContainer = item.querySelector('.report-actions');
-            actionsContainer.innerHTML = `
-                <button class="btn-small" onclick="handleReportDetail(this)">상세보기</button>
-                <button class="btn-small success" onclick="handleReportCancel(this)">처리취소</button>
-            `;
-        }
-    });
-}
-
-// 헬퍼 함수들
-function getReportedUser(reportItem) {
-    const info = reportItem.querySelectorAll('.report-info p');
-    for (let p of info) {
-        if (p.textContent.includes('피신고자:')) {
-            return p.textContent.split(':')[1].trim();
-        }
-    }
-    return '';
-}
-
-function getStatusClass(status) {
-    if (status.includes('미처리')) return 'pending';
-    if (status.includes('처리완료')) return 'resolved';
-    if (status.includes('경고')) return 'warning-issued';
-    if (status.includes('정지')) return 'suspended';
-    return 'pending';
-}
-
-function getRelatedChatRoom(title) {
-    const chatRooms = {
-        '부적절한 언어 사용': '부산 힐링 여행',
-        '스팸성 게시물': '전체 공지방',
-        '허위 정보 유포': '제주도 맛집 투어',
-        '사기 행위': '서울 당일치기',
-        '괴롭힘 및 혐오 발언': '강원도 겨울여행'
-    };
-    return chatRooms[title] || '일반 채팅방';
-}
-
-function getEvidenceInfo(title) {
-    const evidence = {
-        '부적절한 언어 사용': '스크린샷 3장, 채팅 로그',
-        '스팸성 게시물': '게시물 캡처 5장',
-        '허위 정보 유포': '관련 링크 2개, 스크린샷 4장',
-        '사기 행위': '결제 내역, 대화 기록',
-        '괴롭힘 및 혐오 발언': '채팅 로그, 신고자 진술서'
-    };
-    return evidence[title] || '관련 자료 첨부됨';
-}
-
-function getProcessedDate(status) {
-    if (status.includes('처리완료') || status.includes('경고') || status.includes('정지')) {
-        return new Date().toLocaleDateString();
-    }
-    return '-';
-}
-
-function getProcessReason(title) {
-    const reasons = {
-        '부적절한 언어 사용': '커뮤니티 가이드라인 위반 확인',
-        '스팸성 게시물': '반복적인 광고성 게시물 확인',
-        '허위 정보 유포': '사실과 다른 정보 유포 확인',
-        '사기 행위': '금전적 피해 발생 우려',
-        '괴롭힘 및 혐오 발언': '지속적인 괴롭힘 행위 확인'
-    };
-    return reasons[title] || '신고 내용 확인 후 조치';
-}
-
-function getPreviousReports(reported) {
-    // 실제로는 데이터베이스에서 조회
-    const reportCounts = {
-        '박철수': '1건',
-        '광고계정1': '15건',
-        '최민호': '0건',
-        '이상훈': '2건',
-        '강동욱': '3건'
-    };
-    return reportCounts[reported] || '0건';
-}
-
-function getSimilarReports(title) {
-    const similar = {
-        '부적절한 언어 사용': '최근 30일 내 5건',
-        '스팸성 게시물': '최근 7일 내 12건',
-        '허위 정보 유포': '최근 30일 내 2건',
-        '사기 행위': '최근 30일 내 1건',
-        '괴롭힘 및 혐오 발언': '최근 30일 내 3건'
-    };
-    return similar[title] || '최근 30일 내 0건';
-}
-
-function getReporterCredibility(reporter) {
-    const credibility = {
-        '김영희': '높음 (정확한 신고 이력)',
-        '이민수': '매우 높음 (모범 회원)',
-        '정수진': '보통 (일반 회원)',
-        '한지민': '높음 (신뢰할 만한 신고)',
-        '윤서연': '높음 (상세한 증거 제공)'
-    };
-    return credibility[reporter] || '보통';
-}
-
-function getPreviousWarnings(reported) {
-    const warnings = {
-        '박철수': 0,
-        '광고계정1': 2,
-        '최민호': 0,
-        '이상훈': 1,
-        '강동욱': 2
-    };
-    return warnings[reported] || 0;
-}
-
-function getDetailModalActions(status, title, reported) {
-    if (status.includes('미처리')) {
-        return `
-            <button class="btn-warning" onclick="processReportWarning('${title}', '${reported}')">경고 처리</button>
-            <button class="btn-danger" onclick="processReportSuspension('${title}', '${reported}')">계정 정지</button>
+          </div>
         `;
-    } else if (status.includes('경고') || status.includes('정지')) {
-        return `
-            <button class="btn-success" onclick="processReportCancel('${title}', '${reported}')">처리 취소</button>
-        `;
-    } else {
-        return `
-            <button class="btn-primary" onclick="exportReportData('${title}', '${reported}')">데이터 내보내기</button>
-        `;
+                if (typeof showModal === 'function') showModal(html);
+                else alert('상세:\n' + JSON.stringify(report, null, 2));
+            })
+            .catch(() => alert('신고 상세 조회 중 오류가 발생했습니다.'));
+    } catch (e) {
+        alert(e.message);
     }
 }
 
-// 모달에서 신고 처리 함수들
-function processReportWarning(title, reported) {
-    closeModal();
-    // 해당 신고 아이템 찾아서 경고 처리 모달 표시
-    const reportItems = document.querySelectorAll('.report-item');
-    reportItems.forEach(item => {
-        const itemTitle = item.querySelector('h4').textContent;
-        const itemReported = getReportedUser(item);
-        if (itemTitle === title && itemReported === reported) {
-            const warningBtn = item.querySelector('.report-actions button.warning');
-            if (warningBtn) {
-                handleReportWarning(warningBtn);
-            }
-        }
-    });
+// 처리완료
+function handleReportResolve(btn) {
+    try {
+        const { tr, reportId, type } = getRowMeta(btn);
+        const payload = { actionType: 'resolve', adminMemo: '' };
+        if (!confirm('이 신고를 처리완료로 변경할까요?')) return;
+
+        fetch(`/admin/reports/${reportId}/resolve?type=${encodeURIComponent(type)}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', ...getCsrfHeaders() },
+            body: JSON.stringify(payload)
+        })
+            .then(r => r.ok ? r.text() : Promise.reject(r))
+            .then(() => {
+                // 화면 즉시 반영
+                const badge = tr.querySelector('.report-status');
+                if (badge) {
+                    badge.textContent = '처리 완료';
+                    badge.className = 'report-status ' + statusToClass('RESOLVED');
+                }
+            })
+            .catch(() => alert('처리 중 오류가 발생했습니다.'));
+    } catch (e) {
+        alert(e.message);
+    }
 }
 
-function processReportSuspension(title, reported) {
-    closeModal();
-    // 해당 신고 아이템 찾아서 계정정지 처리 모달 표시
-    const reportItems = document.querySelectorAll('.report-item');
-    reportItems.forEach(item => {
-        const itemTitle = item.querySelector('h4').textContent;
-        const itemReported = getReportedUser(item);
-        if (itemTitle === title && itemReported === reported) {
-            const suspensionBtn = item.querySelector('.report-actions button.danger');
-            if (suspensionBtn) {
-                handleReportSuspension(suspensionBtn);
-            }
-        }
-    });
+// 거부(= 기각)
+function handleReportReject(btn) {
+    try {
+        const { tr, reportId, type } = getRowMeta(btn);
+        const memo = prompt('거부 사유(관리자 메모)를 입력하세요:', '') || '';
+        const payload = { actionType: 'reject', adminMemo: memo };
+        if (!confirm('이 신고를 기각하시겠습니까?')) return;
+
+        fetch(`/admin/reports/${reportId}/reject?type=${encodeURIComponent(type)}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', ...getCsrfHeaders() },
+            body: JSON.stringify(payload)
+        })
+            .then(r => r.ok ? r.text() : Promise.reject(r))
+            .then(() => {
+                // 화면 즉시 반영
+                const badge = tr.querySelector('.report-status');
+                if (badge) {
+                    badge.textContent = '기각';
+                    badge.className = 'report-status ' + statusToClass('DISMISSED');
+                }
+            })
+            .catch(() => alert('거부 처리 중 오류가 발생했습니다.'));
+    } catch (e) {
+        alert(e.message);
+    }
 }
 
-function processReportCancel(title, reported) {
-    closeModal();
-    // 해당 신고 아이템 찾아서 처리취소
-    const reportItems = document.querySelectorAll('.report-item');
-    reportItems.forEach(item => {
-        const itemTitle = item.querySelector('h4').textContent;
-        const itemReported = getReportedUser(item);
-        if (itemTitle === title && itemReported === reported) {
-            const cancelBtn = item.querySelector('.report-actions button.success');
-            if (cancelBtn) {
-                handleReportCancel(cancelBtn);
-            }
-        }
-    });
+// 삭제(서버는 501 응답하도록 구현해둠)
+function handleReportDelete(btn) {
+    try {
+        const { tr, reportId, type } = getRowMeta(btn);
+        if (!confirm('신고 레코드를 삭제하시겠습니까? (권장: 기각 처리)')) return;
+
+        fetch(`/admin/reports/${reportId}?type=${encodeURIComponent(type)}`, {
+            method: 'DELETE',
+            headers: { ...getCsrfHeaders() }
+        })
+            .then(async r => {
+                const text = await r.text();
+                if (r.status === 200) {
+                    tr.remove();
+                } else {
+                    alert(text || '삭제 미지원 또는 오류');
+                }
+            })
+            .catch(() => alert('삭제 중 오류가 발생했습니다.'));
+    } catch (e) {
+        alert(e.message);
+    }
 }
 
-function exportReportData(title, reported) {
-    console.log(`신고 데이터 내보내기: ${title} - ${reported}`);
-    closeModal();
-    showSuccessMessage('신고 데이터 내보내기가 시작되었습니다.');
-}
 
-// 신고 필터링 함수 (기존 applyFilter 함수에서 분리)
-function applyReportFilter(filterType) {
-    const reportItems = document.querySelectorAll('.report-item');
-    reportItems.forEach(item => {
-        const status = item.querySelector('.report-status').textContent;
-        let shouldShow = false;
-        
-        switch(filterType) {
-            case '전체':
-                shouldShow = true;
-                break;
-            case '미처리':
-                shouldShow = status.includes('미처리');
-                break;
-            case '처리완료':
-                shouldShow = status.includes('처리완료') || status.includes('경고') || status.includes('정지');
-                break;
-            default:
-                shouldShow = status.includes(filterType);
-        }
-        
-        item.style.display = shouldShow ? 'block' : 'none';
-    });
-}
 
 // === 리뷰 관리 함수들 ===
 
@@ -3106,11 +3444,6 @@ function initializeMemberManagement() {
     console.log('회원 관리 섹션이 초기화되었습니다.');
 }
 
-// 회원 검색 초기화 (전체 목록으로 돌아가기)
-function resetMemberSearch() {
-    document.getElementById('member-search-input').value = '';
-    location.reload(); // 간단하게 페이지 새로고침으로 전체 목록 표시
-}
 
 // 상태별 회원 필터링
 function filterMembersByStatus(status) {
@@ -3212,14 +3545,9 @@ function refreshMemberList() {
 
 // 회원 목록 내보내기
 function exportMemberList() {
-    showSuccessMessage('회원 목록 내보내기 기능을 준비 중입니다...');
-
-    // 실제 구현시에는 현재 표시된 회원 목록을 CSV나 Excel 형태로 다운로드
-    // 예: /admin/members/export API 호출
-    setTimeout(() => {
-        showInfoMessage('회원 목록 내보내기 기능은 곧 업데이트됩니다.');
-    }, 1000);
+    window.location.href = "/admin/members/export";
 }
+
 
 // 회원 테이블 업데이트 시 추가 처리
 function updateMembersTableEnhanced(members) {
@@ -3240,7 +3568,7 @@ function updateMembersTableEnhanced(members) {
     }
 }
 
-// 기존 searchMembers 함수 개선
+// 회원 검색
 function searchMembersEnhanced() {
     const keyword = document.getElementById('member-search-input').value.trim();
 
@@ -3282,10 +3610,6 @@ function searchMembersEnhanced() {
         });
 }
 
-// 기존 함수들을 새로운 버전으로 교체
-function searchMembers() {
-    searchMembersEnhanced();
-}
 
 // 페이지 로드시 회원 관리 초기화
 document.addEventListener('DOMContentLoaded', function() {
@@ -3302,14 +3626,14 @@ function saveSettings() {
     try {
         // 모든 설정 값 수집
         const settings = collectAllSettings();
-        
+
         // 유효성 검사
         const validation = validateSettings(settings);
         if (!validation.isValid) {
             showErrorMessage(validation.message);
             return;
         }
-        
+
         // 중요한 설정 변경 시 추가 확인
         if (hasSecurityChanges(settings)) {
             showConfirmModal(
@@ -3328,7 +3652,6 @@ function saveSettings() {
         showErrorMessage('설정을 읽는 중 오류가 발생했습니다. 페이지를 새로고침 후 다시 시도해주세요.');
     }
 }
-
 // 설정 값 수집 함수 (안전하게 수정)
 function collectAllSettings() {
     const settingsSection = document.getElementById('settings-section');
@@ -3522,59 +3845,68 @@ function logSettingsChange(settings) {
     // 보안상 중요한 변경사항은 별도 알림 발송
 }
 
-// 설정 초기화 함수
+// 설정 초기화
 function resetSettings() {
-    showConfirmModal(
-        '모든 설정을 기본값으로 초기화하시겠습니까?\n\n이 작업은 되돌릴 수 없으며, 현재 설정된 모든 값이 기본값으로 변경됩니다.',
-        function() {
-            executeResetSettings();
-        }
-    );
+    showConfirmModal('설정을 초기화하시겠습니까?', function() {
+        fetch('/admin/settings/reset', {
+            method: 'POST'
+        })
+            .then(response => response.text())
+            .then(message => {
+                showSuccessMessage(message);
+                loadSettings(); // 초기화 후 다시 로드
+            })
+            .catch(error => {
+                console.error('초기화 실패:', error);
+                showErrorMessage('초기화 중 오류가 발생했습니다.');
+            });
+    });
 }
 
-// 설정 초기화 실행
+// // 설정 불러오기
+// function loadSettings() {
+//     fetch('/admin/settings')
+//         .then(response => response.json())
+//         .then(settings => {
+//             // 관리자 이메일
+//             document.querySelector('input[type="email"]').value = settings.admin_email || 'admin@travel.com';
+//
+//             // 로그인 시도 제한
+//             const numberInputs = document.querySelectorAll('input[type="number"]');
+//             numberInputs[0].value = settings.login_attempt_limit || '5';
+//
+//             // 세션 유지시간
+//             numberInputs[1].value = settings.session_timeout_minutes || '30';
+//         })
+//         .catch(error => {
+//             console.error('설정 로드 실패:', error);
+//         });
+// }
+
+// 설정 초기화
 function executeResetSettings() {
-    try {
+    showConfirmModal('설정을 초기화하시겠습니까?', function() {
         showLoadingMessage('설정을 초기화하고 있습니다...');
-        
-        // 기본 설정값
-        const defaultSettings = {
-            general: {
-                siteName: '여행 플랫폼',
-                adminEmail: 'admin@travel.com'
-            },
-            matching: {
-                maxParticipants: 6,
-                validityPeriod: 30
-            },
-            security: {
-                loginAttemptLimit: 5,
-                sessionTimeout: 30
-            }
-        };
-        
-        // 시뮬레이션을 위한 지연
+
+        // 기본값으로 UI 초기화
         setTimeout(() => {
-            // UI에 기본값 적용
-            applySettingsToUI(defaultSettings);
-            
-            // 초기화 로그 기록
-            console.log('설정 초기화 완료:', defaultSettings);
-            
+            // 관리자 이메일
+            document.querySelector('input[type="email"]').value = 'admin@travel.com';
+
+            // 로그인 시도 제한, 세션 유지시간
+            const numberInputs = document.querySelectorAll('input[type="number"]');
+            numberInputs[0].value = '5';  // 로그인 시도 제한
+            numberInputs[1].value = '30'; // 세션 유지시간
+
             hideLoadingMessage();
             showSuccessMessage('설정이 기본값으로 초기화되었습니다.');
-            
+
             // 초기화 후 안내
             setTimeout(() => {
                 showInfoMessage('변경된 설정을 적용하려면 "설정 저장" 버튼을 클릭해주세요.');
             }, 1000);
         }, 1000);
-        
-    } catch (error) {
-        hideLoadingMessage();
-        showErrorMessage('설정 초기화 중 오류가 발생했습니다.');
-        console.error('설정 초기화 오류:', error);
-    }
+    });
 }
 
 // UI에 설정값 적용 (안전하게 수정)
@@ -4578,5 +4910,112 @@ function setupLocationsPaging() {
     // 최초 로드
     load();
 }
+
+// 회원 페이징 처리
+function setupMembersPaging() {
+    const section = document.getElementById('users-section');
+    if (!section) return;
+
+    const tbody       = section.querySelector('#members-table-body');
+    const pagerWrap   = section.querySelector('.pagination-container');
+    const searchInput = section.querySelector('.section-actions .search-input');
+
+    const state = { page: 0, size: 10, q: '' };
+    const BLOCK = 5;
+
+    function normalize(resp) {
+        const content = resp?.content ?? resp?.data ?? [];
+        const p = resp?.page ?? resp?.meta ?? resp?.pagination ?? {};
+        let number = p.number ?? resp.number ?? 0;
+        const size = p.size ?? resp.size ?? 10;
+        const totalElements = p.totalElements ?? resp.totalElements ?? 0;
+        let totalPages = p.totalPages ?? resp.totalPages ?? Math.ceil(totalElements / size);
+        number = Math.max(0, Math.min(number, totalPages - 1));
+        return { content, number, size, totalElements, totalPages };
+    }
+
+    const esc = (s) => (s==null?'':String(s)).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+    function renderRows(items) {
+        if (!items.length) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:40px; color:#666;">회원이 없습니다.</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = items.map(m => `
+          <tr data-member-id="${m.memberPk}">
+            <td>${esc(m.memberId)}</td>
+            <td>${esc(m.nickname)}</td>
+            <td>${esc(m.email) || '-'}</td>
+            <td>${(m.createdAt || '').toString().slice(0,10)}</td>
+            <td><span class="${m.statusClass || ''}">${m.statusDisplay || m.status}</span></td>
+            <td>
+              <button class="btn-small" onclick="handleUserDetail(this)">상세</button>
+            </td>
+          </tr>
+        `).join('');
+    }
+
+    function renderPager(pg) {
+        if (!pagerWrap) return;
+        const totalPages = Math.max(1, pg.totalPages);
+        const cur = Math.min(pg.number, totalPages - 1);
+        const blockStart = Math.floor(cur / BLOCK) * BLOCK;
+        const blockEnd   = Math.min(totalPages - 1, blockStart + 4);
+
+        const btn = (label, page, disabled, cls) =>
+            `<button class="page-btn ${cls}${disabled?' disabled':''}" ${disabled?'disabled':''} data-page="${disabled?'':page}">${label}</button>`;
+        const num = (page, active) =>
+            `<button class="page-btn number${active?' active':''}" data-page="${page}">${page+1}</button>`;
+        const dots = `<span class="pagination-ellipsis">…</span>`;
+
+        let html = `<nav class="pagination">`;
+        html += btn('« 처음', 0, cur===0, 'first');
+        html += btn('‹ 이전', cur-1, cur===0, 'prev');
+
+        html += `<div class="pagination-numbers">`;
+        if (blockStart>0) html += num(0,cur===0)+dots;
+        for(let p=blockStart;p<=blockEnd;p++) html+=num(p,p===cur);
+        if (blockEnd<totalPages-1) html+=dots+num(totalPages-1,cur===totalPages-1);
+        html += `</div>`;
+
+        html += btn('다음 ›', cur+1, cur===totalPages-1, 'next');
+        html += btn('끝 »', totalPages-1, cur===totalPages-1, 'last');
+        html += `</nav><div class="pagination-info">총 ${pg.totalElements}건 / ${cur+1} / ${totalPages} 페이지</div>`;
+        pagerWrap.innerHTML=html;
+    }
+
+    pagerWrap?.addEventListener('click', e=>{
+        const t=e.target.closest('[data-page]');
+        if(!t||t.disabled) return;
+        const page=Number(t.dataset.page);
+        if(!Number.isFinite(page)) return;
+        e.preventDefault(); state.page=page; load();
+    });
+
+    if (searchInput) {
+        let timer;
+        searchInput.addEventListener('input', () => {
+            clearTimeout(timer);
+            timer=setTimeout(()=>{ state.q=searchInput.value.trim(); state.page=0; load(); },250);
+        });
+    }
+
+    async function load() {
+        try {
+            const params=new URLSearchParams({page:state.page,size:state.size});
+            if(state.q) params.append('keyword',state.q);
+            const res = await fetch(`/admin/members/json?${params}`, { headers:{ 'Accept':'application/json' }});
+            if(!res.ok) throw new Error(`HTTP ${res.status}`);
+            const json=await res.json();
+            const pg=normalize(json);
+            renderRows(pg.content); renderPager(pg);
+        } catch(err) {
+            console.error('members load error:',err);
+            pagerWrap.innerHTML=`<div class="pagination-info">회원 목록 불러오기 실패</div>`;
+        }
+    }
+    load();
+}
+
 
 console.log('관리자 페이지 JavaScript 로딩 완료');
