@@ -17,6 +17,9 @@ function initializeAdminPanel() {
     setupUsersViewToggle();
     setupLocationsPaging();
     setupMembersPaging();
+    setupMatchingPaging();
+    setupReportsPaging();
+
 
     // 회원 관리
     setupTableViewToggle({ sectionId: 'users-section',     storageKey: 'usersView' });
@@ -4938,22 +4941,68 @@ function setupMembersPaging() {
 
     function renderRows(items) {
         if (!items.length) {
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:40px; color:#666;">회원이 없습니다.</td></tr>`;
+            tbody.innerHTML = `
+      <tr>
+        <td colspan="8" style="text-align:center; padding:40px; color:#666;">
+          등록된 회원이 없습니다.
+        </td>
+      </tr>`;
             return;
         }
-        tbody.innerHTML = items.map(m => `
-          <tr data-member-id="${m.memberPk}">
-            <td>${esc(m.memberId)}</td>
-            <td>${esc(m.nickname)}</td>
-            <td>${esc(m.email) || '-'}</td>
-            <td>${(m.createdAt || '').toString().slice(0,10)}</td>
-            <td><span class="${m.statusClass || ''}">${m.statusDisplay || m.status}</span></td>
-            <td>
-              <button class="btn-small" onclick="handleUserDetail(this)">상세</button>
-            </td>
-          </tr>
-        `).join('');
+
+        tbody.innerHTML = items.map(m => {
+            const statusDisplay = m.statusDisplay || m.status;
+            const statusClass   = m.statusClass || '';
+            const email         = m.email || '-';
+            const created       = (m.createdAt || '').toString().slice(0,10);
+            const matchCnt      = (m.matchingParticipationCount ?? 0) + '회';
+
+            // 관리 버튼
+            let manageBtns = '';
+            if (!m.isWithdraw) {
+                const isActive    = (m.status === 'ACTIVE');
+                const toggleClass = isActive ? 'btn-small danger' : 'btn-small success';
+                const toggleText  = isActive ? '정지' : '활성화';
+                manageBtns = `
+        <button class="btn-small" onclick="handleUserDetail(this)">상세</button>
+        <button class="${toggleClass}" onclick="handleUserStatusChange(this, '${m.memberPk}')">${toggleText}</button>
+        <button class="btn-small danger" onclick="handleUserWithdraw(this, '${m.memberPk}')">탈퇴</button>
+      `;
+            } else {
+                manageBtns = `
+        <button class="btn-small" onclick="handleUserDetail(this)">상세</button>
+        <span style="color:#666; font-size:12px;">탈퇴 처리됨</span>
+      `;
+            }
+
+            return `
+      <tr
+        data-member-pk="${m.memberPk}"
+        data-status="${m.status}"
+        data-is-withdraw="${m.isWithdraw ? 'true' : 'false'}"
+        data-rpt-count="${m.rptRcvdCnt ?? 0}">
+        <td>${m.memberId}</td>
+        <td>
+          <span>${m.nickname}</span>
+          ${m.provider
+                ? `<span class="social-badge ${String(m.provider).toLowerCase()}"
+                     style="font-size:10px; padding:2px 6px; border-radius:4px;
+                            margin-left:5px; background:#e5e7eb; color:#374151;">
+                 ${m.provider}
+               </span>`
+                : ''}
+        </td>
+        <td>${email}</td>
+        <td>${created}</td>
+        <td>${matchCnt}</td>
+        <td><span class="${statusClass}">${statusDisplay}</span></td>
+        <td>${manageBtns}</td>
+      </tr>
+    `;
+        }).join('');
     }
+
+
 
     function renderPager(pg) {
         if (!pagerWrap) return;
@@ -5016,6 +5065,282 @@ function setupMembersPaging() {
     }
     load();
 }
+
+// 매칭 관리 페이징 (카드형, 관광지 방식)
+function setupMatchingPaging() {
+    const section   = document.getElementById('matching-section');
+    if (!section) return;
+
+    const grid      = section.querySelector('.matching-grid');
+    const pagerWrap = section.querySelector('.pagination-container');
+
+    const state = { page: 0, size: 10 };
+    const BLOCK = 5;
+
+    function normalize(resp) {
+        const content       = resp?.content ?? resp?.data ?? [];
+        const p             = resp?.page ?? resp?.meta ?? resp?.pagination ?? {};
+        const number        = p.number ?? resp.number ?? 0;
+        const size          = p.size ?? resp.size ?? 10;
+        const totalElements = p.totalElements ?? resp.totalElements ?? 0;
+        const totalPages    = p.totalPages ?? resp.totalPages ?? (size ? Math.ceil(totalElements / size) : 0);
+        return { content, number, size, totalElements, totalPages };
+    }
+
+    const esc = (s) => (s==null?'':String(s)).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+    function statusClassByKo(statusKo) {
+        if (statusKo === '진행중') return 'active';
+        if (statusKo === '완료')   return 'completed';
+        return 'cancelled';
+    }
+
+    // 카드 렌더
+    function renderCards(items) {
+        if (!items.length) {
+            grid.innerHTML = `<div style="padding:40px; text-align:center; color:#666;">매칭이 없습니다.</div>`;
+            return;
+        }
+        grid.innerHTML = items.map(m => {
+            const sKo     = m.statusDisplay || m.status || '-';
+            const sClass  = statusClassByKo(sKo);
+            const created = (m.createdAt || '').toString().slice(0,10);
+
+            return `
+        <div class="matching-card"
+             data-room-id="${esc(m.roomId)}"
+             data-created-at="${esc(m.createdAt ?? '')}">
+          <div class="matching-header">
+            <h4>${esc(m.roomName)}</h4>
+            <span class="matching-status ${sClass}">${esc(sKo)}</span>
+          </div>
+          <div class="matching-info">
+            <p><strong>생성자:</strong> <span>${esc(m.creatorNickname) || '-'}</span></p>
+            <p><strong>참여자:</strong> <span>${esc(m.currentCount ?? 0)}</span> / <span>${esc(m.maxCount ?? 0)}</span>명</p>
+            <p><strong>여행일:</strong> <span>${esc(m.travelStartDate) || '-'}</span> ~ <span>${esc(m.travelEndDate) || '-'}</span></p>
+            <p><strong>여행기간:</strong> <span>${esc(m.travelPeriod ?? '')}</span>일</p>
+            <p><strong>지역:</strong> <span>${esc(m.regionName) || '-'}</span></p>
+            <p><strong>관광지:</strong> <span>${esc(m.attractionTitle) || '-'}</span></p>
+            <p><strong>생성일:</strong> <span>${esc(created)}</span></p>
+          </div>
+          <div class="matching-actions">
+            <button class="btn-small" onclick="handleMatchingDetail(this)">상세보기</button>
+            ${sKo === '진행중'
+                ? `<button class="btn-small danger" onclick="handleMatchingTerminate(this)">강제종료</button>`
+                : ''}
+          </div>
+        </div>
+      `;
+        }).join('');
+    }
+
+    // 페이저 렌더 (5개 블록)
+    function renderPager(pg) {
+        if (!pagerWrap) return;
+        if (!pg.totalElements) {
+            pagerWrap.innerHTML = `
+        <nav class="pagination" aria-label="페이지 탐색"></nav>
+        <div class="pagination-info">총 0건 / 1 / 1 페이지</div>`;
+            return;
+        }
+
+        const totalPages = Math.max(1, pg.totalPages);
+        const cur        = Math.min(pg.number, totalPages - 1);
+        const blockStart = Math.floor(cur / BLOCK) * BLOCK;
+        const blockEnd   = Math.min(totalPages - 1, blockStart + 4);
+
+        const btn = (label, page, disabled, cls) =>
+            `<button class="page-btn ${cls}${disabled?' disabled':''}" ${disabled?'disabled':''} data-page="${disabled?'':page}">${label}</button>`;
+        const num = (page, active) =>
+            `<button class="page-btn number${active?' active':''}" data-page="${page}">${page + 1}</button>`;
+        const dots = `<span class="pagination-ellipsis">…</span>`;
+
+        let html = `<nav class="pagination" aria-label="페이지 탐색">`;
+        html += btn('« 처음', 0, cur === 0, 'first');
+        html += btn('‹ 이전', Math.max(0, cur - 1), cur === 0, 'prev');
+
+        html += `<div class="pagination-numbers">`;
+        if (blockStart > 0) { html += num(0, cur === 0) + dots; }
+        for (let p = blockStart; p <= blockEnd; p++) html += num(p, p === cur);
+        if (blockEnd < totalPages - 1) { html += dots + num(totalPages - 1, cur === totalPages - 1); }
+        html += `</div>`;
+
+        html += btn('다음 ›', Math.min(totalPages - 1, cur + 1), cur === totalPages - 1, 'next');
+        html += btn('끝 »', totalPages - 1, cur === totalPages - 1, 'last');
+        html += `</nav><div class="pagination-info">총 ${pg.totalElements}건 / ${cur + 1} / ${totalPages} 페이지</div>`;
+
+        pagerWrap.innerHTML = html;
+    }
+
+    // 이벤트 위임
+    pagerWrap?.addEventListener('click', (e) => {
+        const t = e.target.closest('[data-page]');
+        if (!t || t.disabled) return;
+        const page = Number(t.dataset.page);
+        if (!Number.isFinite(page)) return;
+        e.preventDefault();
+        state.page = page;
+        load();
+    });
+
+    async function load() {
+        try {
+            const params = new URLSearchParams({ page: state.page, size: state.size });
+            // ✅ JSON 엔드포인트 이름에 맞춰주세요.
+            const res  = await fetch(`/admin/matchings/json?${params.toString()}`, { headers: { 'Accept': 'application/json' }});
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const json = await res.json();
+
+            const pg = normalize(json);
+            renderCards(pg.content);
+            renderPager(pg);
+        } catch (err) {
+            console.error('matchings load error:', err);
+            pagerWrap.innerHTML = `<div class="pagination-info">매칭 목록 불러오기 실패</div>`;
+        }
+    }
+
+    load();
+}
+
+function setupReportsPaging() {
+    const section   = document.getElementById('reports-section');
+    if (!section) return;
+
+    const tbody     = section.querySelector('#reports-table-body');
+    const pagerWrap = section.querySelector('.pagination-container');
+    const filterBar = section.querySelector('.filter-buttons'); // 옵션
+
+    const state = { page: 0, size: 10, status: null };
+    const BLOCK = 5;
+
+    function normalize(resp) {
+        const content       = resp?.content ?? resp?.data ?? [];
+        const p             = resp?.page ?? resp?.meta ?? resp?.pagination ?? {};
+        const number        = p.number ?? resp.number ?? 0;
+        const size          = p.size ?? resp.size ?? 10;
+        const totalElements = p.totalElements ?? resp.totalElements ?? 0;
+        const totalPages    = p.totalPages ?? resp.totalPages ?? (size ? Math.ceil(totalElements / size) : 0);
+        const first         = p.first ?? (number <= 0);
+        const last          = p.last  ?? (number >= Math.max(totalPages - 1, 0));
+        return { content, number, size, totalElements, totalPages, first, last };
+    }
+
+    const esc = s => (s==null?'':String(s)).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+    function renderRows(items) {
+        if (!items.length) {
+            tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:40px; color:#666;">접수된 신고가 없습니다.</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = items.map(r => {
+            const created   = (r.createdAt || '').toString().slice(0,16).replace('T',' ');
+            const statusTxt = r.statusDisplay || r.status || '대기';
+            const statusCls = r.statusClass ? ` ${r.statusClass}` : '';
+            return `
+        <tr class="report-item"
+            data-report-id="${esc(r.reportId)}"
+            data-type="${esc(r.type)}">
+          <td>${esc(r.reportId)}</td>
+          <td>${esc(r.typeDisplay || r.type)}</td>
+          <td>${esc(r.targetSummary || '-')}</td>
+          <td>${esc(r.reporterNickname || '-')}</td>
+          <td>${esc(r.reportedNickname || '-')}</td>
+          <td>${esc(r.reason || '-')}</td>
+          <td>${esc(created)}</td>
+          <td><span class="report-status${statusCls}">${esc(statusTxt)}</span></td>
+          <td>
+            <button class="btn-small"         onclick="handleReportDetail(this)">상세</button>
+            <button class="btn-small success" onclick="handleReportResolve(this)">처리완료</button>
+            <button class="btn-small danger"  onclick="handleReportReject(this)">거부</button>
+            <button class="btn-small danger"  onclick="handleReportDelete(this)">삭제</button>
+          </td>
+        </tr>`;
+        }).join('');
+    }
+
+    function renderPager(pg) {
+        if (!pagerWrap) return;
+
+        const totalPages = Math.max(1, pg.totalPages || Math.ceil((pg.totalElements || 0) / (pg.size || 10)));
+        const cur        = Math.min(pg.number, totalPages - 1);
+        const blockStart = Math.floor(cur / BLOCK) * BLOCK;
+        const blockEnd   = Math.min(totalPages - 1, blockStart + 4);
+
+        const btn = (label, page, disabled, cls) =>
+            `<button class="page-btn ${cls}${disabled?' disabled':''}" ${disabled?'disabled':''} data-page="${disabled?'':page}">${label}</button>`;
+        const num = (page, active) =>
+            `<button class="page-btn number${active?' active':''}" data-page="${page}">${page + 1}</button>`;
+        const dots = `<span class="pagination-ellipsis">…</span>`;
+
+        let html = `<nav class="pagination" aria-label="페이지 탐색">`;
+        html += btn('« 처음', 0, cur === 0, 'first');
+        html += btn('‹ 이전', Math.max(0, cur - 1), cur === 0, 'prev');
+
+        html += `<div class="pagination-numbers">`;
+        if (blockStart > 0) { html += num(0, cur === 0) + dots; }
+        for (let p = blockStart; p <= blockEnd; p++) html += num(p, p === cur);
+        if (blockEnd < totalPages - 1) { html += dots + num(totalPages - 1, cur === totalPages - 1); }
+        html += `</div>`;
+
+        html += btn('다음 ›', Math.min(totalPages - 1, cur + 1), cur === totalPages - 1, 'next');
+        html += btn('끝 »', totalPages - 1, cur === totalPages - 1, 'last');
+        html += `</nav><div class="pagination-info">총 ${pg.totalElements}건 / ${cur + 1} / ${totalPages} 페이지</div>`;
+
+        pagerWrap.innerHTML = html;
+    }
+
+    pagerWrap?.addEventListener('click', (e) => {
+        const t = e.target.closest('[data-page]');
+        if (!t || t.disabled) return;
+        const page = Number(t.dataset.page);
+        if (!Number.isFinite(page)) return;
+        e.preventDefault();
+        state.page = page;
+        load();
+    });
+
+    // 필터 버튼(선택): '전체' | '대기' | '처리완료' | '거부'
+    function mapFilterToParam(text) {
+        if (!text || text === '전체') return null;
+        if (text === '대기')     return 'PENDING';
+        if (text === '처리완료')  return 'RESOLVED';
+        if (text === '거부')     return 'DISMISSED';
+        return null;
+    }
+    filterBar?.addEventListener('click', (e) => {
+        const btn = e.target.closest('.filter-btn');
+        if (!btn) return;
+        filterBar.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        state.status = mapFilterToParam(btn.textContent.trim());
+        state.page = 0;
+        load();
+    });
+
+    async function load() {
+        try {
+            const params = new URLSearchParams({ page: state.page, size: state.size });
+            if (state.status) params.append('status', state.status);
+
+            const res  = await fetch(`/admin/reports/json?${params.toString()}`, { headers:{ 'Accept':'application/json' }});
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const json = await res.json();
+
+            const pg = normalize(json);
+            renderRows(pg.content);
+            renderPager(pg);
+        } catch (err) {
+            console.error('reports load error:', err);
+            pagerWrap.innerHTML = `<div class="pagination-info">신고 목록 불러오기 실패</div>`;
+        }
+    }
+
+    load();
+}
+
+
+
 
 
 console.log('관리자 페이지 JavaScript 로딩 완료');
