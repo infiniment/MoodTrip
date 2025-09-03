@@ -461,6 +461,9 @@
                         </div>
                     </div>
                 </div>
+                <div class="pagination-container" style="margin-top: 20px; text-align: center;">
+
+                </div>
             </section>
 
 
@@ -796,31 +799,37 @@
                     </table>
                 </div>
 
+<!--                &lt;!&ndash; 페이지네이션 &ndash;&gt;-->
+<!--                <div class="pagination-container" style="margin-top:20px; text-align:center;">-->
+<!--                    <div class="pagination" th:if="${page != null}">-->
+<!--                        &lt;!&ndash; 이전 &ndash;&gt;-->
+<!--                        <a th:href="@{|/admin/reports?page=${page.number - 1}&size=${size}|}"-->
+<!--                           th:classappend="${page.first} ? ' disabled'">&laquo; 이전</a>-->
+
+<!--                        &lt;!&ndash; 번호 &ndash;&gt;-->
+<!--                        <span th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}">-->
+<!--        <a th:href="@{|/admin/reports?page=${i}&size=${size}|}"-->
+<!--           th:text="${i + 1}"-->
+<!--           th:classappend="${i == page.number} ? ' active'"></a>-->
+<!--      </span>-->
+
+<!--                        &lt;!&ndash; 다음 &ndash;&gt;-->
+<!--                        <a th:href="@{|/admin/reports?page=${page.number + 1}&size=${size}|}"-->
+<!--                           th:classappend="${page.last} ? ' disabled'">다음 &raquo;</a>-->
+<!--                    </div>-->
+
+<!--                    <div style="margin-top:8px; color:#666; font-size:13px;" th:if="${page != null}">-->
+<!--                        총 <span th:text="${page.totalElements}">0</span>건 /-->
+<!--                        <span th:text="${page.number + 1}">1</span> /-->
+<!--                        <span th:text="${page.totalPages}">1</span> 페이지-->
+<!--                    </div>-->
+<!--                </div>-->
                 <!-- 페이지네이션 -->
                 <div class="pagination-container" style="margin-top:20px; text-align:center;">
-                    <div class="pagination" th:if="${page != null}">
-                        <!-- 이전 -->
-                        <a th:href="@{|/admin/reports?page=${page.number - 1}&size=${size}|}"
-                           th:classappend="${page.first} ? ' disabled'">&laquo; 이전</a>
 
-                        <!-- 번호 -->
-                        <span th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}">
-        <a th:href="@{|/admin/reports?page=${i}&size=${size}|}"
-           th:text="${i + 1}"
-           th:classappend="${i == page.number} ? ' active'"></a>
-      </span>
-
-                        <!-- 다음 -->
-                        <a th:href="@{|/admin/reports?page=${page.number + 1}&size=${size}|}"
-                           th:classappend="${page.last} ? ' disabled'">다음 &raquo;</a>
-                    </div>
-
-                    <div style="margin-top:8px; color:#666; font-size:13px;" th:if="${page != null}">
-                        총 <span th:text="${page.totalElements}">0</span>건 /
-                        <span th:text="${page.number + 1}">1</span> /
-                        <span th:text="${page.totalPages}">1</span> 페이지
-                    </div>
                 </div>
+
+
             </section>
 
             <!-- 공지사항 섹션 -->
@@ -908,6 +917,7 @@
 <!--                        <button class="btn-secondary" onclick="cancelNoticeForm()">취소</button>-->
 <!--                    </div>-->
 <!--                </div>-->
+
             </section>
 
             <!-- FAQ 관리 섹션 -->
@@ -971,6 +981,10 @@
                         <button class="btn-primary" onclick="saveFaq()">저장</button>
                         <button class="btn-secondary" onclick="cancelFaqForm()">취소</button>
                     </div>
+                </div>
+                <!-- 페이지네이션 -->
+                <div class="pagination-container" style="margin-top:20px; text-align:center;">
+
                 </div>
             </section>
 
