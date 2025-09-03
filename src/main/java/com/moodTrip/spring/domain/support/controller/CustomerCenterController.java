@@ -2,18 +2,13 @@ package com.moodTrip.spring.domain.support.controller;
 
 import com.moodTrip.spring.domain.admin.entity.Faq;
 import com.moodTrip.spring.domain.admin.service.FaqService;
-import com.moodTrip.spring.domain.member.entity.Member;
 import com.moodTrip.spring.domain.support.dto.response.FaqResponse;
 import com.moodTrip.spring.domain.support.dto.response.NotificationResponse;
 import com.moodTrip.spring.domain.support.service.CustomerNotificationService;
 
 
-import com.moodTrip.spring.global.security.jwt.MyUserDetails;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -78,22 +73,12 @@ public class CustomerCenterController {
 
     // 공지사항 상세
     @GetMapping("/announcement-detail")
-    public String announcementDetailPage(@RequestParam("id") Long id,
-                                         @AuthenticationPrincipal MyUserDetails user,
-                                         Model model) {
+    public String announcementDetailPage(@RequestParam("id") Long id, Model model) {
         NotificationResponse notice = customerNotificationService.findById(id);
+
 
         // 조회수 증가
         customerNotificationService.increaseViewCount(id);
-
-        boolean userHelpful = false;
-        long helpfulCount = customerNotificationService.helpfulCount(id);
-        if (user != null && user.getMember() != null) {
-            userHelpful = customerNotificationService.isHelpfulByUser(id, user.getMember());
-        }
-        model.addAttribute("notice", notice);
-        model.addAttribute("userHelpful", userHelpful);
-        model.addAttribute("helpfulCount", helpfulCount);
 
         // 이전글/다음글 찾기
         List<NotificationResponse> allNotices = customerNotificationService.findAll().stream()
@@ -117,17 +102,6 @@ public class CustomerCenterController {
         model.addAttribute("nextNotice", nextNotice);
 
         return "customer-center/announcement-detail";
-    }
-
-    // 도움됨 토글
-    @PostMapping("/announcement/helpful/{id}")
-    @ResponseBody
-    public ResponseEntity<?> toggleAnnouncementHelpful(@PathVariable("id") Long id,
-                                                       @AuthenticationPrincipal MyUserDetails user) {
-        if (user == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 필요");
-        boolean active = customerNotificationService.toggleHelpful(id, user.getMember());
-        long count = customerNotificationService.helpfulCount(id);
-        return ResponseEntity.ok(Map.of("active", active, "count", count));
     }
 
     // FAQ 목록
@@ -164,23 +138,15 @@ public class CustomerCenterController {
 
     // FAQ 상세 페이지
     @GetMapping("/faq-detail")
-    public String faqDetailPage(@RequestParam("id") Long id, @AuthenticationPrincipal MyUserDetails user, Model model) {
+    public String faqDetailPage(@RequestParam("id") Long id, Model model) {
         Faq faq = faqService.findById(id);
 
         // 조회수 증가
         faqService.increaseViewCount(id);
 
         // 도움됨 퍼센트 계산
-        int helpfulPercentage = faqService.helpfulPercentage(id);
-        model.addAttribute("helpfulPercentage", helpfulPercentage);
-
-        // 로그인 사용자의 기존 투표 내려주기
-        String userVote = null;
-        if (user != null && user.getMember() != null) {
-            var voteType = faqService.getUserVote(id, user.getMember());
-            userVote = (voteType != null) ? voteType.name() : null; // "YES" or "NO"
-        }
-        model.addAttribute("userVote", userVote);
+        int totalVotes = faq.getHelpful() + faq.getNotHelpful();
+        int helpfulPercentage = totalVotes > 0 ? (faq.getHelpful() * 100) / totalVotes : 0;
 
         // 같은 카테고리의 관련 FAQ 찾기
         List<Faq> relatedFaqs = faqService.findByCategory(faq.getCategory())
@@ -214,21 +180,15 @@ public class CustomerCenterController {
 
     @PostMapping("/faq/helpful/{id}")
     @ResponseBody
-    public ResponseEntity<?> helpful(@PathVariable("id") Long id,
-                                     @AuthenticationPrincipal MyUserDetails user) {
-        if (user == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 필요");
-        Member member = user.getMember(); // MyUserDetails에 getMember()가 있어야 함
-        faqService.voteHelpful(id, member, true);
+    public ResponseEntity<Void> increaseHelpful(@PathVariable("id") Long id) {
+        faqService.increaseHelpful(id);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/faq/not-helpful/{id}")
     @ResponseBody
-    public ResponseEntity<?> notHelpful(@PathVariable("id") Long id,
-                                        @AuthenticationPrincipal MyUserDetails user) {
-        if (user == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 필요");
-        Member member = user.getMember();
-        faqService.voteHelpful(id, member, false);
+    public ResponseEntity<Void> increaseNotHelpful(@PathVariable("id") Long id) {
+        faqService.increaseNotHelpful(id);
         return ResponseEntity.ok().build();
     }
 
