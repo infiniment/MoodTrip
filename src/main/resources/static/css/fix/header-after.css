@@ -1,7 +1,8 @@
 /* ================= 기본 설정 ================= */
 header.header {
-  min-width: 1200px;
+  width: 100%;
   background: white;
+  position: relative;
 }
 
 * {
@@ -18,25 +19,27 @@ a {
   color: #212121;
 }
 
-.container {
-  width: 1080px;
+.header-container {
+  max-width: 1080px;
+  width: 100%;
   margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 0 20px;
 }
 
 /* ================= 로고 ================= */
-header.header .nav-logo-wrapper {
+.header-nav-logo-wrapper {
   display: flex;
   align-items: center;
   padding: 22px 12px;
   margin-right: 16px;
-  width: 130px;
+  min-width: 130px;
   box-sizing: border-box;
 }
 
-header.header .nav-logo-wrapper .nav-logo {
+.header-nav-logo {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -44,7 +47,7 @@ header.header .nav-logo-wrapper .nav-logo {
   height: 30px;
 }
 
-.logo-squares {
+.header-logo-squares {
   display: flex;
   flex-wrap: wrap;
   width: 32px;
@@ -52,17 +55,17 @@ header.header .nav-logo-wrapper .nav-logo {
   gap: 3px;
 }
 
-.logo-square {
+.header-logo-square {
   width: 13px;
   height: 10px;
   border-radius: 2px;
 }
-.logo-square.black { background-color: #000; }
-.logo-square.yellow { background-color: #FFD700; }
-.logo-square.red { background-color: #FF4444; }
-.logo-square.blue { background-color: #4444FF; }
+.header-logo-square.header-black { background-color: #000; }
+.header-logo-square.header-yellow { background-color: #FFD700; }
+.header-logo-square.header-red { background-color: #FF4444; }
+.header-logo-square.header-blue { background-color: #4444FF; }
 
-.logo-text {
+.header-logo-text {
   font-size: 18px;
   font-weight: bold;
   color: #212121;
@@ -71,56 +74,62 @@ header.header .nav-logo-wrapper .nav-logo {
 }
 
 /* ================= 메뉴 ================= */
-.left-nav {
+.header-left-nav {
   display: flex;
   align-items: center;
   gap: 20px;
 }
 
-.left-nav-menu {
-  display: inline-flex;   /* flex로 하지만 inline 성격 부여 → 옆으로 붙음 */
-  align-items: center;    /* 세로 중앙 정렬 */
-  white-space: nowrap;    /* 텍스트 줄바꿈 방지 */
-  padding: 0 16px;        /* 좌우 여백 */
-  height: 65px;           /* 헤더 높이에 맞추기 */
+.header-left-nav-menu {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  padding: 0 16px;
+  height: 65px;
   cursor: pointer;
 }
 
-.left-nav-menu .main-header {
+.header-left-nav-menu .header-main-header {
   font-size: 14px;
   font-weight: 400;
   color: #212121;
-  line-height: normal;    /* 강제 줄바꿈 방지 */
+  line-height: normal;
 }
 
-.text-header {
+.header-text-header {
   color: #212121;
 }
 
 /* ================= 검색창 ================= */
-.search-nav {
+.header-search-nav {
   margin: 0 24px;
-  flex: 1; /* 남는 공간 활용 */
+  flex: 1;
   max-width: 420px;
+  min-width: 200px;
 }
 
-.logged-in-header-search-form {
+.header-logged-in-search-form {
   display: flex;
   align-items: center;
   width: 100%;
 }
 
-.logged-in-header-search-form select {
+.header-logged-in-search-form select {
   height: 40px;
   padding: 0 10px;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   margin-right: 8px;
-  min-width: 150px;
+  min-width: 120px;
   font-size: 14px;
+  flex: 1;
 }
 
-.logged-in-header-emotion-search-btn {
+.header-logged-in-emotion-search-input {
+  display: none !important;
+}
+
+.header-logged-in-emotion-search-btn {
   margin-left: 8px;
   background: none;
   border: none;
@@ -133,50 +142,53 @@ header.header .nav-logo-wrapper .nav-logo {
   width: 36px;
   border-radius: 50%;
   transition: background-color 0.2s ease, transform 0.2s ease;
+  flex-shrink: 0;
 }
 
-.logged-in-header-emotion-search-btn:hover {
+.header-logged-in-emotion-search-btn:hover {
   background-color: rgba(0, 87, 146, 0.1);
   transform: scale(1.1);
 }
 
-.logged-in-header-search-icon {
+.header-logged-in-search-icon {
   width: 18px;
   height: 18px;
   display: block;
 }
 
 /* ================= 프로필 영역 ================= */
-.right-nav {
+.header-right-nav {
   display: flex;
   align-items: center;
   position: relative;
+  flex-shrink: 0;
 }
 
-.profile-menu-wrapper {
+.header-profile-menu-wrapper {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.profile-display {
+.header-profile-display {
   font-size: 16px;
   font-weight: 500;
   color: #212121;
+  white-space: nowrap;
 }
 
-.profile-nickname-header {
+.header-profile-nickname-header {
   font-weight: bold;
   color: #212121;
 }
 
-.profile-suffix {
+.header-profile-suffix {
   margin-left: 2px;
   color: #666;
   font-weight: 500;
 }
 
-.profile-thumb {
+.header-profile-thumb {
   width: 38px;
   height: 38px;
   border-radius: 50%;
@@ -188,18 +200,19 @@ header.header .nav-logo-wrapper .nav-logo {
   align-items: center;
   justify-content: center;
   transition: border-color 0.2s;
+  flex-shrink: 0;
 }
-.profile-thumb:hover {
+.header-profile-thumb:hover {
   border-color: #005792;
 }
-.profile-thumb img {
+.header-profile-thumb img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
 /* ================= 프로필 드롭다운 ================= */
-.profile-dropdown {
+.header-profile-dropdown {
   display: none;
   position: absolute;
   top: 48px;
@@ -213,18 +226,18 @@ header.header .nav-logo-wrapper .nav-logo {
   padding: 16px 18px 10px 18px;
 }
 
-.profile-dropdown .profile-info {
+.header-profile-dropdown .header-profile-info {
   margin-bottom: 12px;
   padding-bottom: 12px;
   border-bottom: 1px solid #f0f0f0;
 }
-.profile-nickname {
+.header-profile-nickname {
   font-weight: 700;
   font-size: 16px;
   color: #222;
   margin-bottom: 2px;
 }
-.profile-email {
+.header-profile-email {
   font-size: 13px;
   color: #757575;
 }
@@ -241,12 +254,37 @@ header.header .nav-logo-wrapper .nav-logo {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 .header-profile-btn:hover {
   background: linear-gradient(to right, #0066a3, #002a3d);
 }
 
-.logout-btn {
+/* 프로필 관리 버튼과 배지 스타일 */
+.header-profile-manage-with-badge {
+  position: relative;
+}
+
+.header-notification-badge {
+  background: #ff4444;
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.header-logout-btn {
   width: 100%;
   padding: 10px 0;
   border: 2px solid #ccc;
@@ -257,13 +295,13 @@ header.header .nav-logo-wrapper .nav-logo {
   font-weight: 500;
   cursor: pointer;
 }
-.logout-btn:hover {
+.header-logout-btn:hover {
   background: #eef2f5;
   color: #005792;
 }
 
 /* ================= 드롭다운 메뉴 ================= */
-.dropdown-nav-container {
+.header-dropdown-nav-container {
   border-radius: 0 0 16px 16px;
   background: #fff;
   z-index: 1999;
@@ -275,26 +313,27 @@ header.header .nav-logo-wrapper .nav-logo {
   position: absolute;
   transform: translateY(-24px);
 }
-.dropdown-nav-container.active {
+.header-dropdown-nav-container.active {
   opacity: 1;
   transform: translateY(0);
 }
-.dropdown-nav {
+.header-dropdown-nav {
   display: flex;
-  width: 1080px;
+  max-width: 1080px;
+  width: 100%;
   margin: 0 auto;
-  padding: 20px 0 32px 0;
+  padding: 20px 20px 32px 20px;
 }
-.dropdown-menu-container {
+.header-dropdown-menu-container {
   display: flex;
   gap: 40px;
 }
-.dropdown-menu-list {
+.header-dropdown-menu-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
-.dropdown-menu-item {
+.header-dropdown-menu-item {
   font-size: 14px;
   color: #424242;
   line-height: 24px;
@@ -302,30 +341,76 @@ header.header .nav-logo-wrapper .nav-logo {
 }
 
 /* ================= 반응형 ================= */
+@media (max-width: 1200px) {
+  .header-container {
+    padding: 0 15px;
+  }
+}
+
 @media (max-width: 1080px) {
-  .container {
-    width: 100%;
+  .header-container {
     padding: 0 20px;
   }
-  .search-nav {
+  .header-search-nav {
     max-width: 300px;
+    min-width: 150px;
+  }
+  .header-logged-in-search-form select {
+    min-width: 100px;
+  }
+}
+
+@media (max-width: 900px) {
+  .header-left-nav {
+    gap: 15px;
+  }
+  .header-left-nav-menu {
+    padding: 0 12px;
+  }
+  .header-search-nav {
+    max-width: 250px;
   }
 }
 
 @media (max-width: 768px) {
-  .left-nav {
-    display: none; /* 모바일에서는 메뉴 숨김 */
+  header.header {
+    min-height: 60px;
   }
-  .search-nav {
-    display: none; /* 모바일에서는 검색창 숨김 */
-  }
-  .container {
+
+  .header-container {
+    padding: 0 15px;
     justify-content: space-between;
   }
+
+  .header-left-nav {
+    display: none;
+  }
+
+  .header-search-nav {
+    display: none;
+  }
+
+  .header-profile-display {
+    font-size: 14px;
+  }
+
+  .header-profile-thumb {
+    width: 35px;
+    height: 35px;
+  }
 }
-@media (max-width: 768px) {
-  header.header .container {
-    padding-left: 8px;   /* 원래 20px 정도 → 줄여주기 */
-    padding-right: 12px; /* 우측은 약간만 여유 */
+
+@media (max-width: 480px) {
+  .header-container {
+    padding: 0 10px;
+  }
+
+  .header-nav-logo-wrapper {
+    min-width: 100px;
+    margin-right: 10px;
+  }
+
+  .header-logo-text {
+    font-size: 16px;
   }
 }
