@@ -39,14 +39,26 @@ public class RoomViewController {
 
     // 방 찾기 목록으로 가는 렌더링
     @GetMapping("/list")
-    public String showListPage(Model model) {
+    public String showListPage(
+            @RequestParam(value = "keyword", required = false) String keyword,
+            Model model
+    ) {
+        List<RoomCardDto> rooms;
 
-        log.info("==== [EnteringRoomController] /entering-room 진입 ====");
-        List<RoomCardDto> rooms = roomService.getRoomCards();
-        log.info("방 개수: {}", rooms.size());
+        if (keyword == null || keyword.isBlank()) {
+            rooms = roomService.getRoomCards();
+        } else {
+            rooms = roomService.searchRooms(null, keyword); // region은 null
+        }
+
         model.addAttribute("rooms", rooms);
+        model.addAttribute("currentSearch", keyword);
+        model.addAttribute("totalCount", rooms.size());
+
         return "enteringRoom/enteringRoom";
     }
+
+
 
     // 방 만들기로 가는 렌더링
     @GetMapping("/create")

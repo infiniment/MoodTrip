@@ -28,4 +28,6 @@ public interface RoomService {
     List<RoomCardDto> getRoomCards();
 
     Room getRoomWithAttraction(Long roomId);
+
+    List<RoomCardDto> searchRooms(String region, String keyword); // 조건 검색
 }

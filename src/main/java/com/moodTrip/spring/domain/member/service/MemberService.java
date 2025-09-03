@@ -1,6 +1,7 @@
 package com.moodTrip.spring.domain.member.service;
 
 import com.moodTrip.spring.domain.enteringRoom.entity.EnteringRoom;
+import com.moodTrip.spring.domain.fire.repository.MemberFireRepository;
 import com.moodTrip.spring.domain.member.dto.request.MemberRequest;
 import com.moodTrip.spring.domain.member.dto.request.NicknameUpdateRequest;
 import com.moodTrip.spring.domain.member.dto.response.MemberAdminDto;
@@ -11,8 +12,13 @@ import com.moodTrip.spring.domain.member.entity.Profile;
 import com.moodTrip.spring.domain.member.repository.MemberRepository;
 import com.moodTrip.spring.domain.member.repository.ProfileRepository;
 import com.moodTrip.spring.domain.enteringRoom.repository.JoinRepository;
+import com.moodTrip.spring.domain.rooms.repository.RoomMemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -37,6 +43,8 @@ public class MemberService {
     private final ProfileRepository profileRepository;
     private final JoinRepository enteringRoomRepository;
     private final WithdrawDataService withdrawDataService;
+    private final RoomMemberRepository roomMemberRepository;
+    private final MemberFireRepository memberFireRepository;
 
     // 회원가입 등록
     public void register(MemberRequest request) {
@@ -248,26 +256,59 @@ public class MemberService {
     }
 
 
-    //수연
-    //관리자용 전체 회원 목록 조회
-    @Transactional(readOnly = true)
-    public List<MemberAdminDto> getAllMembersForAdmin() {
-        List<Member> members = memberRepository.findAllByOrderByCreatedAtDesc();
+//    //수연
+//    //관리자용 전체 회원 목록 조회
+//    @Transactional(readOnly = true)
+//    public List<MemberAdminDto> getAllMembersForAdmin() {
+//        List<Member> members = memberRepository.findAllByOrderByCreatedAtDesc();
+//
+//        return members.stream()
+//                .map(member -> {
+//                    MemberAdminDto dto = MemberAdminDto.fromEntity(member);
+//                    // 매칭 참여 횟수 계산
+//                    Long participationCount = enteringRoomRepository.countByApplicantAndStatus(
+//                            member, EnteringRoom.EnteringStatus.APPROVED
+//                    );
+//                    dto.setMatchingParticipationCount(participationCount);
+//                    return dto;
+//                })
+//                .collect(Collectors.toList());
+//    }
+//
+//    //관리자용 회원 상세 정보 조회
+//    @Transactional(readOnly = true)
+//    public MemberAdminDto getMemberDetailForAdmin(Long memberPk) {
+//        Member member = memberRepository.findById(memberPk)
+//                .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
+//
+//        MemberAdminDto dto = MemberAdminDto.fromEntity(member);
+//
+//        // 매칭 참여 횟수 계산
+//        Long participationCount = enteringRoomRepository.countByApplicantAndStatus(
+//                member, EnteringRoom.EnteringStatus.APPROVED
+//        );
+//        dto.setMatchingParticipationCount(participationCount);
+//
+//        // 추후 리뷰 개수도 여기서 계산 가능
+//        // dto.setReviewCount(reviewRepository.countByMember(member));
+//
+//        return dto;
+//    }
+@Transactional(readOnly = true)
+public List<MemberAdminDto> getAllMembersForAdmin() {
+    List<Member> members = memberRepository.findAllByOrderByCreatedAtDesc();
 
-        return members.stream()
-                .map(member -> {
-                    MemberAdminDto dto = MemberAdminDto.fromEntity(member);
-                    // 매칭 참여 횟수 계산
-                    Long participationCount = enteringRoomRepository.countByApplicantAndStatus(
-                            member, EnteringRoom.EnteringStatus.APPROVED
-                    );
-                    dto.setMatchingParticipationCount(participationCount);
-                    return dto;
-                })
-                .collect(Collectors.toList());
-    }
+    return members.stream()
+            .map(member -> {
+                MemberAdminDto dto = MemberAdminDto.fromEntity(member);
+                // 실제 참여 중인 방 기준으로 매칭 참여 횟수 계산
+                long participationCount = roomMemberRepository.countByMemberAndIsActiveTrue(member);
+                dto.setMatchingParticipationCount((long) participationCount);
+                return dto;
+            })
+            .collect(Collectors.toList());
+}
 
-    //관리자용 회원 상세 정보 조회
     @Transactional(readOnly = true)
     public MemberAdminDto getMemberDetailForAdmin(Long memberPk) {
         Member member = memberRepository.findById(memberPk)
@@ -275,14 +316,9 @@ public class MemberService {
 
         MemberAdminDto dto = MemberAdminDto.fromEntity(member);
 
-        // 매칭 참여 횟수 계산
-        Long participationCount = enteringRoomRepository.countByApplicantAndStatus(
-                member, EnteringRoom.EnteringStatus.APPROVED
-        );
+        // 실제 참여 중인 방 기준으로 매칭 참여 횟수 계산
+        long participationCount = roomMemberRepository.countByMemberAndIsActiveTrue(member);
         dto.setMatchingParticipationCount(participationCount);
-
-        // 추후 리뷰 개수도 여기서 계산 가능
-        // dto.setReviewCount(reviewRepository.countByMember(member));
 
         return dto;
     }
@@ -338,9 +374,86 @@ public class MemberService {
                 .collect(Collectors.toList());
     }
 
+    // 페이징 조회
+    @Transactional(readOnly = true)
+    public Page<MemberAdminDto> getAllMembersForAdmin(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Member> memberPage = memberRepository.findAll(pageable);
 
+        return memberPage.map(this::mapToAdminDto);
+    }
 
+    private MemberAdminDto mapToAdminDto(Member member) {
+        // ✅ 참여 횟수 계산 (RoomMember 기준)
+        Long participationCount = roomMemberRepository.countByMemberAndIsActiveTrue(member);
+        String statusName = (member.getStatus() != null) ? member.getStatus().name() : Member.MemberStatus.ACTIVE.name();
+        return MemberAdminDto.builder()
+                .memberPk(member.getMemberPk())
+                .memberId(member.getMemberId())
+                .nickname(member.getNickname())
+                .email(member.getEmail())
+                .createdAt(member.getCreatedAt())
+                .status(statusName)
+//                .status(member.getStatus().name())
+                .isWithdraw(member.getIsWithdraw())
+                .rptRcvdCnt(member.getRptRcvdCnt() == null ? 0 : member.getRptRcvdCnt())
+                .matchingParticipationCount(participationCount == null ? 0 : participationCount)
+
+                .build();
+    }
+
+    @Transactional
+    public void updateReportCounts(Long memberPk) {
+        Member member = memberRepository.findById(memberPk)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+
+        // 내가 신고한 횟수 업데이트
+        long reportedCount = memberFireRepository.countByFireReporter(member);
+        member.setRptCnt(reportedCount);
+
+        // 내가 신고받은 횟수 업데이트
+        long receivedCount = memberFireRepository.countByReportedMember(member);
+        member.setRptRcvdCnt(receivedCount);
+
+        memberRepository.save(member);
+    }
+
+    // 신고 추가 후 카운트 업데이트
+    @Transactional
+    public void incrementReportCount(Long reporterId, Long reportedMemberId) {
+        updateReportCounts(reporterId);  // 신고자 카운트 증가
+        updateReportCounts(reportedMemberId);  // 신고받은 사람 카운트 증가
+    }
+
+    // 신고 삭제 후 카운트 업데이트
+    @Transactional
+    public void decrementReportCount(Long reporterId, Long reportedMemberId) {
+        updateReportCounts(reporterId);  // 신고자 카운트 감소
+        updateReportCounts(reportedMemberId);  // 신고받은 사람 카운트 감소
+    }
+
+    // 관리자용 회원 목록 엑셀 내보내기
+    @Transactional(readOnly = true)
+    public List<MemberAdminDto> getAllMembersForExport() {
+        List<Member> members = memberRepository.findAllByOrderByCreatedAtDesc();
+
+        return members.stream()
+                .map(member -> {
+                    MemberAdminDto dto = MemberAdminDto.fromEntity(member);
+
+                    // ✅ 참여 횟수 (RoomMember 기준)
+                    long participationCount = roomMemberRepository.countByMemberAndIsActiveTrue(member);
+                    dto.setMatchingParticipationCount(participationCount);
+
+                    // ✅ 신고 횟수 (Fire 기준)
+                    long reportedCount = memberFireRepository.countByFireReporter(member);
+                    long receivedCount = memberFireRepository.countByReportedMember(member);
+                    dto.setRptCnt(reportedCount);
+                    dto.setRptRcvdCnt(receivedCount);
+
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
 
 }
-
-

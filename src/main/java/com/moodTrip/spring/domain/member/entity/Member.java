@@ -1,10 +1,14 @@
 package com.moodTrip.spring.domain.member.entity;
 
+import com.moodTrip.spring.domain.fire.entity.MemberFire;
+import com.moodTrip.spring.domain.fire.entity.RoomFire;
 import com.moodTrip.spring.global.common.entity.BaseEntity; // BaseEntity import 추가
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "member")
@@ -74,4 +78,13 @@ public class Member extends BaseEntity { // BaseEntity 상속
     // 상우가 추가. 마이페이지에서 프로필 이미지 가져오기 위해 필요.
     @OneToOne(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Profile profile;
+
+    // 내가 신고한 멤버 신고 목록 (rpt_cnt와 연관)
+    @OneToMany(mappedBy = "fireReporter", fetch = FetchType.LAZY)
+    private List<MemberFire> reportedMemberFires = new ArrayList<>();
+
+    // 내가 당한 멤버 신고 목록 (rpt_rcvd_cnt와 연관)
+    @OneToMany(mappedBy = "reportedMember", fetch = FetchType.LAZY)
+    private List<MemberFire> receivedMemberFires = new ArrayList<>();
+
 }

@@ -134,6 +134,42 @@ document.addEventListener("DOMContentLoaded", async function () {
     hero.onerror = () => { hero.onerror = null; hero.src = FallbackImg; };
   }
 
+  const heartImg = document.querySelector(".heart-img-wrapper img");
+  const attractionId =
+      heartImg?.dataset.attractionId || (window.__SSR_DETAIL__?.attractionId ?? d?.attractionId);
+
+  if (heartImg && attractionId) {
+    const filledHeartURL = "https://cdn-icons-png.flaticon.com/512/833/833472.png";
+    const emptyHeartURL  = "https://cdn-icons-png.flaticon.com/512/1077/1077035.png";
+
+    // ✅ 초기 상태: 서버 조회
+    try {
+      const r = await fetch(`/api/likes/${encodeURIComponent(attractionId)}`, { headers: { Accept: "application/json" }});
+      if (r.ok) {
+        const { liked } = await r.json();
+        heartImg.src = liked ? filledHeartURL : emptyHeartURL;
+      } else {
+        heartImg.src = emptyHeartURL;
+      }
+    } catch {
+      heartImg.src = emptyHeartURL;
+    }
+
+    // ✅ 클릭 토글: 서버에 POST/DELETE
+    heartImg.addEventListener("click", async () => {
+      const isLikedNow = heartImg.src.includes("833472");
+      const method = isLikedNow ? "DELETE" : "POST";
+      const res = await fetch(`/api/likes/${encodeURIComponent(attractionId)}`, { method });
+      if (res.ok) {
+        heartImg.src = isLikedNow ? emptyHeartURL : filledHeartURL;
+      } else if (res.status === 401) {
+        alert("로그인이 필요합니다.");
+      }
+    });
+  }
+
+
+
   // 4) 상세 정보 그리드
   setMultiline("#infoTel", d.tel);
   setMultiline("#infoAddr", d.addr);

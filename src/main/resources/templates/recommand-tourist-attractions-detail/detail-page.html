@@ -43,11 +43,13 @@
                  th:alt="${detail != null ? detail.title : '이미지'}"
                  src="/static/image/recommand-tourist-attractions-detail/SaryeoniForestTrail.png"
                  alt="">
-            <div class="image-overlay">=
-            </div>
           </section>
 
           <section class="place-tag-info">
+            <div class="heart-img-wrapper" th:attr="data-attraction-id=${attractionId}">
+              <img th:src="@{/image/recommand-tourist-attractions-detail/heart.png}" alt="찜">
+            </div>
+
             <div class="place-tag" th:if="${tags != null and !#lists.isEmpty(tags)}">
               <span class="tag-item" th:each="t : ${tags}" th:text="'#' + ${t}">#태그</span>
             </div>
@@ -134,18 +136,20 @@
         <div class="guide-body"></div>
 
         <div class="button-group">
-          <a class="guide-btn" href="/templates/enteringRoom/enteringRoom.html">
+          <a class="guide-btn"
+             th:href="@{/companion-rooms/list(keyword=${detail.title})}">
             <span>동행자 찾기</span><span class="btn-arrow">→</span>
           </a>
 
-          <!-- 관광지 id가 이미 있으면 data-attraction-id만 -->
           <a id="btnMakeRoom"
              class="ask-btn"
              th:href="@{/companion-rooms/create}"
-             th:attr="data-content-id=${contentId}">
+             th:attr="data-content-id=${detail.contentId}">
             <span>방 만들기</span><span class="btn-plus">+</span>
           </a>
         </div>
+
+
       </div>
 
       <div class="introduction-image">

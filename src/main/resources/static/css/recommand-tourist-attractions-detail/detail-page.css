@@ -125,24 +125,9 @@
   transform: scale(1.05);
 }
 
-.image-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(0, 87, 146, 0.8) 0%, rgba(0, 26, 44, 0.8) 100%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  color: white;
-}
-
-.place-image:hover .image-overlay {
-  opacity: 1;
+.blank {
+  flex: 1;
+  /* 왼쪽 공간 확보용 */
 }
 
 .overlay-content h3 {
@@ -157,12 +142,35 @@
 }
 
 .place-tag-info {
+  position: relative;
   width: 300px;
   padding: 24px;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
+.place-tag-info .heart-img-wrapper {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  margin: 0;
+  z-index: 2;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));
+}
+.place-tag-info .heart-img-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.place-tag-info .heart-img-wrapper:hover {
+  transform: scale(1.06);
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,0.28));
+}
+.heart-button-wrapper { display: none; }
 
 .place-tag {
   display: flex;
