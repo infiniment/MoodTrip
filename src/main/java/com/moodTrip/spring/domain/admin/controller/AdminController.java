@@ -1,10 +1,7 @@
 package com.moodTrip.spring.domain.admin.controller;
 
 import com.moodTrip.spring.domain.admin.dto.request.ReportActionDto;
-import com.moodTrip.spring.domain.admin.dto.response.AdminMatchingDto;
-import com.moodTrip.spring.domain.admin.dto.response.AttractionAdminDto;
-import com.moodTrip.spring.domain.admin.dto.response.ReportDetailDto;
-import com.moodTrip.spring.domain.admin.dto.response.ReportDto;
+import com.moodTrip.spring.domain.admin.dto.response.*;
 import com.moodTrip.spring.domain.admin.service.*;
 import com.moodTrip.spring.domain.attraction.service.AttractionService;
 import com.moodTrip.spring.domain.rooms.dto.response.RoomMemberResponse;
@@ -30,6 +27,7 @@ import com.moodTrip.spring.domain.member.service.MemberService;
 import com.moodTrip.spring.domain.member.dto.response.MemberAdminDto;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.io.IOException;
@@ -330,6 +328,60 @@ public class AdminController {
             @RequestParam(defaultValue="10") int size) {
         return memberService.getAllMembersForAdmin(page, size);
     }
+
+    @GetMapping("/matchings/json")
+    @ResponseBody
+    public PageResult<AdminMatchingDto> getMatchingsJson(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<AdminMatchingDto> matchingPage = adminMatchingService.getMatchings(page, size);
+        return PageResult.of(matchingPage); // 관광지/회원과 동일 포맷
+    }
+
+    @GetMapping("/reports/json")
+    @ResponseBody
+    public ResponseEntity<PageResult<ReportDto>> getReportsJson(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String status // 'PENDING'|'RESOLVED'|'DISMISSED' 또는 '대기'|'처리완료'|'거부'|null
+    ) {
+        // 한글도 들어올 수 있으므로 영문 enum으로 정규화
+        String normalized = normalizeStatus(status);
+
+        // 서비스: 최신순 정렬된 List<ReportDto> 반환
+        List<ReportDto> all = adminReportService.getAllReports(normalized);
+
+        int total = all.size();
+        int from  = Math.min(page * size, total);
+        int to    = Math.min(from + size, total);
+
+        Page<ReportDto> result = new PageImpl<>(
+                all.subList(from, to),
+                PageRequest.of(page, size),
+                total
+        );
+        return ResponseEntity.ok(PageResult.of(result));
+    }
+
+    private String normalizeStatus(String s) {
+        if (s == null || s.isBlank()) return null;
+        s = s.trim();
+        // 영문 그대로면 통과
+        switch (s.toUpperCase()) {
+            case "PENDING":
+            case "RESOLVED":
+            case "DISMISSED": return s.toUpperCase();
+        }
+        // 한글 → 영문 enum 매핑
+        return switch (s) {
+            case "대기"    -> "PENDING";
+            case "처리완료" -> "RESOLVED";
+            case "거부"    -> "DISMISSED";
+            default        -> null;
+        };
+    }
+
 
 
 }

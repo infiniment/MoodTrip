@@ -1404,3 +1404,17 @@ body.sidebar-open{ overflow: hidden; }
     .pagination .page-btn.prev::before, .pagination a.prev::before{ content:'«'; font-size:13px; }
     .pagination .page-btn.next::after,  .pagination a.next::after{ content:'»'; font-size:13px; }
 }
+/*수연*/
+.pagination { display:flex; justify-content:center; }
+.pagination-list { display:flex; gap:8px; padding:0; margin:0; list-style:none; }
+
+.pagination-list li a,
+.pagination-list li span {
+    display:inline-block; min-width:36px; padding:6px 10px;
+    border:1px solid #d9e1e8; border-radius:8px; text-decoration:none;
+    font-size:14px; text-align:center;
+}
+
+.pagination-list li.active a { font-weight:700; border-color:#2f6ea6; }
+.pagination-list li.disabled a { pointer-events:none; opacity:.45; }
+.pagination-info { margin-top:8px; }
