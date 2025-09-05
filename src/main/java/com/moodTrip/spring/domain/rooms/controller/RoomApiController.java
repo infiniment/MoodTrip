@@ -53,7 +53,7 @@ public class RoomApiController { // CRUD 담당 Controller
             @ApiResponse(responseCode = "404", description = "존재하지 않는 방")
     })
     @GetMapping("/{roomId}")
-    public ResponseEntity<RoomResponse> getRoom(@PathVariable Long roomId) {
+    public ResponseEntity<RoomResponse> getRoom(@PathVariable("roomId") Long roomId) {
         return ResponseEntity.ok(roomService.getRoomById(roomId));
     }
 

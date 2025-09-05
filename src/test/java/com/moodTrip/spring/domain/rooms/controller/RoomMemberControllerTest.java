@@ -2,144 +2,265 @@ package com.moodTrip.spring.domain.rooms.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.moodTrip.spring.domain.member.entity.Member;
+import com.moodTrip.spring.domain.rooms.dto.response.RoomMemberResponse;
 import com.moodTrip.spring.domain.rooms.entity.Room;
 import com.moodTrip.spring.domain.rooms.repository.RoomRepository;
 import com.moodTrip.spring.domain.rooms.service.RoomService;
-import com.moodTrip.spring.testsupport.WithMockCustomUser;
+import com.moodTrip.spring.global.common.code.status.ErrorStatus;
+import com.moodTrip.spring.global.common.exception.CustomException;
+import com.moodTrip.spring.global.common.util.SecurityUtil;
+import com.moodTrip.spring.global.web.GlobalControllerAdvice; // ⬅️ 실제 전역 핸들러로 교체하세요(프로젝트 클래스명)
+import com.moodTrip.spring.global.security.jwt.MyUserDetails;
+import com.moodTrip.spring.global.websocket.OnlineUserTracker;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.ComponentScan.Filter;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
-import static org.mockito.Mockito.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(RoomMemberController.class)
-public class RoomMemberControllerTest {
+@WebMvcTest(
+        controllers = RoomMemberController.class,
+        excludeFilters = @ComponentScan.Filter(
+                type = FilterType.ASSIGNABLE_TYPE,
+                classes = {
+                        com.moodTrip.spring.global.web.GlobalControllerAdvice.class // 뷰(Thymeleaf) 에러 페이지 렌더링 어드바이스
+                }
+        )
+)
+@AutoConfigureMockMvc(addFilters = false)
+@Import(com.moodTrip.spring.global.common.exception.GlobalExceptionHandler.class)  // JSON 에러 어드바이스 주입
+class RoomMemberControllerIT {
 
-    @Autowired
-    private MockMvc mockMvc;
+    @Autowired MockMvc mockMvc;
+    @Autowired ObjectMapper om;
 
     @MockitoBean
-    private RoomService roomService;
+    RoomService roomService;
+    @MockitoBean RoomRepository roomRepository;
+    @MockitoBean OnlineUserTracker onlineUserTracker;
 
-    @MockitoBean
-    private RoomRepository roomRepository;
+    // 기존 다른 Advice 들이 의존하는 유틸/서비스 목 처리
+    @MockitoBean SecurityUtil securityUtil;
+    @MockitoBean com.moodTrip.spring.domain.emotion.service.EmotionService emotionService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
 
-    private Room mockRoom() {
-        return Room.builder()
-                .roomId(1L)
-                .roomName("테스트방")
-                .roomDescription("테스트 설명")
-                .roomMaxCount(5)
-                .roomCurrentCount(2)
-                .build();
+    // ====== 헬퍼: 인증 주입 ======
+    private void setAuth(MyUserDetails principal) {
+        var auth = new UsernamePasswordAuthenticationToken(principal, null, Collections.emptyList());
+        var ctx = SecurityContextHolder.createEmptyContext();
+        ctx.setAuthentication(auth);
+        SecurityContextHolder.setContext(ctx);
     }
 
-    @WithMockCustomUser(username = "gumin", memberPk = 100L, nickname = "구민")
-    @Test
-    @DisplayName("방 참여 성공")
-    void joinRoom_success() throws Exception {
-        Room room = mockRoom();
+    private MyUserDetails stubUserDetails(Long memberPk) {
+        Member member = Mockito.mock(Member.class);
+        when(member.getMemberPk()).thenReturn(memberPk);
+        MyUserDetails mud = Mockito.mock(MyUserDetails.class);
+        when(mud.getMember()).thenReturn(member);
+        when(mud.getUsername()).thenReturn("tester");
+        return mud;
+    }
 
-        // given: 해당 roomId에 대한 Room 반환
-        when(roomRepository.findById(1L)).thenReturn(Optional.of(room));
-        // given: 아직 참여하지 않은 경우
+    // ====== join ======
+    @Test
+    @DisplayName("POST /api/v1/room-members/{id}/join - 참여 성공 200")
+    void joinRoom_200() throws Exception {
+        Long roomId = 1L;
+        Room room = Mockito.mock(Room.class);
+        when(roomRepository.findById(roomId)).thenReturn(Optional.of(room));
         when(roomService.isMemberInRoom(any(Member.class), eq(room))).thenReturn(false);
+        doNothing().when(roomService).joinRoom(any(Member.class), eq(room), eq("MEMBER"));
 
-        // when & then
-        mockMvc.perform(post("/api/v1/room-members/1/join")
-                        .with(csrf()))
-                .andExpect(status().isOk());
+        setAuth(stubUserDetails(100L));
+
+        mockMvc.perform(
+                post("/api/v1/room-members/{roomId}/join", roomId)
+        ).andExpect(status().isOk());
     }
 
-    @WithMockCustomUser(username = "gumin", memberPk = 100L, nickname = "구민")
     @Test
-    @DisplayName("방 참여 실패 - 이미 참여한 사용자")
-    void joinRoom_alreadyJoined() throws Exception {
-        Room room = mockRoom();
-        when(roomRepository.findById(1L)).thenReturn(Optional.of(room));
+    @DisplayName("POST /api/v1/room-members/{id}/join - 이미 참여한 유저 409")
+    void joinRoom_409() throws Exception {
+        Long roomId = 1L;
+        Room room = Mockito.mock(Room.class);
+        when(roomRepository.findById(roomId)).thenReturn(Optional.of(room));
         when(roomService.isMemberInRoom(any(Member.class), eq(room))).thenReturn(true);
 
-        mockMvc.perform(post("/api/v1/room-members/1/join")
-                        .with(csrf()))
-                .andExpect(status().isConflict()); // 409
+        setAuth(stubUserDetails(100L)); // 인증 주입 (이미 있으시면 유지)
+
+        mockMvc.perform(post("/api/v1/room-members/{roomId}/join", roomId)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isConflict())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value("ROOM_MEMBER_001"))
+                .andExpect(jsonPath("$.message").value("이미 해당 방에 참여한 회원입니다."))
+                .andExpect(jsonPath("$.data").doesNotExist()); // 혹은 isEmpty()
     }
 
-    @WithMockCustomUser(username = "gumin", memberPk = 100L, nickname = "구민")
     @Test
-    @DisplayName("방 참여 실패 - 존재하지 않는 방")
-    void joinRoom_notFound() throws Exception {
-        when(roomRepository.findById(1L)).thenReturn(Optional.empty());
+    @DisplayName("POST /api/v1/room-members/{id}/join - 방 없음 404")
+    void joinRoom_404() throws Exception {
+        Long roomId = 999L;
+        when(roomRepository.findById(roomId)).thenReturn(Optional.empty());
 
-        mockMvc.perform(post("/api/v1/room-members/1/join")
-                        .with(csrf()))
-                .andExpect(status().isNotFound()); // 404
+        setAuth(stubUserDetails(100L));
+
+        mockMvc.perform(
+                        post("/api/v1/room-members/{roomId}/join", roomId)
+                                .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value("ROOM_001"))
+                .andExpect(jsonPath("$.message").value("존재하지 않는 방입니다."))
+                .andExpect(jsonPath("$.data").doesNotExist()); // 또는 .value(Matchers.nullValue())
     }
 
-    @WithMockCustomUser(username = "gumin", memberPk = 100L, nickname = "구민")
+    // ====== leave ======
     @Test
-    @DisplayName("방 나가기 성공")
-    void leaveRoom_success() throws Exception {
-        Room room = mockRoom();
-
-        when(roomRepository.findById(1L)).thenReturn(Optional.of(room));
+    @DisplayName("DELETE /api/v1/room-members/{id}/leave - 나가기 성공 204")
+    void leaveRoom_204() throws Exception {
+        Long roomId = 1L;
+        Room room = Mockito.mock(Room.class);
+        when(roomRepository.findById(roomId)).thenReturn(Optional.of(room));
         doNothing().when(roomService).leaveRoom(any(Member.class), eq(room));
 
-        mockMvc.perform(delete("/api/v1/room-members/1/leave")
-                        .with(csrf()))
-                .andExpect(status().isNoContent());
+        setAuth(stubUserDetails(100L));
+
+        mockMvc.perform(
+                delete("/api/v1/room-members/{roomId}/leave", roomId)
+        ).andExpect(status().isNoContent());
     }
 
-    @WithMockCustomUser(username = "gumin", memberPk = 100L, nickname = "구민")
     @Test
-    @DisplayName("방 나가기 실패 - 방을 찾을 수 없음")
-    void leaveRoom_fail_roomNotFound() throws Exception {
-        // given
-        when(roomRepository.findById(999L)).thenReturn(Optional.empty());
+    @DisplayName("DELETE /api/v1/room-members/{id}/leave - 방 없음 404")
+    void leaveRoom_404() throws Exception {
+        Long roomId = 999L;
+        when(roomRepository.findById(roomId)).thenReturn(Optional.empty());
 
-        // when & then
-        mockMvc.perform(delete("/api/v1/room-members/999/leave")
-                        .with(csrf()))
-                .andExpect(status().isNotFound());
+        setAuth(stubUserDetails(100L));
+
+        mockMvc.perform(
+                        delete("/api/v1/room-members/{roomId}/leave", roomId)
+                                .accept(MediaType.APPLICATION_JSON) // ← 핵심: JSON으로 협상
+                )
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value("ROOM_001"))
+                .andExpect(jsonPath("$.message").value("존재하지 않는 방입니다."))
+                .andExpect(jsonPath("$.data").doesNotExist());
     }
 
-
-    @WithMockCustomUser(username = "gumin", memberPk = 100L, nickname = "구민")
+    // ====== get members ======
     @Test
-    @DisplayName("방 참여자 목록 조회 성공")
-    void getActiveMembers_success() throws Exception {
-        Room room = mockRoom();
+    @DisplayName("GET /api/v1/room-members/{id}/members - 참여자 목록 200")
+    void getActiveMembers_200() throws Exception {
+        Long roomId = 1L;
+        Room room = Mockito.mock(Room.class);
+        when(roomRepository.findById(roomId)).thenReturn(Optional.of(room));
 
-        when(roomRepository.findById(1L)).thenReturn(Optional.of(room));
-        when(roomService.getActiveMembers(room)).thenReturn(List.of());
+        var m1 = RoomMemberResponse.builder().nickname("alice").build();
+        var m2 = RoomMemberResponse.builder().nickname("bob").build();
+        when(roomService.getActiveMembers(room)).thenReturn(List.of(m1, m2));
 
-        mockMvc.perform(get("/api/v1/room-members/1/members")
-                        .with(csrf()))
-                .andExpect(status().isOk());
+        mockMvc.perform(
+                        get("/api/v1/room-members/{roomId}/members", roomId)
+                                .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$", hasSize(2)));
     }
 
-    @WithMockCustomUser(username = "gumin", memberPk = 100L, nickname = "구민")
     @Test
-    @DisplayName("참여자 목록 조회 실패 - 방이 존재하지 않음")
-    void getActiveMembers_fail_roomNotFound() throws Exception {
-        // given
-        when(roomRepository.findById(999L)).thenReturn(Optional.empty());
+    @DisplayName("GET /api/v1/room-members/{id}/members - 방 없음 404")
+    void getActiveMembers_404() throws Exception {
+        Long roomId = 999L;
+        when(roomRepository.findById(roomId)).thenReturn(Optional.empty());
 
-        // when & then
-        mockMvc.perform(get("/api/v1/room-members/999/members"))
-                .andExpect(status().isNotFound());
+        mockMvc.perform(
+                        get("/api/v1/room-members/{roomId}/members", roomId)
+                                .accept(MediaType.APPLICATION_JSON) // ← 핵심
+                )
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value("ROOM_001")) // 프로젝트 ErrorStatus에 맞게
+                .andExpect(jsonPath("$.message").value("존재하지 않는 방입니다."))
+                .andExpect(jsonPath("$.data").doesNotExist());
+    }
+    // ====== get online members ======
+    @Test
+    @DisplayName("GET /api/v1/room-members/{id}/online-members - 온라인 참여자만 필터링 200")
+    void getOnlineMembers_200() throws Exception {
+        Long roomId = 1L;
+        Room room = Mockito.mock(Room.class);
+        when(roomRepository.findById(roomId)).thenReturn(Optional.of(room));
+
+        var all = List.of(
+                RoomMemberResponse.builder().nickname("alice").build(),
+                RoomMemberResponse.builder().nickname("bob").build()
+        );
+        when(roomService.getActiveMembers(room)).thenReturn(all);
+        when(onlineUserTracker.getOnlineUsers(roomId)).thenReturn(List.of("bob")); // bob만 온라인
+
+        mockMvc.perform(
+                        get("/api/v1/room-members/{roomId}/online-members", roomId)
+                                .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].nickname").value("bob"));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/room-members/{id}/online-members - 방 없음 404")
+    void getOnlineMembers_404() throws Exception {
+        Long roomId = 999L;
+        when(roomRepository.findById(roomId)).thenReturn(Optional.empty());
+
+        mockMvc.perform(
+                        get("/api/v1/room-members/{roomId}/online-members", roomId)
+                                .accept(MediaType.APPLICATION_JSON) // ← 핵심
+                )
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.success").value(false))
+                // 프로젝트의 코드/메시지에 맞춰 수정
+                .andExpect(jsonPath("$.code").value("ROOM_001")) // 또는 "ROOM_NOT_FOUND"
+                .andExpect(jsonPath("$.message").value("존재하지 않는 방입니다."))
+                .andExpect(jsonPath("$.data").doesNotExist());
     }
 }
