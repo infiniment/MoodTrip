@@ -2,13 +2,14 @@ package com.moodTrip.spring.domain.attraction.entity;
 
 import com.moodTrip.spring.domain.member.entity.Member;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 // ERD의 'UNIQUE (userid, attractionid)' 제약조건을 클래스 레벨에서 설정합니다.
 @Table(name = "Muserattraction",
         uniqueConstraints = {

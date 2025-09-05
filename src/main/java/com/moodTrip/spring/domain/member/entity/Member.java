@@ -5,18 +5,20 @@ import com.moodTrip.spring.domain.fire.entity.RoomFire;
 import com.moodTrip.spring.global.common.entity.BaseEntity; // BaseEntity import 추가
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity
+
 @Table(name = "member")
+@Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class Member extends BaseEntity { // BaseEntity 상속
 
     @Id
@@ -75,7 +77,7 @@ public class Member extends BaseEntity { // BaseEntity 상속
     // 주의!
     // createdAt, updatedAt은 BaseEntity에서 상속받으므로 선언 필요 없음!
 
-    // 상우가 추가. 마이페이지에서 프로필 이미지 가져오기 위해 필요.
+    // r상우가 추가. 마이페이지에서 프로필 이미지 가져오기 위해 필요.
     @OneToOne(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Profile profile;
 

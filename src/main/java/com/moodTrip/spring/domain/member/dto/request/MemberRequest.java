@@ -4,7 +4,9 @@ package com.moodTrip.spring.domain.member.dto.request;
 import lombok.Data;
 
 // 회원가입 요청 시 클라이언트로부터 전달받는 데이터를 담는 DTO.
+
 @Data
+
 public class MemberRequest {
 
     private String userId;          // 엔티티 memberId

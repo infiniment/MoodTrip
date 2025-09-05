@@ -2,7 +2,6 @@ package com.moodTrip.spring.domain.emotion.controller;
 
 import com.moodTrip.spring.domain.attraction.service.AttractionService;
 import com.moodTrip.spring.domain.emotion.dto.response.AttractionCardDTO;
-import com.moodTrip.spring.domain.emotion.dto.response.EmotionCategoryDto;
 import com.moodTrip.spring.domain.emotion.service.EmotionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j; // 로깅을 위한 import 추가

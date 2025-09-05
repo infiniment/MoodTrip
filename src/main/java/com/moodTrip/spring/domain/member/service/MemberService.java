@@ -256,44 +256,9 @@ public class MemberService {
     }
 
 
-//    //수연
-//    //관리자용 전체 회원 목록 조회
-//    @Transactional(readOnly = true)
-//    public List<MemberAdminDto> getAllMembersForAdmin() {
-//        List<Member> members = memberRepository.findAllByOrderByCreatedAtDesc();
-//
-//        return members.stream()
-//                .map(member -> {
-//                    MemberAdminDto dto = MemberAdminDto.fromEntity(member);
-//                    // 매칭 참여 횟수 계산
-//                    Long participationCount = enteringRoomRepository.countByApplicantAndStatus(
-//                            member, EnteringRoom.EnteringStatus.APPROVED
-//                    );
-//                    dto.setMatchingParticipationCount(participationCount);
-//                    return dto;
-//                })
-//                .collect(Collectors.toList());
-//    }
-//
-//    //관리자용 회원 상세 정보 조회
-//    @Transactional(readOnly = true)
-//    public MemberAdminDto getMemberDetailForAdmin(Long memberPk) {
-//        Member member = memberRepository.findById(memberPk)
-//                .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
-//
-//        MemberAdminDto dto = MemberAdminDto.fromEntity(member);
-//
-//        // 매칭 참여 횟수 계산
-//        Long participationCount = enteringRoomRepository.countByApplicantAndStatus(
-//                member, EnteringRoom.EnteringStatus.APPROVED
-//        );
-//        dto.setMatchingParticipationCount(participationCount);
-//
-//        // 추후 리뷰 개수도 여기서 계산 가능
-//        // dto.setReviewCount(reviewRepository.countByMember(member));
-//
-//        return dto;
-//    }
+
+
+
 @Transactional(readOnly = true)
 public List<MemberAdminDto> getAllMembersForAdmin() {
     List<Member> members = memberRepository.findAllByOrderByCreatedAtDesc();

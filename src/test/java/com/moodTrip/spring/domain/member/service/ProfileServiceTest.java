@@ -326,3 +326,248 @@
 //        assertThat(result.getNickname()).isEqualTo(specialNickname);
 //    }
 //}
+package com.moodTrip.spring.domain.member.service;
+
+import com.moodTrip.spring.domain.attraction.dto.response.AttractionSearchResponseDto;
+import com.moodTrip.spring.domain.attraction.entity.Attraction;
+import com.moodTrip.spring.domain.attraction.entity.UserAttraction;
+import com.moodTrip.spring.domain.attraction.repository.AttractionRepository;
+import com.moodTrip.spring.domain.attraction.repository.UserAttractionRepository;
+import com.moodTrip.spring.domain.member.dto.request.IntroduceUpdateRequest;
+import com.moodTrip.spring.domain.member.dto.request.ProfileImageUpdateRequest;
+import com.moodTrip.spring.domain.member.dto.response.ProfileResponse;
+import com.moodTrip.spring.domain.member.entity.Member;
+import com.moodTrip.spring.domain.member.entity.Profile;
+import com.moodTrip.spring.domain.member.repository.MemberRepository;
+import com.moodTrip.spring.domain.member.repository.ProfileRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.*;
+
+import java.time.LocalDateTime;
+import java.util.*;
+
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class ProfileServiceTest {
+
+    @Mock
+    private ProfileRepository profileRepository;
+
+    @Mock
+    private MemberRepository memberRepository;
+
+    @Mock
+    private UserAttractionRepository userAttractionRepository;
+
+    @Mock
+    private AttractionRepository attractionRepository;
+
+    @InjectMocks
+    private ProfileService profileService;
+
+    private Member member;
+
+    @BeforeEach
+    void setUp() {
+        member = Member.builder()
+                .memberId("user1")
+                .nickname("nickname")
+                .email("email@example.com")
+                .memberPhone("010-0000-0000")
+                .createdAt(LocalDateTime.now())
+                .build();
+    }
+
+
+
+    @Test
+    @DisplayName("프로필 조회 - 기존 Profile 있으면 응답 반환")
+    void testGetMyProfile_ExistingProfile() {
+        Profile profile = Profile.builder()
+                .profileId(1L)
+                .member(member)
+                .profileBio("Hello")
+                .profileImage(null)
+                .build();
+
+        when(profileRepository.findByMember(member)).thenReturn(Optional.of(profile));
+
+        ProfileResponse response = profileService.getMyProfile(member);
+
+        assertThat(response.getNickname()).isEqualTo(member.getNickname());
+        assertThat(response.getProfileBio()).isEqualTo("Hello");
+        verify(profileRepository, times(1)).findByMember(member);
+    }
+
+    @Test
+    @DisplayName("프로필 조회 - Profile 없으면 기본 응답 생성")
+    void testGetMyProfile_NoProfile() {
+        when(profileRepository.findByMember(member)).thenReturn(Optional.empty());
+
+        ProfileResponse response = profileService.getMyProfile(member);
+
+        assertThat(response.getNickname()).isEqualTo(member.getNickname());
+        assertThat(response.getProfileImage()).isEqualTo("/image/fix/moodtrip.png");
+    }
+
+    @Test
+    @DisplayName("자기소개 수정 - 길이 초과하면 예외 발생")
+    void testUpdateIntroduce_BioTooLong() {
+        IntroduceUpdateRequest req = new IntroduceUpdateRequest();
+        req.setProfileBio("a".repeat(501)); // 501글자
+
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> profileService.updateIntroduce(member, req));
+
+        assertThat(ex).hasMessageContaining("500자 이내");
+    }
+
+    @Test
+    @DisplayName("자기소개 수정 - 기존 Profile 있으면 수정")
+    void testUpdateIntroduce_ExistingProfile() {
+        IntroduceUpdateRequest req = new IntroduceUpdateRequest();
+        req.setProfileBio("New intro");
+
+        Profile profile = Profile.builder()
+                .profileId(1L)
+                .member(member)
+                .profileBio("Old intro")
+                .build();
+
+        when(profileRepository.findByMember(member)).thenReturn(Optional.of(profile));
+
+        ProfileResponse response = profileService.updateIntroduce(member, req);
+
+        verify(profileRepository, never()).save(any(Profile.class)); // 기존 프로필이므로 save 안 함
+
+        assertThat(profile.getProfileBio()).isEqualTo("New intro");
+        assertThat(response.getProfileBio()).isEqualTo("New intro");
+    }
+
+    @Test
+    @DisplayName("자기소개 수정 - 기존 Profile 없으면 새로 생성 후 저장")
+    void testUpdateIntroduce_NewProfile() {
+        IntroduceUpdateRequest req = new IntroduceUpdateRequest();
+        req.setProfileBio("New intro");
+
+        when(profileRepository.findByMember(member)).thenReturn(Optional.empty());
+
+        Profile savedProfile = Profile.builder()
+                .profileId(10L)
+                .member(member)
+                .profileBio("New intro")
+                .build();
+
+        when(profileRepository.save(any(Profile.class))).thenReturn(savedProfile);
+
+        ProfileResponse response = profileService.updateIntroduce(member, req);
+
+        verify(profileRepository, times(1)).save(any(Profile.class));
+        // .profileId() 검증 제거
+        assertThat(response.getProfileBio()).isEqualTo("New intro");
+    }
+
+    @Test
+    @DisplayName("프로필 사진 변경 - 유효하지 않은 URL에 대해 예외 발생")
+    void testUpdateProfileImage_InvalidUrl() {
+        ProfileImageUpdateRequest req = new ProfileImageUpdateRequest("invalid_url");
+
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> profileService.updateProfileImage(member, req));
+
+        assertThat(ex).hasMessageContaining("올바른 이미지 URL 형식이 아닙니다");
+    }
+
+    @Test
+    @DisplayName("프로필 사진 변경 - 기존 프로필 없으면 새로 생성")
+    void testUpdateProfileImage_CreateNew() {
+        ProfileImageUpdateRequest req = new ProfileImageUpdateRequest("/uploads/image.png");
+
+        when(profileRepository.findByMember(member)).thenReturn(Optional.empty());
+
+        Profile savedProfile = Profile.builder()
+                .profileId(5L)
+                .member(member)
+                .profileImage("/uploads/image.png")
+                .build();
+
+        when(profileRepository.save(any(Profile.class))).thenReturn(savedProfile);
+
+        ProfileResponse response = profileService.updateProfileImage(member, req);
+
+        verify(profileRepository, times(1)).save(any(Profile.class));
+        assertThat(response.getProfileImage()).isEqualTo("/uploads/image.png");
+    }
+
+    @Test
+    @DisplayName("프로필 사진 변경 - 기존 프로필 있으면 이미지 수정")
+    void testUpdateProfileImage_Existing() {
+        ProfileImageUpdateRequest req = new ProfileImageUpdateRequest("/static/image/new.png");
+
+        Profile existingProfile = Profile.builder()
+                .profileId(7L)
+                .member(member)
+                .profileImage("/static/image/old.png")
+                .build();
+
+        when(profileRepository.findByMember(member)).thenReturn(Optional.of(existingProfile));
+
+        ProfileResponse response = profileService.updateProfileImage(member, req);
+
+        assertThat(existingProfile.getProfileImage()).isEqualTo("/static/image/new.png");
+        assertThat(response.getProfileImage()).isEqualTo("/static/image/new.png");
+    }
+
+    @Test
+    @DisplayName("찜 목록 조회 - 페이지 처리 및 변환 테스트")
+    void testGetMyWishlist() {
+        Long memberPk = 1L;
+        Pageable pageable = PageRequest.of(0, 10);
+        Attraction attraction = Attraction.builder().contentId(100L).title("Attraction1").build();
+        UserAttraction ua = UserAttraction.builder()
+                .member(member)
+                .attraction(attraction)
+                .build();
+
+        List<UserAttraction> userAttractionList = List.of(ua);
+        Page<UserAttraction> userAttractionPage = new PageImpl<>(userAttractionList, pageable, userAttractionList.size());
+
+        when(userAttractionRepository.findByMemberMemberPkWithAttraction(memberPk, pageable))
+                .thenReturn(userAttractionPage);
+
+        Page<AttractionSearchResponseDto> result = profileService.getMyWishlist(memberPk, pageable);
+
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        AttractionSearchResponseDto dto = result.getContent().get(0);
+        assertThat(dto.getContentId()).isEqualTo(100L);
+        assertThat(dto.isLikedByCurrentUser()).isTrue();
+    }
+
+    @Test
+    @DisplayName("찜 목록 삭제 테스트")
+    void testRemoveLike() {
+        Long memberPk = 1L;
+        Long attractionId = 10L;
+
+        Member foundMember = member;
+        Attraction foundAttraction = Attraction.builder().contentId(attractionId).build();
+
+        when(memberRepository.findById(memberPk)).thenReturn(Optional.of(foundMember));
+        when(attractionRepository.findById(attractionId)).thenReturn(Optional.of(foundAttraction));
+
+        profileService.removeLike(memberPk, attractionId);
+
+        verify(userAttractionRepository, times(1)).deleteByMemberAndAttraction(foundMember, foundAttraction);
+    }
+}
