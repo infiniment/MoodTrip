@@ -31,7 +31,7 @@ header.header .header-nav {
 }
 
 /* 컨테이너: 로고 | 메뉴 | 검색창 | 버튼 */
-header.header .container {
+header.header .header-container {
     display: flex;
     align-items: center;
     justify-content: space-between;  /* PC에서는 양쪽 정렬 */
@@ -48,21 +48,21 @@ a {
 }
 
 /* 로고 */
-header.header .nav-logo-wrapper {
+header.header .header-nav-logo-wrapper {
     padding: 22px 12px;
     margin-right: 16px;
     width: 130px;
     box-sizing: border-box;
 }
 
-header.header .nav-logo {
+header.header .header-nav-logo {
     display: flex;
     align-items: center;
     gap: 12px;
     height: 30px;
 }
 
-.logo-squares {
+.header-logo-squares {
     display: flex;
     flex-wrap: wrap;
     width: 32px;
@@ -70,17 +70,17 @@ header.header .nav-logo {
     gap: 3px;
 }
 
-.logo-square {
+.header-logo-square {
     width: 13px;
     height: 10px;
     border-radius: 2px;
 }
-.logo-square.black { background-color: #000; }
-.logo-square.yellow { background-color: #FFD700; }
-.logo-square.red { background-color: #FF4444; }
-.logo-square.blue { background-color: #4444FF; }
+.header-logo-square.header-black { background-color: #000; }
+.header-logo-square.header-yellow { background-color: #FFD700; }
+.header-logo-square.header-red { background-color: #FF4444; }
+.header-logo-square.header-blue { background-color: #4444FF; }
 
-.logo-text {
+.header-logo-text {
     font-size: 18px;
     font-weight: bold;
     color: #212121;
@@ -89,30 +89,30 @@ header.header .nav-logo {
 }
 
 /* 메뉴 */
-header.header .left-nav {
+header.header .header-left-nav {
     display: flex;
     gap: 20px;
 }
 
-header.header .left-nav .left-nav-menu {
+header.header .header-left-nav .header-left-nav-menu {
     padding: 20px 16px;
     cursor: pointer;
     display: flex;
     align-items: center;
 }
 
-.text-header {
+.header-text-header {
     color: #212121;
 }
 
-.main-header {
+.header-main-header {
     font-size: 14px;
     line-height: 24px;
     font-weight: 400;
 }
 
 /* 검색창 (분리됨) */
-.search-nav {
+.header-search-nav {
     display: flex;
     justify-content: center;
     position: relative;
@@ -162,7 +162,7 @@ header.header .left-nav .left-nav-menu {
 }
 
 /* 오른쪽 버튼 */
-header.header .right-nav {
+header.header .header-right-nav {
     display: flex;
     align-items: center;
     justify-content: flex-end;
@@ -170,8 +170,8 @@ header.header .right-nav {
     flex-shrink: 0;  /* 버튼이 줄바꿈되지 않도록 */
 }
 
-header.header .right-nav .log-in-section,
-header.header .right-nav .sign-up-button {
+header.header .header-right-nav .header-log-in-section,
+header.header .header-right-nav .header-sign-up-button {
     display: flex;
     align-items: center;
     gap: 4px;
@@ -179,7 +179,7 @@ header.header .right-nav .sign-up-button {
     white-space: nowrap;
 }
 
-header.header .right-nav .sign-up-button {
+header.header .header-right-nav .header-sign-up-button {
     margin-left: 12px;
     border-radius: 8px;
     color: #fff;
@@ -188,7 +188,7 @@ header.header .right-nav .sign-up-button {
 }
 
 /* 드롭다운 메뉴 */
-header.header .dropdown-nav-container {
+header.header .header-dropdown-nav-container {
     border-radius: 0 0 16px 16px;
     background: #fff;
     z-index: 1999;
@@ -203,12 +203,12 @@ header.header .dropdown-nav-container {
     transform: translateY(-24px);
 }
 
-header.header .dropdown-nav-container.active {
+header.header .header-dropdown-nav-container.active {
     opacity: 1;
     transform: translateY(0);
 }
 
-header.header .dropdown-nav {
+header.header .header-dropdown-nav {
     display: flex;
     width: 100%;
     max-width: 1080px;
@@ -216,19 +216,19 @@ header.header .dropdown-nav {
     padding: 20px 0 32px 0;
 }
 
-header.header .dropdown-menu-container {
+header.header .header-dropdown-menu-container {
     display: flex;
     width: 840px;
     margin: 0 auto;
 }
 
-header.header .dropdown-menu-list {
+header.header .header-dropdown-menu-list {
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
 
-header.header .dropdown-menu-item {
+header.header .header-dropdown-menu-item {
     display: flex !important;
     gap: 4px;
     align-items: flex-start;
@@ -237,7 +237,7 @@ header.header .dropdown-menu-item {
     color: #424242;
 }
 
-header.header .dropdown-banner {
+header.header .header-dropdown-banner {
     position: relative;
     padding: 20px 24px 44px 24px;
     width: 240px;
@@ -254,53 +254,53 @@ img {
 
 /* 태블릿 */
 @media (max-width: 1024px) {
-    .search-nav { display: none; } /* 검색창 숨김 */
+    .header-search-nav { display: none; } /* 검색창 숨김 */
 
-    header.header .container {
+    header.header .header-container {
         justify-content: flex-start; /* 좌측 정렬 */
         gap: 16px;
         padding: 0 15px;
     }
 
-    header.header .nav-logo-wrapper {
+    header.header .header-nav-logo-wrapper {
         width: 110px;
         padding: 22px 8px;
     }
 
-    .logo-text { font-size: 16px; }
-    .main-header { font-size: 13px; }
+    .header-logo-text { font-size: 16px; }
+    .header-main-header { font-size: 13px; }
 }
 
 /* 모바일 */
 @media (max-width: 768px) {
-    .search-nav { display: none !important; }
+    .header-search-nav { display: none !important; }
 
-    header.header .container {
+    header.header .header-container {
         justify-content: flex-start;
         gap: 12px;
         padding: 0 15px;
     }
 
-    header.header .nav-logo-wrapper {
+    header.header .header-nav-logo-wrapper {
         width: 90px;
         padding: 22px 4px;
     }
 
-    .logo-text { font-size: 14px; }
+    .header-logo-text { font-size: 14px; }
 }
 
 /* 작은 모바일 */
 @media (max-width: 480px) {
-    header.header .container {
+    header.header .header-container {
         padding: 0 10px;
         gap: 8px;
     }
 
-    header.header .nav-logo-wrapper { width: 80px; }
-    .logo-text { font-size: 12px; }
+    header.header .header-nav-logo-wrapper { width: 80px; }
+    .header-logo-text { font-size: 12px; }
 
-    .right-nav .log-in-section,
-    .right-nav .sign-up-button {
+    .header-right-nav .header-log-in-section,
+    .header-right-nav .header-sign-up-button {
         padding: 8px 12px;
         font-size: 13px;
     }

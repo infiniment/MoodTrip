@@ -2,8 +2,12 @@ document.addEventListener('DOMContentLoaded', function () {
   console.log('header-after.js 로드 시작');
 
   try {
-    // 사용자 정보 로드
-    loadUserProfile();
+    // 로그인 상태 확인 후 사용자 정보 로드
+    if (isLoggedIn()) {
+      loadUserProfile();
+    } else {
+      console.log('비로그인 상태 → 프로필 API 호출 안 함');
+    }
 
     // 드롭다운 토글 기능
     initProfileDropdown();
@@ -136,12 +140,18 @@ function loadUserProfile() {
     }
   })
       .then(response => {
+        if (response.status === 401) {
+          console.log('로그인 안 됨 → 프로필 불러오기 건너뜀');
+          return null;
+        }
         if (!response.ok) {
           throw new Error('서버 응답 오류');
         }
         return response.json();
       })
       .then(userData => {
+        if (!userData) return; // 로그인 안 된 경우 바로 종료
+
         // 프로필 정보 업데이트
         const nicknameElement = document.getElementById('profileNickname');
         const emailElement = document.getElementById('profileEmail');
