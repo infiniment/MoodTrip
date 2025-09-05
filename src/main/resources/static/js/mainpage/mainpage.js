@@ -5,7 +5,6 @@ document.addEventListener('DOMContentLoaded', function() {
   initSmoothScroll();
   initializeMessageCounter();
   initEmotionInteractions();
-  initWeatherCardClickHandlers(); // 새로 추가
 });
 
 // 1. 스크롤 애니메이션

@@ -3,104 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" th:href="@{/css/fix/header.css}">
+    <link th:href="@{/css/fix/header.css}" rel="stylesheet">
     <script th:src="@{/js/fix/header.js}"></script>
+    <link href="https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/static/woff2/SUIT.css" rel="stylesheet">
+    <title>MOOD TRIP</title>
 </head>
-<link href="https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/static/woff2/SUIT.css" rel="stylesheet">
 
 <body>
-
 <header class="header" th:fragment="header">
     <div class="header-nav">
-        <div class="container">
+        <div class="header-container">
             <!-- MOOD TRIP 로고 -->
             <a th:href="@{/}">
-                <div class="nav-logo-wrapper">
-                    <div class="nav-logo">
-                        <div class="logo-squares">
-                            <div class="logo-square black"></div>
-                            <div class="logo-square yellow"></div>
-                            <div class="logo-square red"></div>
-                            <div class="logo-square blue"></div>
+                <div class="header-nav-logo-wrapper">
+                    <div class="header-nav-logo">
+                        <div class="header-logo-squares">
+                            <div class="header-logo-square header-black"></div>
+                            <div class="header-logo-square header-yellow"></div>
+                            <div class="header-logo-square header-red"></div>
+                            <div class="header-logo-square header-blue"></div>
                         </div>
-                        <div class="logo-text">MOOD<br>TRIP</div>
+                        <div class="header-logo-text">MOOD<br>TRIP</div>
                     </div>
                 </div>
             </a>
 
-            <div class="left-nav">
-                <!-- 감정여행 -->
-                <div class="left-nav-menu" data-menu="emotions">
-                    <div class="main-header text-header">감정여행</div>
+            <!-- 좌측 메뉴 -->
+            <div class="header-left-nav">
+                <div class="header-left-nav-menu" data-menu="emotions">
+                    <div class="header-main-header header-text-header">감정여행</div>
                 </div>
-
-                <!-- 동행매칭 -->
-                <div class="left-nav-menu" data-menu="companion">
-                    <div class="main-header text-header">동행매칭</div>
+                <div class="header-left-nav-menu" data-menu="companion">
+                    <div class="header-main-header header-text-header">동행매칭</div>
                 </div>
-
-                <!-- 공지사항 -->
-                <div class="left-nav-menu" data-menu="notice">
-                    <div class="main-header text-header">공지사항</div>
+                <div class="header-left-nav-menu" data-menu="notice">
+                    <div class="header-main-header header-text-header">공지사항</div>
                 </div>
-
-                <!-- 수정된 검색창 영역 -->
-                <div class="left-nav-menu pr-12 main-header text-header header-search-wrapper" style="margin-left: 100px;">
-                    <div class="non-member-search-container">
-                        <!-- 실제 검색 입력창 (비활성화 상태) -->
-                        <input
-                                type="text"
-                                class="header-search-input"
-                                placeholder="로그인 후 검색할 수 있습니다"
-                                disabled
-                                readonly
-                                style="background-color: #ffffff; color: #333333; border: 1px solid #dee2e6; padding: 10px 15px; border-radius: 6px; width: 350px; cursor: not-allowed; font-size: 14px;"
-                        />
-                        <!-- 검색 버튼 제거됨 -->
-                    </div>
-                </div>
-
             </div>
 
-            <div class="right-nav">
-                <!-- 로그인 링크 -->
+            <!-- 검색창 -->
+            <div class="header-search-nav">
+                <div class="header-non-member-search-container">
+                    <input type="text" class="header-search-input"
+                           placeholder="로그인 후 검색할 수 있습니다" disabled readonly />
+                </div>
+            </div>
+
+            <!-- 로그인/회원가입 -->
+            <div class="header-right-nav">
                 <a th:href="@{/login}">
-                    <div class="log-in-section main-header text-header">로그인</div>
+                    <div class="header-log-in-section header-main-header header-text-header">로그인</div>
                 </a>
-                <!-- 회원가입 링크 -->
                 <a th:href="@{/signup}">
-                    <div class="sign-up-button body-2-medium">회원가입</div>
+                    <div class="header-sign-up-button body-2-medium">회원가입</div>
                 </a>
             </div>
         </div>
 
         <!-- 드롭다운 메뉴 -->
-        <div class="dropdown-nav-container" style="top: 65px;">
-            <div class="dropdown-nav">
-                <div class="dropdown-menu-container" style="margin-left: 130px;">
+        <div class="header-dropdown-nav-container" style="top: 65px;">
+            <div class="header-dropdown-nav">
+                <div class="header-dropdown-menu-container" style="margin-left:130px;">
                     <!-- 감정여행 드롭다운 -->
-                    <div class="dropdown-menu-list" id="emotions-dropdown" style="width: 145px;">
-                        <a class="dropdown-menu-item" th:href="@{/emotion-search}">감정 관광지 찾기</a>
-                        <a class="dropdown-menu-item" th:href="@{/emotions/weather-spots}">날씨별 관광지 찾기</a>
+                    <div class="header-dropdown-menu-list" id="emotions-dropdown" style="width:145px;">
+                        <a class="header-dropdown-menu-item" th:href="@{/emotion-search}">감정 관광지 찾기</a>
+                        <a class="header-dropdown-menu-item" th:href="@{/emotions/weather-spots}">날씨별 관광지 찾기</a>
                     </div>
 
                     <!-- 동행매칭 드롭다운 -->
-                    <div class="dropdown-menu-list" id="companion-dropdown" style="width: 109px;">
-                        <a class="dropdown-menu-item" th:href="@{/companion-rooms/create}">방 만들기</a>
-                        <a class="dropdown-menu-item" th:href="@{/entering-room}">방 입장하기</a>
-                        <a class="dropdown-menu-item" th:href="@{/mypage/my-matching}">스케줄 짜기</a>
+                    <div class="header-dropdown-menu-list" id="companion-dropdown" style="width:109px;">
+                        <a class="header-dropdown-menu-item" th:href="@{/companion-rooms/create}">방 만들기</a>
+                        <a class="header-dropdown-menu-item" th:href="@{/entering-room}">방 입장하기</a>
+                        <a class="header-dropdown-menu-item" th:href="@{/mypage/my-matching}">스케줄 짜기</a>
                     </div>
 
                     <!-- 공지사항 드롭다운 -->
-                    <div class="dropdown-menu-list" id="notice-dropdown" style="width: 113px;">
-                        <a class="dropdown-menu-item" th:href="@{/customer-center/announcement}">공지사항</a>
-                        <a class="dropdown-menu-item" th:href="@{/customer-center/faq}">자주 묻는 질문</a>
+                    <div class="header-dropdown-menu-list" id="notice-dropdown" style="width:113px;">
+                        <a class="header-dropdown-menu-item" th:href="@{/customer-center/announcement}">공지사항</a>
+                        <a class="header-dropdown-menu-item" th:href="@{/customer-center/faq}">자주 묻는 질문</a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </header>
-
 </body>
 </html>

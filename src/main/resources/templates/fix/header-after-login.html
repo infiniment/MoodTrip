@@ -12,171 +12,150 @@
 <body>
 <header class="header" th:fragment="header">
     <div class="header-nav">
-        <div class="container">
+        <div class="header-container">
             <!-- MOOD TRIP 로고 -->
             <a th:href="@{/}">
-                <div class="nav-logo-wrapper">
-                    <div class="nav-logo">
-                        <div class="logo-squares">
-                            <div class="logo-square black"></div>
-                            <div class="logo-square yellow"></div>
-                            <div class="logo-square red"></div>
-                            <div class="logo-square blue"></div>
+                <div class="header-nav-logo-wrapper">
+                    <div class="header-nav-logo">
+                        <div class="header-logo-squares">
+                            <div class="header-logo-square header-black"></div>
+                            <div class="header-logo-square header-yellow"></div>
+                            <div class="header-logo-square header-red"></div>
+                            <div class="header-logo-square header-blue"></div>
                         </div>
-                        <div class="logo-text">MOOD<br>TRIP</div>
+                        <div class="header-logo-text">MOOD<br>TRIP</div>
                     </div>
                 </div>
             </a>
 
-            <div class="left-nav">
-                <div class="left-nav-menu" data-menu="emotions">
-                    <div class="main-header text-header">감정여행</div>
+            <!-- 좌측 메뉴 -->
+            <div class="header-left-nav">
+                <div class="header-left-nav-menu" data-menu="emotions">
+                    <div class="header-main-header header-text-header">감정여행</div>
                 </div>
-
-                <!-- 동행매칭 -->
-                <div class="left-nav-menu" data-menu="companion">
-                    <div class="main-header text-header">동행매칭</div>
+                <div class="header-left-nav-menu" data-menu="companion">
+                    <div class="header-main-header header-text-header">동행매칭</div>
                 </div>
-
-                <!-- 공지사항 -->
-                <div class="left-nav-menu" data-menu="notice">
-                    <div class="main-header text-header">공지사항</div>
+                <div class="header-left-nav-menu" data-menu="notice">
+                    <div class="header-main-header header-text-header">공지사항</div>
                 </div>
-
-                <div th:if="${isAdmin}" class="left-nav-menu">
-                    <a th:href="@{/admin}" class="main-header text-header">관리자</a>
+                <div th:if="${isAdmin}" class="header-left-nav-menu">
+                    <a th:href="@{/admin}" class="header-main-header header-text-header">관리자</a>
                 </div>
+            </div>
 
+            <!-- 검색창 (독립 영역) -->
+            <div class="header-search-nav">
+                <form class="header-logged-in-search-form" th:action="@{/emotion-search}" method="get" id="headerEmotionForm">
+                    <!-- 대분류 -->
+                    <select name="categoryId" id="headerCategorySelect" aria-label="감정 카테고리"
+                            style="height:40px; padding:0 10px; border:1px solid #e5e7eb; border-radius:8px; margin-right:8px; min-width:150px;">
+                        <option value="" disabled selected hidden>대분류 선택</option>
+                        <option th:each="c : ${headerEmotionCategories}"
+                                th:value="${c.emotionCategoryId}"
+                                th:text="${c.emotionCategoryName}">
+                        </option>
+                    </select>
 
-                <!-- 로그인 후 헤더 전용 검색바 (클래스명 변경됨) -->
-                <!-- 기존 위치 그대로 대체 -->
-                <div class="left-nav-menu pr-12 main-header text-header logged-in-header-search-wrapper" style="margin-left: 100px;">
-                    <form class="logged-in-header-search-form" th:action="@{/emotion-search}" method="get" id="headerEmotionForm">
-                        <!-- 대분류 -->
-                        <select name="categoryId" id="headerCategorySelect" aria-label="감정 카테고리"
-                                style="height:40px; padding:0 10px; border:1px solid #e5e7eb; border-radius:8px; margin-right:8px; min-width:150px;">
-                            <!-- hidden 속성 추가 -->
-                            <option value="" disabled selected hidden>대분류 선택</option>
-                            <option th:each="c : ${headerEmotionCategories}"
-                                    th:value="${c.emotionCategoryId}"
-                                    th:text="${c.emotionCategoryName}">
-                            </option>
-                        </select>
+                    <!-- 소분류 -->
+                    <select name="tagId" id="headerEmotionSelect" aria-label="감정(소분류)"
+                            style="height:40px; padding:0 10px; border:1px solid #e5e7eb; border-radius:8px; margin-right:8px; min-width:150px;">
+                        <option value="" disabled selected hidden>소분류 선택</option>
+                    </select>
 
-                        <!-- 소분류 -->
-                        <select name="tagId" id="headerEmotionSelect" aria-label="감정(소분류)"
-                                style="height:40px; padding:0 10px; border:1px solid #e5e7eb; border-radius:8px; margin-right:8px; min-width:150px;">
-                            <!-- hidden 속성 추가 -->
-                            <option value="" disabled selected hidden>소분류 선택</option>
-                        </select>
+                    <!-- 기존 input은 숨김 -->
+                    <input type="text" name="q" placeholder="감정을 입력하세요"
+                           class="header-logged-in-emotion-search-input" id="loggedInHeaderEmotionSearchInput"
+                           style="display:none;" aria-hidden="true" tabindex="-1" />
 
-                        <!-- 기존 input은 레이아웃 영향 없도록 숨김(서버 전송에도 영향 없음) -->
-                        <input type="text" name="q" placeholder="감정을 입력하세요"
-                               class="logged-in-header-emotion-search-input" id="loggedInHeaderEmotionSearchInput"
-                               style="display:none;" aria-hidden="true" tabindex="-1" />
-
-                        <button type="submit" class="logged-in-header-emotion-search-btn" aria-label="검색">
-                            <img th:src="@{/image/default-common/search.png}" alt="검색" class="logged-in-header-search-icon"/>
-                        </button>
-                    </form>
-
-
-
-                </div>
-
-
-
-
-
-
-                <!-- 꼭: 직렬화를 위해 th:inline="javascript" -->
-                <script th:inline="javascript">
-                    (function () {
-                        // 서버가 내려준 DTO (카테고리 + 내부 emotions[{tagId, tagName}...])
-                        const categories = /*[[${headerEmotionCategories}]]*/ [];
-
-                        const catSel = document.getElementById('headerCategorySelect');
-                        const emoSel = document.getElementById('headerEmotionSelect');
-
-                        function renderEmotions(categoryId){
-                            emoSel.innerHTML = '<option value="" disabled selected hidden>소분류 선택</option>';
-                            if(!categoryId) return;
-                            const cat = (categories || []).find(c => String(c.emotionCategoryId) === String(categoryId));
-                            if(!cat || !cat.emotions) return;
-                            cat.emotions.forEach(e => {
-                                const opt = document.createElement('option');
-                                opt.value = e.tagId;
-                                opt.textContent = e.tagName;
-                                emoSel.appendChild(opt);
-                            });
-                        }
-
-                        catSel && catSel.addEventListener('change', () => {
-                            renderEmotions(catSel.value);
-                        });
-                    })();
-                </script>
-
+                    <button type="submit" class="header-logged-in-emotion-search-btn" aria-label="검색">
+                        <img th:src="@{/image/default-common/search.png}" alt="검색" class="header-logged-in-search-icon"/>
+                    </button>
+                </form>
             </div>
 
             <!-- 로그인된 사용자 프로필 메뉴 -->
-            <div class="right-nav">
-                <div class="profile-menu-wrapper">
+            <div class="header-right-nav">
+                <div class="header-profile-menu-wrapper">
                     <!-- 헤더에 닉네임 표시 -->
-                    <div class="profile-display">
-                        <span class="profile-nickname-header" th:text="${currentMember.nickname}">닉네임</span>
-                        <span class="profile-suffix">님</span>
+                    <div class="header-profile-display">
+                        <span class="header-profile-nickname-header" th:text="${currentMember.nickname}">닉네임</span>
+                        <span class="header-profile-suffix">님</span>
                     </div>
 
                     <!-- 프로필 이미지 -->
-                    <div class="profile-thumb" id="profileThumb">
-                        <img th:src="@{${profileImage}}" alt="프로필" id="profileImg" />
+                    <div class="header-profile-thumb" id="profileThumb">
+                        <img th:src="@{${profileImage ?: '/image/fix/moodtrip.png'}}" alt="프로필" id="profileImg" />
                     </div>
 
                     <!-- 드롭다운 -->
-                    <!-- 드롭다운 -->
-                    <div class="profile-dropdown" id="profileDropdown">
-                        <div class="profile-info">
-                            <div class="profile-nickname" th:text="${currentMember.nickname}">닉네임</div>
-                            <div class="profile-email" th:text="${currentMember.email}">이메일</div>
+                    <div class="header-profile-dropdown" id="profileDropdown">
+                        <div class="header-profile-info">
+                            <div class="header-profile-nickname" th:text="${currentMember.nickname}">닉네임</div>
+                            <div class="header-profile-email" th:text="${currentMember.email}">이메일</div>
                         </div>
 
-                        <!-- 프로필 관리 버튼에 배지 추가 -->
-                        <button class="header-profile-btn profile-manage-with-badge" id="profileManageBtn">
+                        <!-- 프로필 관리 버튼 + 배지 -->
+                        <button class="header-profile-btn header-profile-manage-with-badge" id="profileManageBtn">
                             <span>프로필 관리</span>
-                            <!-- 배지를 버튼 안에 추가 -->
                             <span class="header-notification-badge"
                                   th:if="${totalPendingRequests > 0}"
                                   th:text="${totalPendingRequests}">3</span>
                         </button>
 
-                        <button class="logout-btn" id="logoutBtn">로그아웃</button>
+                        <button class="header-logout-btn" id="logoutBtn">로그아웃</button>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- 드롭다운 메뉴 -->
-        <div class="dropdown-nav-container" style="top: 65px;">
-            <div class="dropdown-nav">
-                <div class="dropdown-menu-container" style="margin-left: 130px;">
-                    <div class="dropdown-menu-list" id="emotions-dropdown" style="width: 145px;">
-                        <a class="dropdown-menu-item" th:href="@{/emotion-search}">감정 관광지 찾기</a>
-                        <a class="dropdown-menu-item" th:href="@{/weather}">날씨별 관광지 찾기</a>
+        <div class="header-dropdown-nav-container" style="top: 65px;">
+            <div class="header-dropdown-nav">
+                <div class="header-dropdown-menu-container" style="margin-left: 130px;">
+                    <div class="header-dropdown-menu-list" id="emotions-dropdown" style="width: 145px;">
+                        <a class="header-dropdown-menu-item" th:href="@{/emotion-search}">감정 관광지 찾기</a>
+                        <a class="header-dropdown-menu-item" th:href="@{/weather}">날씨별 관광지 찾기</a>
                     </div>
-                    <div class="dropdown-menu-list" id="companion-dropdown" style="width: 109px;">
-                        <a class="dropdown-menu-item" th:href="@{/companion-rooms/create}">방 만들기</a>
-                        <a class="dropdown-menu-item" th:href="@{/entering-room}">방 입장하기</a>
-                        <a class="dropdown-menu-item" th:href="@{/mypage/my-matching}">스케줄 짜기</a>
+                    <div class="header-dropdown-menu-list" id="companion-dropdown" style="width: 109px;">
+                        <a class="header-dropdown-menu-item" th:href="@{/companion-rooms/create}">방 만들기</a>
+                        <a class="header-dropdown-menu-item" th:href="@{/entering-room}">방 입장하기</a>
+                        <a class="header-dropdown-menu-item" th:href="@{/mypage/my-matching}">스케줄 짜기</a>
                     </div>
-                    <div class="dropdown-menu-list" id="notice-dropdown" style="width: 113px;">
-                        <a class="dropdown-menu-item" th:href="@{/customer-center/announcement}">공지사항</a>
-                        <a class="dropdown-menu-item" th:href="@{/customer-center/faq}">자주 묻는 질문</a>
+                    <div class="header-dropdown-menu-list" id="notice-dropdown" style="width: 113px;">
+                        <a class="header-dropdown-menu-item" th:href="@{/customer-center/announcement}">공지사항</a>
+                        <a class="header-dropdown-menu-item" th:href="@{/customer-center/faq}">자주 묻는 질문</a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </header>
+
+<!-- 검색창 카테고리/소분류 제어 스크립트 -->
+<script th:inline="javascript">
+    (function () {
+        const categories = /*[[${headerEmotionCategories}]]*/ [];
+        const catSel = document.getElementById('headerCategorySelect');
+        const emoSel = document.getElementById('headerEmotionSelect');
+
+        function renderEmotions(categoryId) {
+            emoSel.innerHTML = '<option value="" disabled selected hidden>소분류 선택</option>';
+            if (!categoryId) return;
+            const cat = (categories || []).find(c => String(c.emotionCategoryId) === String(categoryId));
+            if (!cat || !cat.emotions) return;
+            cat.emotions.forEach(e => {
+                const opt = document.createElement('option');
+                opt.value = e.tagId;
+                opt.textContent = e.tagName;
+                emoSel.appendChild(opt);
+            });
+        }
+
+        catSel && catSel.addEventListener('change', () => {
+            renderEmotions(catSel.value);
+        });
+    })();
+</script>
 </body>
 </html>
