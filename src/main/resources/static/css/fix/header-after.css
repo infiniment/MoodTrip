@@ -3,6 +3,8 @@ header.header {
   width: 100%;
   background: white;
   position: relative;
+  overflow: visible;
+  z-index : 9999;
 }
 
 * {
@@ -12,6 +14,15 @@ header.header {
   font-family: 'SUIT', 'NotoSansKR', sans-serif;
   line-height: 1rem;
   -webkit-font-smoothing: antialiased;
+  max-width: 100%;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+html {
+  overflow-x: hidden;
 }
 
 a {
@@ -27,6 +38,7 @@ a {
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
+  box-sizing: border-box;
 }
 
 /* ================= 로고 ================= */
@@ -37,6 +49,7 @@ a {
   margin-right: 16px;
   min-width: 130px;
   box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 .header-nav-logo {
@@ -78,6 +91,8 @@ a {
   display: flex;
   align-items: center;
   gap: 20px;
+  flex-shrink: 1;
+  overflow: hidden;
 }
 
 .header-left-nav-menu {
@@ -87,6 +102,7 @@ a {
   padding: 0 16px;
   height: 65px;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .header-left-nav-menu .header-main-header {
@@ -106,6 +122,7 @@ a {
   flex: 1;
   max-width: 420px;
   min-width: 200px;
+  flex-shrink: 0;
 }
 
 .header-logged-in-search-form {
@@ -162,6 +179,7 @@ a {
   align-items: center;
   position: relative;
   flex-shrink: 0;
+  min-width: fit-content;
 }
 
 .header-profile-menu-wrapper {
@@ -304,7 +322,7 @@ a {
 .header-dropdown-nav-container {
   border-radius: 0 0 16px 16px;
   background: #fff;
-  z-index: 1999;
+  z-index: 9998;
   width: 100%;
   max-height: 0;
   overflow: hidden;
@@ -372,6 +390,29 @@ a {
   }
 }
 
+/* 데스크톱에서는 메뉴 드롭다운이 확실히 보이도록 보장 */
+@media (min-width: 900px) {
+  .header-dropdown-nav-container {
+    display: block !important;
+  }
+}
+
+/* 900px 이하에서만 메뉴와 드롭다운 숨김 (기존 768px에서 조정) */
+@media (max-width: 899px) {
+  .header-left-nav {
+    display: none !important;
+  }
+
+  .header-search-nav {
+    display: none !important;
+  }
+
+  .header-dropdown-nav-container {
+    display: none !important;
+  }
+}
+
+/* 768px 이하 - 프로필 조정만 */
 @media (max-width: 768px) {
   header.header {
     min-height: 60px;
@@ -380,14 +421,6 @@ a {
   .header-container {
     padding: 0 15px;
     justify-content: space-between;
-  }
-
-  .header-left-nav {
-    display: none;
-  }
-
-  .header-search-nav {
-    display: none;
   }
 
   .header-profile-display {
@@ -400,17 +433,143 @@ a {
   }
 }
 
+/* 480px 이하 - 로고와 프로필만 표시 */
 @media (max-width: 480px) {
-  .header-container {
-    padding: 0 10px;
+  header.header {
+    min-height: 60px;
   }
 
+  .header-container {
+    padding: 0 10px !important;
+    gap: 8px !important;
+    min-height: 60px;
+    justify-content: space-between !important;
+  }
+
+  /* 로고 크기 조정 - 2x2 격자 유지 */
   .header-nav-logo-wrapper {
-    min-width: 100px;
-    margin-right: 10px;
+    min-width: 90px !important;
+    padding: 18px 6px !important;
+    margin-right: 0 !important;
+  }
+
+  .header-nav-logo {
+    gap: 8px !important;
+  }
+
+  .header-logo-squares {
+    display: grid !important;
+    grid-template-columns: 12px 12px !important;
+    grid-template-rows: 8px 8px !important;
+    width: 26px !important;
+    height: 18px !important;
+    gap: 2px !important;
+    flex-wrap: unset !important;
+  }
+
+  .header-logo-square {
+    width: 12px !important;
+    height: 8px !important;
+    border-radius: 2px !important;
+    display: block !important;
   }
 
   .header-logo-text {
-    font-size: 16px;
+    font-size: 13px !important;
+    line-height: 1.0 !important;
+  }
+
+  /* 메뉴 완전히 숨김 */
+  .header-left-nav {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+  /* 검색창 완전히 숨김 */
+  .header-search-nav {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+  /* 드롭다운 완전히 숨김 */
+  .header-dropdown-nav-container {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+  }
+
+  /* 프로필 영역 조정 */
+  .header-right-nav {
+    gap: 6px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .header-profile-menu-wrapper {
+    gap: 8px !important;
+  }
+
+  .header-profile-display {
+    font-size: 12px !important;
+  }
+
+  .header-profile-thumb {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  /* 프로필 드롭다운 모바일 최적화 */
+  .header-profile-dropdown {
+    min-width: 200px !important;
+    right: -10px !important;
+    padding: 14px 16px 8px 16px !important;
+  }
+
+  .header-profile-nickname {
+    font-size: 14px !important;
+  }
+
+  .header-profile-email {
+    font-size: 12px !important;
+  }
+
+  .header-profile-btn {
+    padding: 8px 0 !important;
+    font-size: 13px !important;
+  }
+
+  .header-logout-btn {
+    padding: 8px 0 !important;
+    font-size: 13px !important;
+  }
+}
+
+/* 360px 이하 초소형 모바일 */
+@media (max-width: 360px) {
+  .header-container {
+    padding: 0 8px !important;
+  }
+
+  .header-nav-logo-wrapper {
+    min-width: 80px !important;
+    padding: 16px 4px !important;
+  }
+
+  .header-logo-text {
+    font-size: 12px !important;
+  }
+
+  .header-profile-display {
+    font-size: 11px !important;
+  }
+
+  .header-profile-thumb {
+    width: 30px !important;
+    height: 30px !important;
   }
 }

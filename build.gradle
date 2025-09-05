@@ -91,6 +91,8 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	testImplementation 'org.testcontainers:mariadb'
 
+	testImplementation 'org.mockito:mockito-junit-jupiter'
+
 	//메일 전송 기능
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 }
