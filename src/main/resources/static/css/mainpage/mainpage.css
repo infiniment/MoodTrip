@@ -69,10 +69,10 @@ body {
 .hero-section {
     position: relative;
     min-height: 100vh;
-    min-width: 100vh;
     display: flex;
     align-items: center;
     background: var(--gradient-primary);
+    overflow: hidden; /* 가로 스크롤 방지 */
 }
 
 .hero-background {
@@ -142,14 +142,15 @@ body {
 
 .hero-container {
     position: relative;
-    z-index: 2;
+    z-index: 1;
     max-width: 1200px;
     margin: 0 auto;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 80px;
     align-items: center;
-    padding: 0 24px;
+    padding: 60px 24px; /* 상하 패딩 추가 */
+    width: 100%; /* 명시적으로 width 설정 */
 }
 
 .hero-content {
@@ -1523,27 +1524,33 @@ body {
    반응형 디자인
    =========================================== */
 @media (max-width: 1024px) {
+    .hero-section {
+        min-height: 80vh; /* 높이 조정 */
+        padding: 40px 0;
+    }
+
     .hero-container {
         grid-template-columns: 1fr;
-        gap: 60px;
+        gap: 40px;
         text-align: center;
-        padding: 0 20px;
+        padding: 40px 20px;
+        max-width: 100%;
     }
 
     .hero-visual {
         order: -1;
-        height: 400px;
+        height: 350px; /* 높이 줄임 */
     }
 
     .emotion-center {
-        padding: 30px 40px;
+        padding: 25px 35px;
         left: 50%;
         top: 40%;
-        transform: translateX(-50%) scale(1.05);
+        transform: translateX(-50%) scale(1.0);
     }
 
     .emotion-center:hover {
-        transform: translateX(-50%) scale(1.1);
+        transform: translateX(-50%) scale(1.05);
     }
 
     .emotion-brand {
@@ -1589,18 +1596,14 @@ body {
 }
 
 @media (max-width: 768px) {
-    .section-container {
-        padding: 0 16px;
-    }
-
     .hero-section {
-        min-height: 80vh;
-        padding: 40px 0;
+        min-height: 70vh; /* 더 작게 */
+        padding: 20px 0;
     }
 
     .hero-container {
-        gap: 40px;
-        padding: 0 16px;
+        gap: 30px;
+        padding: 30px 16px;
         grid-template-columns: 1fr;
     }
 
@@ -1610,18 +1613,20 @@ body {
     }
 
     .hero-title {
-        font-size: 2.5rem;
+        font-size: 2.2rem;
+        line-height: 1.2;
     }
 
     .hero-subtitle {
-        font-size: 1.125rem;
-        margin-bottom: 40px;
+        font-size: 1rem;
+        margin-bottom: 30px;
     }
 
     .hero-actions {
         flex-direction: column;
         align-items: center;
         gap: 12px;
+        width: 100%;
     }
 
     .btn-primary-large,
@@ -1730,37 +1735,52 @@ body {
         padding: 16px;
     }
 }
-
 @media (max-width: 480px) {
-    .hero-section {
-        min-height: 70vh;
-        padding: 20px 0;
-    }
+        .hero-section {
+            min-height: 60vh;
+            padding: 20px 0;
+        }
 
-    .hero-container {
-        grid-template-columns: 1fr;
-        gap: 30px;
-        padding: 0 16px;
-    }
+        .hero-container {
+            gap: 20px;
+            padding: 20px 16px;
+        }
 
-    /* 모바일에서는 히어로 비주얼 섹션 완전히 숨김 */
-    .hero-visual {
-        display: none;
-    }
+        .hero-title {
+            font-size: 1.8rem;
+            margin-bottom: 16px;
+        }
 
-    .hero-title {
-        font-size: 2rem;
-    }
+        .title-line-1,
+        .title-line-2 {
+            margin-bottom: 20px;
+        }
 
-    .section-title {
-        font-size: 2rem;
-    }
+        .hero-subtitle {
+            font-size: 0.95rem;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
 
-    .btn-primary-large {
-        font-size: 1rem;
-        padding: 16px 24px;
-    }
+        .btn-primary-large {
+            font-size: 0.95rem;
+            padding: 14px 20px;
+        }
 
+        .btn-secondary-outline {
+            font-size: 0.9rem;
+            padding: 12px 18px;
+        }
+        .section-title {
+            font-size: 1.7rem;
+        }
+        .btn-primary-xl {
+            font-size : 0.7rem;
+        }
+        .rooms-title {
+            font-size : 1.4rem;
+        }
+    }
     .weather-card {
         width: 100%;
     }
@@ -1819,7 +1839,6 @@ body {
     .modal-footer {
         padding: 12px 16px 16px;
     }
-}
 
 /* 스크롤 애니메이션 */
 @keyframes fadeInUp {

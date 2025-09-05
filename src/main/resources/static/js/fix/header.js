@@ -1,10 +1,31 @@
 document.addEventListener('DOMContentLoaded', function () {
+  console.log('header.js 로드 시작');
+
+  // 요소 존재 여부 확인 후 실행
   const header = document.querySelector('header.header');
-  const leftNav = header.querySelector('.left-nav');
-  const dropdown = header.querySelector('.dropdown-nav-container');
-  const menuItems = header.querySelectorAll('.left-nav-menu[data-menu]');
+  if (!header) {
+    console.warn('헤더 요소를 찾을 수 없습니다.');
+    return;
+  }
+
+  // 올바른 클래스명으로 요소 선택 (CSS와 일치시킴)
+  const leftNav = header.querySelector('.header-left-nav');
+  const dropdown = header.querySelector('.header-dropdown-nav-container');
+  const menuItems = header.querySelectorAll('.header-left-nav-menu[data-menu]');
+
   let openTimeout, closeTimeout;
   let activeMenu = null;
+
+  console.log('요소 체크:', {
+    leftNav: !!leftNav,
+    dropdown: !!dropdown,
+    menuItems: menuItems.length
+  });
+
+  // 모바일 감지 함수
+  function isMobileView() {
+    return window.innerWidth <= 768;
+  }
 
   // 100vh 버그 해결 (CSS 변수 설정)
   function setVhProperty() {
@@ -36,107 +57,141 @@ document.addEventListener('DOMContentLoaded', function () {
     }, 300);
   });
 
-  // 드롭다운 높이 계산 (필요한 부분만)
-  function getDropdownHeight() {
-    const allDropdowns = dropdown.querySelectorAll('.dropdown-menu-list');
-    allDropdowns.forEach(menu => {
-      menu.classList.add('measuring');
-    });
-
-    dropdown.classList.add('measuring');
-    const height = dropdown.scrollHeight;
-    dropdown.classList.remove('measuring');
-
-    allDropdowns.forEach(menu => {
-      menu.classList.remove('measuring');
-    });
-
-    showDropdownForMenu(activeMenu);
-    return height;
+  // 메뉴 드롭다운 기능 (모바일이 아닐 때만 실행)
+  if (!isMobileView() && leftNav && dropdown && menuItems.length > 0) {
+    initMenuDropdowns();
+  } else {
+    console.log('모바일 뷰이거나 메뉴 요소가 없어서 드롭다운 초기화 스킵');
   }
 
-  function showDropdownForMenu(menuType) {
-    const allDropdowns = dropdown.querySelectorAll('.dropdown-menu-list');
-    allDropdowns.forEach(menu => {
-      menu.classList.remove('active');
-    });
+  function initMenuDropdowns() {
+    console.log('메뉴 드롭다운 초기화 시작');
 
-    const targetDropdown = dropdown.querySelector(`#${menuType}-dropdown`);
-    if (targetDropdown) {
-      targetDropdown.classList.add('active');
-      activeMenu = menuType;
+    // 요소가 실제로 보이는지 확인
+    const leftNavStyle = window.getComputedStyle(leftNav);
+    if (leftNavStyle.display === 'none' || leftNavStyle.visibility === 'hidden') {
+      console.log('메뉴가 숨겨져 있어 드롭다운 초기화를 건너뜁니다.');
+      return;
     }
-  }
 
-  function openDropdown() {
-    if (activeMenu) {
-      dropdown.classList.add('active');
-    }
-  }
-
-  function closeDropdown() {
-    dropdown.classList.remove('active');
-    activeMenu = null;
-  }
-
-  // 드롭다운 이벤트
-  menuItems.forEach(menuItem => {
-    menuItem.addEventListener('mouseenter', function () {
-      clearTimeout(closeTimeout);
-      const menuType = this.getAttribute('data-menu');
-
-      if (menuType !== activeMenu) {
-        showDropdownForMenu(menuType);
-        clearTimeout(openTimeout);
-        openTimeout = setTimeout(openDropdown, 100);
-      }
-    });
-  });
-
-  leftNav.addEventListener('mouseleave', function () {
-    clearTimeout(openTimeout);
-    closeTimeout = setTimeout(() => {
-      if (!dropdown.matches(':hover')) {
-        closeDropdown();
-      }
-    }, 180);
-  });
-
-  dropdown.addEventListener('mouseenter', function () {
-    clearTimeout(closeTimeout);
-  });
-
-  dropdown.addEventListener('mouseleave', function () {
-    closeTimeout = setTimeout(closeDropdown, 180);
-  });
-
-  // 모바일 메뉴 토글
-  const mobileToggle = document.querySelector('.mobile-menu-toggle');
-  const mobileMenu = document.querySelector('.mobile-menu');
-  const mobileOverlay = document.querySelector('.mobile-overlay');
-
-  if (mobileToggle && mobileMenu) {
-    mobileToggle.addEventListener('click', () => {
-      mobileMenu.classList.toggle('active');
-      if (mobileOverlay) {
-        mobileOverlay.classList.toggle('active');
-      }
-      document.body.classList.toggle('modal-open');
-    });
-
-    // 오버레이 클릭 시 메뉴 닫기
-    if (mobileOverlay) {
-      mobileOverlay.addEventListener('click', () => {
-        mobileMenu.classList.remove('active');
-        mobileOverlay.classList.remove('active');
-        document.body.classList.remove('modal-open');
+    // 드롭다운 높이 계산
+    function getDropdownHeight() {
+      const allDropdowns = dropdown.querySelectorAll('.header-dropdown-menu-list');
+      allDropdowns.forEach(menu => {
+        menu.style.display = 'flex';
       });
+
+      dropdown.style.maxHeight = 'auto';
+      dropdown.style.visibility = 'hidden';
+      dropdown.style.display = 'block';
+
+      const height = dropdown.scrollHeight;
+
+      dropdown.style.maxHeight = '0px';
+      dropdown.style.visibility = 'visible';
+      dropdown.style.display = '';
+
+      showDropdownForMenu(activeMenu);
+      return height;
     }
+
+    function showDropdownForMenu(menuType) {
+      const allDropdowns = dropdown.querySelectorAll('.header-dropdown-menu-list');
+      allDropdowns.forEach(menu => {
+        menu.style.display = 'none';
+      });
+
+      const targetDropdown = dropdown.querySelector(`#${menuType}-dropdown`);
+      if (targetDropdown) {
+        targetDropdown.style.display = 'flex';
+        activeMenu = menuType;
+      }
+    }
+
+    function openDropdown() {
+      if (activeMenu) {
+        const height = getDropdownHeight();
+        dropdown.style.maxHeight = height + 'px';
+        dropdown.style.overflow = 'visible';
+        dropdown.style.background = '#fff';
+        dropdown.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.1)';
+        dropdown.classList.add('active');
+      }
+    }
+
+    function closeDropdown() {
+      dropdown.style.maxHeight = '0px';
+      dropdown.style.overflow = 'hidden';
+      dropdown.classList.remove('active');
+      activeMenu = null;
+    }
+
+    // 각 메뉴 항목에 호버 이벤트 추가
+    menuItems.forEach(menuItem => {
+      menuItem.addEventListener('mouseenter', function () {
+        clearTimeout(closeTimeout);
+        const menuType = this.getAttribute('data-menu');
+
+        if (menuType !== activeMenu) {
+          showDropdownForMenu(menuType);
+          clearTimeout(openTimeout);
+          openTimeout = setTimeout(openDropdown, 100);
+        }
+      });
+    });
+
+    // 전체 leftNav에서 마우스가 나갈 때
+    leftNav.addEventListener('mouseleave', function () {
+      clearTimeout(openTimeout);
+      closeTimeout = setTimeout(() => {
+        if (!dropdown.matches(':hover')) {
+          closeDropdown();
+        }
+      }, 180);
+    });
+
+    // 드롭다운에서 마우스 이벤트
+    dropdown.addEventListener('mouseenter', function () {
+      clearTimeout(closeTimeout);
+    });
+
+    dropdown.addEventListener('mouseleave', function () {
+      closeTimeout = setTimeout(closeDropdown, 180);
+    });
+
+    console.log('메뉴 드롭다운 초기화 완료');
   }
+
+  // 화면 크기 변경 시 메뉴 재초기화
+  window.addEventListener('resize', function() {
+    clearTimeout(window.menuResizeTimeout);
+    window.menuResizeTimeout = setTimeout(function() {
+      const isNowMobile = isMobileView();
+
+      if (!isNowMobile && leftNav && dropdown && menuItems.length > 0) {
+        // 데스크톱으로 전환 - 메뉴 드롭다운 재초기화
+        const leftNavStyle = window.getComputedStyle(leftNav);
+        if (leftNavStyle.display !== 'none') {
+          console.log('데스크톱으로 전환 - 메뉴 드롭다운 재초기화');
+          initMenuDropdowns();
+        }
+      } else {
+        // 모바일로 전환 - 드롭다운 닫기
+        if (dropdown) {
+          dropdown.style.maxHeight = '0px';
+          dropdown.classList.remove('active');
+        }
+      }
+    }, 250);
+  });
+
+  console.log('header.js 초기화 완료');
 });
 
 // 감정 선택기 - 완전히 클래스 기반
 document.addEventListener('DOMContentLoaded', function () {
+  console.log('감정 선택기 초기화 시작');
+
   const emotionCategories = [
     { name: '평온 & 힐링', emotions: ['평온', '안정', '휴식', '치유', '명상', '고요', '위안', '여유'] },
     { name: '사랑 & 로맨스', emotions: ['설렘', '낭만', '사랑', '애정', '달콤함', '애틋함', '그리움', '감성'] },
@@ -223,13 +278,16 @@ document.addEventListener('DOMContentLoaded', function () {
     container.className = 'emotion-selector hidden';
 
     const input = document.querySelector('.header-emotion-search-input');
+    if (!input) {
+      console.warn('감정 검색 input을 찾을 수 없습니다.');
+      return container;
+    }
+
     const recentSection = createRecentSection(function(emotion) {
       selectedEmotions.clear();
       selectedEmotions.add(emotion);
       updateAllEmotionBtnStyles();
-      if (input) {
-        input.value = Array.from(selectedEmotions).join(', ');
-      }
+      input.value = Array.from(selectedEmotions).join(', ');
     });
     container.appendChild(recentSection);
 
@@ -306,15 +364,11 @@ document.addEventListener('DOMContentLoaded', function () {
               selectedEmotions.clear();
               selectedEmotions.add(em);
               updateAllEmotionBtnStyles();
-              if (input) {
-                input.value = Array.from(selectedEmotions).join(', ');
-              }
+              input.value = Array.from(selectedEmotions).join(', ');
             });
             container.replaceChild(newRecent, container.firstChild);
           }
-          if (input) {
-            input.value = Array.from(selectedEmotions).join(', ');
-          }
+          input.value = Array.from(selectedEmotions).join(', ');
         });
 
         grid.appendChild(btn);
@@ -374,6 +428,8 @@ document.addEventListener('DOMContentLoaded', function () {
   // 헤더 검색 input 처리
   const headerInput = document.querySelector('.header-emotion-search-input');
   if (headerInput) {
+    console.log('감정 검색 input 발견 - 감정 선택기 연결');
+
     const headerEmotionSelector = createHeaderEmotionSelector();
     document.body.appendChild(headerEmotionSelector);
 
@@ -415,6 +471,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
       }, 200);
     });
+
+    console.log('감정 선택기 초기화 완료');
+  } else {
+    console.log('감정 검색 input을 찾을 수 없음 - 감정 선택기 스킵');
   }
 
   // ESC 키 지원 (접근성)
