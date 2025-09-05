@@ -6,10 +6,16 @@
     font-family: 'SUIT', 'NotoSansKR', sans-serif !important;
     line-height: 1rem;
     -webkit-font-smoothing: antialiased;
+    max-width: 100%;
 }
 
 body {
     font-family: 'SUIT', 'Noto Sans KR', sans-serif;
+    overflow-x: hidden;
+}
+
+html {
+    overflow-x: hidden;
 }
 
 /* 헤더 스타일 */
@@ -17,6 +23,8 @@ header.header {
     width: 100%;
     min-width: 320px;
     background: white;
+    position: relative;
+    overflow: hidden;
 }
 
 header.header .header-nav {
@@ -34,12 +42,13 @@ header.header .header-nav {
 header.header .header-container {
     display: flex;
     align-items: center;
-    justify-content: space-between;  /* PC에서는 양쪽 정렬 */
+    justify-content: space-between;
     width: 100%;
     max-width: 1080px;
     margin: 0 auto;
     padding: 0 20px;
     min-height: 65px;
+    box-sizing: border-box;
 }
 
 a {
@@ -53,6 +62,7 @@ header.header .header-nav-logo-wrapper {
     margin-right: 16px;
     width: 130px;
     box-sizing: border-box;
+    flex-shrink: 0;
 }
 
 header.header .header-nav-logo {
@@ -92,6 +102,8 @@ header.header .header-nav-logo {
 header.header .header-left-nav {
     display: flex;
     gap: 20px;
+    flex-shrink: 1;
+    overflow: hidden;
 }
 
 header.header .header-left-nav .header-left-nav-menu {
@@ -99,6 +111,8 @@ header.header .header-left-nav .header-left-nav-menu {
     cursor: pointer;
     display: flex;
     align-items: center;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .header-text-header {
@@ -167,7 +181,8 @@ header.header .header-right-nav {
     align-items: center;
     justify-content: flex-end;
     gap: 12px;
-    flex-shrink: 0;  /* 버튼이 줄바꿈되지 않도록 */
+    flex-shrink: 0;
+    min-width: fit-content;
 }
 
 header.header .header-right-nav .header-log-in-section,
@@ -252,12 +267,14 @@ img {
 
 /* ====================== 반응형 ====================== */
 
-/* 태블릿 */
+/* 태블릿 (1024px 이하) */
 @media (max-width: 1024px) {
-    .header-search-nav { display: none; } /* 검색창 숨김 */
+    .header-search-nav {
+        display: none;
+    }
 
     header.header .header-container {
-        justify-content: flex-start; /* 좌측 정렬 */
+        justify-content: space-between;
         gap: 16px;
         padding: 0 15px;
     }
@@ -265,43 +282,179 @@ img {
     header.header .header-nav-logo-wrapper {
         width: 110px;
         padding: 22px 8px;
+        margin-right: 12px;
     }
 
-    .header-logo-text { font-size: 16px; }
-    .header-main-header { font-size: 13px; }
+    .header-logo-text {
+        font-size: 16px;
+    }
+
+    .header-main-header {
+        font-size: 13px;
+    }
+
+    header.header .header-left-nav {
+        gap: 16px;
+    }
+
+    header.header .header-left-nav .header-left-nav-menu {
+        padding: 20px 12px;
+    }
 }
 
-/* 모바일 */
+/* 모바일 (768px 이하) */
 @media (max-width: 768px) {
-    .header-search-nav { display: none !important; }
+    .header-search-nav {
+        display: none !important;
+    }
 
     header.header .header-container {
-        justify-content: flex-start;
-        gap: 12px;
+        justify-content: space-between;
+        gap: 8px;
         padding: 0 15px;
     }
 
     header.header .header-nav-logo-wrapper {
         width: 90px;
         padding: 22px 4px;
+        margin-right: 8px;
     }
 
-    .header-logo-text { font-size: 14px; }
-}
+    .header-logo-text {
+        font-size: 14px;
+    }
 
-/* 작은 모바일 */
-@media (max-width: 480px) {
-    header.header .header-container {
-        padding: 0 10px;
+    header.header .header-left-nav {
+        gap: 12px;
+        flex: 1;
+        justify-content: flex-start;
+        overflow: hidden;
+    }
+
+    header.header .header-left-nav .header-left-nav-menu {
+        padding: 20px 8px;
+    }
+
+    .header-main-header {
+        font-size: 12px;
+    }
+
+    header.header .header-right-nav {
         gap: 8px;
     }
 
-    header.header .header-nav-logo-wrapper { width: 80px; }
-    .header-logo-text { font-size: 12px; }
-
-    .header-right-nav .header-log-in-section,
-    .header-right-nav .header-sign-up-button {
-        padding: 8px 12px;
+    header.header .header-right-nav .header-log-in-section,
+    header.header .header-right-nav .header-sign-up-button {
+        padding: 10px 12px;
         font-size: 13px;
+    }
+}
+
+/* 작은 모바일 (480px 이하) */
+@media (max-width: 480px) {
+    header.header .header-nav {
+        min-height: 60px;
+    }
+
+    header.header .header-container {
+        padding: 0 10px;
+        gap: 8px;
+        min-height: 60px;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    /* 로고 - 2x2 격자 형태 강제 적용 */
+    header.header .header-nav-logo-wrapper {
+        width: 100px !important;
+        padding: 18px 8px !important;
+        margin-right: 0 !important;
+    }
+
+    header.header .header-nav-logo {
+        gap: 10px !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    .header-logo-squares {
+        display: grid !important;
+        grid-template-columns: 13px 13px !important;
+        grid-template-rows: 9px 9px !important;
+        width: 28px !important;
+        height: 20px !important;
+        gap: 2px !important;
+        flex-wrap: unset !important;
+    }
+
+    .header-logo-square {
+        width: 13px !important;
+        height: 9px !important;
+        border-radius: 2px !important;
+        display: block !important;
+    }
+
+    .header-logo-text {
+        font-size: 13px !important;
+        line-height: 1.1 !important;
+    }
+
+    /* 메뉴 부분 - 완전히 숨김 */
+    header.header .header-left-nav {
+        display: none !important;
+    }
+
+    /* 오른쪽 버튼 - 더 넓은 공간 활용 */
+    header.header .header-right-nav {
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+    header.header .header-right-nav .header-log-in-section {
+        padding: 10px 12px;
+        font-size: 12px;
+    }
+
+    header.header .header-right-nav .header-sign-up-button {
+        padding: 10px 14px;
+        font-size: 12px;
+        margin-left: 6px;
+        border-radius: 6px;
+    }
+
+    /* 드롭다운 메뉴도 숨김 */
+    header.header .header-dropdown-nav-container {
+        display: none !important;
+    }
+}
+
+/* 초소형 모바일 (360px 이하) */
+@media (max-width: 360px) {
+    header.header .header-container {
+        padding: 0 8px;
+    }
+
+    header.header .header-nav-logo-wrapper {
+        width: 70px;
+        padding: 16px 2px;
+    }
+
+    .header-logo-text {
+        font-size: 11px;
+    }
+
+    /* 메뉴는 여전히 숨김 */
+    header.header .header-left-nav {
+        display: none !important;
+    }
+
+    header.header .header-right-nav {
+        gap: 6px;
+    }
+
+    header.header .header-right-nav .header-log-in-section,
+    header.header .header-right-nav .header-sign-up-button {
+        padding: 8px 10px;
+        font-size: 11px;
     }
 }
