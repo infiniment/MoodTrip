@@ -89,6 +89,9 @@ dependencies {
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	testImplementation 'org.testcontainers:mariadb'
+	testImplementation 'org.mockito:mockito-junit-jupiter'
+	testImplementation 'org.apache.poi:poi-ooxml:5.2.5'
+	testRuntimeOnly 'com.h2database:h2'
 
 	//메일 전송 기능
 	implementation 'org.springframework.boot:spring-boot-starter-mail'

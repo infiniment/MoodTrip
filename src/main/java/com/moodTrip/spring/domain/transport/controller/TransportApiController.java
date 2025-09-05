@@ -25,20 +25,20 @@ public class TransportApiController {
 
     @GetMapping("/kakao/search")
     public KakaoPlaceResponse search(
-            @RequestParam String query,
-            @RequestParam(required = false) Double x,
-            @RequestParam(required = false) Double y,
-            @RequestParam(required = false) Integer radius) {
+            @RequestParam("query") String query,
+            @RequestParam(value = "x", required = false) Double x,
+            @RequestParam(value = "y", required = false) Double y,
+            @RequestParam(value = "radius", required = false) Integer radius) {
         return service.searchPlace(query, x, y, radius);
     }
 
     @GetMapping("/kakao/geocode")
-    public KakaoAddressSearchResponse geocode(@RequestParam String address) {
+    public KakaoAddressSearchResponse geocode(@RequestParam("address") String address) {
         return service.geocode(address);
     }
 
     @GetMapping("/kakao/reverse-geocode")
-    public KakaoCoord2AddressResponse reverse(@RequestParam double x, @RequestParam double y) {
+    public KakaoCoord2AddressResponse reverse(@RequestParam("x") double x, @RequestParam("y") double y) {
         return service.reverseGeocode(x, y);
     }
 
