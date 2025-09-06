@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -95,8 +96,8 @@ public class JoinRequestManagementViewController {
      */
     @GetMapping("/join-requests/success")
     public String joinRequestSuccessPage(
-            @org.springframework.web.bind.annotation.RequestParam(value = "action", required = false) String action,
-            @org.springframework.web.bind.annotation.RequestParam(value = "count", required = false, defaultValue = "1") Integer count,
+            @RequestParam(name = "action", value = "action", required = false) String action,
+            @RequestParam(name = "count", value = "count", required = false, defaultValue = "1") Integer count,
             Model model
     ) {
         log.info("방 입장 요청 처리 완료 페이지 - action: {}, count: {}", action, count);
