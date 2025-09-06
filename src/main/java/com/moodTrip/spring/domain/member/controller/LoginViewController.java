@@ -3,7 +3,6 @@ package com.moodTrip.spring.domain.member.controller;
 import com.moodTrip.spring.domain.member.dto.request.LoginRequest;
 import com.moodTrip.spring.domain.member.service.LoginService;
 import com.moodTrip.spring.domain.member.service.MemberService;
-import com.moodTrip.spring.domain.rooms.dto.response.RoomResponse;
 import com.moodTrip.spring.domain.rooms.service.RoomService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,8 +16,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-
-import java.util.List;
 
 @Slf4j
 @Controller
@@ -93,14 +90,6 @@ public class LoginViewController {
     }
 
 
-    //소셜 로그인 성공 시dd
-//    @GetMapping("/mainpage/mainpage")d
-//    public String mainPage(Model model) {
-//        log.info("==== [RoomController] /mainpage/mainpage 진입 ====");
-//        List<RoomResponse> rooms = roomService.getAllRooms();
-//        log.info("rooms 개수: {}", rooms.size());
-//        model.addAttribute("rooms", rooms);
-//        return "mainpage/mainpage"; // 뷰 파일명
-//    }
+
 
 }

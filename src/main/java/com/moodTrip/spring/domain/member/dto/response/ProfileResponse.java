@@ -2,15 +2,13 @@ package com.moodTrip.spring.domain.member.dto.response;
 
 import com.moodTrip.spring.domain.member.entity.Profile;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Schema(description = "프로필 조회/수정 응답 DTO")
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -18,13 +16,13 @@ public class ProfileResponse {
 
     @Schema(
             description = "회원 닉네임",
-            example = "상우기야미"
+            example = "애교부리지마"
     )
     private String nickname;
 
     @Schema(
             description = "자기소개",
-            example = "나는 기염둥이 상우"
+            example = "나는 애교가 싫어요"
     )
     private String profileBio;
 
