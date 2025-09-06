@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: test   # 기본은 로컬 환경
+    active: local   # 기본은 로컬 환경
   application:
     name: mood-trip
 

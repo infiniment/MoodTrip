@@ -33,16 +33,16 @@ public class CompanionRoomSearchApiController {
     @GetMapping
     public ResponseEntity<List<CompanionRoomListResponse>> getRooms(
             @Parameter(description = "검색 키워드 (방 제목, 설명, 목적지 검색)")
-            @RequestParam(required = false) String search,
+            @RequestParam(name = "search", required = false) String search,
 
             @Parameter(description = "지역 필터 (서울, 경기, 부산 등)")
-            @RequestParam(required = false) String region,
+            @RequestParam(name = "region", required = false) String region,
 
             @Parameter(description = "최대 인원 필터 (2, 4, other)")
-            @RequestParam(required = false) String maxParticipants,
+            @RequestParam(name = "maxParticipants", required = false) String maxParticipants,
 
             @Parameter(description = "마감 임박만 보기")
-            @RequestParam(required = false, defaultValue = "false") Boolean urgent
+            @RequestParam(name = "urgent", required = false, defaultValue = "false") Boolean urgent
     ) {
         try {
             List<CompanionRoomListResponse> rooms;
