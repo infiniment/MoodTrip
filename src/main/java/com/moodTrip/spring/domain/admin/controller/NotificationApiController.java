@@ -40,7 +40,7 @@ public class NotificationApiController {
 
     //공지사항 조회
     @GetMapping("/{noticeId}")
-    public ResponseEntity<NotificationResponse> getNotification(@PathVariable Long noticeId) {
+    public ResponseEntity<NotificationResponse> getNotification(@PathVariable("noticeId") Long noticeId) {
         try {
             NotificationResponse notification = notificationService.findByIdForAdmin(noticeId);
             return ResponseEntity.ok(notification);
