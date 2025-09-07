@@ -106,7 +106,7 @@ public class AttractionEmotionController {
     @PostMapping("/update/{attractionId}")
     @ResponseBody
     public ResponseEntity<?> updateAttractionEmotion(
-            @PathVariable Long attractionId,
+            @PathVariable("attractionId") Long attractionId,
             @RequestBody List<EmotionWeightDto> emotionWeights
     ) {
         try {
