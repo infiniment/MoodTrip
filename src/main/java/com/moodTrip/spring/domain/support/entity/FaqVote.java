@@ -23,7 +23,7 @@ public class FaqVote {
 
     // 어떤 FAQ에 대한 투표인지
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "faq_id", nullable = false)
+    @JoinColumn(name = "faq_id", referencedColumnName = "center_id", nullable = false)
     private Faq faq;
 
     // 어떤 회원이 투표했는지

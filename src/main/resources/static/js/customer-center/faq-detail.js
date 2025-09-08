@@ -1,6 +1,33 @@
 // faq-detail.js
 
 document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('click', function (e) {
+        const a = e.target.closest('a[href^="/customer-center/faq/helpful/"], a[href^="/customer-center/faq/not-helpful/"]');
+        if (!a) return;
+        e.preventDefault();
+        e.stopPropagation();
+
+        // URL에서 type과 id 추출
+        const href = a.getAttribute('href');
+        const m = href.match(/\/customer-center\/faq\/(helpful|not-helpful)\/(\d+)/);
+        if (!m) return;
+
+        const type = m[1] === 'helpful' ? 'yes' : 'no';
+        const id   = m[2];
+
+        // 기존 함수가 있으면 재사용, 없으면 바로 POST
+        if (typeof handleHelpfulClick === 'function') {
+            handleHelpfulClick(type, a);
+        } else {
+            fetch(`/customer-center/faq/${m[1]}/${id}`, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest', ...getAuthHeader() },
+                credentials: 'include'
+            }).then(r => r.ok ? showToast('피드백이 반영되었습니다.') : showToast('요청 실패'))
+                .catch(() => showToast('네트워크 오류'));
+        }
+    }, true);
+
     // ========= 공통 유틸 =========
     function getAuthHeader() {
         const keys = ['accessToken', 'jwt', 'token'];
@@ -47,8 +74,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const helpfulYesButton = document.getElementById('helpful-yes');
     const helpfulNoButton  = document.getElementById('helpful-no');
 
-    // 버튼이 없으면 나머지 로직 생략(다른 페이지 보호)
-    if (!helpfulYesButton || !helpfulNoButton) return;
 
     // 페이지 전역에서 사용할 faqId (둘 중 아무 버튼의 data-faq-id 사용)
     const faqId =
@@ -56,14 +81,21 @@ document.addEventListener('DOMContentLoaded', function() {
         helpfulNoButton.getAttribute('data-faq-id');
 
     // 클릭 핸들러
-    helpfulYesButton.addEventListener('click', function () {
+    helpfulYesButton?.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
         handleHelpfulClick('yes', this);
     });
-    helpfulNoButton.addEventListener('click', function () {
+    helpfulNoButton?.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
         handleHelpfulClick('no', this);
     });
 
     function handleHelpfulClick(type, button) {
+        if (button.disabled) return;
+        button.disabled = true;
+
         // (안전) 버튼에서 다시 읽어도 됨
         const id = button.getAttribute('data-faq-id') || faqId;
 
@@ -105,7 +137,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 localStorage.setItem(`faq-vote-${id}`, type);
                 showToast('피드백이 전송되었습니다.');
             })
-            .catch(() => showToast('오류가 발생했습니다. 다시 시도해주세요.'));
+            .catch(() => showToast('오류가 발생했습니다. 다시 시도해주세요.'))
+            .finally(() => { button.disabled = false; });
     }
 
 
@@ -271,9 +304,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // 좌우 화살표로 이전/다음 FAQ 이동
         if (e.key === 'ArrowLeft') {
-            prevButton.click();
+            prevButton?.click();
         } else if (e.key === 'ArrowRight') {
-            nextButton.click();
+            nextButton?.click();
         }
         
         // Y 키로 도움됨 표시

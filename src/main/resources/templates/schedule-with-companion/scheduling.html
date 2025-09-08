@@ -54,7 +54,7 @@
                 <div class="icon">📍</div>
                 <div>
                     <strong th:text="${room.destinationName}">부산</strong>
-                    <p>
+                    <p class="trip-detail-p">
                         <span th:text="${room.travelStartDate} + ' ~ ' + ${room.travelEndDate}">2025-08-01 ~ 2025-08-03</span>
                         <span th:text="${durationLabel}">(2박 3일)</span>
                     </p>
@@ -64,7 +64,7 @@
                 <div class="icon">👶</div>
                 <div>
                     <strong th:text="'동행자 ' + ${#lists.size(members)} + '명'">동행자 4명</strong>
-                    <p>
+                    <p class="trip-detail-p">
                         <span th:each="member, stat : ${members}"
                               th:text="${member.nickname + (stat.last ? '' : ', ')}">이름</span>
                     </p>
@@ -75,7 +75,7 @@
                 <div class="icon">🧡</div>
                 <div>
                     <strong>실시간 접속 인원 :</strong>
-                    <p id="onlineUsers"></p>
+                    <p id="onlineUsers" class="trip-detail-p" ></p>
                     <div class="online-status">
                         <span class="online-indicator"></span>
                         <span id="onlineCount"></span>
