@@ -22,10 +22,10 @@ public class CompanionRoomViewController {
 
     @GetMapping
     public String roomListPage(
-            @RequestParam(required = false) String search,
-            @RequestParam(required = false) String region,
-            @RequestParam(required = false) String maxParticipants,
-            @RequestParam(required = false, defaultValue = "false") Boolean urgent,
+            @RequestParam(name = "search", required = false) String search,
+            @RequestParam(name = "region", required = false) String region,
+            @RequestParam(name = "maxParticipants", required = false) String maxParticipants,
+            @RequestParam(name = "urgent", required = false, defaultValue = "false") Boolean urgent,
             Model model
     ) {
         try {
@@ -132,7 +132,7 @@ public class CompanionRoomViewController {
 
     @GetMapping("/search")
     public String searchResultsPage(
-            @RequestParam("q") String query,
+            @RequestParam("query") String query,
             Model model
     ) {
         if (query == null || query.trim().isEmpty()) {
@@ -174,10 +174,10 @@ public class CompanionRoomViewController {
 
     @GetMapping("/partial")
     public String roomListPartial(
-            @RequestParam(required = false) String search,
-            @RequestParam(required = false) String region,
-            @RequestParam(required = false) String maxParticipants,
-            @RequestParam(required = false, defaultValue = "false") Boolean urgent,
+            @RequestParam(name = "search", required = false) String search,
+            @RequestParam(name = "region", required = false) String region,
+            @RequestParam(name = "maxParticipants", required = false) String maxParticipants,
+            @RequestParam(name = "urgent", required = false, defaultValue = "false") Boolean urgent,
             Model model
     ) {
         try {
