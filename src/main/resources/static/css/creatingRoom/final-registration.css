@@ -1519,32 +1519,31 @@ body.room-create .room-create-formview .container{
     .form-input-section{  padding: 24px; }
 }
 
-/* 3) 모바일(<=768px): 터치 우선 레이아웃 */
-/*@media (max-width: 768px){*/
-/*    !* 섹션 패딩 더 축소 *!*/
-/*    .form-section-header{ padding: 18px 16px; }*/
-/*    .form-input-section{  padding: 16px; }*/
-
-/*    !* 하단 버튼이 줄바꿈 없이 꽉 차게 *!*/
-/*    body.room-create .room-create-form-section .form-section-footer{*/
-/*        display: flex;*/
-/*        justify-content: stretch;*/
-/*        gap: 8px;*/
-/*    }*/
-/*    body.room-create .room-create-form-section .form-section-footer .btn{*/
-/*        width: 100%;*/
-/*        display: block;*/
-/*    }*/
-
-/*    !* 최종 등록의 성공/도움말 모달은 세로 공간에 맞춰 축소 *!*/
-/*    .success-buttons{ flex-direction: column; }*/
-/*    .help-modal-content{*/
-/*        width: 95%;*/
-/*        margin: 20px;*/
-/*        max-height: 90vh;*/
-/*    }*/
-/*}*/
 
 /* 4) 성공 모달: 작은 화면에서 텍스트 줄간격 유지(파일의 기존 규칙 존중) */
 .success-modal-content,
 .success-modal-content *{ line-height: 1.4; }
+
+#destinationCardDisplay,
+#destinationCardDisplay * {
+    line-height: 1.4;              /* 전역 line-height=1 무력화 */
+}
+
+.destination-details {
+    min-width: 0;                  /* flex 안에서 텍스트가 제대로 줄바꿈되도록 */
+}
+
+.destination-name {
+    margin: 2px 0 8px;
+    line-height: 1.35;
+    word-break: keep-all;          /* 한글 단어 단위로 줄바꿈 */
+    overflow-wrap: anywhere;       /* 괄호/슬래시 등 긴 토큰도 강제 줄바꿈 */
+    white-space: normal;
+}
+
+/* 주소/전화 같은 설명 텍스트에도 여유 줄간격 */
+.destination-description,
+.destination-address,
+.destination-phone {
+    line-height: 1.5;
+}
