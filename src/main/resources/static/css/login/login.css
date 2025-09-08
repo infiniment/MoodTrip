@@ -749,4 +749,43 @@ input[type="checkbox"][name="remember"]:checked + div[role="checkbox-button"] sv
     }
 }
 
+/* 기존 클래스를 수정하는 대신 중앙 정렬용 클래스를 추가하는 것이 더 안전합니다. */
+.left-items-center {
+    align-items: center; /* 수직 중앙 정렬 (flex-direction이 col이므로) */
+}
+
+.left-justify-center {
+    justify-content: center; /* 수평 중앙 정렬 */
+}
+
+/* ... 기존 CSS ... */
+
+/* left-items-start, left-justify-start는 그대로 두거나,
+   데스크톱에서만 적용되도록 미디어 쿼리 안에 넣을 수 있습니다. */
+.left-items-start {
+    align-items: flex-start;
+}
+
+.left-justify-start {
+    justify-content: flex-start;
+}
+/* === 480px 이하 모바일 화면에서 이미지 및 텍스트 중앙 정렬 === */
+@media (max-width: 480px) {
+    /* 이미지를 감싸는 부모(.grid-in-welcome)를 Flexbox 컨테이너로 만들고,
+       내부 아이템들을 수직/수평 중앙에 배치합니다. */
+    .grid-in-welcome {
+        display: flex !important; /* 기존 display: block을 덮어씁니다. */
+        flex-direction: column;   /* 아이템들을 세로로 쌓습니다 (텍스트 위, 이미지 아래) */
+        justify-content: center;  /* 수직 중앙 정렬 (세로 방향 기준) */
+        align-items: center;      /* 수평 중앙 정렬 */
+    }
+
+    /* 이미지 자체에 좌우 마진을 자동으로 주어
+       Flexbox 컨테이너 내에서 확실하게 중앙을 차지하도록 합니다. */
+    .grid-in-welcome img {
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
 
