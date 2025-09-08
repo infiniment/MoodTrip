@@ -287,8 +287,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // 🎯 프로필 이미지 변경 기능
     // ========================================
 
+
     // 프로필 이미지 변경 파일 input 이벤트
+    // 버튼 클릭 시 파일 선택창 열리도록 수정 (방법 1)
+    const profileChangeBtn = document.querySelector('.profile-btn');
     const profileImageInput = document.getElementById('file-input');
+    if (profileChangeBtn && profileImageInput) {
+        profileChangeBtn.addEventListener('click', function () {
+            profileImageInput.click(); // 버튼 전체 눌러도 파일 선택창 열림
+        });
+    }
     if (profileImageInput) {
         profileImageInput.addEventListener('change', function(event) {
             console.log('프로필 이미지 파일 선택됨');
