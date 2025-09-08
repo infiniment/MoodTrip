@@ -2,6 +2,7 @@ package com.moodTrip.spring.domain.rooms.service;
 
 import com.moodTrip.spring.domain.attraction.entity.Attraction;
 import com.moodTrip.spring.domain.attraction.repository.AttractionRepository;
+import com.moodTrip.spring.domain.emotion.entity.Emotion;
 import com.moodTrip.spring.domain.emotion.repository.EmotionRepository;
 import com.moodTrip.spring.domain.member.entity.Member;
 import com.moodTrip.spring.domain.member.repository.MemberRepository;
@@ -11,6 +12,7 @@ import com.moodTrip.spring.domain.rooms.dto.request.UpdateRoomRequest;
 import com.moodTrip.spring.domain.rooms.dto.response.RoomCardDto;
 import com.moodTrip.spring.domain.rooms.dto.response.RoomMemberResponse;
 import com.moodTrip.spring.domain.rooms.dto.response.RoomResponse;
+import com.moodTrip.spring.domain.rooms.entity.EmotionRoom;
 import com.moodTrip.spring.domain.rooms.entity.Room;
 import com.moodTrip.spring.domain.rooms.entity.RoomMember;
 import com.moodTrip.spring.domain.rooms.repository.EmotionRoomRepository;
@@ -24,7 +26,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-
 import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -50,7 +51,7 @@ public class RoomServiceImpl implements RoomService {
                 .orElseThrow(() -> new NoSuchElementException("Room not found: " + roomId));
     }
 
-    // 방 생성 로직
+    // 방 생성 로직 - 감정 저장 기능 활성화
     @Override
     @Transactional
     public RoomResponse createRoom(RoomRequest request, Long memberPk) {
@@ -58,6 +59,7 @@ public class RoomServiceImpl implements RoomService {
         // 방 생성 회원 조회
         Member creator = memberRepository.findByMemberPk(memberPk)
                 .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
+
         // 날짜 범위 계산
         List<DateRangeDto> ranges = request.getSchedule().getDateRanges();
         LocalDate travelStartDate = ranges.stream()
@@ -86,16 +88,14 @@ public class RoomServiceImpl implements RoomService {
             throw new CustomException(ATTRACTION_NOT_FOUND);
         }
 
-        // 4) Attraction 필수 연동 (@NotNull 이므로 무조건 옴)
+        // Attraction 필수 연동
         Attraction attr = attractionRepository.findById(request.getAttractionId())
                 .orElseGet(() -> attractionRepository.findByContentId(request.getAttractionId())
                         .orElseThrow(() -> new CustomException(ATTRACTION_NOT_FOUND)));
         room.setAttraction(attr);
 
-
-        // 5) 하위호환용 레거시 필드 동기화 (나중에 필드 제거 전까지 유지)
+        // 하위호환용 레거시 필드 동기화 (나중에 필드 제거 전까지 유지)
         room.setDestinationName(attr.getTitle());
-        //상우가 추가
         room.setDestinationCategory(attr.getAddr1());
 
         if (attr.getMapY() != null) room.setDestinationLat(java.math.BigDecimal.valueOf(attr.getMapY())); // 위도
@@ -103,24 +103,29 @@ public class RoomServiceImpl implements RoomService {
 
         Room savedRoom = roomRepository.save(room);
 
+        // 🎯 감정 태그 저장 및 연관 처리 (기존 주석 해제하고 수정)
+        if (request.getEmotions() != null && !request.getEmotions().isEmpty()) {
+            log.info("감정 태그 {} 개 저장 시작", request.getEmotions().size());
 
-        // 감정 태그 저장 및 연관 처리
-//        if (request.getEmotions() != null && !request.getEmotions().isEmpty()) {
-//            List<EmotionRoom> emotionRooms = new ArrayList<>();
-//            for (RoomRequest.EmotionDto emotionDto : request.getEmotions()) {
-//                Long tagId = emotionDto.getTagId();
-//                Emotion emotion = emotionRepository.findById(tagId)
-//                        .orElseThrow(() -> new CustomException(ErrorStatus.EMOTION_NOT_FOUND));
-//
-//                EmotionRoom emotionRoom = EmotionRoom.builder()
-//                        .room(savedRoom)
-//                        .emotion(emotion)
-//                        .build();
-//                emotionRooms.add(emotionRoom);
-//            }
-//            emotionRoomRepository.saveAll(emotionRooms);
-//        }
+            for (RoomRequest.EmotionDto emotionDto : request.getEmotions()) {
+                // Long을 Integer로 변환 (Emotion 엔티티의 tagId가 Integer임)
+                Integer tagId = emotionDto.getTagId().intValue();
 
+                Emotion emotion = emotionRepository.findById(Long.valueOf(tagId))
+                        .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 감정 ID: " + tagId));
+
+                EmotionRoom emotionRoom = EmotionRoom.builder()
+                        .room(savedRoom)
+                        .emotion(emotion)
+                        .build();
+
+                emotionRoomRepository.save(emotionRoom);
+                log.debug("감정 저장됨: 방 ID {}, 감정 ID {}, 감정명 {}",
+                        savedRoom.getRoomId(), emotion.getTagId(), emotion.getTagName());
+            }
+
+            log.info("감정 태그 {} 개 저장 완료", request.getEmotions().size());
+        }
 
         // RoomMember로 리더 등록
         RoomMember leader = RoomMember.builder()
@@ -154,26 +159,6 @@ public class RoomServiceImpl implements RoomService {
                 .map(RoomResponse::from)
                 .collect(Collectors.toList());
     }
-
-
-
-
-
-    // 방 감정 연관 저장 로직
-//    @Override
-//    public void addEmotionRooms(Room room, List<EmotionDto> emotions) {
-//        for (EmotionDto dto : emotions) {
-//            // Emotion emotion = emotionRepository.findById(dto.getId())
-//            //     .orElseThrow(() -> new CustomException(EMOTION_NOT_FOUND));
-//
-//            EmotionRoom emotionRoom = EmotionRoom.builder()
-//                    .room(room)
-//                    // .emotion(emotion)
-//                    .build();
-//
-//            emotionRoomRepository.save(emotionRoom);
-//        }
-//    }
 
     // 방 삭제 (soft delete)
     @Override
@@ -226,7 +211,6 @@ public class RoomServiceImpl implements RoomService {
         roomMemberRepository.save(roomMember);
     }
 
-
     @Override
     public void leaveRoom(Member member, Room room) {
         RoomMember roomMember = roomMemberRepository.findByMemberAndRoom(member, room)
@@ -261,9 +245,7 @@ public class RoomServiceImpl implements RoomService {
         return RoomResponse.from(room);
     }
 
-
     // 방 목록을 RoomCardDto로 변환해 반환
-    // 추후에 가중치 부여 한
     @Override
     public List<RoomCardDto> getRoomCards() {
         return roomRepository.findAll().stream()
@@ -271,17 +253,20 @@ public class RoomServiceImpl implements RoomService {
                 .collect(Collectors.toList());
     }
 
-    // Room 엔터티 -> RoomCardDto 변환 메서드
+    // Room 엔터티 -> RoomCardDto 변환 메서드 - 감정 태그 조회 기능 추가
     private RoomCardDto toRoomCardDto(Room room) {
         String status = (room.getRoomCurrentCount() >= room.getRoomMaxCount() * 0.5)
                 ? "마감임박"
                 : "모집중";
-        // 상우가 추가함
+
         String image = (room.getAttraction() != null && room.getAttraction().getFirstImage() != null)
                 ? room.getAttraction().getFirstImage()
                 : "/static/image/fix/moodtrip.png";
 
-        List<String> tags = null;// EmotionRoom, 태그 연동시 할당
+        // 🎯 방의 감정 태그들 조회하기
+        List<String> tags = emotionRoomRepository.findByRoom(room).stream()
+                .map(emotionRoom -> emotionRoom.getEmotion().getTagName())
+                .collect(Collectors.toList());
 
         return RoomCardDto.builder()
                 .roomId(room.getRoomId())
@@ -294,12 +279,11 @@ public class RoomServiceImpl implements RoomService {
                 .travelStartDate(room.getTravelStartDate() != null ? room.getTravelStartDate().toString() : null)
                 .travelEndDate(room.getTravelEndDate() != null ? room.getTravelEndDate().toString() : null)
                 .image(image)
-                .tags(tags)
+                .tags(tags)  // 🎯 여기에 감정 태그들이 들어감
                 .status(status)
                 .createDate(room.getCreatedAt() != null ? room.getCreatedAt().toString() : null)
                 .build();
     }
-
 
     @Override
     @Transactional(readOnly = true)
