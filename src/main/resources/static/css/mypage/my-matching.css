@@ -1536,3 +1536,33 @@ a:focus:not(:focus-visible) {
     font-weight: 400 !important;
     color: #303441 !important;
 }
+.matching-info-section { align-items: flex-start !important; }
+
+/* 목적지 줄: 한 줄 정렬 + 필요한 경우만 줄바꿈 */
+.matching-meta-secondary{
+    display:flex !important;
+    align-items:center !important;
+    gap:6px 8px !important;
+    flex-wrap:wrap !important;
+    line-height:1.4 !important;
+}
+/* 목적지 텍스트가 너무 길면 말줄임 */
+.matching-meta-secondary .location-tag{
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+    max-width:100% !important;
+}
+
+/* 설명: 위아래 간격과 줄수 고정(필요시 숫자만 조절) */
+.matching-description{
+    margin-top:6px !important;
+    line-height:1.6 !important;
+    -webkit-line-clamp: 3; /* 2~3 사이로 조절 가능 */
+}
+
+/* 태그가 설명과 수직 정렬을 깨뜨리던 여백 제거 */
+.tag{ margin-top:0 !important; }
+
+/* 구분자 좌우 여백 살짝 정리(선택) */
+.separator{ margin:0 2px; }

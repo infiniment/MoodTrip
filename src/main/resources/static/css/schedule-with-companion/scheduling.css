@@ -96,6 +96,10 @@ body {
     transition: transform 0.3s ease;
 }
 
+.trip-detail-p {
+    margin-top: 5px;
+}
+
 .trip-detail .icon:hover {
     transform: scale(1.1);
 }

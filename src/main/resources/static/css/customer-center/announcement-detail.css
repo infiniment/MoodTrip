@@ -1115,3 +1115,5 @@ body {
     .section-page{box-shadow:none;border-radius:0}
     .breadcrumb-nav,.announcement-footer,.related-announcements{display:none}
 }
+.helpful-button svg,
+.helpful-button path { pointer-events: none; }

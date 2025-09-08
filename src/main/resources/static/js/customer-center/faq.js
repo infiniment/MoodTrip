@@ -191,7 +191,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
                 <div class="faq-action">
-                    <button class="helpful-button" data-type="helpful" data-faq-id="${faq.id}">
+                    <button type="button" class="helpful-button" data-type="helpful" data-faq-id="${faq.id}">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                             <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
                         </svg>
@@ -251,7 +251,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         document.querySelectorAll('.helpful-button').forEach(button => {
-            button.addEventListener('click', function() {
+            button.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (this.disabled) return;      // 중복 클릭 가드
+                this.disabled = true;
+
                 const faqId = this.getAttribute('data-faq-id');
 
                 fetch(`/customer-center/faq/helpful/${faqId}`, {
@@ -260,12 +265,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     .then(response => {
                         if (response.ok) {
                             this.classList.add('clicked');
+                            this.setAttribute('aria-pressed', 'true');
                             alert('도움이 되었다는 의견이 반영되었습니다.');
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                    });
+                    })
+                    .catch(() => {
+                        this.disabled = false;
+                    })
             });
         });
     }
