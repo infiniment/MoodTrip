@@ -4263,7 +4263,9 @@ function loadDynamicContent(url, pushState = true) {
 
     showLoadingMessage('데이터를 불러오는 중...');
 
-    fetch(url)
+    fetch(url, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }   // ★ 추가
+    })
         .then(response => {
             hideLoadingMessage();
             if (!response.ok) throw new Error('콘텐츠 로드 실패');

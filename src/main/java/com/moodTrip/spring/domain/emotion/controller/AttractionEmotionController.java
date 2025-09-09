@@ -30,8 +30,16 @@ public class AttractionEmotionController {
     @GetMapping
     public String showMappingPage(@RequestParam(name="page",defaultValue = "0") int page,
                                   @RequestParam(name="size",defaultValue = "10") int size,
-                                  Model model
+                                  Model model,
+                                  jakarta.servlet.http.HttpServletRequest request
                                  ) {
+
+        // 1) AJAX가 아니면 전체 페이지로 보내기
+        boolean isAjax = "XMLHttpRequest".equals(request.getHeader("X-Requested-With"));
+        if (!isAjax) {
+            return "redirect:/admin";
+        }
+
         Page<Attraction> attractionPage = attractionService.findAttractions(page, size);
 
         int currentPage = attractionPage.getNumber();
