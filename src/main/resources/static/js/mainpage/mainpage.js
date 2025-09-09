@@ -80,7 +80,7 @@ document.addEventListener('click', function(e) {
     const contentId = card.dataset.contentId;
     console.log("카드 클릭됨:", contentId);
     if (contentId) {
-      window.location.href = `/attraction/weather/detail?contentId=${contentId}`;
+      window.location.href = `/attractions/detail/${contentId}`;
     }
   }
 });
