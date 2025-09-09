@@ -92,8 +92,8 @@ public class MemberService {
             // Profile도 함께 생성
             Profile profile = Profile.builder()
                     .member(savedMember)
-                    .profileImage(null)  // 기본값
-                    .profileBio(null)    // 기본값
+                    .profileImage("/image/fix/moodtrip.png") // 기본 프로필 이미지
+                    .profileBio("안녕하세요~")  // 기본값
                     .build();
 
             profileRepository.save(profile);
@@ -116,8 +116,8 @@ public class MemberService {
             // Profile도 함께 생성
             Profile profile = Profile.builder()
                     .member(savedMember)
-                    .profileImage(null)  // 기본값
-                    .profileBio(null)    // 기본값
+                    .profileImage("/image/fix/moodtrip.png") // 기본 프로필 이미지
+                    .profileBio("안녕하세요~")  // 기본값
                     .build();
 
             profileRepository.save(profile);
@@ -186,8 +186,8 @@ public class MemberService {
                     log.warn("프로필이 없어서 새로 생성 - 회원ID: {}", member.getMemberId());
                     Profile newProfile = Profile.builder()
                             .member(member)
-                            .profileImage(null)
-                            .profileBio(null)
+                            .profileImage("/image/fix/moodtrip.png") // 기본 프로필 이미지
+                            .profileBio("안녕하세요~")
                             .build();
                     return profileRepository.save(newProfile);
                 });
@@ -253,7 +253,7 @@ public class MemberService {
 
     // 복구된 계정 정보 업데이트 - Profile 확인 추가
     @Transactional
-    private void updateReactivatedMemberInfo(Member reactivatedMember, MemberRequest request) {
+    protected void updateReactivatedMemberInfo(Member reactivatedMember, MemberRequest request) {
         log.info("복구된 계정 정보 업데이트 시작 - 회원ID: {}", reactivatedMember.getMemberId());
 
         // 새 비밀번호로 업데이트
@@ -274,8 +274,8 @@ public class MemberService {
         if (!profileRepository.existsByMember(reactivatedMember)) {
             Profile profile = Profile.builder()
                     .member(reactivatedMember)
-                    .profileImage(null)
-                    .profileBio(null)
+                    .profileImage("/image/fix/moodtrip.png") // 기본 프로필 이미지
+                    .profileBio("안녕하세요~")
                     .build();
             profileRepository.save(profile);
             log.info("복구된 계정의 프로필 생성 완료 - 회원ID: {}", reactivatedMember.getMemberId());

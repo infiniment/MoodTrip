@@ -85,7 +85,8 @@
 
                     <!-- 프로필 이미지 -->
                     <div class="header-profile-thumb" id="profileThumb">
-                        <img th:src="@{${profileImage}}" alt="프로필" id="profileImg" /></div>
+                        <img th:src="@{${profileImage ?: '/image/fix/moodtrip.png'}}" alt="프로필" id="profileImg" />
+                    </div>
 
                     <!-- 드롭다운 -->
                     <div class="header-profile-dropdown" id="profileDropdown">
