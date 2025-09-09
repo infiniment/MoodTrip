@@ -47,7 +47,7 @@ public class MainPageWeatherAttractionResponse {
                 .attractionName(attraction.getTitle())
                 .location(formatLocation(attraction))
                 .description(attraction.getTitle())
-                .imageUrl(attraction.getFirstImage() != null ? attraction.getFirstImage() : "/image/fix/moodtrip.png")
+                .imageUrl(attraction.getFirstImage() != null ? attraction.getFirstImage() : "/image/creatingRoom/landscape-placeholder-svgrepo-com.svg")
                 .weatherType(convertWeatherToKorean(weatherAttraction.getWeather()))
                 .weatherIcon(convertWeatherToIcon(weatherAttraction.getWeather()))
                 .temperature(Math.round(weatherAttraction.getTemperature()) + "°")

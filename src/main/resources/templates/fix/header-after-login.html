@@ -47,9 +47,9 @@
             <!-- 검색창 (독립 영역) -->
             <div class="header-search-nav">
                 <form class="header-logged-in-search-form" th:action="@{/emotion-search}" method="get" id="headerEmotionForm">
-                    <!-- 대분류 -->
-                    <select name="categoryId" id="headerCategorySelect" aria-label="감정 카테고리"
-                            style="height:40px; padding:0 10px; border:1px solid #e5e7eb; border-radius:8px; margin-right:8px; min-width:150px;">
+                    <!-- 깔끔해진 HTML -->
+                    <select name="categoryId" id="headerCategorySelect"
+                            class="header-search-form-select" aria-label="감정 카테고리">
                         <option value="" disabled selected hidden>대분류 선택</option>
                         <option th:each="c : ${headerEmotionCategories}"
                                 th:value="${c.emotionCategoryId}"
@@ -57,9 +57,9 @@
                         </option>
                     </select>
 
-                    <!-- 소분류 -->
-                    <select name="tagId" id="headerEmotionSelect" aria-label="감정(소분류)"
-                            style="height:40px; padding:0 10px; border:1px solid #e5e7eb; border-radius:8px; margin-right:8px; min-width:150px;">
+                    <select name="tagId" id="headerEmotionSelect"
+                            class="header-search-form-select" aria-label="감정(소분류)"
+                            disabled title="먼저 대분류를 선택해주세요">
                         <option value="" disabled selected hidden>소분류 선택</option>
                     </select>
 
@@ -85,7 +85,7 @@
 
                     <!-- 프로필 이미지 -->
                     <div class="header-profile-thumb" id="profileThumb">
-                        <img th:src="@{${profileImage ?: '/image/fix/moodtrip.png'}}" alt="프로필" id="profileImg" />
+                        <img th:src="@{${profileImage ?: '/image/creatingRoom/landscape-placeholder-svgrepo-com.svg'}}" alt="프로필" id="profileImg" />
                     </div>
 
                     <!-- 드롭다운 -->
@@ -132,31 +132,5 @@
         </div>
     </div>
 </header>
-
-<!-- 검색창 카테고리/소분류 제어 스크립트 -->
-<script th:inline="javascript">
-    (function () {
-        const categories = /*\[[${headerEmotionCategories}]]*/ [];
-        const catSel = document.getElementById('headerCategorySelect');
-        const emoSel = document.getElementById('headerEmotionSelect');
-
-        function renderEmotions(categoryId) {
-            emoSel.innerHTML = '<option value="" disabled selected hidden>소분류 선택</option>';
-            if (!categoryId) return;
-            const cat = (categories || []).find(c => String(c.emotionCategoryId) === String(categoryId));
-            if (!cat || !cat.emotions) return;
-            cat.emotions.forEach(e => {
-                const opt = document.createElement('option');
-                opt.value = e.tagId;
-                opt.textContent = e.tagName;
-                emoSel.appendChild(opt);
-            });
-        }
-
-        catSel && catSel.addEventListener('change', () => {
-            renderEmotions(catSel.value);
-        });
-    })();
-</script>
 </body>
 </html>

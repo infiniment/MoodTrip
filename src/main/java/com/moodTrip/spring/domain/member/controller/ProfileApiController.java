@@ -41,7 +41,7 @@ public class ProfileApiController {
     private final MemberService memberService;
     private final SecurityUtil securityUtil; // 🔥 SecurityUtil 주입!
 
-    private static final String DEFAULT_IMG = "/image/fix/moodtrip.png";
+    private static final String DEFAULT_IMG = "/image/creatingRoom/landscape-placeholder-svgrepo-com.svg";
 
     @Operation(
             summary = "내 프로필 조회",
@@ -223,7 +223,7 @@ public class ProfileApiController {
     /**
      * 배치 아바타 조회: POST /api/v1/profiles/avatars
      * 요청 바디: ["유저1","유저2",...]
-     * 응답 예: { "유저1": "/uploads/a.png", "유저2": "/image/fix/moodtrip.png" }
+     * 응답 예: { "유저1": "/uploads/a.png", "유저2": "/image/creatingRoom/landscape-placeholder-svgrepo-com.svg" }
      */
     @PostMapping("/avatars")
     public ResponseEntity<Map<String, String>> getAvatars(@org.springframework.web.bind.annotation.RequestBody List<String> nicknames) {

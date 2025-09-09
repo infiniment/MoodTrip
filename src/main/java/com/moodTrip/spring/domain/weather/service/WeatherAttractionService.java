@@ -243,7 +243,7 @@ public class WeatherAttractionService {
                 .location(formatAttractionLocation(attraction))
                 .description(createWeatherBasedDescription(attraction.getTitle(), realWeather.getWeather()))
                 .imageUrl(attraction.getFirstImage() != null ?
-                        attraction.getFirstImage() : "/image/fix/moodtrip.png")
+                        attraction.getFirstImage() : "/image/creatingRoom/landscape-placeholder-svgrepo-com.svg")
 
                 .weatherType(convertWeatherToKorean(realWeather.getWeather()))
                 .weatherIcon(convertWeatherToIcon(realWeather.getWeather()))
@@ -423,7 +423,7 @@ public class WeatherAttractionService {
                 .attractionName(attractionNames[index % attractionNames.length])
                 .location(locations[index % locations.length])
                 .description(descriptions[index % descriptions.length])
-                .imageUrl("/image/fix/moodtrip.png")
+                .imageUrl("/image/creatingRoom/landscape-placeholder-svgrepo-com.svg")
                 .weatherType(convertWeatherToKorean(weatherType))
                 .weatherIcon(convertWeatherToIcon(weatherType))
                 .temperature("25°") // 백업용만 고정 온도

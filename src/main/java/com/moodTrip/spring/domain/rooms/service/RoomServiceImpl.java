@@ -261,7 +261,7 @@ public class RoomServiceImpl implements RoomService {
 
         String image = (room.getAttraction() != null && room.getAttraction().getFirstImage() != null)
                 ? room.getAttraction().getFirstImage()
-                : "/static/image/fix/moodtrip.png";
+                : "/image/creatingRoom/landscape-placeholder-svgrepo-com.svg";
 
         // 🎯 방의 감정 태그들 조회하기
         List<String> tags = emotionRoomRepository.findByRoom(room).stream()

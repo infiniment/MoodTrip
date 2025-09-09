@@ -12,7 +12,7 @@ let travelStartDate = null;
 let travelEndDate = null;
 
 // 채팅 프로필
-const DEFAULT_AVATAR = '/image/fix/moodtrip.png';
+const DEFAULT_AVATAR = '/image/creatingRoom/landscape-placeholder-svgrepo-com.svg';
 const AVATAR_CACHE = new Map();
 
 let prevUsers = new Set();

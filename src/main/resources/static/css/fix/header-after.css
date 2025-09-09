@@ -116,6 +116,28 @@ a {
   color: #212121;
 }
 
+/* header-after.css에 추가 */
+.header-search-form-select {
+  height: 40px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  margin-right: 8px;
+  min-width: 150px;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+}
+
+.header-search-form-select:focus {
+  outline: none;
+  border-color: #005792;
+}
+
+.header-search-form-select:hover {
+  border-color: #ccc;
+}
+
 /* ================= 검색창 ================= */
 .header-search-nav {
   margin: 0 24px;
@@ -130,12 +152,20 @@ a {
   align-items: center;
   width: 100%;
 }
+/* 비활성화된 소분류 스타일 */
+.header-search-form-select:disabled {
+  background-color: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+  border-color: #e5e7eb;
+}
 
+.header-search-form-select:disabled:hover {
+  cursor: not-allowed;
+}
 .header-logged-in-search-form select {
   height: 40px;
   padding: 0 10px;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
   margin-right: 8px;
   min-width: 120px;
   font-size: 14px;

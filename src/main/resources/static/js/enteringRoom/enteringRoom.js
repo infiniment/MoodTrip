@@ -222,7 +222,7 @@ function viewRoomDetail(roomId) {
             if (roomData.image) {
                 imgEl.src = roomData.image;
             } else {
-                imgEl.src = '/image/fix/moodtrip.png'; // fallback
+                imgEl.src = '/image/creatingRoom/landscape-placeholder-svgrepo-com.svg'; // fallback
             }
             imgEl.alt = roomData.title || '방 이미지';
 
@@ -283,7 +283,7 @@ function openDetailModal(room) {
     };
 
     if (elements.detailRoomImage) {
-        elements.detailRoomImage.src = room.image || '/image/fix/moodtrip.png';
+        elements.detailRoomImage.src = room.image || '/image/creatingRoom/landscape-placeholder-svgrepo-com.svg';
         elements.detailRoomImage.alt = room.title;
     }
     if (elements.detailRoomStatus) {
@@ -937,7 +937,7 @@ function renderAllRoomCards() {
                 data-room-id="${room.id}" 
                 data-pagination="true">
                <div class="room-image">
-                   <img src="${room.image || '/image/fix/moodtrip.png'}" alt="${room.title}" onerror="this.src='/image/fix/moodtrip.png'">
+                   <img src="${room.image || '/image/creatingRoom/landscape-placeholder-svgrepo-com.svg'}" alt="${room.title}" onerror="this.src='/image/creatingRoom/landscape-placeholder-svgrepo-com.svg'">
                    <div class="room-status ${isUrgent ? 'urgent' : ''} ${isCompleted ? 'completed' : ''} ${isDateAdjustment ? 'date-adjustment' : ''}">${room.status}</div>
                </div>
                <div class="room-content">

@@ -92,7 +92,7 @@ public class MemberService {
             // Profile도 함께 생성
             Profile profile = Profile.builder()
                     .member(savedMember)
-                    .profileImage("/image/fix/moodtrip.png") // 기본 프로필 이미지
+                    .profileImage("/image/creatingRoom/landscape-placeholder-svgrepo-com.svg") // 기본 프로필 이미지
                     .profileBio("안녕하세요~")  // 기본값
                     .build();
 
@@ -116,7 +116,7 @@ public class MemberService {
             // Profile도 함께 생성
             Profile profile = Profile.builder()
                     .member(savedMember)
-                    .profileImage("/image/fix/moodtrip.png") // 기본 프로필 이미지
+                    .profileImage("/image/creatingRoom/landscape-placeholder-svgrepo-com.svg") // 기본 프로필 이미지
                     .profileBio("안녕하세요~")  // 기본값
                     .build();
 
@@ -186,7 +186,7 @@ public class MemberService {
                     log.warn("프로필이 없어서 새로 생성 - 회원ID: {}", member.getMemberId());
                     Profile newProfile = Profile.builder()
                             .member(member)
-                            .profileImage("/image/fix/moodtrip.png") // 기본 프로필 이미지
+                            .profileImage("/image/creatingRoom/landscape-placeholder-svgrepo-com.svg") // 기본 프로필 이미지
                             .profileBio("안녕하세요~")
                             .build();
                     return profileRepository.save(newProfile);
@@ -274,7 +274,7 @@ public class MemberService {
         if (!profileRepository.existsByMember(reactivatedMember)) {
             Profile profile = Profile.builder()
                     .member(reactivatedMember)
-                    .profileImage("/image/fix/moodtrip.png") // 기본 프로필 이미지
+                    .profileImage("/image/creatingRoom/landscape-placeholder-svgrepo-com.svg") // 기본 프로필 이미지
                     .profileBio("안녕하세요~")
                     .build();
             profileRepository.save(profile);

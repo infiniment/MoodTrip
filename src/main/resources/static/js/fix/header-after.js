@@ -18,6 +18,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // 메뉴 드롭다운 기능 초기화
     initMenuDropdowns();
 
+    initEmotionDropdown();
+
+
     console.log('header-after.js 초기화 완료');
   } catch (error) {
     console.error('header-after.js 초기화 실패:', error);
@@ -140,7 +143,7 @@ function loadUserProfile() {
           profileImgElement.src =
               userData.profileImage && userData.profileImage.trim() !== ''
                   ? userData.profileImage
-                  : '/image/fix/moodtrip.png';
+                  : '/image/creatingRoom/landscape-placeholder-svgrepo-com.svg';
         }
 
         console.log('사용자 프로필 로드 완료');
@@ -254,6 +257,69 @@ function isLoggedIn() {
   return tokenKeys.some(key => localStorage.getItem(key) || sessionStorage.getItem(key));
 }
 
+/**
+ * 검색창 대분류-소분류 드롭다운 초기화
+ */
+function initEmotionDropdown() {
+  console.log('감정 드롭다운 초기화 시작');
+
+  const catSel = document.getElementById('headerCategorySelect');
+  const emoSel = document.getElementById('headerEmotionSelect');
+
+  // 초기 상태: 소분류 비활성화
+  emoSel.disabled = true;
+  emoSel.title = '먼저 대분류를 선택해주세요';
+
+  fetch('/api/categories')
+      .then(response => response.json())
+      .then(categories => {
+        console.log('API에서 받은 데이터:', categories);
+
+        if (!catSel || !emoSel) {
+          console.error('드롭다운 요소를 찾을 수 없음');
+          return;
+        }
+
+        catSel.addEventListener('change', function() {
+          const selectedId = parseInt(this.value);
+          console.log('선택된 대분류 ID:', selectedId);
+
+          // 소분류 초기화
+          emoSel.innerHTML = '<option value="" disabled selected hidden>소분류 선택</option>';
+
+          const category = categories.find(c => c.emotionCategoryId === selectedId);
+
+          if (category && category.emotions) {
+            // 소분류 활성화
+            emoSel.disabled = false;
+            emoSel.title = '소분류를 선택하세요';
+
+            category.emotions.forEach(emotion => {
+              const option = document.createElement('option');
+              option.value = emotion.tagId;
+              option.textContent = emotion.tagName;
+              emoSel.appendChild(option);
+            });
+            console.log('소분류 옵션 추가 완료:', category.emotions.length + '개');
+          } else {
+            // 소분류 비활성화
+            emoSel.disabled = true;
+            emoSel.title = '먼저 대분류를 선택해주세요';
+          }
+        });
+
+        // 대분류 초기화 시 소분류도 초기화
+        catSel.addEventListener('focus', function() {
+          if (!this.value) {
+            emoSel.disabled = true;
+            emoSel.innerHTML = '<option value="" disabled selected hidden>소분류 선택</option>';
+          }
+        });
+      })
+      .catch(error => {
+        console.error('데이터 로드 실패:', error);
+      });
+}
 // 전역 함수로 노출
 window.MoodTripHeaderAfter = {
   initProfileDropdown,

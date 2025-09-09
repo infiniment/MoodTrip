@@ -7,6 +7,7 @@ import com.moodTrip.spring.domain.emotion.entity.EmotionCategory;
 import com.moodTrip.spring.domain.emotion.repository.EmotionCategoryRepository;
 import com.moodTrip.spring.domain.emotion.repository.EmotionRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,7 +16,7 @@ import java.util.LinkedHashSet; // LinkedHashSet import
 import java.util.List;
 import java.util.stream.Collectors;
 
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -26,16 +27,53 @@ public class EmotionService {
 
     public List<EmotionCategoryDto> getEmotionCategories() {
 
-        // 1. 리포지토리에서 데이터를 가져오면 이 리스트에는 중복된 EmotionCategory가 포함될수도
+        log.info("🔍 === getEmotionCategories 디버깅 시작 ===");
+
         List<EmotionCategory> categoriesWithDuplicates = emotionCategoryRepository.findAllWithEmotions();
 
-        // 2. LinkedHashSet을 사용하여 혹시모를 중복 제거
-        List<EmotionCategory> distinctCategories = new ArrayList<>(new LinkedHashSet<>(categoriesWithDuplicates));
+        log.info("📊 조회된 총 개수: {}", categoriesWithDuplicates.size());
 
-        // 3. 중복이 제거된 순수한 리스트를 DTO로 변환하여 반환 (Response 객체, 추후 쓸 일?)
-        return distinctCategories.stream()
+        // 각 카테고리 상세 확인
+        for (int i = 0; i < categoriesWithDuplicates.size(); i++) {
+            EmotionCategory category = categoriesWithDuplicates.get(i);
+            log.info("📋 [{}] 카테고리: {} (ID: {})",
+                    i, category.getEmotionCategoryName(), category.getEmotionCategoryId());
+
+            if (category.getEmotions() != null) {
+                log.info("    └─ emotions 개수: {}", category.getEmotions().size());
+                for (int j = 0; j < Math.min(3, category.getEmotions().size()); j++) {
+                    log.info("       [{}] {}", j, category.getEmotions().get(j).getTagName());
+                }
+            } else {
+                log.error("    └─ ❌ emotions가 null!");
+            }
+        }
+
+        List<EmotionCategory> distinctCategories = new ArrayList<>(new LinkedHashSet<>(categoriesWithDuplicates));
+        log.info("🔄 중복 제거 후 개수: {}", distinctCategories.size());
+
+        List<EmotionCategoryDto> result = distinctCategories.stream()
                 .map(EmotionCategoryDto::from)
                 .collect(Collectors.toList());
+
+        log.info("✅ DTO 변환 후 개수: {}", result.size());
+
+        // 첫 번째 DTO 상세 확인
+        if (!result.isEmpty()) {
+            EmotionCategoryDto firstDto = result.get(0);
+            log.info("🎯 첫 번째 DTO: {} (ID: {})",
+                    firstDto.getEmotionCategoryName(),
+                    firstDto.getEmotionCategoryId());
+            if (firstDto.getEmotions() != null) {
+                log.info("    └─ DTO의 emotions 개수: {}", firstDto.getEmotions().size());
+            } else {
+                log.error("    └─ ❌ DTO의 emotions가 null!");
+            }
+        }
+
+        log.info("🔍 === getEmotionCategories 디버깅 종료 ===");
+
+        return result;
     }
 
 

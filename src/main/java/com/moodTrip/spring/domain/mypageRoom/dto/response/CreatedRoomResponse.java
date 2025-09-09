@@ -32,7 +32,7 @@ public class CreatedRoomResponse {
 
         String image = (room.getAttraction() != null && room.getAttraction().getFirstImage() != null)
                 ? room.getAttraction().getFirstImage()
-                : "/image/fix/moodtrip.png";
+                : "/image/creatingRoom/landscape-placeholder-svgrepo-com.svg";
 
         return CreatedRoomResponse.builder()
                 .roomId(room.getRoomId())

@@ -186,7 +186,7 @@
         <div th:each="room : ${popularRooms}" class="room-card">
           <div class="room-image">
             <img th:src="${room.roomImage}" th:alt="${room.roomName}"
-                 onerror="this.src='/image/fix/moodtrip.png'">
+                 onerror="this.src='/image/creatingRoom/landscape-placeholder-svgrepo-com.svg'">
             <div class="room-status"
                  th:classappend="${room.status == '모집완료'} ? 'completed' : (${room.status == '마감임박'} ? 'urgent' : 'active')"
                  th:text="${room.status}">모집중</div>
@@ -286,7 +286,7 @@
           <div class="weather-image">
             <img th:src="${weather.imageUrl}"
                  th:alt="${weather.attractionName}"
-                 onerror="this.src='/image/fix/moodtrip.png'">
+                 onerror="this.src='/image/creatingRoom/landscape-placeholder-svgrepo-com.svg'">
             <div class="weather-overlay">
               <div class="weather-info">
                 <span class="weather-icon" th:text="${weather.weatherIcon}">☀️</span>
