@@ -5,6 +5,7 @@ import com.moodTrip.spring.domain.attraction.service.AttractionService; // 인�
 import com.moodTrip.spring.domain.emotion.dto.request.EmotionWeightDto;
 import com.moodTrip.spring.domain.emotion.service.AttractionEmotionService;
 import com.moodTrip.spring.domain.emotion.service.EmotionService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -29,7 +30,16 @@ public class AttractionEmotionController {
     @GetMapping
     public String showMappingPage(@RequestParam(name="page",defaultValue = "0") int page,
                                   @RequestParam(name="size",defaultValue = "10") int size,
-                                  Model model) {
+                                  Model model,
+                                  jakarta.servlet.http.HttpServletRequest request
+                                 ) {
+
+        // 1) AJAX가 아니면 전체 페이지로 보내기
+        boolean isAjax = "XMLHttpRequest".equals(request.getHeader("X-Requested-With"));
+        if (!isAjax) {
+            return "redirect:/admin";
+        }
+
         Page<Attraction> attractionPage = attractionService.findAttractions(page, size);
 
         int currentPage = attractionPage.getNumber();
@@ -61,13 +71,17 @@ public class AttractionEmotionController {
                 attractionEmotionService.getAttractionToEmotionWeightsMap();
         model.addAttribute("attractionToEmotionWeights", attractionToEmotionWeights);
 
+
+
+
         return "admin/attraction-emotion-mapping :: content";
+
     }
 
     // 검색 목록
     @GetMapping("/search")
-    public String search(@RequestParam(defaultValue = "0") int page,
-                         @RequestParam(defaultValue = "10") int size,
+    public String search(@RequestParam(name="page",defaultValue = "0") int page,
+                         @RequestParam(name="size",defaultValue = "10") int size,
                          @RequestParam(name="keyword") String keyword,
                          Model model) {
         Page<Attraction> p = attractionService.searchAttractions(keyword.trim(), page, size);
@@ -102,11 +116,14 @@ public class AttractionEmotionController {
         model.addAttribute("attractionToEmotionWeights", attractionEmotionService.getAttractionToEmotionWeightsMap());
 
         return "admin/attraction-emotion-mapping :: content"; // ":: content" 필수
+
+
+
     }
     @PostMapping("/update/{attractionId}")
     @ResponseBody
     public ResponseEntity<?> updateAttractionEmotion(
-            @PathVariable Long attractionId,
+            @PathVariable("attractionId") Long attractionId,
             @RequestBody List<EmotionWeightDto> emotionWeights
     ) {
         try {

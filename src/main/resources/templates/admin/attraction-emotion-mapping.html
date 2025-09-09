@@ -3,9 +3,11 @@
 <head>
     <title>관광지 감정 매핑 관리</title>
     <link rel="stylesheet" th:href="@{/css/admin/adminMapping.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/admin.css}">
+    <script th:src = "@{/js/admin/admin.js}"></script>
     <script th:src = "@{/js/admin/adminMapping.js}"></script>
-<!--    <meta name="_csrf" th:content="${_csrf.token}"/>-->
-<!--    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>-->
+
+
 </head>
 <body>
 <div th:fragment="content">
@@ -88,77 +90,5 @@
 
 
 </div>
-<!--</body>-->
-
-<!--<script th:inline="javascript">-->
-<!--    /*<![CDATA[*/-->
-<!--    function submitForm(event, formElement) {-->
-<!--        alert('submitForm 함수가 호출되었습니다!');-->
-<!--        event.preventDefault(); // 폼의 기본 제출 동작 방지 (새 페이지 로드 방지)-->
-
-<!--        const attractionId = formElement.getAttribute('data-attraction-id');-->
-<!--        const emotionWeights = [];-->
-
-<!--        // 현재 폼 내의 모든 감정 항목을 순회-->
-<!--        const emotionItems = formElement.querySelectorAll('.emotion-item');-->
-<!--        emotionItems.forEach(item => {-->
-<!--            const checkbox = item.querySelector('input[name="emotionId"]');-->
-<!--            const weightInput = item.querySelector('input[name="weight"]');-->
-
-<!--            const emotionId = checkbox ? parseInt(checkbox.value) : null;-->
-<!--            // 가중치 입력 필드가 비어있으면 기본값 1.0을 사용하거나, 실제 입력된 값을 사용.-->
-<!--            // parseInt/parseFloat는 비어있으면 NaN이 되므로 빈 문자열 처리 필요-->
-<!--            const weight = weightInput ? (weightInput.value === '' ? null : parseFloat(weightInput.value)) : null;-->
-
-<!--            // 체크박스가 선택된 경우에만 데이터를 추가-->
-<!--            if (checkbox && checkbox.checked && emotionId !== null) {-->
-<!--                // 가중치가 입력되지 않았으면 기본값 1.0으로 처리-->
-<!--                // 서버에서는 BigDecimal.ZERO로 처리하는 catch 블록이 있었으므로, 여기서는 명시적으로 1.0을 넣거나 null을 보내서 서버가 처리하게 할 수 있음.-->
-<!--                // 여기서는 유효한 숫자가 아니거나 비어있으면 1.0으로 처리-->
-<!--                const finalWeight = (weight === null || isNaN(weight)) ? 1.0 : weight;-->
-
-<!--                emotionWeights.push({-->
-<!--                    emotionId: emotionId,-->
-<!--                    weight: finalWeight-->
-<!--                });-->
-<!--            }-->
-<!--        });-->
-
-
-<!--        // CSRF 토큰 가져오기-->
-<!--        const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');-->
-<!--        const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');-->
-<!--        // AJAX 요청 보내기-->
-<!--        fetch('/admin/attraction-emotions/update/' + attractionId, {-->
-<!--            method: 'POST',-->
-<!--            headers: {-->
-<!--                'Content-Type': 'application/json', // JSON 형식으로 데이터를 보낸다고 명시-->
-<!--                'Accept': 'application/json' // 서버로부터 JSON 응답을 기대한다고 명시 (선택 사항)-->
-<!--                , [header]: token-->
-<!--            },-->
-<!--            body: JSON.stringify(emotionWeights) // JavaScript 객체를 JSON 문자열로 변환하여 전송-->
-<!--        })-->
-<!--            .then(response => {-->
-<!--                if (response.ok) { // HTTP 상태 코드가 2xx 범위인 경우-->
-<!--                    alert('성공적으로 저장되었습니다!');-->
-<!--                    // 성공 시 페이지 새로고침 또는 리다이렉트-->
-<!--                    window.location.reload(); // 현재 페이지 새로고침-->
-<!--                    // 또는 window.location.href = '/admin/attraction-emotions'; // 특정 URL로 이동-->
-<!--                } else {-->
-<!--                    // 오류 응답 처리-->
-<!--                    return response.json().then(errorData => {-->
-<!--                        alert('저장 실패: ' + (errorData.message || '알 수 없는 오류'));-->
-<!--                        console.error('Error:', errorData);-->
-<!--                    });-->
-<!--                }-->
-<!--            })-->
-<!--            .catch(error => {-->
-<!--                alert('네트워크 오류 또는 서버 통신 실패');-->
-<!--                console.error('Fetch Error:', error);-->
-<!--            });-->
-
-<!--        return false; // onsubmit에서 false를 반환하여 폼의 기본 제출 방지-->
-<!--    }-->
-<!--    /*]]>*/-->
-<!--</script>-->
+</body>
 </html>

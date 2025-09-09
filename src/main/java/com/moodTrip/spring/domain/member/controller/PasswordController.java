@@ -1,6 +1,5 @@
 package com.moodTrip.spring.domain.member.controller;
 
-import com.moodTrip.spring.domain.member.dto.request.LoginRequest;
 import com.moodTrip.spring.domain.member.dto.request.PasswordForm;
 import com.moodTrip.spring.domain.member.entity.Member;
 import com.moodTrip.spring.domain.member.service.MailService;
