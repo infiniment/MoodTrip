@@ -28,6 +28,37 @@
       <div class="header-gradient"></div>
     </div>
 
+    <!-- 오늘의 날씨 -->
+    <div class="today-weather" th:if="${weather != null}">
+      <p class="time" th:text="${weather.formattedDateTime}">2025-09-09 14:00:00</p>
+
+      <div class="weather">
+        <p class="current-degree">
+          <!-- 아이콘: null 안전 처리 -->
+          <img th:if="${weather.icon != null}"
+               th:src="@{'https://openweathermap.org/img/wn/' + ${weather.icon} + '@2x.png'}"
+               width="80" alt="날씨 아이콘">
+          <!-- 기온 반올림 표시 -->
+          <span th:text="${T(java.lang.Math).round(weather.temperature)} + '°'">27°</span>
+        </p>
+
+        <!-- 오타: weater-state → weather-state -->
+        <p class="weather-state" th:text="${weather.description}">맑음</p>
+
+        <!-- max/min 있으면 그걸 쓰고, 없으면 임시 (±1) -->
+        <p class="highest-lowest-degree"
+           th:text="${weather.maxTemp != null and weather.minTemp != null} ?
+                 '최고: ' + ${T(java.lang.Math).round(weather.maxTemp)} + '° 최저: ' + ${T(java.lang.Math).round(weather.minTemp)} + '°' :
+                 '최고: ' + ${T(java.lang.Math).round(weather.temperature + 1)} + '° 최저: ' + ${T(java.lang.Math).round(weather.temperature - 1)} + '°'">
+          최고: 28° 최저: 17°
+        </p>
+      </div>
+    </div>
+
+    <div class="today-weather" th:if="${weather == null}">
+      <p>현재 날씨 정보가 없습니다.</p>
+    </div>
+
     <!-- 장소 정보 섹션 -->
     <div class="result-section" id="placeView">
       <div class="place-image-info">

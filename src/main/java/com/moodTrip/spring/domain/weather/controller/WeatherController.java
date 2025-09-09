@@ -128,4 +128,15 @@ public class WeatherController {
                 "recommended", recommended
         );
     }
+
+    @GetMapping("/current/by-content")
+    public WeatherResponse currentByContent(@RequestParam Long contentId) {
+        // 1) 관광지 상세에서 위경도 꺼내오기
+        var detail = attractionService.getDetailResponse(contentId);
+        double lat = detail.getLat();   // DTO/엔티티의 필드명에 맞게 수정
+        double lon = detail.getLon();
+
+        // 2) 해당 좌표로 현재 날씨
+        return weatherService.getCurrentWeather(lat, lon);
+    }
 }
