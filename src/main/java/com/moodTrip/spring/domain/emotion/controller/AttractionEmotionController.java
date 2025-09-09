@@ -31,7 +31,7 @@ public class AttractionEmotionController {
     public String showMappingPage(@RequestParam(name="page",defaultValue = "0") int page,
                                   @RequestParam(name="size",defaultValue = "10") int size,
                                   Model model
-                                  , @RequestHeader(value = "X-Requested-With", required = false) String requestedWith) {
+                                 ) {
         Page<Attraction> attractionPage = attractionService.findAttractions(page, size);
 
         int currentPage = attractionPage.getNumber();
@@ -65,18 +65,8 @@ public class AttractionEmotionController {
 
 
 
-        // ✅ 요청 구분 로직 (이 부분이 핵심)
-        if ("XMLHttpRequest".equals(requestedWith)) {
-            // AJAX 요청일 경우: 기존처럼 HTML 조각(fragment)만 반환
-            return "admin/attraction-emotion-mapping :: content";
-        }
 
-        // 일반 브라우저 요청일 경우: 전체 레이아웃 페이지를 반환
-        // 이 때, 레이아웃에 들어갈 content 조각의 경로를 모델에 담아준다.
-        model.addAttribute("contentFragment", "~{admin/attraction-emotion-mapping :: content}");
-        return "admin/admin";  // admin.html 템플릿을 렌더링
-
-       // return "admin/attraction-emotion-mapping :: content";
+        return "admin/attraction-emotion-mapping :: content";
 
     }
 
