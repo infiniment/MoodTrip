@@ -850,15 +850,3 @@
     font-size: 16px;
   }
 }
-
-/* ---- 다크 모드(시스템 따라가기) ---- */
-@media (prefers-color-scheme: dark){
-  .today-weather{
-    background: #111827;               /* gray-900 */
-    border-color: #1f2937;             /* gray-800 */
-    box-shadow: none;
-  }
-  .today-weather .time{ color:#9ca3af; }
-  .weather-state{ color:#e5e7eb; }
-  .highest-lowest-degree{ color:#9ca3af; }
-}
