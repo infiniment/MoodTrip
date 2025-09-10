@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Collections;
 import java.util.List;
@@ -20,36 +21,37 @@ public class AttractionPageController {
     //private final WeatherService weatherService;
 
     @GetMapping("/attractions/detail/{contentId}")
-    // 1. 파라미터 타입을 long -> Long 으로 변경
-    public String view(@PathVariable("contentId") Long contentId, Model model) {
+    public String view(
+            @PathVariable("contentId") Long contentId,
+            @RequestParam(value = "contentTypeId", required = false) Integer contentTypeId,
+            Model model
+    ) {
+        if (contentId == null) return "redirect:/attractions";
 
-        // 2. contentId가 null일 경우를 처리하는 방어 코드 추가
-        if (contentId == null) {
-            // 예를 들어, 목록 페이지나 에러 페이지로 리다이렉트
-            // 혹은 적절한 에러 메시지를 담은 뷰를 반환
-            return "redirect:/attractions"; // 또는 "error/404" 등
-        }
-
-        AttractionDetailResponse detail = attractionService.getDetailResponse(contentId);
-        List<String> tagList;
+        AttractionDetailResponse detail;
         try {
-            tagList = attractionEmotionService.findTagNamesByContentId(contentId);
-        } catch (Throwable t) {
-            tagList = Collections.emptyList();
+            // ✅ 오버로드 사용 (서비스가 내부에서 contentTypeId 보강도 함)
+            detail = attractionService.getDetailResponse(contentId, contentTypeId);
+        } catch (IllegalArgumentException notFound) {
+            // DB에 Attraction이 없을 때 404 처리
+            model.addAttribute("message", notFound.getMessage());
+            return "error/404";
         }
 
-        var tags   = attractionService.getEmotionTagNames(contentId); // 감정 태그들
-
-
+        List<String> tags;
+        try {
+            tags = attractionEmotionService.findTagNamesByContentId(contentId);
+        } catch (Throwable t) {
+            tags = Collections.emptyList();
+        }
 
         model.addAttribute("contentId", contentId);
         model.addAttribute("attractionId", detail.getAttractionId());
         model.addAttribute("detail", detail);
-        model.addAttribute("tags", tagList);
         model.addAttribute("tags", tags);
-
-
 
         return "recommand-tourist-attractions-detail/detail-page";
     }
+
+
 }
