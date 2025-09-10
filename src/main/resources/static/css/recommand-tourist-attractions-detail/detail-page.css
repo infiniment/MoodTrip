@@ -850,3 +850,7 @@
     font-size: 16px;
   }
 }
+
+.wx-icon-filter{
+  filter: sepia(1) saturate(7) hue-rotate(-10deg) brightness(1.05) contrast(1.05);
+}
