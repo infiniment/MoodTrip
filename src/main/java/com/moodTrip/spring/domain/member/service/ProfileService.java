@@ -32,7 +32,7 @@ public class ProfileService {
     private final UserAttractionRepository userAttractionRepository;
     private final AttractionRepository attractionRepository;
 
-    private static final String DEFAULT_IMAGE = "/image/fix/moodtrip.png";
+    private static final String DEFAULT_IMAGE = "/image/creatingRoom/landscape-placeholder-svgrepo-com.svg";
 
     // 프로필 조회
     public ProfileResponse getMyProfile(Member member) {

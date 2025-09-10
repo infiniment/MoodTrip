@@ -5,7 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>무드트립 - 자주 묻는 질문</title>
     <link rel="stylesheet" href="/css/customer-center/faq.css">
+    <link rel=" stylesheet" th:href="@{/css/fix/header.css}">
+    <link rel="stylesheet" th:href="@{/css/fix/footer.css}">
+    <link rel="stylesheet" th:href="@{/css/fix/header-after.css}">
+
 </head>
+<!-- 로그인 상태에 따른 조건부 헤더 렌더링 -->
+<div th:if="${isLoggedIn}">
+    <!-- 로그인된 사용자용 헤더 -->
+    <th:block th:replace="~{fix/header-after-login :: header}"></th:block>
+</div>
+<div th:unless="${isLoggedIn}">
+    <!-- 로그인 안된 사용자용 헤더 -->
+    <th:block th:replace="~{fix/header :: header}"></th:block>
+</div>
 <body>
     <div class="faq-layout">
         <div class="faq-layout-main">
@@ -134,5 +147,9 @@
     </div>
 
     <script src="/js/customer-center/faq.js"></script>
+    <th:block th:replace="~{fix/footer :: footer}"></th:block>
+
+    <script th:src="@{/js/fix/header.js}"></script>
+    <script th:src="@{/js/fix/header-after.js}"></script>
 </body>
 </html>

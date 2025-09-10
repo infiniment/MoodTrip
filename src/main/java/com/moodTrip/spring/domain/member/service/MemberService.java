@@ -20,16 +20,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
-import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -46,7 +40,8 @@ public class MemberService {
     private final RoomMemberRepository roomMemberRepository;
     private final MemberFireRepository memberFireRepository;
 
-    // 회원가입 등록
+    // 회원가입 등록 - Profile 생성 추가
+    @Transactional
     public void register(MemberRequest request) {
 
         Member reactivatedMember = handleReregistration(request.getUserId());
@@ -83,26 +78,58 @@ public class MemberService {
                 .memberId(request.getUserId())
                 .memberPw(encodedPassword)
                 .email(request.getEmail())
-                .memberAuth("U")                        // 기본 권한 값 예시
-                .nickname(request.getNickname()) // 우선 아이디로만 설정
-                .memberPhone(request.getMemberPhone())           // 필수면 기본값 또는 폼 추가 필요
+                .memberAuth("U")
+                .nickname(request.getNickname())
+                .memberPhone(request.getMemberPhone())
                 .isWithdraw(false)
                 .build();
+
         try {
-            memberRepository.save(member);
-            log.info("회원가입 성공 - {}", member.getMemberId());
+            // Member 먼저 저장
+            Member savedMember = memberRepository.save(member);
+            log.info("회원가입 성공 - {}", savedMember.getMemberId());
+
+            // Profile도 함께 생성
+            Profile profile = Profile.builder()
+                    .member(savedMember)
+                    .profileImage("/image/creatingRoom/landscape-placeholder-svgrepo-com.svg") // 기본 프로필 이미지
+                    .profileBio("안녕하세요~")  // 기본값
+                    .build();
+
+            profileRepository.save(profile);
+            log.info("프로필 생성 완료 - 회원ID: {}", savedMember.getMemberId());
+
         } catch (Exception e) {
             log.error("회원가입 저장 중 오류 발생", e);
-            throw e;  // 예외 다시 던지기 (필요 시)
+            throw e;
         }
     }
 
-    // 소셜 로그인 회원가입
+    // 소셜 로그인 회원가입 - Profile 생성 추가
+    @Transactional
     public void save(Member member) {
-        memberRepository.save(member);
+        try {
+            // Member 먼저 저장
+            Member savedMember = memberRepository.save(member);
+            log.info("소셜 회원가입 성공 - {}", savedMember.getMemberId());
+
+            // Profile도 함께 생성
+            Profile profile = Profile.builder()
+                    .member(savedMember)
+                    .profileImage("/image/creatingRoom/landscape-placeholder-svgrepo-com.svg") // 기본 프로필 이미지
+                    .profileBio("안녕하세요~")  // 기본값
+                    .build();
+
+            profileRepository.save(profile);
+            log.info("소셜 회원 프로필 생성 완료 - 회원ID: {}", savedMember.getMemberId());
+
+        } catch (Exception e) {
+            log.error("소셜 회원가입 저장 중 오류 발생", e);
+            throw e;
+        }
     }
 
-    //소셜 아이디ㅣ 유효성 검사
+    //소셜 아이디 유효성 검사
     public boolean existsByProviderAndProviderId(String provider, String providerId) {
         return memberRepository.existsByProviderAndProviderId(provider, providerId);
     }
@@ -126,16 +153,14 @@ public class MemberService {
         log.info("회원({}) 비밀번호가 DB에 저장되었습니다", member.getEmail());
     }
 
-
-    // 닉네임 수정 로직
+    // 닉네임 수정 로직 - 안전장치 추가
     @Transactional
     public ProfileResponse updateNickname(Member member, NicknameUpdateRequest request) {
 
-        // 로그 남기기
         log.info("닉네임 수정 요청 - 회원ID: {}, 기존닉네임: {}, 새닉네임: {}",
                 member.getMemberId(), member.getNickname(), request.getNickname());
 
-        // 유효성 검사 추가
+        // 유효성 검사
         String newNickname = request.getNickname();
         if (newNickname == null || newNickname.trim().isEmpty()) {
             throw new RuntimeException("닉네임은 필수 입력 항목입니다.");
@@ -147,32 +172,36 @@ public class MemberService {
             throw new RuntimeException("닉네임은 30자 이내로 입력해주세요.");
         }
 
-        // 최소 길이 체크 추가
         if (newNickname.length() < 2) {
             throw new RuntimeException("닉네임은 2자 이상 입력해주세요.");
         }
 
-        // 한글, 영문, 숫자만 허용
         if (!newNickname.matches("^[가-힣a-zA-Z0-9]+$")) {
             throw new RuntimeException("닉네임은 한글, 영문, 숫자만 사용 가능합니다.");
         }
 
-        // 해당 회원의 프로필 찾기
+        // Profile 찾기 또는 생성
         Profile profile = profileRepository.findByMember(member)
-                .orElseThrow(() -> {
-                    log.error("프로필을 찾을 수 없음 - 회원ID: {}", member.getMemberId());
-                    return new RuntimeException("프로필을 찾을 수 없습니다.");
+                .orElseGet(() -> {
+                    log.warn("프로필이 없어서 새로 생성 - 회원ID: {}", member.getMemberId());
+                    Profile newProfile = Profile.builder()
+                            .member(member)
+                            .profileImage("/image/creatingRoom/landscape-placeholder-svgrepo-com.svg") // 기본 프로필 이미지
+                            .profileBio("안녕하세요~")
+                            .build();
+                    return profileRepository.save(newProfile);
                 });
 
+        // 닉네임 수정
         Member memberToUpdate = profile.getMember();
         memberToUpdate.setNickname(newNickname);
+        memberRepository.save(memberToUpdate);  // Member 저장도 명시적으로 호출
 
         log.info("닉네임 수정 성공 - 회원ID: {}, 새닉네임: {}",
                 member.getMemberId(), newNickname);
 
         return ProfileResponse.from(profile);
     }
-
 
     public Optional<Member> findByNickname(String nickname) {
         return memberRepository.findByNickname(nickname);
@@ -182,13 +211,11 @@ public class MemberService {
     public WithdrawResponse withdrawMember(Member member) {
         log.info("회원 탈퇴 요청 - 회원ID: {}", member.getMemberId());
 
-        // 이미 탈퇴한 회원인지 확인
         if (member.getIsWithdraw()) {
             log.error("이미 탈퇴한 회원 - 회원ID: {}", member.getMemberId());
             throw new RuntimeException("이미 탈퇴 처리된 회원입니다.");
         }
 
-        // WithdrawDataService를 통한 하이브리드 탈퇴 처리
         try {
             WithdrawResponse response = withdrawDataService.processCompleteWithdraw(member);
             log.info("회원 탈퇴 완료 - 회원ID: {}", member.getMemberId());
@@ -200,10 +227,6 @@ public class MemberService {
         }
     }
 
-    /**
-     * 새로 추가: 재가입 처리 메서드
-     * - 회원가입 시 기존 탈퇴 계정이 있는지 확인하고 복구
-     */
     public Member handleReregistration(String memberId) {
         log.info("재가입 처리 확인 - 회원ID: {}", memberId);
 
@@ -212,7 +235,7 @@ public class MemberService {
             return withdrawDataService.reactivateAccount(memberId);
         } else {
             log.info("신규 가입자 - 회원ID: {}", memberId);
-            return null;  // 새로 가입해야 함
+            return null;
         }
     }
 
@@ -224,21 +247,20 @@ public class MemberService {
             return withdrawDataService.reactivateSocialAccount(provider, providerId);
         } else {
             log.info("신규 소셜 가입자");
-            return null;  // 새로 가입해야 함
+            return null;
         }
     }
 
-    /**
-     * 복구된 계정 정보 업데이트
-     */
-    private void updateReactivatedMemberInfo(Member reactivatedMember, MemberRequest request) {
+    // 복구된 계정 정보 업데이트 - Profile 확인 추가
+    @Transactional
+    protected void updateReactivatedMemberInfo(Member reactivatedMember, MemberRequest request) {
         log.info("복구된 계정 정보 업데이트 시작 - 회원ID: {}", reactivatedMember.getMemberId());
 
         // 새 비밀번호로 업데이트
         String encodedPassword = passwordEncoder.encode(request.getPassword());
         reactivatedMember.setMemberPw(encodedPassword);
 
-        // 새 이메일로 업데이트 (이메일이 바뀔 수 있음)
+        // 새 이메일로 업데이트
         if (!reactivatedMember.getEmail().equals(request.getEmail())) {
             if (memberRepository.existsByEmailAndIsWithdrawFalse(request.getEmail())) {
                 throw new IllegalArgumentException("해당 이메일은 다른 계정에서 사용 중입니다.");
@@ -247,32 +269,39 @@ public class MemberService {
         }
 
         memberRepository.save(reactivatedMember);
+
+        // 복구된 계정의 Profile도 확인하고 없으면 생성
+        if (!profileRepository.existsByMember(reactivatedMember)) {
+            Profile profile = Profile.builder()
+                    .member(reactivatedMember)
+                    .profileImage("/image/creatingRoom/landscape-placeholder-svgrepo-com.svg") // 기본 프로필 이미지
+                    .profileBio("안녕하세요~")
+                    .build();
+            profileRepository.save(profile);
+            log.info("복구된 계정의 프로필 생성 완료 - 회원ID: {}", reactivatedMember.getMemberId());
+        }
+
         log.info("복구된 계정 정보 업데이트 완료 - 회원ID: {}", reactivatedMember.getMemberId());
     }
-    // 상우가 일반 로그인에서 회원 탈퇴 후 다시 재로그인할려는 경우 사용
+
     public Member findByMemberId(String memberId) {
         return memberRepository.findByMemberId(memberId)
                 .orElseThrow(() -> new RuntimeException("회원이 존재하지 않습니다."));
     }
 
+    @Transactional(readOnly = true)
+    public List<MemberAdminDto> getAllMembersForAdmin() {
+        List<Member> members = memberRepository.findAllByOrderByCreatedAtDesc();
 
-
-
-
-@Transactional(readOnly = true)
-public List<MemberAdminDto> getAllMembersForAdmin() {
-    List<Member> members = memberRepository.findAllByOrderByCreatedAtDesc();
-
-    return members.stream()
-            .map(member -> {
-                MemberAdminDto dto = MemberAdminDto.fromEntity(member);
-                // 실제 참여 중인 방 기준으로 매칭 참여 횟수 계산
-                long participationCount = roomMemberRepository.countByMemberAndIsActiveTrue(member);
-                dto.setMatchingParticipationCount((long) participationCount);
-                return dto;
-            })
-            .collect(Collectors.toList());
-}
+        return members.stream()
+                .map(member -> {
+                    MemberAdminDto dto = MemberAdminDto.fromEntity(member);
+                    long participationCount = roomMemberRepository.countByMemberAndIsActiveTrue(member);
+                    dto.setMatchingParticipationCount((long) participationCount);
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
 
     @Transactional(readOnly = true)
     public MemberAdminDto getMemberDetailForAdmin(Long memberPk) {
@@ -281,7 +310,6 @@ public List<MemberAdminDto> getAllMembersForAdmin() {
 
         MemberAdminDto dto = MemberAdminDto.fromEntity(member);
 
-        // 실제 참여 중인 방 기준으로 매칭 참여 횟수 계산
         long participationCount = roomMemberRepository.countByMemberAndIsActiveTrue(member);
         dto.setMatchingParticipationCount(participationCount);
 
@@ -320,7 +348,6 @@ public List<MemberAdminDto> getAllMembersForAdmin() {
         if (keyword == null || keyword.trim().isEmpty()) {
             members = memberRepository.findAllByOrderByCreatedAtDesc();
         } else {
-            // 회원ID, 닉네임, 이메일로 검색
             members = memberRepository.findByMemberIdContainingOrNicknameContainingOrEmailContaining(
                     keyword, keyword, keyword
             );
@@ -329,7 +356,6 @@ public List<MemberAdminDto> getAllMembersForAdmin() {
         return members.stream()
                 .map(member -> {
                     MemberAdminDto dto = MemberAdminDto.fromEntity(member);
-                    // 매칭 참여 횟수 계산
                     Long participationCount = enteringRoomRepository.countByApplicantAndStatus(
                             member, EnteringRoom.EnteringStatus.APPROVED
                     );
@@ -349,7 +375,6 @@ public List<MemberAdminDto> getAllMembersForAdmin() {
     }
 
     private MemberAdminDto mapToAdminDto(Member member) {
-        // ✅ 참여 횟수 계산 (RoomMember 기준)
         Long participationCount = roomMemberRepository.countByMemberAndIsActiveTrue(member);
         String statusName = (member.getStatus() != null) ? member.getStatus().name() : Member.MemberStatus.ACTIVE.name();
         return MemberAdminDto.builder()
@@ -359,11 +384,9 @@ public List<MemberAdminDto> getAllMembersForAdmin() {
                 .email(member.getEmail())
                 .createdAt(member.getCreatedAt())
                 .status(statusName)
-//      d          .status(member.getStatus().name())
                 .isWithdraw(member.getIsWithdraw())
                 .rptRcvdCnt(member.getRptRcvdCnt() == null ? 0 : member.getRptRcvdCnt())
                 .matchingParticipationCount(participationCount == null ? 0 : participationCount)
-
                 .build();
     }
 
@@ -372,32 +395,27 @@ public List<MemberAdminDto> getAllMembersForAdmin() {
         Member member = memberRepository.findById(memberPk)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
-        // 내가 신고한 횟수 업데이트
         long reportedCount = memberFireRepository.countByFireReporter(member);
         member.setRptCnt(reportedCount);
 
-        // 내가 신고받은 횟수 업데이트
         long receivedCount = memberFireRepository.countByReportedMember(member);
         member.setRptRcvdCnt(receivedCount);
 
         memberRepository.save(member);
     }
 
-    // 신고 추가 후 카운트 업데이트
     @Transactional
     public void incrementReportCount(Long reporterId, Long reportedMemberId) {
-        updateReportCounts(reporterId);  // 신고자 카운트 증가
-        updateReportCounts(reportedMemberId);  // 신고받은 사람 카운트 증가
+        updateReportCounts(reporterId);
+        updateReportCounts(reportedMemberId);
     }
 
-    // 신고 삭제 후 카운트 업데이트
     @Transactional
     public void decrementReportCount(Long reporterId, Long reportedMemberId) {
-        updateReportCounts(reporterId);  // 신고자 카운트 감소
-        updateReportCounts(reportedMemberId);  // 신고받은 사람 카운트 감소
+        updateReportCounts(reporterId);
+        updateReportCounts(reportedMemberId);
     }
 
-    // 관리자용 회원 목록 엑셀 내보내기
     @Transactional(readOnly = true)
     public List<MemberAdminDto> getAllMembersForExport() {
         List<Member> members = memberRepository.findAllByOrderByCreatedAtDesc();
@@ -406,11 +424,9 @@ public List<MemberAdminDto> getAllMembersForAdmin() {
                 .map(member -> {
                     MemberAdminDto dto = MemberAdminDto.fromEntity(member);
 
-                    // ✅ 참여 횟수 (RoomMember 기준)
                     long participationCount = roomMemberRepository.countByMemberAndIsActiveTrue(member);
                     dto.setMatchingParticipationCount(participationCount);
 
-                    // ✅ 신고 횟수 (Fire 기준)
                     long reportedCount = memberFireRepository.countByFireReporter(member);
                     long receivedCount = memberFireRepository.countByReportedMember(member);
                     dto.setRptCnt(reportedCount);
@@ -420,5 +436,4 @@ public List<MemberAdminDto> getAllMembersForAdmin() {
                 })
                 .collect(Collectors.toList());
     }
-
 }

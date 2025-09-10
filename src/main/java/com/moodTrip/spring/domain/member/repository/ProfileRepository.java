@@ -16,4 +16,6 @@ public interface ProfileRepository extends JpaRepository<Profile, Long> {
 
     // member_pk로 프로필 찾기
     Optional<Profile> findByMember_MemberPk(Long memberPk);
+
+    boolean existsByMember(Member member);
 }

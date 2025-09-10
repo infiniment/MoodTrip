@@ -40,11 +40,19 @@
         console.log('matchingMembersData:', matchingMembersData);
         /*]]>*/
     </script>
-
-
-
+    <link rel="stylesheet" th:href="@{/css/fix/header.css}">
+    <link rel="stylesheet" th:href="@{/css/fix/footer.css}">
+    <link rel="stylesheet" th:href="@{/css/fix/header-after.css}">
 </head>
 <body>
+<div th:if="${isLoggedIn}">
+    <!-- 로그인된 사용자용 헤더 -->
+    <th:block th:replace="~{fix/header-after-login :: header}"></th:block>
+</div>
+<div th:unless="${isLoggedIn}">
+    <!-- 로그인 안된 사용자용 헤더 -->
+    <th:block th:replace="~{fix/header :: header}"></th:block>
+</div>
     <!-- 관리자 페이지 컨테이너 -->
     <div class="admin-container">
         <!-- 사이드바 -->
@@ -1035,5 +1043,8 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="/js/admin/admin.js"></script>
+<th:block th:replace="~{fix/footer :: footer}"></th:block>
+<script th:src="@{/js/fix/header.js}"></script>
+<script th:src="@{/js/fix/header-after.js}"></script>
 </body>
 </html>

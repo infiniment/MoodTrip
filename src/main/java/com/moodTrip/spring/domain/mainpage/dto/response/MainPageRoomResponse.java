@@ -55,7 +55,7 @@ public class MainPageRoomResponse {
 
         // Attraction 이미지가 없으면 기본 이미지들 중 선택
         String[] defaultImages = {
-                "/image/fix/moodtrip.png"
+                "/image/creatingRoom/landscape-placeholder-svgrepo-com.svg"
         };
 
         // roomId를 기반으로 이미지 선택 (일관성 유지)

@@ -56,7 +56,7 @@ public class CompanionRoomListResponse {
                 .image(
                         (room.getAttraction() != null && room.getAttraction().getFirstImage() != null)
                                 ? room.getAttraction().getFirstImage()
-                                : "/image/fix/moodtrip.png"
+                                : "/image/creatingRoom/landscape-placeholder-svgrepo-com.svg"
                 )
                 .urgent(calculateUrgent(room))
                 .status(calculateStatus(room))
