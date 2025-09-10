@@ -8,7 +8,20 @@
   <link rel="stylesheet" href="/css/region-tourist-attractions/region-page.css">
   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css"/>
   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css"/>
+  <link rel=" stylesheet" th:href="@{/css/fix/header.css}">
+  <link rel="stylesheet" th:href="@{/css/fix/footer.css}">
+  <link rel="stylesheet" th:href="@{/css/fix/header-after.css}">
+
 </head>
+<!-- 로그인 상태에 따른 조건부 헤더 렌더링 -->
+<div th:if="${isLoggedIn}">
+  <!-- 로그인된 사용자용 헤더 -->
+  <th:block th:replace="~{fix/header-after-login :: header}"></th:block>
+</div>
+<div th:unless="${isLoggedIn}">
+  <!-- 로그인 안된 사용자용 헤더 -->
+  <th:block th:replace="~{fix/header :: header}"></th:block>
+</div>
 <body class="landing">
   <div class="main">
     <div class="container">
@@ -322,5 +335,9 @@
 <!-- Slick 슬라이더 기능 JS -->
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
   <script src="/js/region-tourist-attractions/region-page.js"></script>
+  <th:block th:replace="~{fix/footer :: footer}"></th:block>
+
+  <script th:src="@{/js/fix/header.js}"></script>
+  <script th:src="@{/js/fix/header-after.js}"></script>
 </body>
 </html>

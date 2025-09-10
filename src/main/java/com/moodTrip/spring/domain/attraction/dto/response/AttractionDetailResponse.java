@@ -36,6 +36,8 @@ public class AttractionDetailResponse {
     private String blindhandicapetc;
     private String handicapetc;
 
+    private Double lat; // mapY
+    private Double lon; // mapX
 
     // 내부에서만 쓰는 축약 DTO (서비스 헬퍼와만 연동)
     @Getter @Builder
@@ -114,6 +116,8 @@ public class AttractionDetailResponse {
                 .blindhandicapetc(a11y.getBlindhandicapetc())
                 .handicapetc(a11y.getHandicapetc())
                 .attractionId(base.getAttractionId())
+                .lat(base.getMapY()) // 위도
+                .lon(base.getMapX()) // 경도
                 .build();
     }
 

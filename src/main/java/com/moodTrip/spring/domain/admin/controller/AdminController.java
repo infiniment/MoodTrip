@@ -56,6 +56,9 @@ public class AdminController {
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "10") int size
     ) {
+
+
+
         // 공지사항 목록
         model.addAttribute("notices", new ArrayList<>());
 
@@ -383,5 +386,11 @@ public class AdminController {
     }
 
 
+//
+//    // AdminController.java
+//    @GetMapping("/mapping")
+//    public String mappingPage() {
+//        return "admin/admin"; // 전체 레이아웃 반환
+//    }
 
 }

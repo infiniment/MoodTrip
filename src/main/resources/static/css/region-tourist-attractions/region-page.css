@@ -29,11 +29,13 @@
     justify-content: space-between;
     align-items: baseline;
     color: #212121;
+
     margin-top: 40px;
     margin-bottom: 40px;
 }
 
 .divider1 {
+    margin-top : 30px;
     width: 100%;
     border-bottom: 1px solid #000000;
     margin-bottom: 30px;
@@ -202,6 +204,7 @@ svg text {
     width: 1080px;
     margin: 30px 40px;
 }
+
 
 .tour-card-list {
     display: grid;

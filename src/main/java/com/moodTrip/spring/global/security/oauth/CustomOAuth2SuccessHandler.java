@@ -15,6 +15,8 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 @Slf4j
@@ -31,6 +33,9 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         OAuth2User oauth2User = oauthToken.getPrincipal();
         String provider = oauthToken.getAuthorizedClientRegistrationId();
         Map<String, Object> attributes = oauth2User.getAttributes();
+        String errorMessage = "이미 존재하는 회원 이메일 입니다.";
+        String encodedMsg = URLEncoder.encode(errorMessage, StandardCharsets.UTF_8.toString());
+
 
         String providerId = null;
         String email = null;
@@ -78,7 +83,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 
                     if (existingMember != null && !existingMember.getIsWithdraw()) {
                         // 활성 계정이 있으면 에러 (URL 인코딩 문제 해결)
-                        response.sendRedirect("/signup?error=ALREADY_EXISTS");
+                        response.sendRedirect("/signup?error=" + encodedMsg);
                         return;
 
                     } else if (existingMember != null && existingMember.getIsWithdraw()) {

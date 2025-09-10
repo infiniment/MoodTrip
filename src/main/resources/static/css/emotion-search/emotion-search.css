@@ -24,7 +24,7 @@ a {
 
 .emotion-search-main {
     background: linear-gradient(135deg, #005792 0%, #001A2C 100%);
-    min-height: 70vh;
+    min-height: 50vh;
     padding: max(40px, calc(env(safe-area-inset-top) + 20px)) 12px 60px;
     position: relative;
 }
@@ -356,7 +356,7 @@ a {
     font-weight: 700;
     color: #001A2C;
     text-shadow: 0 2px 4px rgba(0, 26, 44, 0.1);
-    margin-bottom: 4px;
+    margin-bottom: 20px;
 }
 
 .results-subtitle {

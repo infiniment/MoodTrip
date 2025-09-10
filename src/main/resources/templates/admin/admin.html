@@ -40,11 +40,19 @@
         console.log('matchingMembersData:', matchingMembersData);
         /*]]>*/
     </script>
-
-
-
+    <link rel="stylesheet" th:href="@{/css/fix/header.css}">
+    <link rel="stylesheet" th:href="@{/css/fix/footer.css}">
+    <link rel="stylesheet" th:href="@{/css/fix/header-after.css}">
 </head>
 <body>
+<div th:if="${isLoggedIn}">
+    <!-- 로그인된 사용자용 헤더 -->
+    <th:block th:replace="~{fix/header-after-login :: header}"></th:block>
+</div>
+<div th:unless="${isLoggedIn}">
+    <!-- 로그인 안된 사용자용 헤더 -->
+    <th:block th:replace="~{fix/header :: header}"></th:block>
+</div>
     <!-- 관리자 페이지 컨테이너 -->
     <div class="admin-container">
         <!-- 사이드바 -->
@@ -293,8 +301,8 @@
                 <!-- 테이블 하단 정보 -->
                 <div class="table-footer" style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center; color: #666; font-size: 14px;">
                     <div class="table-info">
-                        총 <span id="total-members-count" th:text="${#lists.size(members)}">0</span>명의 회원
-                        (<span id="visible-members-count" th:text="${#lists.size(members)}">0</span>명 표시 중)
+                        총<span th:text="${members != null ? #lists.size(members) : 0}">0</span>명의 회원
+                        (<span th:text="${members != null ? #lists.size(members) : 0}">0</span>명 표시 중)
                     </div>
                     <div class="table-actions">
                         <button class="btn-small" onclick="exportMemberList()">목록 내보내기</button>
@@ -1035,5 +1043,8 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="/js/admin/admin.js"></script>
+<th:block th:replace="~{fix/footer :: footer}"></th:block>
+<script th:src="@{/js/fix/header.js}"></script>
+<script th:src="@{/js/fix/header-after.js}"></script>
 </body>
 </html>

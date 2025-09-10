@@ -95,12 +95,12 @@ dependencies {
 	annotationProcessor 'jakarta.persistence:jakarta.persistence-api'
 
 	testImplementation 'org.springframework.security:spring-security-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	//testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	testImplementation 'org.testcontainers:mariadb'
 	testImplementation 'org.mockito:mockito-junit-jupiter'
 	testImplementation 'org.apache.poi:poi-ooxml:5.2.5'
-	testRuntimeOnly 'com.h2database:h2'
-
+//	testRuntimeOnly 'com.h2database:h2'
+	runtimeOnly 'com.h2database:h2'
 	testImplementation 'org.mockito:mockito-junit-jupiter'
 
 	//메일 전송 기능

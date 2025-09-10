@@ -32,7 +32,6 @@ function initializeAdminPanel() {
     // faq 관리
     setupTableViewToggle({ sectionId: 'faq-section',       storageKey: 'faqsView' });
 }
-
 // 1. 메뉴 네비게이션
 function setupMenuNavigation() {
     document.querySelectorAll('.menu-item').forEach(item => {
@@ -49,34 +48,57 @@ function setupMenuNavigation() {
             const menuType = this.getAttribute('data-menu');
 
             // '감정 매핑 관리' 메뉴를 위한 특별 처리
+// admin.js 파일의 setupMenuNavigation 함수 내부
             if (menuType === 'mapping') {
                 const mappingSection = document.getElementById('mapping-section');
                 if (mappingSection) {
-                    mappingSection.style.display = 'block'; // 섹션을 먼저 화면에 표시
+                    mappingSection.style.display = 'block';
 
-                    // 섹션에 내용이 비어있을 때만 서버에서 콘텐츠를 가져옴 (중복 로딩 방지)
                     if (mappingSection.innerHTML.trim() === '') {
-                        showLoadingMessage('매핑 데이터를 불러오는 중...'); // 로딩 메시지 표시
-                        fetch('/admin/attraction-emotions') // 서버에 콘텐츠(HTML 조각) 요청
+                        showLoadingMessage('매핑 데이터를 불러오는 중...');
+
+                        // 1. 쿠키 또는 localStorage에서 JWT 토큰을 가져옵니다.
+                        const jwtToken = getJwtFromCookie('jwtToken'); // 아래에 정의된 함수 사용
+
+                        // 2. 토큰이 없을 경우, 로그인 페이지로 보내고 함수를 종료합니다.
+                        if (!jwtToken) {
+                            hideLoadingMessage();
+                            alert('로그인이 필요합니다. 로그인 페이지로 이동합니다.');
+                            window.location.href = '/login';
+                            return; // 요청을 보내지 않고 중단
+                        }
+
+                        // 3. fetch 요청 시 Authorization 헤더에 토큰을 추가합니다.
+                        fetch('/admin/attraction-emotions', {
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Authorization': 'Bearer ' + jwtToken // ✅ 핵심: 인증 토큰 추가
+                            }
+                        })
                             .then(response => {
-                                hideLoadingMessage(); // 로딩 메시지 숨김
+                                hideLoadingMessage();
                                 if (!response.ok) {
+                                    // 401(미인증) 또는 403(권한 없음) 에러 처리
+                                    if (response.status === 401 || response.status === 403) {
+                                        alert('세션이 만료되었거나 접근 권한이 없습니다. 다시 로그인해 주세요.');
+                                        window.location.href = '/login';
+                                    }
                                     throw new Error('콘텐츠를 불러오는 데 실패했습니다.');
                                 }
-                                return response.text(); // 응답을 텍스트(HTML)로 변환
+                                return response.text();
                             })
                             .then(html => {
-                                mappingSection.innerHTML = html; // 받아온 HTML을 섹션에 삽입
+                                mappingSection.innerHTML = html;
                             })
                             .catch(error => {
                                 console.error('Error loading mapping content:', error);
                                 mappingSection.innerHTML = `<p style="color: red; text-align: center; padding: 20px;">${error.message}</p>`;
-                                showErrorMessage(error.message);
+                                // showErrorMessage(error.message); // alert가 중복될 수 있으므로 필요시 주석 처리
                             });
                     }
                 }
             } else {
-                // 기존의 다른 메뉴들을 위한 처리
+                // 기존의 다른 메뉴들을 위한 처리는 그대로 유지
                 const targetSection = document.getElementById(menuType + '-section');
                 if (targetSection) {
                     targetSection.style.display = 'block';
@@ -85,10 +107,31 @@ function setupMenuNavigation() {
                     if (menuType === 'notices') {
                         loadNoticeList();
                     } else if (menuType === 'faq') {
-                        // FAQ 목록 로드 함수가 있다면 여기에 추가
                         // loadFaqList();
                     }
                 }
+            }
+
+
+            /**
+             * 쿠키에서 특정 이름의 값을 가져오는 헬퍼 함수
+             * @param {string} cookieName - 가져올 쿠키의 이름
+             * @returns {string|null} - 쿠키 값 또는 null
+             */
+            function getJwtFromCookie(cookieName) {
+                const name = cookieName + "=";
+                const decodedCookie = decodeURIComponent(document.cookie);
+                const ca = decodedCookie.split(';');
+                for(let i = 0; i < ca.length; i++) {
+                    let c = ca[i];
+                    while (c.charAt(0) === ' ') {
+                        c = c.substring(1);
+                    }
+                    if (c.indexOf(name) === 0) {
+                        return c.substring(name.length, c.length);
+                    }
+                }
+                return null;
             }
 
 
@@ -4220,7 +4263,9 @@ function loadDynamicContent(url, pushState = true) {
 
     showLoadingMessage('데이터를 불러오는 중...');
 
-    fetch(url)
+    fetch(url, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }   // ★ 추가
+    })
         .then(response => {
             hideLoadingMessage();
             if (!response.ok) throw new Error('콘텐츠 로드 실패');

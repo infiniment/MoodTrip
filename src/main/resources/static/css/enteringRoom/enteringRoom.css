@@ -299,7 +299,7 @@ main.room-list {
 }
 
 .room-status.completed {
-    background: #dc2626;
+    background: #1e40af;
 }
 
 .room-status.date-adjustment {
@@ -312,7 +312,7 @@ main.room-list {
 }
 
 .room-card.completed {
-    border-left: 4px solid #dc2626;
+    border-left: 4px solid #1e40af;
 }
 
 .room-card.date-adjustment {

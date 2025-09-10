@@ -1,7 +1,6 @@
 package com.moodTrip.spring.global.config;
 
 import com.moodTrip.spring.domain.member.service.MemberService;
-import com.moodTrip.spring.global.security.jwt.JwtAuthenticationEntryPoint;
 import com.moodTrip.spring.global.security.jwt.JwtAuthenticationFilter;
 import com.moodTrip.spring.global.security.jwt.JwtUtil;
 import com.moodTrip.spring.global.security.oauth.CustomOAuth2SuccessHandler;
@@ -49,7 +48,7 @@ public class SecurityConfig {
     }
 
     /**
-     * 커스텀 AuthenticationEntryPoint - HTML과 JSON 요청을 구분해서 처리
+     * [수정됨] 커스텀 AuthenticationEntryPoint - HTML, JSON, 기타 리소스 요청을 구분해서 처리
      */
     @Bean
     public AuthenticationEntryPoint customAuthenticationEntryPoint() {
@@ -61,9 +60,7 @@ public class SecurityConfig {
                 String requestURI = request.getRequestURI();
                 String acceptHeader = request.getHeader("Accept");
 
-                System.out.println("인증되지 않은 접근 - URI: " + requestURI + ", Accept: " + acceptHeader);
-
-                // API 요청인 경우 JSON 응답
+                // 1. API 요청(JSON)인 경우 JSON 에러 응답
                 if (requestURI.startsWith("/api/") ||
                         (acceptHeader != null && acceptHeader.contains("application/json"))) {
 
@@ -71,14 +68,20 @@ public class SecurityConfig {
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.getWriter().write("{\"error\":\"로그인이 필요합니다.\",\"redirect\":\"/login\"}");
 
-                } else {
-                    // HTML 페이지 요청인 경우 로그인 페이지로 리다이렉트
-                    System.out.println("로그인 페이지로 리다이렉트: " + requestURI);
+                }
+                // 2. 일반적인 브라우저의 페이지 요청(HTML)인 경우에만 로그인 페이지로 리다이렉트
+                else if (acceptHeader != null && acceptHeader.toLowerCase().contains("text/html")) {
                     response.sendRedirect("/login?returnUrl=" + java.net.URLEncoder.encode(requestURI, "UTF-8"));
+                }
+                // 3. 그 외(CSS, JS, 이미지 등) 리소스 요청이 인증 실패한 경우
+                else {
+                    // 리다이렉트 대신 401 Unauthorized 에러만 반환하여 추가 동작을 막음
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
                 }
             }
         };
     }
+
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
@@ -98,14 +101,13 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/attractions/content/*/emotion-tags").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/attractions/content/*/detail").permitAll()
-
-                        // 마이페이지 인증 필요 설정
                         .requestMatchers("/mypage/**").authenticated()
-
+                        // [원래 설정 유지] 모든 요청을 허용하는 기존 설정
                         .anyRequest().permitAll()
                 )
                 .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint(customAuthenticationEntryPoint()) // 커스텀 EntryPoint 사용
+                        // [수정된 EntryPoint 적용]
+                        .authenticationEntryPoint(customAuthenticationEntryPoint())
                 )
                 .formLogin(form -> form.disable())
                 .oauth2Login(oauth2 -> oauth2
