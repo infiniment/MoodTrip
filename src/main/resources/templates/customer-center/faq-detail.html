@@ -5,7 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="|무드트립 - ${faq.title}|">무드트립 - 자주 묻는 질문 상세</title>
     <link rel="stylesheet" href="/css/customer-center/faq-detail.css">
+    <link rel=" stylesheet" th:href="@{/css/fix/header.css}">
+    <link rel="stylesheet" th:href="@{/css/fix/footer.css}">
+    <link rel="stylesheet" th:href="@{/css/fix/header-after.css}">
+
 </head>
+<!-- 로그인 상태에 따른 조건부 헤더 렌더링 -->
+<div th:if="${isLoggedIn}">
+    <!-- 로그인된 사용자용 헤더 -->
+    <th:block th:replace="~{fix/header-after-login :: header}"></th:block>
+</div>
+<div th:unless="${isLoggedIn}">
+    <!-- 로그인 안된 사용자용 헤더 -->
+    <th:block th:replace="~{fix/header :: header}"></th:block>
+</div>
 <body>
     <div class="faq-detail-layout">
         <div class="faq-detail-main">
@@ -156,5 +169,10 @@
         document.getElementById('login-btn').onclick = () => location.href = '/login';
         document.getElementById('close-btn').onclick = () => document.getElementById('login-modal').classList.add('hidden');
     </script>
+
+    <th:block th:replace="~{fix/footer :: footer}"></th:block>
+
+    <script th:src="@{/js/fix/header.js}"></script>
+    <script th:src="@{/js/fix/header-after.js}"></script>
 </body>
 </html>

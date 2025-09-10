@@ -87,9 +87,11 @@ public class JoinRequestManagementService {
             }
 
             Room room = request.getRoom();
-            Long currentApprovedCount = joinRepository.countApprovedByRoom(room);
-            if (currentApprovedCount >= room.getRoomMaxCount()) {
-                return ActionResponse.failure("방 정원이 가득 찼습니다.");
+            Long currentActiveMembers = roomMemberRepository.countByRoomAndIsActiveTrue(room);
+
+            if (currentActiveMembers >= room.getRoomMaxCount()) {
+                // 🔥 Exception을 던지지 말고 ActionResponse.failure로 반환
+                return ActionResponse.failure("방 정원이 가득 찼습니다. (현재: " + currentActiveMembers + "/" + room.getRoomMaxCount() + ")");
             }
 
             // 신청 승인 처리

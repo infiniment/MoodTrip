@@ -677,7 +677,7 @@ async function exitRoomApi(roomTitle, roomId, matchingItem) {
             if (response.status === 400 && errorText.includes('방장')) {
                 throw new Error('방장은 방을 나갈 수 없습니다. 방 삭제를 이용해주세요.');
             }
-            throw new Error('방 나가기에 실패했습니다.');
+            throw new Error('방장은 방을 나갈 수 없습니다. 방 삭제를 원하시면, 내가 만든 방 -> 방 삭제하기를 이용해주세요.');
         }
 
         // 🔥 새로 추가: 다른 탭에 방 데이터 업데이트 알림

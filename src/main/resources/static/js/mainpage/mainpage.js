@@ -80,7 +80,7 @@ document.addEventListener('click', function(e) {
     const contentId = card.dataset.contentId;
     console.log("카드 클릭됨:", contentId);
     if (contentId) {
-      window.location.href = `/attraction/weather/detail?contentId=${contentId}`;
+      window.location.href = `/attractions/detail/${contentId}`;
     }
   }
 });
@@ -321,7 +321,7 @@ window.viewRoomDetail = function(roomId) {
         return res.json();
       })
       .then(data => {
-        document.getElementById("detailRoomImage").src = data.image || "/image/fix/moodtrip.png";
+        document.getElementById("detailRoomImage").src = data.image || "/image/creatingRoom/landscape-placeholder-svgrepo-com.svg";
         document.getElementById("detailRoomTitle").textContent = data.title;
         document.getElementById("detailRoomLocation").textContent = data.location || data.category;
         document.getElementById("detailRoomDate").textContent = data.date;
