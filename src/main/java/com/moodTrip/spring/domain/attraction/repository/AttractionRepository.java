@@ -47,9 +47,9 @@ public interface AttractionRepository extends JpaRepository<Attraction, Long> {
                                                   Pageable pageable);
 
     // 감정 태그 매핑 (스키마에 맞게 조정 필요, 실행 전용 — 컴파일용)
-    @Query(value = "SELECT a.* FROM attraction a " +
-            "JOIN attraction_emotion_tags aet ON a.attraction_id = aet.attraction_id " + // <-- 올바른 테이블 이름으로 수정
-            "WHERE aet.tag_id IN (:emotionIds)", nativeQuery = true) // <-- 올바른 컬럼 이름으로 수정
+    @Query(value = "SELECT DISTINCT a.* FROM attraction a " +
+            "JOIN attraction_emotion_tags aet ON a.attraction_id = aet.attraction_id " +
+            "WHERE aet.tag_id IN (:emotionIds)", nativeQuery = true)
     List<Attraction> findAttractionsByEmotionIds(@Param("emotionIds") List<Integer> emotionIds);
 
 
@@ -101,6 +101,10 @@ where (:areasEmpty = true or a.areaCode in :areas)
             Pageable pageable
     );
 
+
+
+    @Query("SELECT DISTINCT a FROM Attraction a")
+    Page<Attraction> findDistinctAttractions(Pageable pageable);
 
 
 
