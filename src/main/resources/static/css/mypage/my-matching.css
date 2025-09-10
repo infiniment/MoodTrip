@@ -103,10 +103,6 @@
     100% { transform: scale(1); }
 }
 
-.total-wrapper {
-    margin-left: 1.5rem;
-}
-
 
 /* 알림 배지 */
 .notification-badge {
@@ -131,7 +127,7 @@
 }
 
 .mypage_info {
-    flex: 1 1 0%;
+    margin-left : 20px;
 }
 
 /* 제목 */
