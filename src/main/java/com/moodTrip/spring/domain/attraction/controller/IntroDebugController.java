@@ -58,7 +58,6 @@ public class IntroDebugController {
             a11y.put("bigprint", i.getBigprint());
             a11y.put("brailepromotion", i.getBrailepromotion());
             a11y.put("helpdog", i.getHelpdog());
-            a11y.put("infantsfamilyetc", i.getInfantsfamilyetc());
             a11y.put("hearingroom", i.getHearingroom());
             a11y.put("hearinghandicapetc", i.getHearinghandicapetc());
             a11y.put("blindhandicapetc", i.getBlindhandicapetc());
@@ -68,7 +67,6 @@ public class IntroDebugController {
             long a11yFilled = Stream.of(
                     i.getWheelchair(), i.getElevator(), i.getBraileblock(), i.getExit(),
                     i.getGuidesystem(), i.getSignguide(), i.getVideoguide(), i.getAudioguide(),
-                    i.getBigprint(), i.getBrailepromotion(), i.getHelpdog(), i.getInfantsfamilyetc(),
                     i.getHearingroom(), i.getHearinghandicapetc(), i.getBlindhandicapetc(), i.getHandicapetc()
             ).filter(StringUtils::hasText).count();
             out.put("a11yFilledCount", a11yFilled);

@@ -19,13 +19,14 @@
 
 .page-title {
   display: inline-flex;
+  margin: 40px 0 50px;
   align-items: center;
   gap: 12px;
   font-size: 24px;
   font-weight: 700;
   color: #2d3748;
   background: rgba(255, 255, 255, 0.9);
-  padding: 16px 32px;
+  padding: 34px 35px;
   border-radius: 50px;
   backdrop-filter: blur(10px);
   box-shadow: 0 8px 32px rgba(0, 87, 146, 0.2);
@@ -88,7 +89,7 @@
 .place-name {
   color: #005792;
   font-weight: 700;
-  font-size: 35px;
+  font-size: clamp(22px, 4vw, 35px)
 }
 
 .placeInfo {
@@ -275,6 +276,16 @@
   gap: 12px;
 }
 
+.place-detail-wrapper .content-section h4 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 50px 0 30px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .detail-icon {
   font-size: 32px;
 }
@@ -300,7 +311,7 @@
   flex-direction: column;
   gap: 8px;
   padding: 16px;
-  background: rgba(0, 87, 146, 0.1);
+  background: rgba(1, 96, 161, 0.15);
   border-radius: 12px;
   border-left: 4px solid #005792;
   transition: background 0.2s ease;
@@ -318,11 +329,19 @@
 }
 
 .info-value {
-  font-size: 18px;
+  font-size: 20px;
   color: #2d3748;
+  margin-top: 15px;
+  white-space: pre-line;
 }
 
+
 .info-value small {
+  color: #4a5568;
+  font-size: 25px;
+}
+
+.overviewMoreBody {
   color: #4a5568;
   font-size: 25px;
 }
@@ -358,6 +377,7 @@
   line-height: 1.8;
 }
 
+
 .extra-info {
   overflow: hidden;
   transition: all 0.5s ease;
@@ -369,39 +389,6 @@
   margin-bottom: 0;
   padding-top: 0;
   padding-bottom: 0;
-}
-
-.toggle-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  padding: 16px;
-  background: linear-gradient(135deg, #005792 0%, #001A2C 100%);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0, 87, 146, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.toggle-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 87, 146, 0.4);
-  border-color: rgba(255, 255, 255, 0.4);
-}
-
-.toggle-icon {
-  transition: transform 0.3s ease;
-}
-
-.toggle-btn.active .toggle-icon {
-  transform: rotate(180deg);
 }
 
 /* 매칭 서비스 스타일 */
@@ -421,7 +408,7 @@
   background: linear-gradient(135deg, #005792 0%, #001A2C 100%);
   color: white;
   padding: 16px 24px;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -593,233 +580,67 @@
   }
 }
 
-.container-review {
-  margin: 60px auto 0;
-  max-width: 1200px;
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 24px;
-  overflow: hidden;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(0, 87, 146, 0.1);
-
-  margin-bottom: 100px;
-  margin-top: 120px;
+.place-detail-wrapper .content-section p#overviewPreview,
+.place-detail-wrapper .content-section p#overviewMoreBody {
+  font-size: 20px;  /* 기존 16px +5px */
+  line-height: 1.8;
+  color: #374151;
 }
 
-.review-section {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
+/* ===== 장애인 편의 정보 스타일 ===== */
+.accessibility-info {
+  background: rgba(0, 87, 146, 0.2);/* 연한 하늘 배경 */
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 40px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.05);
 }
 
-.review-icon {
-  font-size: 26px;
+.accessibility-grid {
+  display: grid;
+  gap: 20px;
 }
 
-.review-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  font-size: 18px;
-  font-weight: 600;
-  color: #2d3748;
-  margin: 30px auto 12px auto;
-  padding: 0 80px;
-
-}
-
-.review-form label {
-  margin-top: 12px;
-  margin-bottom: 12px;
-}
-
-.review-form textarea {
-  padding: 1.7rem;
-  font-size: 1.1rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  color: #333;
-  /* 글자 색 명시 */
-  background-color: #fff;
-  /* 배경색 명시 */
-  width: 100%;
-  /* 필요시 폭 고정 */
-  height: 150px;
-  box-sizing: border-box;
-  /* 패딩 포함 폭 계산 */
-  font-family: inherit;
-  /* 상위 폰트 상속 */
-}
-
-.form-footer {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.my-review {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 40px 100px;
-  background: rgba(0, 87, 146, 0.1);
-  border-radius: 12px;
-  transition: background 0.2s ease;
-  backdrop-filter: blur(10px);
-}
-
-.submit-review-btn {
+.accessibility-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 24px;
-  border-radius: 12px;
-  font-size: 15px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: all 0.3s ease;
-  cursor: pointer;
-  border: 2px solid transparent;
+  gap: 16px;
+  padding: 18px 20px;
+  border-radius: 14px;
+  background: white;
+  border: 1px solid #dbeafe;  /* 연한 파랑 테두리 */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.submit-review-btn {
-  background: linear-gradient(135deg, #005792 0%, #001A2C 100%);
-  color: white;
-  box-shadow: 0 4px 12px rgba(0, 87, 146, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  margin: 10px 0 20px;
-}
-
-.submit-review-btn:hover {
+.accessibility-item:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 87, 146, 0.4);
-  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.08);
 }
 
-.review-zip {
-  line-height: 20px;
-  width: 100%;
-  white-space: nowrap;
-  font-size: 15px;
-  margin-bottom: 5px;
+.accessibility-item .icon {
+  font-size: 28px;
+  color: #0284c7;
+  flex-shrink: 0;
 }
-.review-more {
-  font-size: 16px;
+
+.accessibility-item .label {
   font-weight: 600;
-  cursor: pointer;
+  font-size: 23px;
+  color: #1e3a8a;
+}
+
+.accessibility-item .value {
+  font-size: 20px;
   color: #2d3748;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  white-space: nowrap; /* 줄바꿈 방지 */
-}
-
-.review-count {
-  margin-top: 8px;
-  font-size: 14px;
-  color: #888;
-  text-align: right;
-}
-
-.review-list ul {
-  padding-top: 15px;
-  list-style: none;
-  width: 700px;
-}
-
-.review-list li {
-  background-color: #cccccc46;
-  padding: 1.5rem 2rem;
-  border-radius: 15px;
-  margin-bottom: 15px;
-
-  word-wrap: break-word;
-  /* 너무 긴 단어 줄바꿈 */
-  overflow-wrap: break-word;
-  /* 표준 속성 */
-  white-space: normal;
-  /* 줄바꿈 허용 */
-}
-
-.star-rating {
-  display: flex;
-  gap: 8px;
-  cursor: pointer;
-  padding-bottom: 20px;
-  transition: transform 0.2s ease;
-}
-
-/* 눌렀을 때 전체 별 커짐 */
-.star-rating.active {
-  transform: scale(0.95);
-  filter: brightness(1.1);
-}
-.star {
-  width: 40px;
-  height: 40px;
-  background: url('/static/image/recommand-tourist-attractions-detail/empty-star.png') no-repeat center;
-  background-size: contain;
-  display: inline-block;
-  position: relative;
-  transition: transform 0.2s ease, filter 0.2s ease;
-  cursor: pointer;
-}
-
-.star.full {
-  background-image: url('/static/image/recommand-tourist-attractions-detail/full-star.png');
-}
-
-.star.half {
-  background-image: url('/static/image/recommand-tourist-attractions-detail/half-star.png');
-}
-
-/* ⭐ 마우스 호버 시 살짝 커지고 색 강조 */
-.star:hover {
-  transform: scale(1.1);
-  filter: brightness(1);
-}
-
-/* ⭐ 클릭 시 눌리는 느낌 */
-.star:active {
-  transform: scale(0.95);
-  filter: brightness(1.1);
-}
-
-
-
-.divider {
-  width: 100%;
-  height: 1px;
-  background-color: #ccc;
-  margin: 24px 0;
-  /* 위아래 여백 */
-}
-
-.review-wrapper {
-  max-width: 100%;
-  margin: 0 auto;
-  padding: 20px;
-  display: flex;
-  justify-content: space-between; /* 양 끝으로 정렬 */
-  align-items: center; /* 수직 가운데 정렬 */
-}
-
-.review-text {
-  font-size:18px;
-  margin-top: 12px;
-}
-.review-date {
-  color: #888;
-  font-size:15px;
-  margin-top: 18px;
-}
-.review-box {
-  padding: 5px 8px;
+  margin-top: 15px;
 }
 
 /* 480px */
 @media (max-width: 480px) {
-
+  .page-title {
+    font-size: 20px;     /* 더 작게 */
+    padding: 30px 31px;  /* 얇게 */
+  }
   /* 컨테이너 좌우 여백 제거 */
   .main {
     width: 100%;
@@ -845,59 +666,93 @@
 
 }
 
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 14px 22px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  color: white;
+  z-index: 10000;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+  opacity: 0;
+  transform: translateY(-15px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  max-width: 320px;
+  line-height: 1.4;
+}
+.notification.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+.notification.info    { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+.notification.success { background: linear-gradient(135deg, #22c55e, #16a34a); }
+.notification.warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.notification.error   { background: linear-gradient(135deg, #ef4444, #dc2626); }
+/* 하트 애니메이션 */
+@keyframes heartBeat {
+  0%   { transform: scale(1); }
+  14%  { transform: scale(1.3); }
+  28%  { transform: scale(1); }
+  42%  { transform: scale(1.3); }
+  70%  { transform: scale(1); }
+}
+
 /* ====== Weather Card ====== */
-.today-weather{
-  margin-top: 16px;
-  padding: 14px 16px;
-  border: 1px solid #e5e7eb;           /* gray-200 */
+.today-weather {
+  margin-bottom: 60px;
+  border: 1px solid #e5e7eb;
   border-radius: 12px;
   background: #ffffff;
   box-shadow: 0 1px 2px rgba(0,0,0,.04);
+  padding: 28px 32px;
 }
 
 .today-weather .time{
-  font-size: 12px;
-  line-height: 1.4;
+  font-size: 25px;
+  line-height: 1.5;
   color: #6b7280;                       /* gray-500 */
-  margin: 0 0 8px;
+  margin: 0 0 12px;
 }
 
-.today-weather .weather{
-  display: grid;
-  grid-template-columns: 1fr;
-  row-gap: 8px;
-}
-
-.current-degree{
+.today-weather .weather {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
-  margin: 0;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
-.current-degree img{
+.current-degree {
+  display: flex;
+  align-items: center; /* 글자 기준선에 맞춤 */
+  gap: 8px;
+}
+
+.current-degree img {
   width: 64px;
   height: 64px;
   flex: 0 0 auto;
 }
 
-.current-degree span{
-  font-size: 32px;
+.current-degree span {
   font-weight: 700;
   letter-spacing: -0.02em;
+  color: #2d3748;        /* 본문 진한색 */
 }
 
 /* 오탈자 있었던 클래스 정정: weather-state */
-.weather-state{
-  font-size: 15px;
-  color: #374151;                       /* gray-700 */
+.weather-state {
+  font-weight: 700;
+  color: #374151;        /* gray-700 */
   margin: 0;
 }
 
-.highest-lowest-degree{
-  font-size: 13px;
-  color: #6b7280;                       /* gray-500 */
-  margin: 0;
+.highest-lowest-degree {
+  color: #6b7280;        /* gray.today-weather .weather-500 */
+  margin: 10px;
 }
 
 /* ---- Skeleton (옵션: 데이터 로딩 시) ---- */
@@ -921,23 +776,28 @@
     align-items: center;
   }
   .current-degree span{
+    line-height: 1;
     font-size: 36px;
   }
 }
 
 @media (min-width: 1024px){             /* ≥ lg */
   .today-weather{
-    padding: 16px 20px;
+    padding: 20px 24px;
   }
   .current-degree img{
-    width: 72px;
-    height: 72px;
+    width: 100px;
+    height: 100px;
   }
   .current-degree span{
-    font-size: 40px;
+    font-size: 30px;
   }
   .weather-state{
-    font-size: 16px;
+    font-size: 27px;
+  }
+
+  .highest-lowest-degree {
+    font-size: 20px;       /* 본문 크기 */
   }
 }
 

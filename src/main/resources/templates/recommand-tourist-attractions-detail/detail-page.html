@@ -125,6 +125,13 @@
             <span class="info-value" id="infoTel"
                   th:text="${detail != null ? detail.tel : ''}"> </span>
           </div>
+
+          <div class="info-item">
+            <span class="info-label">🎟️ 매표소</span>
+            <span class="info-value" id="infoTi"
+                  th:text="${detail != null ? detail.ticketoffice : ''}"> </span>
+          </div>
+
           <div class="info-item">
             <span class="info-label">📍 위치</span>
             <span class="info-value" id="infoAddr"
@@ -159,113 +166,160 @@
            th:if="${detail != null and !#strings.isEmpty(detail.overview)}">
         <div class="place-detail-content">
           <div class="content-section" id="overviewSection">
-            <h4>🎬 한류의 매력을 만나는 여행 정보</h4>
-            <p id="overviewPreview"> </p>
-          </div>
-
-          <div class="content-section extra-info hidden" id="overviewMoreSection">
             <h4>🌲 상세 이야기</h4>
-            <div id="overviewMoreBody"></div>
+            <p id="overviewPreview"></p>
           </div>
-
-          <button class="toggle-btn" id="overviewToggle">
-            <span class="toggle-text">더 자세히 보기</span>
-            <span class="toggle-icon">▼</span>
-          </button>
-          <style>.hidden { display: none; }</style>
         </div>
       </div>
     </div>
 
     <!-- 장애인 편의 정보 -->
-    <div class="place-middle">
+    <!-- 장애인 편의 정보 -->
+    <!-- 장애인 편의 정보 -->
+    <!-- 장애인 편의 정보 -->
+    <div class="place-middle" th:if="${detail != null}">
       <div class="place-detail">
         <span class="detail-icon">♿</span>
         장애인 편의 정보
       </div>
 
-      <div class="place-detail-info">
-        <div class="info-grid">
-          <div class="info-item">
-            <span class="info-label">♿ 휠체어</span>
-            <span class="info-value"
-                  th:text="${detail != null ? detail.wheelchair : ''}"> </span>
+      <div class="accessibility-info">
+        <div class="accessibility-grid">
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.wheelchair)}">
+            <span class="icon">♿</span>
+            <div>
+              <div class="label">휠체어</div>
+              <div class="value" th:text="${detail.wheelchair}"></div>
+            </div>
           </div>
-          <div class="info-item">
-            <span class="info-label">🛗 엘리베이터</span>
-            <span class="info-value"
-                  th:text="${detail != null ? detail.elevator : ''}"> </span>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.elevator)}">
+            <span class="icon">🛗</span>
+            <div>
+              <div class="label">엘리베이터</div>
+              <div class="value" th:text="${detail.elevator}"></div>
+            </div>
           </div>
-          <div class="info-item">
-            <span class="info-label">⬜ 점자 블록</span>
-            <span class="info-value"
-                  th:text="${detail != null ? detail.braileblock : ''}"> </span>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.braileblock)}">
+            <span class="icon">⬜</span>
+            <div>
+              <div class="label">점자 블록</div>
+              <div class="value" th:text="${detail.braileblock}"></div>
+            </div>
           </div>
-          <div class="info-item">
-            <span class="info-label">🚪 출입구</span>
-            <span class="info-value"
-                  th:text="${detail != null ? detail.exit : ''}"> </span>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.exit)}">
+            <span class="icon">🚪</span>
+            <div>
+              <div class="label">출입구</div>
+              <div class="value" th:text="${detail.exit}"></div>
+            </div>
           </div>
-          <div class="info-item">
-            <span class="info-label">ℹ️ 안내 시스템</span>
-            <span class="info-value"
-                  th:text="${detail != null ? detail.signguide : ''}"> </span>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.signguide)}">
+            <span class="icon">ℹ️</span>
+            <div>
+              <div class="label">안내 시스템</div>
+              <div class="value" th:text="${detail.signguide}"></div>
+            </div>
           </div>
-          <div class="info-item">
-            <span class="info-label">🤟 수화 안내</span>
-            <span class="info-value"
-                  th:text="${detail != null ? detail.guidesystem : ''}"> </span>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.guidesystem)}">
+            <span class="icon">🤟</span>
+            <div>
+              <div class="label">수화 안내</div>
+              <div class="value" th:text="${detail.guidesystem}"></div>
+            </div>
           </div>
-          <div class="info-item">
-            <span class="info-label">🎥 영상 안내</span>
-            <span class="info-value"
-                  th:text="${detail != null ? detail.videoguide : ''}"> </span>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.videoguide)}">
+            <span class="icon">🎥</span>
+            <div>
+              <div class="label">영상 안내</div>
+              <div class="value" th:text="${detail.videoguide}"></div>
+            </div>
           </div>
-          <div class="info-item">
-            <span class="info-label">🎧 오디오 가이드</span>
-            <span class="info-value"
-                  th:text="${detail != null ? detail.audioguide : ''}"> </span>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.audioguide)}">
+            <span class="icon">🎧</span>
+            <div>
+              <div class="label">오디오 가이드</div>
+              <div class="value" th:text="${detail.audioguide}"></div>
+            </div>
           </div>
-          <div class="info-item">
-            <span class="info-label">🔠 큰 글자 안내</span>
-            <span class="info-value"
-                  th:text="${detail != null ? detail.bigprint : ''}"> </span>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.bigprint)}">
+            <span class="icon">🔠</span>
+            <div>
+              <div class="label">큰 글자 안내</div>
+              <div class="value" th:text="${detail.bigprint}"></div>
+            </div>
           </div>
-          <div class="info-item">
-            <span class="info-label">📖 점자 안내자료</span>
-            <span class="info-value"
-                  th:text="${detail != null ? detail.brailepromotion : ''}"> </span>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.brailepromotion)}">
+            <span class="icon">📖</span>
+            <div>
+              <div class="label">점자 안내자료</div>
+              <div class="value" th:text="${detail.brailepromotion}"></div>
+            </div>
           </div>
-          <div class="info-item">
-            <span class="info-label">🦮 도우미견 출입</span>
-            <span class="info-value"
-                  th:text="${detail != null ? detail.helpdog : ''}"> </span>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.helpdog)}">
+            <span class="icon">🦮</span>
+            <div>
+              <div class="label">도우미견 출입</div>
+              <div class="value" th:text="${detail.helpdog}"></div>
+            </div>
           </div>
-          <div class="info-item">
-            <span class="info-label">👶 영유아/가족 편의</span>
-            <span class="info-value"
-                  th:text="${detail != null ? detail.infantsfamilyetc : ''}"> </span>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.hearingroom) or !#strings.isEmpty(detail.hearinghandicapetc)}">
+            <span class="icon">👂</span>
+            <div>
+              <div class="label">청각장애 편의</div>
+              <div class="value" th:text="${detail.hearingroom}"></div>
+              <div class="value" th:text="${detail.hearinghandicapetc}"></div>
+            </div>
           </div>
-          <div class="info-item">
-            <span class="info-label">👂 청각장애 편의</span>
-            <span class="info-value"
-                  th:text="${detail != null ? detail.hearingroom : ''}"> </span>
-            <span class="info-value"
-                  th:text="${detail != null ? detail.hearinghandicapetc : ''}"> </span>
-        </div>
-          <div class="info-item">
-            <span class="info-label">👁️ 시각장애 편의</span>
-            <span class="info-value"
-                  th:text="${detail != null ? detail.blindhandicapetc : ''}"> </span>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.blindhandicapetc)}">
+            <span class="icon">👁️</span>
+            <div>
+              <div class="label">시각장애 편의</div>
+              <div class="value" th:text="${detail.blindhandicapetc}"></div>
+            </div>
           </div>
-          <div class="info-item">
-            <span class="info-label">기타</span>
-            <span class="info-value"
-                  th:text="${detail != null ? detail.handicapetc : ''}"> </span>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.publictransport)}">
+            <span class="icon">🚌</span>
+            <div>
+              <div class="label">대중교통 접근</div>
+              <div class="value" th:text="${detail.publictransport}"></div>
+            </div>
           </div>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.guidehuman)}">
+            <span class="icon">🙋</span>
+            <div>
+              <div class="label">안내 인력</div>
+              <div class="value" th:text="${detail.guidehuman}"></div>
+            </div>
+          </div>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.handicapetc)}">
+            <span class="icon">💡</span>
+            <div>
+              <div class="label">기타</div>
+              <div class="value" th:text="${detail.handicapetc}"></div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
+
+
 
     <!-- 매칭 서비스 섹션 -->
     <div class="container-match-service">

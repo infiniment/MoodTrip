@@ -30,39 +30,19 @@ function splitOverview(text, { minChars = 350, minParas = 2 } = {}) {
 }
 
 function renderOverview(overview) {
-  const section = $("#overviewSection");
-  const preview = $("#overviewPreview");
-  const moreSec = $("#overviewMoreSection");
-  const moreBody = $("#overviewMoreBody");
-  const toggle = $("#overviewToggle");
-  if (!section || !preview || !moreSec || !moreBody || !toggle) return;
+  const preview = document.getElementById("overviewPreview");
+  if (!preview) return;
 
   const text = (overview || "").replace(/\r\n?/g, "\n").trim();
   if (!text) {
-    const wrapper = section.closest(".place-detail-wrapper");
-    if (wrapper) wrapper.classList.add("hidden");
-    moreSec.classList.add("hidden");
-    toggle.classList.add("hidden");
+    preview.textContent = "제공되지 않음";
     return;
   }
 
-  const { previewHtml, restHtml, hasMore } = splitOverview(text, { minChars: 350, minParas: 2 });
-  preview.innerHTML = previewHtml;
-  moreBody.innerHTML = restHtml;
-
-  if (hasMore) {
-    toggle.classList.remove("hidden");
-    moreSec.classList.add("hidden");
-    toggle.addEventListener("click", () => {
-      const nowHidden = moreSec.classList.toggle("hidden");
-      toggle.querySelector(".toggle-text").textContent = nowHidden ? "더 자세히 보기" : "접기";
-      toggle.querySelector(".toggle-icon").textContent = nowHidden ? "▼" : "▲";
-    });
-  } else {
-    toggle.classList.add("hidden");
-    moreSec.classList.add("hidden");
-  }
+  // 그냥 전체를 한 번에 변환
+  preview.innerHTML = toHtml(text);
 }
+
 
 function setMultiline(sel, v, fallback = "제공되지 않음") {
   const el = typeof sel === "string" ? $(sel) : sel;
@@ -160,7 +140,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         btnWrapper.classList.toggle("liked", !isLikedNow);
         likeSpan.textContent = !isLikedNow ? "♥" : "♡";
       } else if (res.status === 401) {
-        alert("로그인이 필요합니다.");
+          showNotification('warning', '로그인이 필요합니다.');
       }
     });
   }
@@ -174,6 +154,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   setMultiline("#infoRest", d.restDate);
   setMultiline("#infoParking", d.parking);
   setText("#infoAge", d.age);
+  setMultiline("#infoTi", d.ticketoffice);
 
   // 5) 개요(상세설명) — 길면 자동 2파트 + 토글
   renderOverview(d.overview);
@@ -420,4 +401,20 @@ document.addEventListener("DOMContentLoaded", () => {
     // 이동
     window.location.href = btn.getAttribute("href") || "/companion-rooms/create";
   });
+
 });
+function showNotification(type, message) {
+  const notification = document.createElement('div');
+  notification.className = `notification ${type}`;
+  notification.textContent = message;
+  document.body.appendChild(notification);
+
+  // 등장 애니메이션
+  setTimeout(() => notification.classList.add('show'), 10);
+
+  // 3초 뒤 제거
+  setTimeout(() => {
+    notification.classList.remove('show');
+    setTimeout(() => notification.remove(), 300);
+  }, 3000);
+}
