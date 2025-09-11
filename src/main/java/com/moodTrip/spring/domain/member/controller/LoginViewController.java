@@ -1,6 +1,7 @@
 package com.moodTrip.spring.domain.member.controller;
 
 import com.moodTrip.spring.domain.member.dto.request.LoginRequest;
+import com.moodTrip.spring.domain.member.entity.Member;
 import com.moodTrip.spring.domain.member.service.LoginService;
 import com.moodTrip.spring.domain.member.service.MemberService;
 import com.moodTrip.spring.domain.rooms.service.RoomService;
@@ -66,6 +67,15 @@ public class LoginViewController {
             log.info("🚫 탈퇴한 회원 로그인 시도: {}", loginRequest.getMemberId());
             model.addAttribute("errorMessage", "이미 탈퇴하신 회원입니다.");
             return "login/withdraw"; // templates/login/withdraw.html
+        }
+
+        // 정지된 회원이면 suspended.html로 이동
+        if (member.getStatus() == Member.MemberStatus.SUSPENDED) {
+            log.info("정지된 회원 로그인 시도: {}", loginRequest.getMemberId());
+            model.addAttribute("errorMessage", "정지된 계정입니다.");
+            model.addAttribute("memberId", member.getMemberId());
+            model.addAttribute("nickname", member.getNickname());
+            return "login/suspended"; // templates/login/suspended.html
         }
 
         // 🔹 memberPk가 1이면 관리자용 스타일을 추가
