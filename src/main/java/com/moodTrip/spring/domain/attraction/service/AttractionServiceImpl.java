@@ -632,7 +632,7 @@ public class AttractionServiceImpl implements AttractionService {
     @Transactional(readOnly = true)
     public List<AttractionCardDTO> findInitialAttractions(int limit) {
         Pageable pageable = PageRequest.of(0, limit);
-        List<Attraction> attractions = repository.findAll(pageable).getContent();
+        List<Attraction> attractions = repository.findDistinctAttractions(pageable).getContent();
 
         return attractions.stream()
                 .map(a -> AttractionCardDTO.builder()
