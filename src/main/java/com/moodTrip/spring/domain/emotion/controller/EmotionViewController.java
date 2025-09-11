@@ -69,4 +69,5 @@ public class EmotionViewController {
         // 템플릿 렌더링
         return "emotion-search/emotion-search";
     }
+
 }

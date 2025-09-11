@@ -108,19 +108,20 @@ function renderAttractionCards(list) {
 
     const img = card.querySelector(".card-image");
     img.src = initialSrc;
-    img.onerror = () => { img.onerror = null; img.src = FALLBACK_IMG; }; // 루프 방지
+    img.onerror = () => { img.onerror = null; img.src = FALLBACK_IMG; };
 
-    // 카드 생성 후
+    // 카드 클릭 → contentId + contentTypeId 전달
     card.addEventListener('click', () => {
-      const id = item.contentId;           // 서버가 내려준 필드명 확인: contentId
+      const id = item.contentId;
+      const typeId = item.contentTypeId;
       if (!id) return;
-      window.location.assign(`/attractions/detail/${id}`);
+      window.location.assign(`/attractions/detail/${id}?contentTypeId=${typeId}`);
     });
-
 
     container.appendChild(card);
   });
 }
+
 
 
 // --- 렌더: 페이지네이션 (10단위 블록 + 점프) ---
