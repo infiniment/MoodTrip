@@ -240,6 +240,9 @@
     color: rgb(48, 52, 65);
     margin: 0;
     line-height: 1.4;
+    word-break: break-all;
+    overflow-wrap: break-word;
+    white-space: normal;
 }
 
 .matching-meta {
@@ -282,6 +285,8 @@
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    word-break: break-all;
+    overflow-wrap: break-word;
 }
 
 /* 태그 */

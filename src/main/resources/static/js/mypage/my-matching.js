@@ -983,6 +983,7 @@ function showNotification(type, message) {
             box-shadow: 0 8px 24px rgba(0, 26, 44, 0.15);
             backdrop-filter: blur(10px);
             text-align: center;
+            
         }
 
         .notification-success {
@@ -991,10 +992,18 @@ function showNotification(type, message) {
 
         .notification-error {
             background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            position: fixed;
+            top: 30px;
+            right: 20px;
+            padding: 16px 24px;
         }
 
         .notification-info {
             background: linear-gradient(135deg, #005792 0%, #001A2C 100%);
+            position: fixed;
+            top: 30px;
+            right: 20px;
+            padding: 16px 24px;
         }
 
         .btn-disabled {
@@ -1176,7 +1185,7 @@ function showReportModal(roomId, roomTitle, members) {
         memberList.innerHTML = `
             <ul class="report-member-list">
                 ${members.map(m => `
-                    <li style="margin-bottom:8px;">
+                    <li style="margin-bottom:8px; margin-top:14px;">
                         <label style="display:flex; align-items:center; gap:8px;">
                             <input type="radio" name="reportMember" value="${m.nickname}">
                             <span>${m.nickname} (${m.role})</span>
