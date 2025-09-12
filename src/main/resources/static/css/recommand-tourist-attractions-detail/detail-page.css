@@ -280,7 +280,7 @@
   font-size: 28px;
   font-weight: 700;
   color: #2d3748;
-  margin: 50px 0 30px;
+  margin: 30px 0 30px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -801,3 +801,138 @@
   }
 }
 
+/* 상세정보 섹션 전체 */
+
+/* 상단 제목 */
+.place-detail {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #2a7d8c;
+}
+
+.place-detail .detail-icon {
+  font-size: 1.4rem;
+}
+
+/* 정보 그리드 */
+.place-detail-info .info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem 1.5rem;
+}
+
+.info-item {
+  background: #ffffff;
+  border: 1px solid #e6e6e6;
+  padding: 1rem;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.info-item:hover {
+  border-color: #2a7d8c;
+  background: #f0fbfb;
+  transform: translateY(-2px);
+}
+
+/* 라벨 */
+.info-label {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  color: #444;
+}
+
+/* 값 */
+.info-value {
+  font-size: 0.95rem;
+  color: #555;
+  word-break: keep-all;
+}
+
+/* 상세 이야기 */
+.place-detail-wrapper {
+  margin-top: 2rem;
+}
+
+.place-detail-content {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  border: 1px solid #e6e6e6;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.place-detail-content h4 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #2a7d8c;
+}
+
+.place-detail-content p {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #444;
+  white-space: pre-line;
+}
+
+/* ====== 장애인 편의 정보 (기존 스타일) ====== */
+.accessibility-info {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  padding: 32px;
+  margin-bottom: 30px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.accessibility-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+.accessibility-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;     /* 아이콘+라벨+값 모두 가운데 */
+  text-align: center;      /* 텍스트도 가운데 */
+  padding: 16px;
+  background: rgba(0, 87, 146, 0.1);
+  border-radius: 12px;
+  border-left: 4px solid #005792;
+
+  padding: 28px 24px;
+}
+
+.accessibility-item:hover {
+  background: rgba(0, 87, 146, 0.15);
+}
+
+.accessibility-item .label {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* 아이콘 + 텍스트 가로 가운데 */
+  gap: 8px;
+  width: 100%;             /* 항목 전체 너비 차지 */
+  font-weight: 600;
+  font-size: 20px;
+  color: #005792;
+  margin-bottom: 15px;
+}
+
+.accessibility-item .value {
+  font-size: 16px;
+  color: #2d3748;
+  margin-top: 6px;
+}
