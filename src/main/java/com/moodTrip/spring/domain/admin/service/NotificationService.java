@@ -9,6 +9,8 @@ import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.util.List;
@@ -64,7 +66,7 @@ public class NotificationService {
     @Transactional(readOnly = true)
     public NotificationResponse findByIdForAdmin(Long noticeId) {
         Notification notification = notificationRepository.findById(noticeId)
-                .orElseThrow(() -> new RuntimeException("공지사항을 찾을 수 없습니다."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "공지사항을 찾을 수 없습니다."));
 
         // Lazy Loading 해결
         if (notification.getAttachments() != null) {
@@ -107,7 +109,7 @@ public class NotificationService {
     public void update(Long noticeId, String title, String content, String classification,
                        Boolean isImportant, Boolean isVisible, List<MultipartFile> files) {
         Notification notification = notificationRepository.findById(noticeId)
-                .orElseThrow(() -> new RuntimeException("공지사항을 찾을 수 없습니다."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "공지사항을 찾을 수 없습니다."));
 
         notification.setTitle(title);
         notification.setContent(content);
@@ -149,7 +151,7 @@ public class NotificationService {
 
     public void delete(Long noticeId) {
         Notification notification = notificationRepository.findById(noticeId)
-                .orElseThrow(() -> new RuntimeException("공지사항을 찾을 수 없습니다."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "공지사항을 찾을 수 없습니다."));
 
         // 파일 삭제
         for (Attachment attachment : notification.getAttachments()) {

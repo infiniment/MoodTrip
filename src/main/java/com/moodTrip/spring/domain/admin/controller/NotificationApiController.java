@@ -30,6 +30,7 @@ public class NotificationApiController {
         Long noticeId = notificationService.save(title, content, classification, isImportant, isVisible, files);
         return ResponseEntity.ok(noticeId);
     }
+
     // 공지사항 목록 조회
     @GetMapping
     public ResponseEntity<List<NotificationResponse>> getNotificationList() {
@@ -37,8 +38,7 @@ public class NotificationApiController {
         return ResponseEntity.ok(notifications);
     }
 
-
-    //공지사항 조회
+    // 공지사항 조회
     @GetMapping("/{noticeId}")
     public ResponseEntity<NotificationResponse> getNotification(@PathVariable("noticeId") Long noticeId) {
         try {
@@ -50,11 +50,10 @@ public class NotificationApiController {
         }
     }
 
-
     // 공지사항 수정
     @PutMapping("/{noticeId}")
     public ResponseEntity<Void> updateNotification(
-            @PathVariable Long noticeId,
+            @PathVariable("noticeId") Long noticeId,
             @RequestParam("title") String title,
             @RequestParam("content") String content,
             @RequestParam("classification") String classification,
@@ -68,7 +67,7 @@ public class NotificationApiController {
 
     // 공지사항 삭제
     @DeleteMapping("/{noticeId}")
-    public ResponseEntity<Void> deleteNotification(@PathVariable Long noticeId) {
+    public ResponseEntity<Void> deleteNotification(@PathVariable("noticeId") Long noticeId) {
         notificationService.delete(noticeId);
         return ResponseEntity.ok().build();
     }
