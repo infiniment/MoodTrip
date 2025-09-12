@@ -4,6 +4,8 @@ import com.moodTrip.spring.domain.admin.dto.request.ReportActionDto;
 import com.moodTrip.spring.domain.admin.dto.response.*;
 import com.moodTrip.spring.domain.admin.service.*;
 import com.moodTrip.spring.domain.attraction.service.AttractionService;
+import com.moodTrip.spring.domain.member.dto.response.WithdrawResponse;
+import com.moodTrip.spring.domain.member.service.WithdrawDataService;
 import com.moodTrip.spring.domain.rooms.dto.response.RoomMemberResponse;
 import com.moodTrip.spring.domain.rooms.entity.Room;
 import com.moodTrip.spring.domain.rooms.repository.RoomRepository;
@@ -19,6 +21,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 import com.moodTrip.spring.domain.member.service.MemberService;
 import com.moodTrip.spring.domain.member.dto.response.MemberAdminDto;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -49,6 +53,7 @@ public class AdminController {
     private final AdminDashboardService adminDashboardService;
     private final RoomService roomService;
     private final RoomRepository roomRepository;
+    private final WithdrawDataService withdrawDataService;
 
     @GetMapping
     public String adminPage(
@@ -105,7 +110,7 @@ public class AdminController {
     // 회원 상세 정보 조회 (AJAX용)
     @GetMapping("/members/{memberPk}")
     @ResponseBody
-    public ResponseEntity<MemberAdminDto> getMemberDetail(@PathVariable Long memberPk) {
+    public ResponseEntity<MemberAdminDto> getMemberDetail(@PathVariable("memberPk") Long memberPk) {
         try {
             MemberAdminDto memberDetail = memberService.getMemberDetailForAdmin(memberPk);
             return ResponseEntity.ok(memberDetail);
@@ -118,8 +123,8 @@ public class AdminController {
     @PutMapping("/members/{memberPk}/status")
     @ResponseBody
     public ResponseEntity<String> updateMemberStatus(
-            @PathVariable Long memberPk,
-            @RequestParam String status) {
+            @PathVariable("memberPk") Long memberPk,
+            @RequestParam("status") String status) {
         try {
             memberService.updateMemberStatus(memberPk, status);
             return ResponseEntity.ok("회원 상태가 변경되었습니다.");
@@ -131,19 +136,34 @@ public class AdminController {
     // 회원 강제 탈퇴 처리
     @PutMapping("/members/{memberPk}/withdraw")
     @ResponseBody
-    public ResponseEntity<String> withdrawMember(@PathVariable Long memberPk) {
+    public ResponseEntity<WithdrawResponse> withdrawMember(@PathVariable("memberPk") Long memberPk) {
         try {
-            memberService.withdrawMember(memberPk);
-            return ResponseEntity.ok("회원이 탈퇴 처리되었습니다.");
+            WithdrawResponse response = memberService.withdrawMember(memberPk);
+            return ResponseEntity.ok(response);
+
+        } catch (RuntimeException e) {
+            WithdrawResponse errorResponse = WithdrawResponse.builder()
+                    .success(false)
+                    .message(e.getMessage())
+                    .withdrawnAt(LocalDateTime.now())
+                    .build();
+            return ResponseEntity.badRequest().body(errorResponse);
+
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("탈퇴 처리 중 오류가 발생했습니다.");
+            WithdrawResponse errorResponse = WithdrawResponse.builder()
+                    .success(false)
+                    .message("강제 탈퇴 처리 중 예상치 못한 오류가 발생했습니다.")
+                    .withdrawnAt(LocalDateTime.now())
+                    .build();
+            return ResponseEntity.internalServerError().body(errorResponse);
         }
     }
+
 
     // 회원 검색 (AJAX용)
     @GetMapping("/members/search")
     @ResponseBody
-    public ResponseEntity<java.util.List<MemberAdminDto>> searchMembers(@RequestParam String keyword) {
+    public ResponseEntity<java.util.List<MemberAdminDto>> searchMembers(@RequestParam(name = "keyword") String keyword) {
         try {
             java.util.List<MemberAdminDto> searchResult = memberService.searchMembersForAdmin(keyword);
             return ResponseEntity.ok(searchResult);
@@ -154,8 +174,8 @@ public class AdminController {
 
     @GetMapping("/members")
     public String membersPage(Model model,
-                              @RequestParam(defaultValue = "0") int page,
-                              @RequestParam(defaultValue = "10") int size) {
+                              @RequestParam(name = "page", defaultValue = "0") int page,
+                              @RequestParam(name = "size", defaultValue = "10") int size) {
         Page<MemberAdminDto> memberPage = memberService.getAllMembersForAdmin(page, size);
         model.addAttribute("members", memberPage.getContent());
         model.addAttribute("page", memberPage);
@@ -215,7 +235,7 @@ public class AdminController {
     // 관광지 상세 조회
     @GetMapping("/attractions/{attractionId}")
     @ResponseBody
-    public ResponseEntity<AttractionAdminDto> getAttractionDetail(@PathVariable Long attractionId) {
+    public ResponseEntity<AttractionAdminDto> getAttractionDetail(@PathVariable("attractionId") Long attractionId) {
         // 일단 기본 응답
         return ResponseEntity.ok(new AttractionAdminDto());
     }
@@ -224,9 +244,9 @@ public class AdminController {
     @GetMapping("/reports")
     @ResponseBody
     public ResponseEntity<PageResult<ReportDto>> getReports(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String status) {
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "status", required = false) String status) {
 
         // 서비스는 List<ReportDto> 반환 → 여기서 PageImpl로 감싸서 PageResult.of(...) 사용
         var all = adminReportService.getAllReports(status); // List<ReportDto>
@@ -242,22 +262,23 @@ public class AdminController {
         return ResponseEntity.ok(PageResult.of(result));
     }
 
-    // 신고 상세 (type 필요: ROOM | MEMBER)
-    @GetMapping("/reports/{reportId}")
+    // 신고 상세 (type 필요: ROOM | MEMBER) after  👇 숫자만 매칭되도록
+    @GetMapping("/reports/{reportId:\\d+}")
     @ResponseBody
     public ResponseEntity<ReportDetailDto> getReportDetail(
-            @PathVariable Long reportId,
-            @RequestParam String type) {
+            @PathVariable("reportId") Long reportId,
+            @RequestParam("type") String type) {
         var detail = adminReportService.getDetail(reportId, type);
         return ResponseEntity.ok(detail);
     }
+
 
     // 신고 처리 완료(RESOLVED)
     @PutMapping("/reports/{reportId}/resolve")
     @ResponseBody
     public ResponseEntity<String> resolveReport(
             @PathVariable Long reportId,
-            @RequestParam String type,
+            @RequestParam("type") String type,
             @RequestBody(required = false) ReportActionDto actionDto) {
         adminReportService.resolve(reportId, type, actionDto);
         return ResponseEntity.ok("신고가 처리되었습니다.");
@@ -268,7 +289,7 @@ public class AdminController {
     @ResponseBody
     public ResponseEntity<String> rejectReport(
             @PathVariable Long reportId,
-            @RequestParam String type,
+            @RequestParam(name = "type") String type,
             @RequestBody(required = false) ReportActionDto actionDto) {
         adminReportService.dismiss(reportId, type, actionDto);
         return ResponseEntity.ok("신고가 기각되었습니다.");
@@ -279,7 +300,7 @@ public class AdminController {
     @ResponseBody
     public ResponseEntity<String> deleteReport(
             @PathVariable Long reportId,
-            @RequestParam String type) {
+            @RequestParam(name = "type") String type) {
         // 필요시 실제 삭제 로직 추가 (권장: 상태 DISMISSED로)
         // adminReportService.delete(fireId, type);  // 아직 없으니 주석
         return ResponseEntity.status(501).body("삭제는 미지원입니다. 기각 처리(end-point: /reject)를 사용하세요.");
@@ -294,9 +315,9 @@ public class AdminController {
         var result = adminMatchingService.getMatchings(page, size);
         return ResponseEntity.ok(PageResult.of(result));
     }
-    @GetMapping("/admin/rooms/{roomId}/members")
+    @GetMapping("/rooms/{roomId}/members")
     @ResponseBody
-    public ResponseEntity<List<RoomMemberResponse>> getRoomMembers(@PathVariable Long roomId) {
+    public ResponseEntity<List<RoomMemberResponse>> getRoomMembers(@PathVariable("roomId") Long roomId) {
         Room room = roomRepository.findById(roomId).orElseThrow(() -> new CustomException(ROOM_NOT_FOUND));
         List<RoomMemberResponse> members = roomService.getActiveMembers(room);
         return ResponseEntity.ok(members);
@@ -304,7 +325,7 @@ public class AdminController {
 
     @PutMapping("/matchings/{roomId}/terminate")
     @ResponseBody
-    public ResponseEntity<String> terminateMatching(@PathVariable Long roomId) {
+    public ResponseEntity<String> terminateMatching(@PathVariable("roomId") Long roomId) {
         try {
             adminMatchingService.terminateMatching(roomId);
             return ResponseEntity.ok("매칭이 강제 종료되었습니다.");
@@ -315,7 +336,7 @@ public class AdminController {
 
     @PutMapping("/matchings/{roomId}/restore")
     @ResponseBody
-    public ResponseEntity<String> restoreMatching(@PathVariable Long roomId) {
+    public ResponseEntity<String> restoreMatching(@PathVariable("roomId") Long roomId) {
         try {
             adminMatchingService.restoreMatching(roomId);
             return ResponseEntity.ok("매칭이 복구되었습니다.");
@@ -327,16 +348,16 @@ public class AdminController {
     @GetMapping("/members/json")
     @ResponseBody
     public Page<MemberAdminDto> getMembersJson(
-            @RequestParam(defaultValue="0") int page,
-            @RequestParam(defaultValue="10") int size) {
+            @RequestParam(name = "page", defaultValue="0") int page,
+            @RequestParam(name = "size", defaultValue="10") int size) {
         return memberService.getAllMembersForAdmin(page, size);
     }
 
     @GetMapping("/matchings/json")
     @ResponseBody
     public PageResult<AdminMatchingDto> getMatchingsJson(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size
     ) {
         Page<AdminMatchingDto> matchingPage = adminMatchingService.getMatchings(page, size);
         return PageResult.of(matchingPage); // 관광지/회원과 동일 포맷
@@ -345,9 +366,10 @@ public class AdminController {
     @GetMapping("/reports/json")
     @ResponseBody
     public ResponseEntity<PageResult<ReportDto>> getReportsJson(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String status // 'PENDING'|'RESOLVED'|'DISMISSED' 또는 '대기'|'처리완료'|'거부'|null
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "status", required = false) String status
+            // 'PENDING'|'RESOLVED'|'DISMISSED' 또는 '대기'|'처리완료'|'거부'|null
     ) {
         // 한글도 들어올 수 있으므로 영문 enum으로 정규화
         String normalized = normalizeStatus(status);

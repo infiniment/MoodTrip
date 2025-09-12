@@ -3,8 +3,10 @@ package com.moodTrip.spring.domain.admin.controller;
 import com.moodTrip.spring.domain.admin.entity.Faq;
 import com.moodTrip.spring.domain.admin.service.FaqService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
@@ -40,14 +42,33 @@ public class FaqApiController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Faq> updateFaq(@PathVariable Long id, @RequestBody Faq faq) {
-        faq.setId(id);
-        return ResponseEntity.ok(faqService.save(faq));
+    public ResponseEntity<Faq> updateFaq(@PathVariable("id") Long id, @RequestBody Faq faq) {
+        try {
+            faq.setId(id);
+            return ResponseEntity.ok(faqService.save(faq));
+        } catch (RuntimeException e) { // ex) "FAQ not found with id: 999"
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage(), e);
+        }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteFaq(@PathVariable Long id) {
-        faqService.delete(id);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Void> deleteFaq(@PathVariable("id") Long id) {
+        try {
+            faqService.delete(id);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) { // 서비스에서 없는 ID 처리 시 동일 변환
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage(), e);
+        }
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Faq> getFaqById(@PathVariable("id") Long id) {
+        try {
+            Faq faq = faqService.findById(id); // 여기서 RuntimeException 발생 가능
+            return ResponseEntity.ok(faq);
+        } catch (RuntimeException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage(), e);
+        }
+    }
+
 }
