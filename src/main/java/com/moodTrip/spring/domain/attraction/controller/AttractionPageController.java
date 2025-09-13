@@ -10,9 +10,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Collections;
 import java.util.List;
+
 @Controller
 @RequiredArgsConstructor
 public class AttractionPageController {
@@ -22,44 +24,45 @@ public class AttractionPageController {
     private final WeatherService weatherService;
 
     @GetMapping("/attractions/detail/{contentId}")
-    // 1. 파라미터 타입을 long -> Long 으로 변경
-    public String view(@PathVariable("contentId") Long contentId, Model model) {
+    public String view(
+            @PathVariable("contentId") Long contentId,
+            @RequestParam(value = "contentTypeId", required = false) Integer contentTypeId,
+            Model model
+    ) {
+        if (contentId == null) return "redirect:/attractions";
 
-        // 2. contentId가 null일 경우를 처리하는 방어 코드 추가
-        if (contentId == null) {
-            // 예를 들어, 목록 페이지나 에러 페이지로 리다이렉트
-            // 혹은 적절한 에러 메시지를 담은 뷰를 반환
-            return "redirect:/attractions"; // 또는 "error/404" 등
-        }
-
-        AttractionDetailResponse detail = attractionService.getDetailResponse(contentId);
-        List<String> tagList;
+        AttractionDetailResponse detail;
         try {
-            tagList = attractionEmotionService.findTagNamesByContentId(contentId);
-        } catch (Throwable t) {
-            tagList = Collections.emptyList();
+            // ✅ 오버로드 버전 (contentTypeId 지원)
+            detail = attractionService.getDetailResponse(contentId, contentTypeId);
+        } catch (IllegalArgumentException notFound) {
+            model.addAttribute("message", notFound.getMessage());
+            return "error/404";
         }
 
-        var tags   = attractionService.getEmotionTagNames(contentId); // 감정 태그들
+        // ✅ 태그 조회 (중복 제거)
+        List<String> tags;
+        try {
+            tags = attractionEmotionService.findTagNamesByContentId(contentId);
+        } catch (Throwable t) {
+            tags = Collections.emptyList();
+        }
 
-        // 좌표 기반 현재 날씨 조회 (좌표 없으면 null)
+        // ✅ 날씨 조회 (좌표 없으면 null)
         WeatherResponse weather = null;
         try {
             if (detail.getLat() != null && detail.getLon() != null) {
                 weather = weatherService.getCurrentWeather(detail.getLat(), detail.getLon());
             }
         } catch (Throwable ignore) {
-            // 날씨 API 실패 시 화면은 계속 렌더 (today-weather의 null 분기로 안내 문구 표시)
+            // 날씨 API 실패 시에도 화면은 렌더
         }
-
 
         model.addAttribute("contentId", contentId);
         model.addAttribute("attractionId", detail.getAttractionId());
         model.addAttribute("detail", detail);
-        model.addAttribute("tags", tagList);
         model.addAttribute("tags", tags);
         model.addAttribute("weather", weather);
-
 
         return "recommand-tourist-attractions-detail/detail-page";
     }

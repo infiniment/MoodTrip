@@ -32,10 +32,30 @@ public class AttractionIntro {
     // 체험 가능 연령
     @Column(name = "expagerange")   private String expagerange;
     @Column(name = "agelimit")      private String agelimit;
-
     // 관광지 개요 (detailCommon2에서 받아와 저장)
     @Column(columnDefinition = "TEXT")
     private String overview;
+
+    //장애편의시설
+    @Column(name = "a11y_parking")      private String a11yParking;
+    @Column(name = "wheelchair")        private String wheelchair;
+    @Column(name = "elevator")          private String elevator;
+    @Column(name = "braileblock")       private String braileblock;
+    @Column(name = "exit_access")       private String exit;              // exit는 예약어 우려 시 컬럼명 별칭
+    @Column(name = "guidesystem")       private String guidesystem;
+    @Column(name = "signguide")         private String signguide;
+    @Column(name = "videoguide")        private String videoguide;
+    @Column(name = "audioguide")        private String audioguide;
+    @Column(name = "bigprint")          private String bigprint;
+    @Column(name = "brailepromotion")   private String brailepromotion;
+    @Column(name = "helpdog")           private String helpdog;
+    @Column(name = "hearingroom")       private String hearingroom;
+    @Column(name = "hearinghandicapetc")private String hearinghandicapetc;
+    @Column(name = "blindhandicapetc")  private String blindhandicapetc;
+    @Column(name = "handicapetc")       private String handicapetc;
+    @Column(name = "publictransport")   private String publictransport;
+    @Column(name = "ticketoffice")      private String ticketoffice;
+    @Column(name = "guidehuman")        private String guidehuman;
 
     // ===== 원본/동기화 메타 =====
     @Lob
@@ -44,4 +64,7 @@ public class AttractionIntro {
 
     @Column(name = "synced_at")
     private LocalDateTime syncedAt;
+
+
+
 }

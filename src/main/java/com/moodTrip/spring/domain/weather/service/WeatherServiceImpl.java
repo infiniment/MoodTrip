@@ -62,7 +62,7 @@ public class WeatherServiceImpl implements WeatherService {
     @Value("${weather.api.key}")
     private String apiKey;
 
-    private JsonNode callApi(double lat, double lon) {
+    protected JsonNode callApi(double lat, double lon) {
         String url = String.format(
                 "https://api.openweathermap.org/data/2.5/forecast?lat=%f&lon=%f&units=metric&lang=kr&appid=%s",
                 lat, lon, apiKey
@@ -463,7 +463,7 @@ public class WeatherServiceImpl implements WeatherService {
     }
 
     // 공용 API 호출(네가 기존에 쓰던 것 그대로 재사용)
-    private com.fasterxml.jackson.databind.JsonNode callOpenWeather(double lat, double lon) {
+    protected com.fasterxml.jackson.databind.JsonNode callOpenWeather(double lat, double lon) {
         String url = String.format(
                 "https://api.openweathermap.org/data/2.5/forecast?lat=%f&lon=%f&units=metric&lang=kr&appid=%s",
                 lat, lon, apiKey

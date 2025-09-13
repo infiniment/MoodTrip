@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>무드트립 - 정지된 계정</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #005792 0%, #001A2C 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #333;
+    }
+
+    .suspend-container {
+      background: white;
+      border-radius: 20px;
+      padding: 60px 50px;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      max-width: 500px;
+      width: 90%;
+      margin: 20px;
+    }
+
+    .suspend-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 30px;
+      background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+      border: 2px solid #fecaca;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+    }
+
+    .suspend-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #001A2C;
+      margin-bottom: 15px;
+    }
+
+    .suspend-subtitle {
+      font-size: 16px;
+      color: #718096;
+      margin-bottom: 40px;
+      line-height: 1.5;
+    }
+
+    .suspend-message {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 40px;
+      color: #c53030;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .button-group {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .btn {
+      padding: 16px 24px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      display: inline-block;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #005792 0%, #003d5c 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 87, 146, 0.3);
+    }
+
+    .btn-secondary {
+      background: #f7fafc;
+      color: #4a5568;
+      border: 2px solid #e2e8f0;
+    }
+
+    .btn-secondary:hover {
+      background: #edf2f7;
+      border-color: #cbd5e0;
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: #005792;
+      border: 2px solid #005792;
+    }
+
+    .btn-outline:hover {
+      background: #005792;
+      color: white;
+      transform: translateY(-1px);
+    }
+
+    .footer-text {
+      margin-top: 30px;
+      font-size: 14px;
+      color: #a0aec0;
+    }
+
+    /* 반응형 */
+    @media (max-width: 480px) {
+      .suspend-container {
+        padding: 40px 30px;
+      }
+
+      .suspend-title {
+        font-size: 24px;
+      }
+
+      .button-group {
+        gap: 12px;
+      }
+
+      .btn {
+        padding: 14px 20px;
+        font-size: 15px;
+      }
+    }
+
+    /* 애니메이션 */
+    .suspend-container {
+      animation: fadeInUp 0.6s ease-out;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="suspend-container">
+  <!-- 아이콘 -->
+  <div class="suspend-icon">
+    ⛔
+  </div>
+
+  <!-- 제목 -->
+  <h1 class="suspend-title">정지된 계정입니다</h1>
+
+  <!-- 부제목 -->
+  <p class="suspend-subtitle">
+    이 계정은 이용 규정 위반으로 인해<br>
+    서비스 이용이 일시적으로 제한되었습니다.
+  </p>
+
+  <!-- 안내 메시지 -->
+  <div class="suspend-message">
+    <strong>안내사항</strong><br>
+    정지된 계정으로는 무드트립 서비스를 이용하실 수 없습니다.<br>
+    정지 해제를 원하시면 관리자에게 문의하거나 다른 계정으로 로그인해주세요.
+  </div>
+
+  <!-- 버튼 그룹 -->
+  <div class="button-group">
+
+    <!-- 메인페이지로 가기 -->
+    <a th:href="@{/}" class="btn btn-outline">
+      🏠 메인페이지로 이동
+    </a>
+  </div>
+
+  <!-- 푸터 텍스트 -->
+  <p class="footer-text">
+    계정 정지 해제나 기타 문의사항은 관리자에게 연락해주세요.
+  </p>
+</div>
+</body>
+</html>

@@ -37,12 +37,32 @@ public class FileService {
         return "/uploads/" + savedFileName;
     }
 
+//    public void deleteFile(String filePath) {
+//        try {
+//            Path path = Paths.get("." + filePath);
+//            Files.deleteIfExists(path);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
+
+    // FileService.java
     public void deleteFile(String filePath) {
         try {
-            Path path = Paths.get("." + filePath);
+            Path path;
+            // "/uploads/xxx.ext" 형태면 uploadPath로 매핑
+            final String prefix = "/uploads/";
+            if (filePath != null && filePath.startsWith(prefix)) {
+                String filename = filePath.substring(prefix.length());
+                path = Paths.get(uploadPath, filename);
+            } else {
+                // 그 외(절대/상대 경로)는 그대로 사용
+                path = Paths.get(filePath);
+            }
             Files.deleteIfExists(path);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
 }
