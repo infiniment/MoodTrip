@@ -183,6 +183,8 @@ function initializeDateSelection() {
 // 날짜 선택 처리
 function handleDateSelection(clickedDate, dayElement) {
     if (!selectedStartDate || (selectedStartDate && selectedEndDate)) {
+        clearAllAddedRanges();
+
         // 새로운 선택 시작
         clearCurrentSelection();
         selectedStartDate = clickedDate;
@@ -207,6 +209,13 @@ function handleDateSelection(clickedDate, dayElement) {
     }
 
     updateCurrentSelectionDisplay();
+}
+
+// 기존 구간 전부 지우기 유틸
+function clearAllAddedRanges() {
+    if (selectedDateRanges.length === 0) return;
+    selectedDateRanges.forEach(range => removeAddedDatesFromCalendar(range));
+    selectedDateRanges = [];
 }
 
 // 현재 선택 초기화 (전체가 아닌 현재 선택만)
@@ -273,6 +282,7 @@ function addDateRange() {
     // 종료일이 없으면 당일로 간주 (end = start)
     const start = new Date(selectedStartDate);
     const end   = selectedEndDate ? new Date(selectedEndDate) : new Date(selectedStartDate);
+
     const newRange = {
         startDate: start,
         endDate: end,
@@ -280,17 +290,13 @@ function addDateRange() {
         endDateFormatted: formatDate(end)
     };
 
-    // 기존 범위와 겹치는지 확인
-    const hasOverlap = selectedDateRanges.some(range => {
-        return (newRange.startDate <= range.endDate && newRange.endDate >= range.startDate);
-    });
-
-    if (hasOverlap) {
-        alert('이미 선택된 날짜와 겹칩니다. 다른 날짜를 선택해주세요.');
-        return;
+    // 기존 선택이 있으면 달력 표시부터 제거하고 배열 초기화
+    if (selectedDateRanges.length > 0) {
+        removeAddedDatesFromCalendar(selectedDateRanges[0]);
+        selectedDateRanges = [];
     }
 
-    // 범위 추가
+    // 겹침 체크는 불필요(항상 한 개만 유지)
     selectedDateRanges.push(newRange);
 
     // 추가된 날짜들을 달력에 표시
@@ -459,7 +465,13 @@ function removeAddedDatesFromCalendar(dateRange) {
         const dayDate = new Date(year, month - 1, dayNumber);
 
         if (dayDate >= dateRange.startDate && dayDate <= dateRange.endDate) {
-            day.classList.remove('added-date', 'added-range-start', 'added-range-end', 'added-in-range');
+            day.classList.remove(
+                'added-date',
+                'added-range-start',
+                'added-range-end',
+                'added-in-range',
+                'added-single-day'
+            );
         }
     });
 }
