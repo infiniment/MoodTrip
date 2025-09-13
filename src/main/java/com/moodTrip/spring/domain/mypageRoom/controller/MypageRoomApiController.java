@@ -31,26 +31,27 @@ public class MypageRoomApiController {
     // 내가 입장한 방 목록 조회
     @GetMapping("/joined")
     public ResponseEntity<List<JoinedRoomResponse>> getMyJoinedRooms() {
-            Member currentMember = securityUtil.getCurrentMember();
+        Member currentMember = securityUtil.getCurrentMember();
 
-            // 서비스에서 내가 참여한 방 목록 조회
-            List<JoinedRoomResponse> joinedRooms = mypageRoomService.getMyJoinedRooms(currentMember);
+        // 서비스에서 내가 참여한 방 목록 조회
+        List<JoinedRoomResponse> joinedRooms = mypageRoomService.getMyJoinedRooms(currentMember);
 
-            return ResponseEntity.ok(joinedRooms);
+        return ResponseEntity.ok(joinedRooms);
     }
+
     // 내가 만든 방 목록 조회
     @GetMapping("/created")
     public ResponseEntity<List<CreatedRoomResponse>> getMyCreatedRooms() {
-            Member currentMember = securityUtil.getCurrentMember();
+        Member currentMember = securityUtil.getCurrentMember();
 
-            List<CreatedRoomResponse> createdRooms = mypageRoomService.getMyCreatedRooms(currentMember);
+        List<CreatedRoomResponse> createdRooms = mypageRoomService.getMyCreatedRooms(currentMember);
 
-            return ResponseEntity.ok(createdRooms);
+        return ResponseEntity.ok(createdRooms);
     }
 
     // 방 삭제하기
     @DeleteMapping("/{roomId}")
-    public ResponseEntity<Void> deleteRoom(@PathVariable Long roomId) throws AccessDeniedException {
+    public ResponseEntity<Void> deleteRoom(@PathVariable("roomId") Long roomId) throws AccessDeniedException {
         Member currentMember = securityUtil.getCurrentMember();
         mypageRoomService.deleteRoom(roomId, currentMember);
         return ResponseEntity.noContent().build();
@@ -58,7 +59,7 @@ public class MypageRoomApiController {
 
     // 방 나가기
     @DeleteMapping("/{roomId}/leave")
-    public ResponseEntity<Void> leaveRoom(@PathVariable Long roomId) {
+    public ResponseEntity<Void> leaveRoom(@PathVariable("roomId") Long roomId) {
         Member currentMember = securityUtil.getCurrentMember();
         mypageRoomService.leaveRoom(roomId, currentMember);
         return ResponseEntity.noContent().build();

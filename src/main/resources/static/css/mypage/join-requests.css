@@ -228,6 +228,11 @@
     font-weight: 600;
     color: #001A2C;
     margin: 0;
+    max-width: 20ch;  /* 20개 문자 너비로 제한 */
+    word-break: break-all;
+    overflow-wrap: break-word;
+    white-space: normal;
+    line-height: 1.4;
 }
 
 .room-meta {
