@@ -2,17 +2,20 @@
 <html lang="ko" class="no-js modern" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <title th:text="${detail != null && detail.title != null ? detail.title + ' - 상세정보' : '상세정보'}">상세정보</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="${detail != null and detail.title != null ? detail.title + ' - 상세정보' : '상세정보'}">상세정보</title>
   <script>document.documentElement.classList.remove('no-js');</script>
   <link rel="stylesheet" href="/static/css/recommand-tourist-attractions-detail/detail-page.css">
   <script src="/static/js/recommand-tourist-attractions-detail/detail-page.js" defer></script>
   <script src="https://unpkg.com/feather-icons"></script>
 
   <!-- SSR 데이터를 JS가 감지해서 fetch 생략할 수 있도록 주입 -->
+  <!-- 파서 안전을 위해 detail을 문자열 JSON으로 덤프 -->
   <script th:inline="javascript">
-    window.__SSR_DETAIL__ = /*[[${detail}]]*/ null;
-    window.__SSR_TAGS__   = /*[[${tags}]]*/ [];
+    /*<![CDATA[*/
+    window.__SSR_DETAIL__ = null;
+    window.__SSR_TAGS__ = [];
+    /*]]>*/
   </script>
   <link rel=" stylesheet" th:href="@{/css/fix/header.css}">
   <link rel="stylesheet" th:href="@{/css/fix/footer.css}">
@@ -88,22 +91,28 @@
         <div class="placeInfo">
           <section class="place-image">
             <img class="place"
-                 th:src="${detail != null && detail.image != null ? detail.image : '/static/image/recommand-tourist-attractions-detail/SaryeoniForestTrail.png'}"
+                 th:src="${detail != null and detail.image != null ? detail.image : '/static/.../SaryeoniForestTrail.png'}"
                  th:alt="${detail != null ? detail.title : '이미지'}"
                  src="/static/image/recommand-tourist-attractions-detail/SaryeoniForestTrail.png"
                  alt="">
-          </section>
 
-          <section class="place-tag-info">
-            <div class="heart-img-wrapper" th:attr="data-attraction-id=${attractionId}">
-              <img th:src="@{/image/recommand-tourist-attractions-detail/heart.png}" alt="찜">
-            </div>
-
-            <div class="place-tag" th:if="${tags != null and !#lists.isEmpty(tags)}">
-              <span class="tag-item" th:each="t : ${tags}" th:text="'#' + ${t}">#태그</span>
+            <div class="like-btn" th:attr="data-attraction-id=${attractionId}">
+              <span>♡</span>
             </div>
           </section>
         </div>
+      </div>
+    </div>
+
+    <div class="place-tag">
+      <span class="tag-icon">ℹ️</span> 감정 태그
+    </div>
+    <div class="tag-info">
+      <div class="place-tag" th:if="${tags != null and !#lists.isEmpty(tags)}">
+        <span class="tag-item" th:each="t : ${tags}" th:text="'#' + ${t}">#태그</span>
+      </div>
+      <div th:if="${tags == null or #lists.isEmpty(tags)}">
+        <p>태그가 없습니다.</p>
       </div>
     </div>
 
@@ -118,95 +127,226 @@
         <div class="info-grid">
           <div class="info-item">
             <span class="info-label">📞 문의 및 안내</span>
-            <span class="info-value" id="infoTel" th:text="${detail != null ? detail.tel : ''}"> </span>
+            <span class="info-value" id="infoTel"
+                  th:text="${detail != null ? detail.tel : ''}"> </span>
           </div>
+
+          <div class="info-item">
+            <span class="info-label">🎟️ 매표소</span>
+            <span class="info-value" id="infoTi"
+                  th:text="${detail != null ? detail.ticketoffice : ''}"> </span>
+          </div>
+
           <div class="info-item">
             <span class="info-label">📍 위치</span>
-            <span class="info-value" id="infoAddr" th:text="${detail != null ? detail.addr : ''}"> </span>
+            <span class="info-value" id="infoAddr"
+                  th:text="${detail != null ? detail.addr : ''}"> </span>
           </div>
           <div class="info-item">
             <span class="info-label">🕐 이용시간</span>
             <!-- TourAPI가 <br> 포함할 수 있어 utext -->
-            <span class="info-value" id="infoUseTime" th:utext="${detail != null ? detail.useTime : ''}"> </span>
+            <span class="info-value" id="infoUseTime"
+                  th:utext="${detail != null ? detail.useTime : ''}"> </span>
           </div>
           <div class="info-item">
             <span class="info-label">🗓️ 휴일</span>
-            <span class="info-value" id="infoRest" th:utext="${detail != null ? detail.restDate : ''}"> </span>
+            <span class="info-value" id="infoRest"
+                  th:utext="${detail != null ? detail.restDate : ''}"> </span>
           </div>
           <div class="info-item">
             <span class="info-label">🚗 주차</span>
-            <span class="info-value" id="infoParking" th:utext="${detail != null ? detail.parking : ''}"> </span>
+            <span class="info-value" id="infoParking"
+                  th:utext="${detail != null ? detail.parking : ''}"> </span>
           </div>
           <div class="info-item">
             <span class="info-label">👥 체험가능 연령</span>
-            <span class="info-value" id="infoAge" th:text="${detail != null ? detail.age : ''}"> </span>
+            <span class="info-value" id="infoAge"
+                  th:text="${detail != null ? detail.age : ''}"> </span>
           </div>
         </div>
       </div>
 
       <!-- 개요(상세설명) : 값 없으면 섹션 감춤 -->
       <div class="place-detail-wrapper"
-           th:if="${detail != null and detail.overview != null and #strings.isNotEmpty(detail.overview)}">
+           th:if="${detail != null and !#strings.isEmpty(detail.overview)}">
         <div class="place-detail-content">
           <div class="content-section" id="overviewSection">
-            <h4>🎬 한류의 매력을 만나는 여행 정보</h4>
-            <p id="overviewPreview"> </p>
-          </div>
-
-          <div class="content-section extra-info hidden" id="overviewMoreSection">
             <h4>🌲 상세 이야기</h4>
-            <div id="overviewMoreBody"></div>
+            <p id="overviewPreview"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 장애인 편의 정보 -->
+    <!-- 장애인 편의 정보 -->
+    <!-- 장애인 편의 정보 -->
+    <!-- 장애인 편의 정보 -->
+    <div class="place-middle" th:if="${detail != null}">
+      <div class="place-detail">
+        <span class="detail-icon">♿</span>
+        장애인 편의 정보
+      </div>
+
+      <div class="accessibility-info">
+        <div class="accessibility-grid">
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.wheelchair)}">
+            <div>
+              <div class="label"> ♿ 휠체어</div>
+              <div class="value" th:text="${detail.wheelchair}"></div>
+            </div>
           </div>
 
-          <button class="toggle-btn" id="overviewToggle">
-            <span class="toggle-text">더 자세히 보기</span>
-            <span class="toggle-icon">▼</span>
-          </button>
-          <style>.hidden { display: none; }</style>
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.elevator)}">
+            <div>
+              <div class="label">🛗 엘리베이터</div>
+              <div class="value" th:text="${detail.elevator}"></div>
+            </div>
+          </div>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.braileblock)}">
+            <div>
+              <div class="label">⬜ 점자 블록</div>
+              <div class="value" th:text="${detail.braileblock}"></div>
+            </div>
+          </div>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.exit)}">
+            <div>
+              <div class="label">🚪 출입구</div>
+              <div class="value" th:text="${detail.exit}"></div>
+            </div>
+          </div>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.signguide)}">
+            <div>
+              <div class="label">ℹ️ 안내 시스템</div>
+              <div class="value" th:text="${detail.signguide}"></div>
+            </div>
+          </div>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.guidesystem)}">
+            <div>
+              <div class="label">🤟 수화 안내</div>
+              <div class="value" th:text="${detail.guidesystem}"></div>
+            </div>
+          </div>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.videoguide)}">
+            <div>
+              <div class="label">🎥 영상 안내</div>
+              <div class="value" th:text="${detail.videoguide}"></div>
+            </div>
+          </div>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.audioguide)}">
+            <div>
+              <div class="label">🎧 오디오 가이드</div>
+              <div class="value" th:text="${detail.audioguide}"></div>
+            </div>
+          </div>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.bigprint)}">
+            <div>
+              <div class="label">🔠 큰 글자 안내</div>
+              <div class="value" th:text="${detail.bigprint}"></div>
+            </div>
+          </div>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.brailepromotion)}">
+            <div>
+              <div class="label">📖 점자 안내자료</div>
+              <div class="value" th:text="${detail.brailepromotion}"></div>
+            </div>
+          </div>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.helpdog)}">
+            <div>
+              <div class="label">🦮 도우미견 출입</div>
+              <div class="value" th:text="${detail.helpdog}"></div>
+            </div>
+          </div>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.hearingroom) or !#strings.isEmpty(detail.hearinghandicapetc)}">
+            <div>
+              <div class="label">👂 청각장애 편의</div>
+              <div class="value" th:text="${detail.hearingroom}"></div>
+              <div class="value" th:text="${detail.hearinghandicapetc}"></div>
+            </div>
+          </div>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.blindhandicapetc)}">
+            <div>
+              <div class="label">👁️ 시각장애 편의</div>
+              <div class="value" th:text="${detail.blindhandicapetc}"></div>
+            </div>
+          </div>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.publictransport)}">
+            <div>
+              <div class="label"> 🚌 대중교통 접근</div>
+              <div class="value" th:text="${detail.publictransport}"></div>
+            </div>
+          </div>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.guidehuman)}">
+            <div>
+              <div class="label">🙋 안내 인력</div>
+              <div class="value" th:text="${detail.guidehuman}"></div>
+            </div>
+          </div>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.handicapetc)}">
+            <div>
+              <div class="label">💡 기타</div>
+              <div class="value" th:text="${detail.handicapetc}"></div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- 매칭 서비스 섹션 -->
-  <div class="container-match-service">
-    <div class="container-title">
-      <span class="service-icon">🤝</span>
-      <span>동행 매칭 서비스</span>
+
+
+    <!-- 매칭 서비스 섹션 -->
+    <div class="container-match-service">
+      <div class="container-title">
+        <span class="service-icon">🤝</span>
+        <span>동행 매칭 서비스</span>
+      </div>
+
+      <section class="container">
+        <div class="container-guide">
+          <div class="title-wrapper">
+            <h2 class="title-service">이 장소, 이분들과 함께 어때요?</h2>
+            <p class="service-description">같은 관심사를 가진 여행자들과 함께 더 특별한 추억을 만들어보세요!</p>
+          </div>
+
+          <div class="guide-body"></div>
+
+          <div class="button-group">
+            <a class="guide-btn"
+               th:href="@{/companion-rooms/list(keyword=${detail != null ? detail.title : ''})}">
+              <span>동행자 찾기</span><span class="btn-arrow">→</span>
+            </a>
+
+            <a id="btnMakeRoom"
+               class="ask-btn"
+               th:href="@{/companion-rooms/create}"
+               th:attr="data-content-id=${detail != null ? detail.contentId : 0}">
+              <span>방 만들기</span><span class="btn-plus">+</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="introduction-image">
+          <img src="/static/image/recommand-tourist-attractions-detail/recommand-room.png" alt="추천 방">
+        </div>
+      </section>
     </div>
-
-    <section class="container">
-      <div class="container-guide">
-        <div class="title-wrapper">
-          <h2 class="title-service">이 장소, 이분들과 함께 어때요?</h2>
-          <p class="service-description">같은 관심사를 가진 여행자들과 함께 더 특별한 추억을 만들어보세요!</p>
-        </div>
-
-        <div class="guide-body"></div>
-
-        <div class="button-group">
-          <a class="guide-btn"
-             th:href="@{/companion-rooms/list(keyword=${detail.title})}">
-            <span>동행자 찾기</span><span class="btn-arrow">→</span>
-          </a>
-
-          <a id="btnMakeRoom"
-             class="ask-btn"
-             th:href="@{/companion-rooms/create}"
-             th:attr="data-content-id=${detail.contentId}">
-            <span>방 만들기</span><span class="btn-plus">+</span>
-          </a>
-        </div>
-
-
-      </div>
-
-      <div class="introduction-image">
-        <img src="/static/image/recommand-tourist-attractions-detail/recommand-room.png" alt="추천 방">
-      </div>
-    </section>
   </div>
-
 </div>
 <th:block th:replace="~{fix/footer :: footer}"></th:block>
 

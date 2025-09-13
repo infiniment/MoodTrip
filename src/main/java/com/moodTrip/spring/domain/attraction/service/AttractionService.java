@@ -18,6 +18,7 @@ import java.util.Set;
 
 public interface AttractionService {
 
+
     int syncAreaBasedList(int areaCode, Integer sigunguCode, Integer contentTypeId, int pageSize, long pauseMillis);
     int syncDetailIntro(long contentId, Integer contentTypeId);
     int syncDetailIntroByArea(int areaCode, Integer sigunguCode, Integer contentTypeId, long pauseMillis);
@@ -70,14 +71,15 @@ public interface AttractionService {
     );
 
     Optional<AttractionResponse> getDetail(long contentId);
-
+    AttractionDetailResponse getDetailResponse(Long contentId, Integer contentTypeId);
     AttractionIntro getIntro(long contentId, Integer contentTypeId);
-    AttractionDetailResponse getDetailResponse(long contentId);
+    AttractionDetailResponse getDetailResponse(Long contentId);
 
     List<String> getEmotionTagNames(long contentId);
 
     Attraction getEntityByContentId(Long contentId);
     List<AttractionCardDTO> findPopularAttractions(int limit);
     Page<AttractionAdminDto> getAttractionsForAdmin(String search, int page, int size);
+
 
 }

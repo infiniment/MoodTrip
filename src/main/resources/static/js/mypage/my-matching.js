@@ -4,16 +4,22 @@ let totalItems = 0;
 let totalPages = 0;
 let currentTabData = []; // 현재 탭의 데이터를 저장
 let activeTab = 'received'; // 현재 활성 탭
+let paginationInitialized = false;
 
 document.addEventListener('DOMContentLoaded', function() {
     initializeTabs();
     initializeButtons();
     initializeModals();
     checkAndDisableLeaderButtons();
-
-    // 🔥 새로 추가: 페이징 초기화
-    initializePagination();
     checkRoomNotification();
+
+    // 🔥 페이징은 DOM이 완전히 로드된 후 한 번만 초기화
+    setTimeout(() => {
+        if (!paginationInitialized) {
+            initializePagination();
+            paginationInitialized = true;
+        }
+    }, 100); // 1000ms에서 100ms로 줄임
 });
 
 function initializePagination() {
@@ -21,7 +27,10 @@ function initializePagination() {
 
     // 현재 활성 탭 확인
     const activeTabElement = document.querySelector('.tab-content.active');
-    if (!activeTabElement) return;
+    if (!activeTabElement) {
+        console.log('❌ 활성 탭을 찾을 수 없습니다');
+        return;
+    }
 
     // 탭 ID로 activeTab 설정
     activeTab = activeTabElement.id.includes('received') ? 'received' : 'created';
@@ -35,6 +44,9 @@ function initializePagination() {
     console.log(`📊 ${activeTab} 탭: 총 ${totalItems}개 방, ${totalPages}페이지`);
 
     if (totalItems > 0) {
+        // 🔥 첫 페이지 표시 전에 모든 아이템의 스타일 리셋
+        resetAllItemStyles();
+
         // 첫 페이지 표시
         showPage(1);
 
@@ -44,6 +56,16 @@ function initializePagination() {
         // 키보드 네비게이션 활성화
         enableKeyboardNavigation();
     }
+}
+
+// 🔥 새로 추가: 모든 아이템 스타일 리셋
+function resetAllItemStyles() {
+    currentTabData.forEach(item => {
+        item.style.display = 'none';
+        item.style.opacity = '1';
+        item.style.transform = 'translateY(0)';
+        item.style.transition = '';
+    });
 }
 
 /**
@@ -148,36 +170,44 @@ function showPage(pageNumber) {
 
     currentPage = pageNumber;
 
-    // 모든 매칭 아이템 숨기기
+    // 🔥 모든 매칭 아이템 즉시 숨기기 (애니메이션 없이)
     currentTabData.forEach(item => {
         item.style.display = 'none';
+        item.style.opacity = '1';
+        item.style.transform = 'translateY(0)';
+        item.style.transition = '';
     });
 
     // 현재 페이지에 해당하는 아이템들만 표시
     const startIndex = (pageNumber - 1) * itemsPerPage;
     const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
 
+    // 🔥 즉시 표시 후 부드러운 애니메이션 적용
     for (let i = startIndex; i < endIndex; i++) {
         if (currentTabData[i]) {
-            currentTabData[i].style.display = 'block';
+            const item = currentTabData[i];
 
-            // 🎨 부드러운 애니메이션 효과
-            currentTabData[i].style.opacity = '0';
-            currentTabData[i].style.transform = 'translateY(20px)';
+            // 즉시 표시
+            item.style.display = 'block';
+            item.style.opacity = '1';
+            item.style.transform = 'translateY(0)';
 
-            setTimeout(() => {
-                currentTabData[i].style.transition = 'all 0.3s ease';
-                currentTabData[i].style.opacity = '1';
-                currentTabData[i].style.transform = 'translateY(0)';
-            }, i * 50); // 순차적으로 나타나는 효과
+            // 🎨 부드러운 페이드인 효과 (선택사항)
+            if (pageNumber > 1) { // 첫 페이지가 아닐 때만 애니메이션
+                item.style.opacity = '0';
+                item.style.transform = 'translateY(10px)';
+
+                setTimeout(() => {
+                    item.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                    item.style.opacity = '1';
+                    item.style.transform = 'translateY(0)';
+                }, 50);
+            }
         }
     }
 
     // 페이징 버튼 상태 업데이트
     updatePaginationButtons();
-
-    // 현재 페이지 정보 표시
-    updatePageInfo();
 }
 
 /**
@@ -193,58 +223,29 @@ function createPaginationControls() {
         existingPagination.remove();
     }
 
-    // 페이징이 필요없으면 (총 페이지가 1개 이하) 생성하지 않음
+    // 페이징이 필요없으면 생성하지 않음
     if (totalPages <= 1) return;
 
     const paginationHtml = `
-        <div class="pagination-controls" style="
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            gap: 8px; 
-            margin: 2rem 0; 
-            padding: 1rem;
-        ">
-            <button class="pagination-btn prev-btn" onclick="goToPrevPage()" style="
-                padding: 8px 16px;
-                border: 1px solid #e5e7eb;
-                background: white;
-                border-radius: 6px;
-                cursor: pointer;
-                transition: all 0.2s;
-                color: #374151;
-                font-weight: 500;
-            ">
+        <div class="pagination-controls">
+            <button class="pagination-btn prev-btn" onclick="goToPrevPage()">
                 ‹ 이전
             </button>
             
-            <div class="page-numbers" style="display: flex; gap: 4px;">
+            <div class="page-numbers">
                 <!-- 페이지 번호들이 여기에 동적으로 생성됩니다 -->
             </div>
             
-            <button class="pagination-btn next-btn" onclick="goToNextPage()" style="
-                padding: 8px 16px;
-                border: 1px solid #e5e7eb;
-                background: white;
-                border-radius: 6px;
-                cursor: pointer;
-                transition: all 0.2s;
-                color: #374151;
-                font-weight: 500;
-            ">
+            <button class="pagination-btn next-btn" onclick="goToNextPage()">
                 다음 ›
             </button>
         </div>
-        
     `;
 
     // 매칭 리스트 래퍼 다음에 페이징 컨트롤 추가
     const matchingWrapper = activeTabElement.querySelector('.matching-list-wrapper');
     if (matchingWrapper) {
         matchingWrapper.insertAdjacentHTML('afterend', paginationHtml);
-
-        // 호버 효과 추가
-        addHoverEffects();
     }
 
     // 페이지 번호 버튼들 생성
@@ -475,11 +476,6 @@ function initializeTabs() {
             }
         });
     });
-
-    // 🔥 페이지 로드 후 1초 뒤에 페이징 초기화 (DOM이 완전히 로드된 후)
-    setTimeout(() => {
-        initializePagination();
-    }, 1000);
 }
 
 // ==========================================
@@ -987,6 +983,7 @@ function showNotification(type, message) {
             box-shadow: 0 8px 24px rgba(0, 26, 44, 0.15);
             backdrop-filter: blur(10px);
             text-align: center;
+            
         }
 
         .notification-success {
@@ -995,10 +992,18 @@ function showNotification(type, message) {
 
         .notification-error {
             background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            position: fixed;
+            top: 30px;
+            right: 20px;
+            padding: 16px 24px;
         }
 
         .notification-info {
             background: linear-gradient(135deg, #005792 0%, #001A2C 100%);
+            position: fixed;
+            top: 30px;
+            right: 20px;
+            padding: 16px 24px;
         }
 
         .btn-disabled {
@@ -1180,7 +1185,7 @@ function showReportModal(roomId, roomTitle, members) {
         memberList.innerHTML = `
             <ul class="report-member-list">
                 ${members.map(m => `
-                    <li style="margin-bottom:8px;">
+                    <li style="margin-bottom:8px; margin-top:14px;">
                         <label style="display:flex; align-items:center; gap:8px;">
                             <input type="radio" name="reportMember" value="${m.nickname}">
                             <span>${m.nickname} (${m.role})</span>

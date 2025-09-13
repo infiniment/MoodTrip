@@ -227,8 +227,14 @@ public class AttractionController {
     }
 
     @GetMapping("/content/{contentId}/detail")
-    public ResponseEntity<AttractionDetailResponse> getDetail(@PathVariable("contentId") long contentId) {
-        return ResponseEntity.ok(attractionService.getDetailResponse(contentId));
+    public ResponseEntity<AttractionDetailResponse> getDetail(
+            @PathVariable("contentId") Long contentId,
+            @RequestParam(value = "contentTypeId", required = false) Integer contentTypeId
+    ) {
+        AttractionDetailResponse body = (contentTypeId == null)
+                ? attractionService.getDetailResponse(contentId)
+                : attractionService.getDetailResponse(contentId, contentTypeId);
+        return ResponseEntity.ok(body);
     }
 
 

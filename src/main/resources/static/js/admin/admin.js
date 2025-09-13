@@ -156,12 +156,6 @@ function setupMenuNavigation() {
         });
     });
 
-
-
-
-
-
-
 }
 
 function updatePageTitle(menuType) {
@@ -273,12 +267,23 @@ function editFaq(button) {
     document.getElementById('faq-question').value = question;
     document.getElementById('faq-category').value = category;
 
-    // 서버에서 상세 정보 가져오기
+    // // 서버에서 상세 정보 가져오기
+    // fetch(`/api/v1/admin/faq/${editingFaqId}`)
+    //     .then(response => response.json())
+    //     .then(faq => {
+    //         document.getElementById('faq-answer').value = faq.content;
+    //     });
+
     fetch(`/api/v1/admin/faq/${editingFaqId}`)
-        .then(response => response.json())
+        .then(res => {
+            if (!res.ok) throw new Error(`FAQ 상세 조회 실패: ${res.status}`);
+            return res.json();
+        })
         .then(faq => {
-            document.getElementById('faq-answer').value = faq.content;
-        });
+            console.log("FAQ 응답:", faq);
+            document.getElementById('faq-answer').value = faq.content ?? '';
+        })
+        .catch(err => console.error(err));
 
     // 폼 표시 (showFaqForm 대신 직접 처리)
     document.getElementById('faq-list-view').style.display = 'none';
@@ -1107,16 +1112,6 @@ function exportLocationData(locationName) {
     showSuccessMessage('관광지 데이터 내보내기가 시작되었습니다.');
 }
 
-function showLocationForm() {
-    document.getElementById('location-list-view').style.display = 'none';
-    document.getElementById('location-form-view').style.display = 'block';
-    
-    // 폼 초기화
-    document.getElementById('location-name').value = '';
-    document.getElementById('location-tags').value = '';
-    document.getElementById('location-description').value = '';
-}
-
 function cancelLocationForm() {
     document.getElementById('location-form-view').style.display = 'none';
     document.getElementById('location-list-view').style.display = 'block';
@@ -1254,7 +1249,7 @@ function handleMatchingDetail(btn) {
         '</div>' +
         '<div class="modal-actions">' +
         '<button class="btn-secondary" onclick="closeModal()">닫기</button>' +
-        '<button class="btn-primary" onclick="exportMatchingData(\'' + title + '\')">데이터 내보내기</button>' +
+        // '<button class="btn-primary" onclick="exportMatchingData(\'' + title + '\')">데이터 내보내기</button>' +
         '</div>';
 
     showModal(content);
@@ -1449,26 +1444,11 @@ function showNoticeForm() {
                 <input type="file" id="notice-attachment" accept=".pdf,.doc,.docx,.jpg,.png,.gif" multiple>
                 <small>최대 5개 파일, 파일당 10MB 이하</small>
             </div>
-            
-            <div class="form-group">
-                <label>
-                    <input type="checkbox" id="notice-push"> 
-                    앱 푸시 알림 발송
-                </label>
-                <label>
-                    <input type="checkbox" id="notice-email"> 
-                    이메일 알림 발송
-                </label>
-                <label>
-                    <input type="checkbox" id="notice-pinned"> 
-                    상단 고정
-                </label>
-            </div>
         </div>
         
         <div class="modal-actions">
             <button class="btn-secondary" onclick="closeModal()">취소</button>
-            <button class="btn-secondary" onclick="draftNotice()">임시저장</button>
+<!--            <button class="btn-secondary" onclick="draftNotice()">임시저장</button>-->
             <button class="btn-primary" onclick="publishNotice()">발행</button>
         </div>
     `;
@@ -1493,9 +1473,7 @@ function publishNotice() {
     const visibility = document.getElementById('notice-visibility').value;
     const priority = document.getElementById('notice-priority').value;
     const content = document.getElementById('notice-content').value.trim();
-    const pushNotification = document.getElementById('notice-push').checked;
-    const emailNotification = document.getElementById('notice-email').checked;
-    const pinned = document.getElementById('notice-pinned').checked;
+
 
     // 파일 정보도 수집! (추가)
     const fileInput = document.getElementById('notice-attachment');
@@ -1539,9 +1517,6 @@ function publishNotice() {
                     visibility,
                     priority,
                     content,
-                    pushNotification,
-                    emailNotification,
-                    pinned,
                     files  // 파일 정보 추가!
                 });
             }
@@ -1554,9 +1529,6 @@ function publishNotice() {
                 visibility,
                 priority,
                 content,
-                pushNotification,
-                emailNotification,
-                pinned,
                 files  // 파일 정보 추가!
             });
         });
@@ -1617,8 +1589,8 @@ function executePublishNotice(noticeData) {
         .then(noticeId => {
             // noticeId를 제대로 전달
             addNoticeToTable(noticeData.title, noticeData.category, noticeData.priority, noticeId);
-            if (noticeData.pushNotification) console.log('푸시 알림 발송 요청');
-            if (noticeData.emailNotification) console.log('이메일 알림 발송 요청');
+            // if (noticeData.pushNotification) console.log('푸시 알림 발송 요청');
+            // if (noticeData.emailNotification) console.log('이메일 알림 발송 요청');
             closeModal();
             showSuccessMessage('공지사항이 성공적으로 발행되었습니다.');
         })
@@ -1628,22 +1600,22 @@ function executePublishNotice(noticeData) {
         });
 }
 
-function draftNotice() {
-    const title = document.getElementById('notice-title').value.trim();
-    const category = document.getElementById('notice-category').value;
-    const content = document.getElementById('notice-content').value.trim();
-    
-    if (!title && !content) {
-        showErrorMessage('제목이나 내용 중 하나는 입력해주세요.');
-        return;
-    }
-    
-    // 실제로는 서버에 임시저장 요청
-    console.log('공지사항 임시저장:', { title, category, content });
-    
-    closeModal();
-    showSuccessMessage('공지사항이 임시저장되었습니다.');
-}
+// function draftNotice() {
+//     const title = document.getElementById('notice-title').value.trim();
+//     const category = document.getElementById('notice-category').value;
+//     const content = document.getElementById('notice-content').value.trim();
+//
+//     if (!title && !content) {
+//         showErrorMessage('제목이나 내용 중 하나는 입력해주세요.');
+//         return;
+//     }
+//
+//     // 실제로는 서버에 임시저장 요청
+//     console.log('공지사항 임시저장:', { title, category, content });
+//
+//     closeModal();
+//     showSuccessMessage('공지사항이 임시저장되었습니다.');
+// }
 
 function addNoticeToTable(title, category, priority = 'normal',noticeId) {
     const tbody = document.querySelector('#notice-list-view .data-table tbody');
@@ -1914,6 +1886,7 @@ function updateNoticeInTable(noticeId, newTitle, category, priority, visibility)
 
 // 페이지 로드시 공지사항 목록 불러오기
 function loadNoticeList() {
+    console.log('loadNoticeList 함수 호출됨');
     fetch('/api/v1/admin/notifications')
         .then(res => res.json())
         .then(notices => {
@@ -3193,7 +3166,6 @@ function updateMemberStatus(memberPk, newStatus, btn) {
         });
 }
 
-// 서버에 회원 탈퇴 요청
 function withdrawMember(memberPk, btn) {
     fetch(`/admin/members/${memberPk}/withdraw`, {
         method: 'PUT',
@@ -3205,16 +3177,21 @@ function withdrawMember(memberPk, btn) {
             if (!response.ok) {
                 throw new Error('서버 오류');
             }
-            return response.text();
+            return response.json(); // WithdrawResponse JSON 응답 처리
         })
-        .then(message => {
-            // UI 업데이트
-            updateMemberWithdrawInTable(btn);
-            showSuccessMessage(message);
+        .then(withdrawResponse => {
+            if (withdrawResponse.success) {
+                // 성공시 UI 업데이트 및 성공 메시지 표시
+                updateMemberWithdrawInTable(btn);
+                showSuccessMessage(withdrawResponse.message || '회원이 강제 탈퇴 처리되었습니다.');
+            } else {
+                // 실패시 오류 메시지 표시
+                showErrorMessage(withdrawResponse.message || '탈퇴 처리에 실패했습니다.');
+            }
         })
         .catch(error => {
-            console.error('회원 탈퇴 처리 오류:', error);
-            showErrorMessage('탈퇴 처리 중 오류가 발생했습니다.');
+            console.error('회원 강제 탈퇴 처리 오류:', error);
+            showErrorMessage('강제 탈퇴 처리 중 오류가 발생했습니다.');
         });
 }
 
@@ -4294,7 +4271,63 @@ window.onpopstate = function(event) {
 };
 
 
-// 기존 setupMenuNavigation 함수를 아래 내용으로 교체
+// // 기존 setupMenuNavigation 함수를 아래 내용으로 교체
+// function setupMenuNavigation() {
+//     document.querySelectorAll('.sidebar-menu .menu-item').forEach(item => {
+//         item.addEventListener('click', function(e) {
+//             const menuType = this.getAttribute('data-menu');
+//
+//             // 메뉴 활성화/비활성화 처리
+//             document.querySelector('.menu-item.active').classList.remove('active');
+//             this.classList.add('active');
+//
+//             if (menuType === 'mapping') {
+//                 e.preventDefault(); // 기본 링크 동작 방지
+//                 const targetUrl = '/admin/attraction-emotions';
+//                 loadDynamicContent(targetUrl);
+//                 updatePageTitle(menuType);
+//             } else {
+//                 // 기존의 다른 메뉴들을 위한 처리
+//                 document.querySelectorAll('.content-section').forEach(section => {
+//                     section.style.display = 'none';
+//                 });
+//                 const targetSection = document.getElementById(menuType + '-section');
+//                 if (targetSection) {
+//                     targetSection.style.display = 'block';
+//                 }
+//                 updatePageTitle(menuType);
+//             }
+//         });
+//     });
+//
+//     // 이벤트 위임: #mapping-section 내부에서 발생하는 클릭 이벤트를 감지
+//     const mainContent = document.querySelector('.main-content');
+//     mainContent.addEventListener('click', function(e) {
+//         const mappingSection = document.getElementById('mapping-section');
+//         // 클릭된 요소가 mapping-section 내부에 있고, 페이지네이션 링크인 경우
+//         const link = e.target.closest('.pagination a');
+//         if (link && mappingSection.contains(link)) {
+//             e.preventDefault(); // 기본 링크 이동 방지
+//             const url = link.getAttribute('href');
+//             loadDynamicContent(url);
+//         }
+//     });
+//
+//     // 이벤트 위임: 검색 폼 제출 처리
+//     mainContent.addEventListener('submit', function(e) {
+//         const form = e.target.closest('.search-container form');
+//         const mappingSection = document.getElementById('mapping-section');
+//         if (form && mappingSection.contains(form)) {
+//             e.preventDefault(); // 기본 폼 제출 방지
+//             const formData = new FormData(form);
+//             const params = new URLSearchParams(formData);
+//             const url = `${form.getAttribute('action')}?${params.toString()}`;
+//             loadDynamicContent(url);
+//         }
+//     });
+// }
+
+// 민규씨 setupMenuNavigation 함수를 아래 내용으로 교체
 function setupMenuNavigation() {
     document.querySelectorAll('.sidebar-menu .menu-item').forEach(item => {
         item.addEventListener('click', function(e) {
@@ -4317,6 +4350,11 @@ function setupMenuNavigation() {
                 const targetSection = document.getElementById(menuType + '-section');
                 if (targetSection) {
                     targetSection.style.display = 'block';
+
+                    // 공지사항 메뉴 클릭 시 목록 로드
+                    if (menuType === 'notices') {
+                        loadNoticeList();
+                    }
                 }
                 updatePageTitle(menuType);
             }
