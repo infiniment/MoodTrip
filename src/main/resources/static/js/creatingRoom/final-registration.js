@@ -425,6 +425,25 @@ function validateFinalData() {
     return true;
 }
 
+function toYmd(d) {
+    const x = new Date(d);
+    const y = x.getFullYear();
+    const m = String(x.getMonth() + 1).padStart(2, '0');
+    const day = String(x.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+}
+
+function normalizeScheduleToYmd(schedule) {
+    if (!schedule || !Array.isArray(schedule.dateRanges)) return schedule;
+    return {
+        ...schedule,
+        dateRanges: schedule.dateRanges.map(r => ({
+            startDate: toYmd(r.startDate ?? r.startDateFormatted),
+            endDate:   toYmd(r.endDate   ?? r.endDateFormatted),
+        })),
+    };
+}
+
 // 최종 제출 데이터 준비
 function prepareFinalSubmitData() {
     // DOM에서 직접 가져온 최신 값 사용
@@ -449,10 +468,13 @@ function prepareFinalSubmitData() {
         return { tagId: null, text: String(e) };
     });
 
+    let schedule = finalRoomData.schedule || null;
+    schedule = normalizeScheduleToYmd(schedule);
+
     const submitData = {
         attractionId,                 // ✅ 필수
         emotions,                     // [{tagId,text}]
-        schedule: finalRoomData.schedule || null,
+        schedule,
         maxParticipants,              // 정수
         roomName,
         roomDescription: roomIntro,
