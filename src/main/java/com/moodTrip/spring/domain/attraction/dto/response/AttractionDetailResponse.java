@@ -19,6 +19,7 @@ public class AttractionDetailResponse {
     private String overview;   // 개요(detailCommon2)
 
     //장애 편의 시설
+    private String a11yParking;
     private String wheelchair;
     private String elevator;
     private String braileblock;
@@ -30,11 +31,14 @@ public class AttractionDetailResponse {
     private String bigprint;
     private String brailepromotion;
     private String helpdog;
-    private String infantsfamilyetc;
     private String hearingroom;
     private String hearinghandicapetc;
     private String blindhandicapetc;
     private String handicapetc;
+    private String publictransport;
+
+    private String ticketoffice;
+    private String guidehuman;
 
     private Double lat; // mapY
     private Double lon; // mapX
@@ -57,6 +61,7 @@ public class AttractionDetailResponse {
         private String parking;
         private String age;
 
+        private String a11yParking;
         private String wheelchair;
         private String elevator;
         private String braileblock;
@@ -68,12 +73,13 @@ public class AttractionDetailResponse {
         private String bigprint;
         private String brailepromotion;
         private String helpdog;
-        private String infantsfamilyetc;
         private String hearingroom;
         private String hearinghandicapetc;
         private String blindhandicapetc;
         private String handicapetc;
-
+        private String publictransport;
+        private String ticketoffice;
+        private String guidehuman;
     }
 
     public static AttractionDetailResponse of(
@@ -83,9 +89,17 @@ public class AttractionDetailResponse {
             AttractionIntro a11y
     ) {
         String image = firstNonBlank(base.getFirstImage(), base.getFirstImage2());
-        String tel = firstNonBlank( intro.getInfocenter(), base.getTel());
+
+        // ✅ tel: common.infocenter → intro.infocenter → base.tel 순으로 안전한 폴백
+        String tel = firstNonBlank(
+                common != null ? common.getInfocenter() : null,
+                intro != null ? intro.getInfocenter() : null,
+                base.getTel()
+        );
+
         String addr = firstNonBlank(
-                joinNonBlank(" ", base.getAddr1(), base.getAddr2()));
+                joinNonBlank(" ", base.getAddr1(), base.getAddr2())
+        );
 
         return AttractionDetailResponse.builder()
                 .contentId(base.getContentId())
@@ -93,31 +107,42 @@ public class AttractionDetailResponse {
                 .image(image)
                 .tel(tel)
                 .addr(addr)
-                .useTime(firstNonBlank(intro.getUsetime()))
-                .restDate(firstNonBlank(intro.getRestdate()))
-                .parking(firstNonBlank(intro.getParking()))
-                .age(firstNonBlank(intro.getAge()))
-                .overview(common != null ? common.getOverview() : null)
+                .useTime(firstNonBlank(intro != null ? intro.getUsetime() : null))
+                .restDate(firstNonBlank(intro != null ? intro.getRestdate() : null))
+                .parking(firstNonBlank(intro != null ? intro.getParking() : null))
+                .a11yParking(a11y != null ? a11y.getA11yParking() : null)
+                .age(firstNonBlank(intro != null ? intro.getAge() : null))
+
+                .overview(firstNonBlank(
+                        common != null ? common.getOverview() : null,
+                        a11y  != null ? a11y.getOverview() : null
+                ))
+
                 .attractionId(base.getAttractionId())
-                .wheelchair(a11y.getWheelchair())
-                .elevator(a11y.getElevator())
-                .braileblock(a11y.getBraileblock())
-                .exit(a11y.getExit())
-                .guidesystem(a11y.getGuidesystem())
-                .signguide(a11y.getSignguide())
-                .videoguide(a11y.getVideoguide())
-                .audioguide(a11y.getAudioguide())
-                .bigprint(a11y.getBigprint())
-                .brailepromotion(a11y.getBrailepromotion())
-                .helpdog(a11y.getHelpdog())
-                .infantsfamilyetc(a11y.getInfantsfamilyetc())
-                .hearingroom(a11y.getHearingroom())
-                .hearinghandicapetc(a11y.getHearinghandicapetc())
-                .blindhandicapetc(a11y.getBlindhandicapetc())
-                .handicapetc(a11y.getHandicapetc())
-                .attractionId(base.getAttractionId())
-                .lat(base.getMapY()) // 위도
-                .lon(base.getMapX()) // 경도
+
+                .wheelchair(a11y != null ? a11y.getWheelchair() : null)
+                .elevator(a11y != null ? a11y.getElevator() : null)
+                .braileblock(a11y != null ? a11y.getBraileblock() : null)
+                .exit(a11y != null ? a11y.getExit() : null)
+                .guidesystem(a11y != null ? a11y.getGuidesystem() : null)
+                .signguide(a11y != null ? a11y.getSignguide() : null)
+                .videoguide(a11y != null ? a11y.getVideoguide() : null)
+                .audioguide(a11y != null ? a11y.getAudioguide() : null)
+                .bigprint(a11y != null ? a11y.getBigprint() : null)
+                .brailepromotion(a11y != null ? a11y.getBrailepromotion() : null)
+                .helpdog(a11y != null ? a11y.getHelpdog() : null)
+                .hearingroom(a11y != null ? a11y.getHearingroom() : null)
+                .hearinghandicapetc(a11y != null ? a11y.getHearinghandicapetc() : null)
+                .blindhandicapetc(a11y != null ? a11y.getBlindhandicapetc() : null)
+                .handicapetc(a11y != null ? a11y.getHandicapetc() : null)
+                .publictransport(a11y != null ? a11y.getPublictransport() : null)
+
+                // 새로 추가된 필드
+                .ticketoffice(a11y != null ? a11y.getTicketoffice() : null)
+                .guidehuman(a11y != null ? a11y.getGuidehuman() : null)
+
+                .lat(base.getMapY())
+                .lon(base.getMapX())
                 .build();
     }
 
@@ -126,10 +151,11 @@ public class AttractionDetailResponse {
         for (String s : v) if (s != null && !s.isBlank()) return s;
         return null;
     }
+
     private static String joinNonBlank(String sep, String... v) {
         return java.util.Arrays.stream(v)
                 .filter(s -> s != null && !s.isBlank())
-                .reduce((a,b) -> a + sep + b)
+                .reduce((a, b) -> a + sep + b)
                 .orElse(null);
     }
 }

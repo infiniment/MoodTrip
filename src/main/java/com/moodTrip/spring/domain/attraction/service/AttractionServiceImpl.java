@@ -66,8 +66,10 @@ public class AttractionServiceImpl implements AttractionService {
     public int syncAreaBasedListOnly12And14(int areaCode, Integer sigunguCode,
                                             int pageSize, long pauseMillis) {
         int created = 0;
-        created += syncAreaBasedList(areaCode, sigunguCode, 12, pageSize, pauseMillis);
-        created += syncAreaBasedList(areaCode, sigunguCode, 14, pageSize, pauseMillis);
+        created += syncAreaBasedList(areaCode, sigunguCode, 12, pageSize, pauseMillis); // 관광지
+        created += syncAreaBasedList(areaCode, sigunguCode, 14, pageSize, pauseMillis); // 문화시설
+        created += syncAreaBasedList(areaCode, sigunguCode, 15, pageSize, pauseMillis); // 행사/축제
+        created += syncAreaBasedList(areaCode, sigunguCode, 28, pageSize, pauseMillis); // 레포츠
         return created;
     }
 
@@ -141,7 +143,14 @@ public class AttractionServiceImpl implements AttractionService {
                 .orElseGet(() -> Attraction.builder().contentId(contentId).build());
         boolean isNew = (a.getAttractionId() == null);
 
-        a.setContentTypeId(asInt(it, "contenttypeid"));
+        // ✅ contentTypeId 우선 API 응답에서 가져오고, 없으면 기존 DB 값 유지
+        Integer newTypeId = asInt(it, "contenttypeid");
+        if (newTypeId != null) {
+            a.setContentTypeId(newTypeId);
+        } else if (a.getContentTypeId() == null) {
+            log.warn("contentTypeId missing for contentId={}", contentId);
+        }
+
         a.setTitle(asText(it, "title"));
         a.setAddr1(asText(it, "addr1"));
         a.setAddr2(asText(it, "addr2"));
@@ -161,6 +170,7 @@ public class AttractionServiceImpl implements AttractionService {
         a.setModifiedTime(parseTs(asText(it, "modifiedtime")));
 
         repository.save(a);
+
         if (isNew || !introRepository.existsById(a.getContentId())) {
             try {
                 syncDetailIntro(a.getContentId(), a.getContentTypeId());
@@ -256,19 +266,43 @@ public class AttractionServiceImpl implements AttractionService {
 
         Integer finalTypeId = (contentTypeId != null) ? contentTypeId : base.getContentTypeId();
 
-        // intro / a11y / overview 각각 독립 호출
-        try { syncDetailIntro(contentId, finalTypeId); }
-        catch (Exception e) { log.warn("intro sync fail contentId={} : {}", contentId, e.getMessage()); }
-
-        try { syncDetailWithTour(contentId, finalTypeId); }
-        catch (Exception e) { log.warn("a11y sync fail contentId={} : {}", contentId, e.getMessage()); }
-
-        try { syncOverview(contentId, finalTypeId); }
-        catch (Exception e) { log.warn("overview sync fail contentId={} : {}", contentId, e.getMessage()); }
-
-        // 최신 intro 조회
+        // ===== DB에서 intro 먼저 조회 =====
         AttractionIntro intro = introRepository.findById(contentId).orElse(null);
-        AttractionDetailResponse.IntroNormalized introNorm = normalizeIntro(intro != null ? intro : new AttractionIntro());
+
+        // ===== 캐시 미스 처리 =====
+        if (intro == null) {
+            try {
+                syncDetailIntro(contentId, finalTypeId);
+                intro = introRepository.findById(contentId).orElse(null);
+            } catch (Exception e) {
+                log.warn("intro sync fail contentId={} : {}", contentId, e.getMessage());
+            }
+        }
+
+        // overview 누락 시 → 즉시 보강
+        if (intro != null && (intro.getOverview() == null || intro.getOverview().isBlank())) {
+            try {
+                syncOverview(contentId);  // ✅ finalTypeId 제거
+                intro = introRepository.findById(contentId).orElse(intro);
+            } catch (Exception e) {
+                log.warn("overview sync fail contentId={} : {}", contentId, e.getMessage());
+            }
+        }
+
+
+        // a11y(편의시설) 누락 시 → 보강
+        if (intro == null || a11yIsEmpty(intro)) {
+            try {
+                syncDetailWithTour(contentId, finalTypeId);
+                intro = introRepository.findById(contentId).orElse(intro);
+            } catch (Exception e) {
+                log.warn("a11y sync fail contentId={} : {}", contentId, e.getMessage());
+            }
+        }
+
+        // ===== 최종 DTO 변환 =====
+        AttractionDetailResponse.IntroNormalized introNorm =
+                normalizeIntro(intro != null ? intro : new AttractionIntro());
         AttractionResponse baseResp = AttractionResponse.from(base);
 
         AttractionDetailResponse.DetailCommon common =
@@ -285,21 +319,52 @@ public class AttractionServiceImpl implements AttractionService {
         return AttractionDetailResponse.of(baseResp, introNorm, common, intro);
     }
 
+
+    private void setOrNull(java.util.function.Consumer<String> setter, String v) {
+        if (v == null || v.isBlank()) {
+            setter.accept(null);
+        } else {
+            setter.accept(v.trim());
+        }
+    }
+
     private void syncDetailWithTour(long contentId, Integer contentTypeId) {
         URI uri = UriComponentsBuilder.fromHttpUrl(BASE + "/detailWithTour2")
-                .queryParam("serviceKey", apiKey) // decoding key
+                .queryParam("serviceKey", apiKey)
                 .queryParam("_type", "json")
                 .queryParam("MobileOS", "ETC")
                 .queryParam("MobileApp", "moodTrip")
                 .queryParam("contentId", contentId)
-                .queryParam("contentTypeId", contentTypeId)
                 .build(false)
                 .toUri();
 
-        String body = restTemplate.getForObject(uri, String.class);
-        JsonNode item = extractItem(body);
+        log.info("TourAPI GET detailWithTour2 {}", uri.toString().replaceAll("serviceKey=[^&]+", "serviceKey=***"));
 
-        if (item.isMissingNode()) return;
+        String body = restTemplate.getForObject(uri, String.class);
+        if (body == null || body.isBlank()) {
+            log.warn("detailWithTour2 empty response for contentId={}", contentId);
+            return;
+        }
+        if (body.trim().startsWith("<")) {
+            log.error("detailWithTour2 returned XML (likely error). preview={}", body.substring(0, Math.min(200, body.length())));
+            return;
+        }
+
+        JsonNode root = safe(parseJson(body));
+        JsonNode header = root.path("response").path("header");
+        String resultCode = header.path("resultCode").asText("");
+
+        // ✅ resultCode가 0000 아니어도 body에 item 있으면 계속 진행
+        if (!"0000".equals(resultCode)) {
+            log.warn("detailWithTour2 non-0000 code={} msg={} (contentId={})", resultCode, header.path("resultMsg").asText(""), contentId);
+        }
+
+        JsonNode item = root.path("response").path("body").path("items").path("item");
+        if (item.isArray()) item = (item.size() > 0 ? item.get(0) : null);
+        if (item == null || item.isMissingNode() || item.isNull()) {
+            log.warn("detailWithTour2 item missing for contentId={}", contentId);
+            return;
+        }
 
         AttractionIntro intro = introRepository.findById(contentId)
                 .orElseGet(() -> AttractionIntro.builder()
@@ -307,54 +372,67 @@ public class AttractionServiceImpl implements AttractionService {
                         .contentTypeId(contentTypeId)
                         .build());
 
-        setIfHasText(intro::setWheelchair, asText(item, "wheelchair"));
-        setIfHasText(intro::setElevator, asText(item, "elevator"));
-        setIfHasText(intro::setBraileblock, asText(item, "braileblock"));
-        setIfHasText(intro::setExit, asText(item, "exit"));
-        setIfHasText(intro::setGuidesystem, asText(item, "guidesystem"));
-        setIfHasText(intro::setSignguide, asText(item, "signguide"));
-        setIfHasText(intro::setVideoguide, asText(item, "videoguide"));
-        setIfHasText(intro::setAudioguide, asText(item, "audioguide"));
-        setIfHasText(intro::setBigprint, asText(item, "bigprint"));
-        setIfHasText(intro::setBrailepromotion, asText(item, "brailepromotion"));
-        setIfHasText(intro::setHelpdog, asText(item, "helpdog"));
-        setIfHasText(intro::setInfantsfamilyetc, asText(item, "infantsfamilyetc"));
-        setIfHasText(intro::setHearingroom, asText(item, "hearingroom"));
-        setIfHasText(intro::setHearinghandicapetc, asText(item, "hearinghandicapetc"));
-        setIfHasText(intro::setBlindhandicapetc, asText(item, "blindhandicapetc"));
-        setIfHasText(intro::setHandicapetc, asText(item, "handicapetc"));
-        setIfHasText(intro::setRestroom, asText(item, "restroom"));
-        setIfHasText(intro::setPublictransport, asText(item, "publictransport"));
+        // ✅ null-safe 저장 (빈 문자열도 null로 처리)
+        setOrNull(intro::setA11yParking,     asText(item, "parking"));
+        setOrNull(intro::setWheelchair,      asText(item, "wheelchair"));
+        setOrNull(intro::setElevator,        asText(item, "elevator"));
+        setOrNull(intro::setBraileblock,     asText(item, "braileblock"));
+        setOrNull(intro::setExit,            asText(item, "exit"));
+        setOrNull(intro::setGuidesystem,     asText(item, "guidesystem"));
+        setOrNull(intro::setSignguide,       asText(item, "signguide"));
+        setOrNull(intro::setVideoguide,      asText(item, "videoguide"));
+        setOrNull(intro::setAudioguide,      asText(item, "audioguide"));
+        setOrNull(intro::setBigprint,        asText(item, "bigprint"));
+        setOrNull(intro::setBrailepromotion, asText(item, "brailepromotion"));
+        setOrNull(intro::setHelpdog,         asText(item, "helpdog"));
+        setOrNull(intro::setHearingroom,     asText(item, "hearingroom"));
+        setOrNull(intro::setHearinghandicapetc, asText(item, "hearinghandicapetc"));
+        setOrNull(intro::setBlindhandicapetc,   asText(item, "blindhandicapetc"));
+        setOrNull(intro::setHandicapetc,     asText(item, "handicapetc"));
+        setOrNull(intro::setPublictransport, asText(item, "publictransport"));
+        setOrNull(intro::setTicketoffice,    asText(item, "ticketoffice"));
+        setOrNull(intro::setGuidehuman,      asText(item, "guidehuman"));
 
+        intro.setRawJson(body);
         intro.setSyncedAt(LocalDateTime.now());
         introRepository.save(intro);
     }
 
-    private void syncOverview(long contentId, Integer contentTypeId) {
+
+
+    private void syncOverview(Long contentId) {
         URI uri = UriComponentsBuilder.fromHttpUrl(BASE + "/detailCommon2")
-                .queryParam("serviceKey", encodeApiKey) // ✅ encoding key
+                .queryParam("serviceKey", encodeApiKey)
                 .queryParam("_type", "json")
                 .queryParam("MobileOS", "ETC")
                 .queryParam("MobileApp", "moodTrip")
                 .queryParam("contentId", contentId)
-                .queryParam("contentTypeId", contentTypeId)
-                .queryParam("overviewYN", "Y")
                 .build(true)
                 .toUri();
 
-        String body = restTemplate.getForObject(uri, String.class);
-        JsonNode item = extractItem(body);
+        log.info("TourAPI GET overview: {}", uri);
 
-        String overview = asText(item, "overview");
-        if (StringUtils.hasText(overview)) {
-            AttractionIntro intro = introRepository.findById(contentId)
-                    .orElseGet(() -> AttractionIntro.builder()
-                            .contentId(contentId)
-                            .contentTypeId(contentTypeId)
-                            .build());
-            intro.setOverview(overview);
-            intro.setSyncedAt(LocalDateTime.now());
-            introRepository.save(intro);
+        String raw = restTemplate.getForObject(uri, String.class);
+        log.info("overview raw response={}", raw);
+
+        if (raw != null) {
+            try {
+                JsonNode root = om.readTree(raw);
+                JsonNode item = root.path("response").path("body").path("items").path("item");
+                if (item.isArray() && item.size() > 0) {
+                    item = item.get(0);
+                }
+                String overview = item.path("overview").asText(null);
+
+                introRepository.findById(contentId).ifPresent(intro -> {
+                    intro.setOverview(overview);
+                    intro.setRawJson(raw);
+                    intro.setSyncedAt(LocalDateTime.now());
+                    introRepository.save(intro);
+                });
+            } catch (Exception e) {
+                log.error("Failed to parse overview response", e);
+            }
         }
     }
 
@@ -659,11 +737,13 @@ public class AttractionServiceImpl implements AttractionService {
                 .bigprint(i.getBigprint())
                 .brailepromotion(i.getBrailepromotion())
                 .helpdog(i.getHelpdog())
-                .infantsfamilyetc(i.getInfantsfamilyetc())
                 .hearingroom(i.getHearingroom())
                 .hearinghandicapetc(i.getHearinghandicapetc())
                 .blindhandicapetc(i.getBlindhandicapetc())
                 .handicapetc(i.getHandicapetc())
+                .publictransport(i.getPublictransport())
+                .ticketoffice(i.getTicketoffice())
+                .guidehuman(i.getGuidehuman())
                 .build();
     }
 
@@ -699,66 +779,6 @@ public class AttractionServiceImpl implements AttractionService {
         }
     }
 
-    /** overview만 안전하게 가져오는 헬퍼 */
-    private String fetchOverviewWithFailover(
-            String base, long contentId, Integer contentTypeId, HttpEntity<Void> entity) {
-
-        // ✅ contentTypeId 보강: DB에서 가져오기
-        if (contentTypeId == null) {
-            contentTypeId = repository.findByContentId(contentId)
-                    .map(Attraction::getContentTypeId)
-                    .orElse(null);
-        }
-
-        if (contentTypeId == null) {
-            log.warn("fetchOverview skipped: no contentTypeId in DB (contentId={})", contentId);
-            return "{}";
-        }
-
-        try {
-            URI uri = UriComponentsBuilder.fromHttpUrl(base + "/detailCommon2")
-                    .queryParam("serviceKey", encodeApiKey) // ← 디코딩 키
-                    .queryParam("_type", "json")
-                    .queryParam("MobileOS", "ETC")
-                    .queryParam("MobileApp", "moodTrip")
-                    .queryParam("contentId", contentId)
-                    .queryParam("contentTypeId", contentTypeId)
-                    .queryParam("overviewYN", "Y")
-                    .build(true) // ← 다시 인코딩 시켜야 하니까 false
-                    .toUri();
-
-
-            log.info("TourAPI GET overview: {}", uri.toString().replaceAll("serviceKey=[^&]+", "serviceKey=***"));
-
-            String body = restTemplate.exchange(uri, HttpMethod.GET, entity, String.class).getBody();
-            if (isJsonOkAndHasOverview(body)) return body;
-
-        } catch (Exception e) {
-            log.warn("overview fetch failed contentId={} : {}", contentId, e.getMessage());
-        }
-
-        return "{}";
-    }
-
-
-    private boolean isJsonOkAndHasOverview(String body) {
-        if (body == null) return false;
-        String trimmed = body.trim();
-        if (!trimmed.isEmpty() && trimmed.charAt(0) == '<') return false; // XML Fault
-        try {
-            JsonNode root = om.readTree(body);
-            String code = root.path("response").path("header").path("resultCode").asText("");
-            if (!"0000".equals(code)) return false;
-            JsonNode item = root.path("response").path("body").path("items").path("item");
-            if (item.isArray()) item = item.size() > 0 ? item.get(0) : om.createObjectNode();
-            String overview = asText(item, "overview");
-            return org.springframework.util.StringUtils.hasText(overview);
-        } catch (Exception ignore) {
-            return false;
-        }
-    }
-
-
 
     private boolean a11yIsEmpty(AttractionIntro i) {
         if (i == null) return true;
@@ -773,7 +793,6 @@ public class AttractionServiceImpl implements AttractionService {
                 || org.springframework.util.StringUtils.hasText(i.getBigprint())
                 || org.springframework.util.StringUtils.hasText(i.getBrailepromotion())
                 || org.springframework.util.StringUtils.hasText(i.getHelpdog())
-                || org.springframework.util.StringUtils.hasText(i.getInfantsfamilyetc())
                 || org.springframework.util.StringUtils.hasText(i.getHearingroom())
                 || org.springframework.util.StringUtils.hasText(i.getHearinghandicapetc())
                 || org.springframework.util.StringUtils.hasText(i.getBlindhandicapetc())
@@ -834,7 +853,6 @@ public class AttractionServiceImpl implements AttractionService {
                         setIfHasText(intro::setBigprint,         asText(it, "bigprint"));
                         setIfHasText(intro::setBrailepromotion,  asText(it, "brailepromotion"));
                         setIfHasText(intro::setHelpdog,          asText(it, "helpdog"));
-                        setIfHasText(intro::setInfantsfamilyetc, asText(it, "infantsfamilyetc"));
                         setIfHasText(intro::setHearingroom,      asText(it, "hearingroom"));
                         setIfHasText(intro::setHearinghandicapetc, asText(it, "hearinghandicapetc"));
                         setIfHasText(intro::setBlindhandicapetc,   asText(it, "blindhandicapetc"));

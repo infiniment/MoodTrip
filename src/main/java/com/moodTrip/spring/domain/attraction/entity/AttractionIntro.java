@@ -37,6 +37,7 @@ public class AttractionIntro {
     private String overview;
 
     //장애편의시설
+    @Column(name = "a11y_parking")      private String a11yParking;
     @Column(name = "wheelchair")        private String wheelchair;
     @Column(name = "elevator")          private String elevator;
     @Column(name = "braileblock")       private String braileblock;
@@ -48,13 +49,13 @@ public class AttractionIntro {
     @Column(name = "bigprint")          private String bigprint;
     @Column(name = "brailepromotion")   private String brailepromotion;
     @Column(name = "helpdog")           private String helpdog;
-    @Column(name = "infantsfamilyetc")  private String infantsfamilyetc;
     @Column(name = "hearingroom")       private String hearingroom;
     @Column(name = "hearinghandicapetc")private String hearinghandicapetc;
     @Column(name = "blindhandicapetc")  private String blindhandicapetc;
     @Column(name = "handicapetc")       private String handicapetc;
-    @Column(name = "restroom")          private String restroom;
     @Column(name = "publictransport")   private String publictransport;
+    @Column(name = "ticketoffice")      private String ticketoffice;
+    @Column(name = "guidehuman")        private String guidehuman;
 
     // ===== 원본/동기화 메타 =====
     @Lob
