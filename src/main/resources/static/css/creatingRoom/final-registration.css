@@ -817,39 +817,129 @@ body.room-create .room-create-formview .container::after {
 }
 
 /* 성공 모달 */
+/*.success-modal {*/
+/*    position: fixed;*/
+/*    top: 0;*/
+/*    left: 0;*/
+/*    width: 100%;*/
+/*    height: 100%;*/
+/*    z-index: 1001;*/
+/*    display: flex;*/
+/*    align-items: center;*/
+/*    justify-content: center;*/
+/*}*/
+
+
 .success-modal {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1001;
-    display: flex;
+    inset: 0;
+    display: none;
     align-items: center;
     justify-content: center;
+    z-index: 2000;
 }
+
+.success-modal.open { display: flex; }
 
 .success-modal-overlay {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(6px);
+    inset: 0;
+    background: rgba(0,0,0,.45);
+    backdrop-filter: blur(2px);
 }
 
+/*.success-modal-overlay {*/
+/*    position: absolute;*/
+/*    top: 0;*/
+/*    left: 0;*/
+/*    width: 100%;*/
+/*    height: 100%;*/
+/*    background: rgba(0, 0, 0, 0.6);*/
+/*    backdrop-filter: blur(6px);*/
+/*}*/
+
+
+/* 전역 line-height=1 무력화 */
+.success-modal-content,
+.success-modal-content * {
+    line-height: 1.4;
+}
+
+/* 아이콘(이미지/이모지) */
+.success-modal-icon {
+    width: 72px;              /* 사용하는 이미지 크기에 맞게 */
+    height: 72px;
+    display: inline-block;
+    margin-bottom: 4px;       /* 제목과 간격 */
+}
+
+/* 제목/본문/버튼 */
+.success-modal-title {
+    font-size: 26px;
+    font-weight: 800;
+    color: #111827;
+    margin: 0;
+}
+
+.success-modal-desc {
+    font-size: 16px;
+    color: #6b7280;
+    margin: 2px 0 8px;
+}
+
+.success-modal-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 4px;
+}
+
+.success-modal-actions .btn {
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.success-modal-actions .btn-primary {
+    background: linear-gradient(to right, #005792, #001a2c);
+    color: #fff;
+    border: 0;
+}
+.success-modal-actions .btn-outline {
+    background: #fff;
+    color: #005792;
+    border: 1px solid #d1d5db;
+}
+
+/* 컨텐츠 박스 */
 .success-modal-content {
     position: relative;
-    background: white;
-    border-radius: 20px;
-    padding: 40px;
+    width: min(560px, 92vw);
+    padding: 36px 28px;
+    background: #fff;
+    border-radius: 16px;
     text-align: center;
-    max-width: 480px;
-    width: 90%;
-    box-shadow: 0 25px 30px -5px rgba(0, 0, 0, 0.2);
-    animation: successModalShow 0.4s ease-out;
+
+    /* 겹침 방지: 수직 배치 + 간격 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+
+    box-shadow: 0 20px 40px rgba(0,0,0,.18);
 }
+
+/*.success-modal-content {*/
+/*    position: relative;*/
+/*    background: white;*/
+/*    border-radius: 20px;*/
+/*    padding: 40px;*/
+/*    text-align: center;*/
+/*    max-width: 480px;*/
+/*    width: 90%;*/
+/*    box-shadow: 0 25px 30px -5px rgba(0, 0, 0, 0.2);*/
+/*    animation: successModalShow 0.4s ease-out;*/
+/*}*/
 
 @keyframes successModalShow {
     from {
@@ -1380,4 +1470,80 @@ body.room-create .room-create-formview .container::after {
     #newRoomLoadingOverlay .loading-text p {
         font-size: 13px;
     }
+}
+/* =========================
+   final-registration: responsive overrides
+   ========================= */
+
+/* 0) 기본: 고정폭/넘침 제거 + 컨테이너 중앙정렬 */
+.big-frame { min-width: 0; } /* 데스크톱 최소폭 강제 해제 */
+body.room-create .room-create-formview .container{
+    width: 100%;
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
+/* 1) 데스크톱(>=1025px): 좌측 진행상태 + 우측 폼을 한 줄에 */
+@media (min-width: 1025px){
+    body.room-create .room-create-formview .container{
+        display: flex;
+        align-items: flex-start;
+        gap: 24px;
+    }
+    /* 사이드바는 고정폭, shrink 방지 */
+    body.room-create .submit-progress{
+        float: none;
+        margin: 0;
+        flex: 0 0 264px;
+    }
+    /* 폼 영역은 남는 공간을 차지 */
+    body.room-create .room-create-form-section{
+        float: none;
+        flex: 1 1 0;
+        min-width: 0;
+    }
+}
+
+/* 2) 태블릿(<=1024px): 1열 스택 + 안쪽 여백 보정 */
+@media (max-width: 1024px){
+    .big-frame { padding: 20px; }                 /* 가장자리 여백 */
+    body.room-create .submit-progress{
+        float: none; width: 100%; margin: 0 0 24px;
+    }
+    body.room-create .room-create-form-section{
+        float: none; width: 100%;
+    }
+    /* 섹션 패딩 살짝 축소 */
+    .form-section-header{ padding: 22px 20px; }
+    .form-input-section{  padding: 24px; }
+}
+
+
+/* 4) 성공 모달: 작은 화면에서 텍스트 줄간격 유지(파일의 기존 규칙 존중) */
+.success-modal-content,
+.success-modal-content *{ line-height: 1.4; }
+
+#destinationCardDisplay,
+#destinationCardDisplay * {
+    line-height: 1.4;              /* 전역 line-height=1 무력화 */
+}
+
+.destination-details {
+    min-width: 0;                  /* flex 안에서 텍스트가 제대로 줄바꿈되도록 */
+}
+
+.destination-name {
+    margin: 2px 0 8px;
+    line-height: 1.35;
+    word-break: keep-all;          /* 한글 단어 단위로 줄바꿈 */
+    overflow-wrap: anywhere;       /* 괄호/슬래시 등 긴 토큰도 강제 줄바꿈 */
+    white-space: normal;
+}
+
+/* 주소/전화 같은 설명 텍스트에도 여유 줄간격 */
+.destination-description,
+.destination-address,
+.destination-phone {
+    line-height: 1.5;
 }

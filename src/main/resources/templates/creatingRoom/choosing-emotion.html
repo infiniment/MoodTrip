@@ -2,10 +2,26 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>무드트립 : 동행자 매칭 방 만들기 감정 선택</title>
-    <link rel="stylesheet" href="/css/creatingRoom/choosing-emotion.css">
-    <script src="/js/creatingRoom/choosing-emotion.js"></script>
+    <link rel="stylesheet" th:href="@{/css/creatingRoom/choosing-emotion.css}">
+    <script th:inline="javascript">
+        let emotionCategoryData = /*[[${emotionCategories}]]*/ [];
+    </script>
+    <script th:src="@{/js/creatingRoom/choosing-emotion.js}"></script>
+    <link rel=" stylesheet" th:href="@{/css/fix/header.css}">
+    <link rel="stylesheet" th:href="@{/css/fix/footer.css}">
+    <link rel="stylesheet" th:href="@{/css/fix/header-after.css}">
 </head>
+<!-- 로그인 상태에 따른 조건부 헤더 렌더링 -->
+<div th:if="${isLoggedIn}">
+    <!-- 로그인된 사용자용 헤더 -->
+    <th:block th:replace="~{fix/header-after-login :: header}"></th:block>
+</div>
+<div th:unless="${isLoggedIn}">
+    <!-- 로그인 안된 사용자용 헤더 -->
+    <th:block th:replace="~{fix/header :: header}"></th:block>
+</div>
 <body class="room-create phase-1">
     <div class="big-frame">
         <div class="room-create-formview">
@@ -13,7 +29,7 @@
                 <div class="submit-progress">
                     <div class="room-status-box">
                         <a class="back-to-before link-text" onclick="exitWithSubmit('temporary_room_phase_1', 'False')" style="cursor: pointer;">
-                            <img class="back-to-before-img" src="/static/image/creatingRoom/back-to-before.svg">
+                            <img class="back-to-before-img" th:src="@{/image/creatingRoom/back-to-before.svg}">
                             <p class="back-to-before-title body-1-medium">뒤로 가기</p>
                         </a>
                         <p class="menu-title subtitle-1-medium mb4">감정 선택하기</p>
@@ -24,27 +40,27 @@
                             <p class="status-sub-menu-title completed">
                                 <span class="bottom-border"></span>
                                 <span class="sub-menu-marker">1</span>
-                                <img class="phase-complete-icon" src="/static/image/creatingRoom/checkbox-checked.svg">
+                                <img class="phase-complete-icon" th:src="@{/image/creatingRoom/checkbox-checked.svg}">
                                 기본 정보
                             </p>
                             <p class="status-sub-menu-title active">
                                 <span class="top-border"></span>
                                 <span class="bottom-border"></span>
                                 <span class="sub-menu-marker">2</span>
-                                <img class="phase-complete-icon" src="/static/image/creatingRoom/checkbox-checked.svg">
+                                <img class="phase-complete-icon" th:src="@{/image/creatingRoom/checkbox-checked.svg}">
                                 감정 선택
                             </p>
                             <p class="status-sub-menu-title">
                                 <span class="top-border"></span>
                                 <span class="bottom-border"></span>
                                 <span class="sub-menu-marker">3</span>
-                                <img class="phase-complete-icon" src="/static/image/creatingRoom/checkbox-checked.svg">
+                                <img class="phase-complete-icon" th:src="@{/image/creatingRoom/checkbox-checked.svg}">
                                 여행지 선택
                             </p>
                             <p class="status-sub-menu-title">
                                 <span class="top-border"></span>
                                 <span class="sub-menu-marker">4</span>
-                                <img class="phase-complete-icon" src="/static/image/creatingRoom/checkbox-checked.svg">
+                                <img class="phase-complete-icon" th:src="@{/image/creatingRoom/checkbox-checked.svg}">
                                 일정 선택
                             </p>
                         </div>
@@ -58,7 +74,7 @@
                         <div class="form-section-header">
                             <p class="form-section-title subtitle-1">감정 선택</p>
                             <button class="room-form-guide-button header-button btn btn-8-16" type="button" onclick="openHelpModal()">
-                                <img class="room-form-guide-button-img" src="/static/image/creatingRoom/question.svg">
+                                <img class="room-form-guide-button-img" th:src="@{/image/creatingRoom/question.svg}">
                                 도움말
                             </button>
                         </div>
@@ -71,75 +87,85 @@
                                 
                                 <!-- 모든 카테고리 버튼들 -->
                                 <div class="emotion-category-buttons mb24">
-                                    <!-- 첫 번째 줄 -->
-                                    <button type="button" class="category-btn" data-category="healing">
-                                        <span class="category-icon">🌿</span>
-                                        <span class="category-name">평온 & 힐링</span>
+                                    <button type="button"
+                                            class="category-btn"
+                                            th:each="category : ${emotionCategories}"
+                                            th:data-category-id="${category.emotionCategoryId}"
+                                            th:data-category-name="${category.emotionCategoryName}"
+                                            th:data-category-icon="${category.emotionCategoryIcon}">
+                                        <span class="category-icon" th:text="${category.emotionCategoryIcon}"></span>
+                                        <span class="category-name" th:text="${category.emotionCategoryName}"></span>
                                     </button>
-                                    <button type="button" class="category-btn" data-category="romance">
-                                        <span class="category-icon">💕</span>
-                                        <span class="category-name">사랑 & 로맨스</span>
-                                    </button>
-                                    <button type="button" class="category-btn" data-category="adventure">
-                                        <span class="category-icon">⚡</span>
-                                        <span class="category-name">모험 & 스릴</span>
-                                    </button>
+<!--                                    &lt;!&ndash; 첫 번째 줄 &ndash;&gt;-->
+<!--                                    <button type="button" class="category-btn" data-category="healing">-->
+<!--                                        <span class="category-icon">🌿</span>-->
+<!--                                        <span class="category-name">평온 & 힐링</span>-->
+<!--                                    </button>-->
+<!--                                    <button type="button" class="category-btn" data-category="romance">-->
+<!--                                        <span class="category-icon">💕</span>-->
+<!--                                        <span class="category-name">사랑 & 로맨스</span>-->
+<!--                                    </button>-->
+<!--                                    <button type="button" class="category-btn" data-category="adventure">-->
+<!--                                        <span class="category-icon">⚡</span>-->
+<!--                                        <span class="category-name">모험 & 스릴</span>-->
+<!--                                    </button>-->
 
-                                    <!-- 두 번째 줄 -->
-                                    <button type="button" class="category-btn" data-category="freedom">
-                                        <span class="category-icon">🕊️</span>
-                                        <span class="category-name">자유 & 해방</span>
-                                    </button>
-                                    <button type="button" class="category-btn" data-category="joy">
-                                        <span class="category-icon">✨</span>
-                                        <span class="category-name">기쁨 & 즐거움</span>
-                                    </button>
-                                    <button type="button" class="category-btn" data-category="artistic">
-                                        <span class="category-icon">🎨</span>
-                                        <span class="category-name">감성 & 예술</span>
-                                    </button>
+<!--                                    &lt;!&ndash; 두 번째 줄 &ndash;&gt;-->
+<!--                                    <button type="button" class="category-btn" data-category="freedom">-->
+<!--                                        <span class="category-icon">🕊️</span>-->
+<!--                                        <span class="category-name">자유 & 해방</span>-->
+<!--                                    </button>-->
+<!--                                    <button type="button" class="category-btn" data-category="joy">-->
+<!--                                        <span class="category-icon">✨</span>-->
+<!--                                        <span class="category-name">기쁨 & 즐거움</span>-->
+<!--                                    </button>-->
+<!--                                    <button type="button" class="category-btn" data-category="artistic">-->
+<!--                                        <span class="category-icon">🎨</span>-->
+<!--                                        <span class="category-name">감성 & 예술</span>-->
+<!--                                    </button>-->
 
-                                    <!-- 세 번째 줄 -->
-                                    <button type="button" class="category-btn" data-category="effort">
-                                        <span class="category-icon">🔥</span>
-                                        <span class="category-name">열정 & 에너지</span>
-                                    </button>
-                                    <button type="button" class="category-btn" data-category="growth">
-                                        <span class="category-icon">🌱</span>
-                                        <span class="category-name">성장 & 사색</span>
-                                    </button>
-                                    <button type="button" class="category-btn" data-category="comfort">
-                                        <span class="category-icon">🤗</span>
-                                        <span class="category-name">위로 & 공감</span>
-                                    </button>
+<!--                                    &lt;!&ndash; 세 번째 줄 &ndash;&gt;-->
+<!--                                    <button type="button" class="category-btn" data-category="effort">-->
+<!--                                        <span class="category-icon">🔥</span>-->
+<!--                                        <span class="category-name">열정 & 에너지</span>-->
+<!--                                    </button>-->
+<!--                                    <button type="button" class="category-btn" data-category="growth">-->
+<!--                                        <span class="category-icon">🌱</span>-->
+<!--                                        <span class="category-name">성장 & 사색</span>-->
+<!--                                    </button>-->
+<!--                                    <button type="button" class="category-btn" data-category="comfort">-->
+<!--                                        <span class="category-icon">🤗</span>-->
+<!--                                        <span class="category-name">위로 & 공감</span>-->
+<!--                                    </button>-->
 
-                                    <!-- 네 번째 줄 -->
-                                    <button type="button" class="category-btn" data-category="hope">
-                                        <span class="category-icon">🌟</span>
-                                        <span class="category-name">희망 & 긍정</span>
-                                    </button>
-                                    <button type="button" class="category-btn" data-category="sadness">
-                                        <span class="category-icon">😢</span>
-                                        <span class="category-name">우울 & 슬픔</span>
-                                    </button>
-                                    <button type="button" class="category-btn" data-category="calm">
-                                        <span class="category-icon">🧘</span>
-                                        <span class="category-name">평안 & 지적</span>
-                                    </button>
+<!--                                    &lt;!&ndash; 네 번째 줄 &ndash;&gt;-->
+<!--                                    <button type="button" class="category-btn" data-category="hope">-->
+<!--                                        <span class="category-icon">🌟</span>-->
+<!--                                        <span class="category-name">희망 & 긍정</span>-->
+<!--                                    </button>-->
+<!--                                    <button type="button" class="category-btn" data-category="sadness">-->
+<!--                                        <span class="category-icon">😢</span>-->
+<!--                                        <span class="category-name">우울 & 슬픔</span>-->
+<!--                                    </button>-->
+<!--                                    <button type="button" class="category-btn" data-category="calm">-->
+<!--                                        <span class="category-icon">🧘</span>-->
+<!--                                        <span class="category-name">평안 & 지적</span>-->
+<!--                                    </button>-->
 
-                                    <!-- 다섯 번째 줄 -->
-                                    <button type="button" class="category-btn" data-category="anger">
-                                        <span class="category-icon">😠</span>
-                                        <span class="category-name">분노 & 짜증</span>
-                                    </button>
-                                    <button type="button" class="category-btn" data-category="quiz">
-                                        <span class="category-icon">🤔</span>
-                                        <span class="category-name">퀴즈 & 무거움</span>
-                                    </button>
-                                    <button type="button" class="category-btn" data-category="honesty">
-                                        <span class="category-icon">💎</span>
-                                        <span class="category-name">솔직함 & 신기함</span>
-                                    </button>
+<!--                                    &lt;!&ndash; 다섯 번째 줄 &ndash;&gt;-->
+<!--                                    <button type="button" class="category-btn" data-category="anger">-->
+<!--                                        <span class="category-icon">😠</span>-->
+<!--                                        <span class="category-name">분노 & 짜증</span>-->
+<!--                                    </button>-->
+<!--                                    <button type="button" class="category-btn" data-category="quiz">-->
+<!--                                        <span class="category-icon">🤔</span>-->
+<!--                                        <span class="category-name">퀴즈 & 무거움</span>-->
+<!--                                    </button>-->
+<!--                                    <button type="button" class="category-btn" data-category="honesty">-->
+<!--                                        <span class="category-icon">💎</span>-->
+<!--                                        <span class="category-name">솔직함 & 신기함</span>-->
+<!--                                    </button>-->
+
                                 </div>
 
                                 <!-- 선택된 카테고리의 감정 태그들이 표시될 영역 -->
@@ -150,26 +176,6 @@
                                     </div>
                                     <div class="emotion-tags-grid" id="emotionTagsGrid">
                                         <!-- 선택된 카테고리의 감정 태그들이 여기에 동적으로 생성됩니다 -->
-                                    </div>
-                                </div>
-
-                                <!-- 커스텀 감정 입력 -->
-                                <div class="form-group-light">
-                                    <label class="form-group-title body-1-bold mb4">커스텀 감정 태그 추가</label>
-                                    <p class="mb16 body-2 text900">위에 원하시는 태그가 없다면 직접 입력하여 새로운 감정 태그를 추가해보세요!</p>
-                                    <div class="form-content">
-                                        <div class="roomName-search-form theme-client mb8">
-                                            <input name="roomName_name" type="hidden">
-                                            <div class="roomName-search-typing-box">
-                                                <div class="roomName-search-input-group">
-                                                    <i class="search_icon">
-                                                        <img class="text-icon" src="/static/image/creatingRoom/search.svg">
-                                                    </i>
-                                                    <div class="roomName-search-selected"></div>
-                                                    <input class="roomName-search-typing-input theme-client body-2" id="customEmotionInput" placeholder="새로운 감정 태그를 입력해주세요. ex) 기모찌" type="text">
-                                                </div>
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
 
@@ -348,5 +354,8 @@
             </div>
         </div>
     </div>
+    <th:block th:replace="~{fix/footer :: footer}"></th:block>
+    <script th:src="@{/js/fix/header.js}"></script>
+    <script th:src="@{/js/fix/header-after.js}"></script>
 </body>
 </html>

@@ -110,22 +110,25 @@ body.room-create .submit-progress .input-group-status .status-sub-menu .status-s
     bottom: 0;
     border-left: 1px solid #e0e0e0;
 }
-body.room-create .submit-progress .input-group-status .status-sub-menu .status-sub-menu-title.active .sub-menu-marker {
-    background-color: #005792;
-}
 body.room-create .submit-progress .input-group-status .status-sub-menu .status-sub-menu-title .sub-menu-marker {
     width: 14px;
     height: 14px;
-    border-radius: 14px;
-    border: none;
-    display: inline-block;
+    border-radius: 50%;
+
+    display: inline-flex;          /* 가운데 정렬 */
+    align-items: center;           /* 수직 중앙 */
+    justify-content: center;       /* 수평 중앙 */
+    padding: 0;                    /* 치우침 원인 제거 */
+    line-height: 1;
+    margin-right: 12px;
+    margin-top: 0;                 /* 치우침 원인 제거 */
+    vertical-align: middle;        /* baseline 보정 */
+    font-size: 10px;
     color: #fff;
     background-color: #bdbdbd;
-    font-size: 10px;
-    padding: 2.5px 4.5px;
-    margin-right: 20px;
-    vertical-align: top;
-    margin-top: 5px;
+}
+body.room-create .submit-progress .input-group-status .status-sub-menu .status-sub-menu-title.active .sub-menu-marker {
+    background-color: #005792;
 }
 .required {
     color: red;
@@ -689,6 +692,94 @@ body.room-create .room-create-formview .container::after {
     font-weight: 500;
 }
 
+/* 기타 선택 시 직접 입력 CSS */
+#customPeopleInputWrapper {
+    margin-top: 16px;
+    padding: 16px;
+    background-color: #f8fafc;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+#customPeopleInputWrapper label {
+    display: block;
+    margin-bottom: 8px;
+    color: #333;
+    font-weight: 500;
+}
+
+.custom-people-input {
+    width: 100%;
+    max-width: 200px;
+    height: 40px;
+    padding: 8px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    background-color: #fff;
+    font-size: 14px;
+    line-height: 24px;
+    color: #333;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.custom-people-input:focus {
+    outline: none;
+    border-color: #005792;
+    box-shadow: 0 0 0 2px rgba(0, 87, 146, 0.1);
+}
+
+.custom-people-input::placeholder {
+    color: #bdbdbd;
+    font-style: italic;
+}
+
+/* theme-client 스타일 적용 */
+.custom-people-input.theme-client:focus {
+    border-color: #005792;
+    box-shadow: 0 0 0 2px rgba(0, 87, 146, 0.15);
+}
+
+/* 숫자 입력 필드 스피너 스타일링 (Chrome, Safari, Edge) */
+.custom-people-input::-webkit-outer-spin-button,
+.custom-people-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Firefox용 숫자 스피너 제거 */
+.custom-people-input[type=number] {
+    -moz-appearance: textfield;
+}
+
+/* 유효성 검사 스타일 */
+.custom-people-input:invalid {
+    border-color: #e53e3e;
+}
+
+.custom-people-input:valid {
+    border-color: #38a169;
+}
+
+/* 비활성화 상태 */
+.custom-people-input:disabled {
+    background-color: #f5f5f5;
+    color: #bdbdbd;
+    cursor: not-allowed;
+    border-color: #e0e0e0;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .custom-people-input {
+        max-width: 100%;
+    }
+
+    #customPeopleInputWrapper {
+        padding: 12px;
+    }
+}
+
 /* 반응형 */
 @media (max-width: 768px) {
     .help-modal-content {
@@ -737,5 +828,109 @@ body.room-create .room-create-formview .container::after {
     
     .help-modal-footer {
         padding: 12px 20px 20px;
+    }
+}
+
+/* =========================
+   Responsive overrides
+   ========================= */
+
+/* 고정폭/가로 넘침 제거 */
+.big-frame { min-width: 0; } /* was 1080px */
+body.room-create .room-create-formview .container {
+    /* was width:1080px; */
+    width: 100%;
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
+/* 데스크톱은 기존 2열 유지(좌 진행바 256px + 우 800px) */
+body.room-create .submit-progress { margin-right: 24px; }
+body.room-create .room-create-form-section { /* was width:800px; 그대로 두고 모바일에서만 풀폭 */
+    /* desktop: keep width; mobile overrides below */
+}
+
+/* ========== 1024px 이하: 태블릿 조정 ========== */
+@media (max-width: 1024px) {
+    .form-section-header { padding: 22px 20px; }
+    .form-input-section { padding: 24px; }
+    .phase-1 .select-category { gap: 12px; flex-wrap: wrap; }
+    .phase-1 .select-category .category-card { width: calc(50% - 6px); }
+    .roomName-search-form2 .roomName-search-typing-box2 .roomName-search-input-group2
+    .roomName-search-typing-input2 { height: 120px; }
+}
+
+/* ========= 768px 이하: 폰 레이아웃(단일 열) ========= */
+@media (max-width: 768px) {
+    /* 좌측 진행바를 상단으로, 폼은 풀폭 */
+    body.room-create .submit-progress {
+        float: none;
+        width: 100%;
+        margin: 0 0 16px;
+    }
+    body.room-create .room-create-form-section {
+        float: none;
+        width: 100%;
+    }
+
+    .form-section-header { padding: 18px 16px; }
+    .form-input-section { padding: 16px; padding-bottom: 60px; }
+
+    /* 카드형 선택 UI 2열 → 2열/1열 가변 */
+    .phase-1 .select-category { gap: 10px; flex-wrap: wrap; }
+    .phase-1 .select-category .category-card { width: calc(50% - 5px); padding: 18px 12px; }
+    .category-icon img { width: 44px; height: 44px; }
+    .check-mark img { top: 12px; left: 12px; }
+
+    /* 입력/버튼 */
+    .roomName-search-form .roomName-search-typing-box .roomName-search-input-group
+    .roomName-search-typing-input { padding-left: 36px; }
+
+    .roomName-search-form2 .roomName-search-typing-box2 .roomName-search-input-group2
+    .roomName-search-typing-input2 { height: 100px; }
+
+    .header-button { position: static; margin-top: 8px; }
+    .btn-right { float: none; width: 100%; }
+    .btn.btn-client { width: 100%; }
+}
+
+
+
+/* ======== 480px 이하: 소형 폰 타이포/간격 ======== */
+@media (max-width: 480px) {
+    .subtitle-1, .subtitle-1-medium { font-size: 20px; line-height: 30px; }
+    .body-1-medium, .body-1-bold { font-size: 15px; }
+    .body-2 { font-size: 13px; }
+    .phase-1 .select-category .category-card { width: 100%; } /* 1열 */
+    .help-modal-content { width: 95%; }
+}
+
+
+@media (min-width: 1025px){
+    body.room-create .room-create-formview .container{
+        display: flex;
+        align-items: flex-start;
+        gap: 24px;
+        max-width: 1145px;
+        /* max-width: 1200px; */
+    }
+
+    /* 폭을 "width"가 아니라 flex-basis로 고정하고 shrink=0 */
+    body.room-create .submit-progress{
+        float: none;
+        margin: 0;
+        flex: 0 0 264px;
+    }
+
+    body.room-create .room-create-form-section{
+        float: none;
+        flex: 1 1 0;      /* 남은 공간을 차지, 필요시 줄어듦 허용 */
+        min-width: 0;     /* 내용 때문에 넘치지 않도록 */
+    }
+
+    /* 우측 카드 3개가 만드는 '최소 콘텐츠 폭'을 낮춰 사이드바 확장 여유 확보 */
+    .phase-1 .select-category{
+        flex-wrap: wrap;  /* 한 줄 고집 X → 최소폭 줄어듦 */
     }
 }

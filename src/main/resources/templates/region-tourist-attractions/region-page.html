@@ -3,11 +3,25 @@
 
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>region-page</title>
   <link rel="stylesheet" href="/css/region-tourist-attractions/region-page.css">
   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css"/>
   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css"/>
+  <link rel=" stylesheet" th:href="@{/css/fix/header.css}">
+  <link rel="stylesheet" th:href="@{/css/fix/footer.css}">
+  <link rel="stylesheet" th:href="@{/css/fix/header-after.css}">
+
 </head>
+<!-- 로그인 상태에 따른 조건부 헤더 렌더링 -->
+<div th:if="${isLoggedIn}">
+  <!-- 로그인된 사용자용 헤더 -->
+  <th:block th:replace="~{fix/header-after-login :: header}"></th:block>
+</div>
+<div th:unless="${isLoggedIn}">
+  <!-- 로그인 안된 사용자용 헤더 -->
+  <th:block th:replace="~{fix/header :: header}"></th:block>
+</div>
 <body class="landing">
   <div class="main">
     <div class="container">
@@ -230,11 +244,29 @@
       </section>
       <section class="container-recommand-service">
         <div class="container-recommand-title">📍 관광지 추천 결과</div>
-        <select class="sort-select" onchange="handleSortChange(this.value)">
-          <option value="default" selected>기본순</option>
-          <option value="rating">관광지 인기순</option>
-          <option value="portfolio">지역 이름순</option>
-        </select>
+<!--        <div class="filters">-->
+<!--          <div class="filter-row">-->
+<!--            <select id="cat1-select" class="cat-select">-->
+<!--              <option value="">대분류(cat1)</option>-->
+<!--              &lt;!&ndash; 필요시 서버/상수로 채우기 &ndash;&gt;-->
+<!--            </select>-->
+<!--            <select id="cat2-select" class="cat-select" disabled>-->
+<!--              <option value="">중분류(cat2)</option>-->
+<!--            </select>-->
+<!--            <select id="cat3-select" class="cat-select" disabled>-->
+<!--              <option value="">소분류(cat3)</option>-->
+<!--            </select>-->
+
+<!--            <input type="text" class="keyword-input" placeholder="키워드 검색 (예: 박물관, 시장)">-->
+<!--            <select class="sort-select" onchange="handleSortChange(this.value)">-->
+<!--              <option value="default">정렬: 기본</option>-->
+<!--              <option value="title">제목순</option>-->
+<!--              <option value="created">생성일순</option>-->
+<!--              <option value="modified">수정일순</option>-->
+<!--              <option value="views">조회순</option>-->
+<!--            </select>-->
+<!--          </div>-->
+<!--        </div>-->
         <!-- 지역 선택 안내 메시지 -->
         <div id="no-selection" style="text-align: center; margin-top: 20px;">
           지역을 선택하세요.
@@ -293,25 +325,8 @@
               </div>
             </div>
           </div>
+          <div class ="pagination"></div>
         </section>
-      </section>
-      <!--지역 추천 섹터-->
-      <section class="container-review">
-        <div class="recommand-review-container">
-          <div class="review-recommand">
-            <p class="recommand-region-title">이런 곳은 어때요?</p>
-            <div class="title-divider"></div>
-            <p class="recommand-region-sub-title">관광객 후기</p>
-          </div>
-          <div class="review-container">
-            <div class="slider">
-                <!--js 임시 db 반영-->
-            </div>
-            <ul class="slider-button" role="tablist">
-                <!--js-->
-            </ul>
-          </div>
-        </div>
       </section>
     <div class="page-bottom"></div>
   </div>
@@ -320,5 +335,9 @@
 <!-- Slick 슬라이더 기능 JS -->
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
   <script src="/js/region-tourist-attractions/region-page.js"></script>
+  <th:block th:replace="~{fix/footer :: footer}"></th:block>
+
+  <script th:src="@{/js/fix/header.js}"></script>
+  <script th:src="@{/js/fix/header-after.js}"></script>
 </body>
 </html>

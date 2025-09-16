@@ -21,9 +21,12 @@ a {
     text-decoration: none;
     color: #212121;
 }
+
 body {
-    height: 100%;
-    background-color: #f5f5f5;
+    font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    min-height: 100vh;
+    padding: 20px;
 }
 
 /*얘도 태그?*/
@@ -50,9 +53,6 @@ footer.footer {
     /* transform */
     transform: translate(0, 0) rotate(0deg) skew(0deg, 0deg) scale(1, 1);
 
-    /* scroll-snap */
-    scroll-snap-type: proximity;
-
     /* ring 효과 */
     box-shadow: 0 0 0 0 rgba(75, 148, 250, 0.5);
 
@@ -64,9 +64,6 @@ footer.footer {
 
     /* backdrop-filter */
     backdrop-filter: none;
-
-    /* contain */
-    contain: size layout paint style;
 }
 
 /*login*/

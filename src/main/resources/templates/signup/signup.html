@@ -1,200 +1,260 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>무드 트립</title>
-  <link rel="stylesheet" href="/css/signup/signup.css"/>
-  <script src="/js/signup/signup.js"></script>
+  <link rel="stylesheet" th:href="@{/css/signup/signup.css}" href="/static/css/signup/signup.css"/>
+  <script th:src="@{/js/signup/signup.js}" src="/static/js/signup/signup.js"></script>
+
 </head>
+
 <body>
-  <div class="box-border py-6 desktop:min-h-screen desktop:bg-w-gray-10 desktop:py-[120px]">
-    <div class="mx-auto grid w-full max-w-container auto-cols-1fr gap-x-5 px-5 desktop:gap-x-6 desktop:px-9 grid-areas-signUp-mobile tablet:grid-areas-signUp-tablet desktop:grid-areas-signUp-desktop">
-      <div class="box-border hidden grid-in-welcome desktop:block">
-        <div class="box-border flex flex-col left-items-start left-justify-start gap-left py-left" data-testid="feature-welcome">
-          <span class="tracking-default typo-title2 introduce-title text-w-gray-900" style="text-align:left; align-self:flex-start;">
-            무드트립의 다양한 서비스를<br/>
-            하나의 계정으로!
-          </span>
+<div class="py-6 desktop:min-h-screen desktop:bg-w-gray-10 desktop:py-[120px]">
+  <div class="mx-auto grid w-full max-w-container px-5 desktop:px-9 desktop:gap-x-6 desktop:grid-areas-signUp-desktop">
+    <div class="hidden grid-in-welcome desktop:block">
+      <div class="flex flex-col left-items-start left-justify-start gap-left py-left" data-testid="feature-welcome">
+        <div class="welcome-text-container">
+          <h1 class="welcome-main-title">
+            여행의 새로운 감성을<br>
+            <span class="highlight-text">무드트립에서</span>
+          </h1>
+          <p class="welcome-sub-title">하나의 계정으로 모든 여행 서비스를 경험하세요</p>
+        </div>
+        <div class="welcome-image-container">
           <img
-            alt="welcome"
-            role="presentation"
-            width="461"
-            height="240"
-            decoding="async"
-            data-nimg="1"
-            class="flex-none"
-            src="/static/image/mainpage/logo-label.png"
-            style="color: transparent;"
+                  alt="welcome"
+                  role="presentation"
+                  width="400"
+                  height="200"
+                  decoding="async"
+                  data-nimg="1"
+                  class="welcome-image"
+                  th:src="@{/image/mainpage/logo-label.png}"
+                  src="/static/image/mainpage/logo-label.png"
+                  style="color: transparent;"
           />
         </div>
       </div>
-      <div class="box-border right-grid-in-form">
-        <div class="box-border h-right-full w-full right-bg-w-white desktop:box-border desktop:flex desktop:flex-col desktop:rounded-2xl desktop:p-8 desktop:shadow-contents-container">
-          <span class="textbox typo-login-title mb-8-login-title hidden text-w-gray-900 desktop:block">
-            회원가입
-          </span>
-          <form data-testid="signup-form-contents" class="w-full">
-            <div class="box-border flex flex-col gap-input pb-input">
-              <!-- 이메일 -->
-              <div class="flex min-w-fit-input select-none flex-col gap-input-2 textbox">
-                <label role="input-box" class="input-text">
-                  <div class="box-border group flex w-full right-items-center gap-input-chk overflow-hidden text-rounded-xl border px-input-loginBtn py-[11px] border-w-gray-200 right-bg-w-white" data-testid="design-system--text-field-container">
-                    <div class="box-border relative flex h-[42px] w-full flex-col gap-0.5 py-px-input" data-testid="design-system--lable-input">
-                      <div class="absolute textbox typo-body1 transition-transform id-pw-textbox translate-y-2 origin-top-left" data-testid="design-system--lable-text">
-                        이메일
-                      </div>
-                      <input
-                        role="text-input"
-                        class="w-full textbox text-w-gray-600 outline-none typo-body1 placeholder:textbox placeholder:text-w-gray-300 placeholder:typo-body1 disabled:bg-w-gray-10 pt-[14px]"
-                        data-testid="design-system--input"
-                        variant="lable"
-                        name="email"
-                        type="email"
-                        required
-                      />
+    </div>
+    <div class="right-grid-in-form">
+      <div class="signup-form-container">
+        <div class="form-header">
+          <h2 class="form-title">회원가입</h2>
+          <p class="form-subtitle">무드트립과 함께 특별한 여행을 시작하세요</p>
+        </div>
+        <form th:object="${memberRequest}" method="post" data-testid="signup-form-contents" id="signupForm" class="w-full">
+          <div th:if="${errorMessage}" class="error-message" th:text="${errorMessage}"
+               style="color:red; text-align:center; margin-bottom:16px;"></div>
+
+          <div class="input-section">
+            <!-- 이메일 -->
+            <div class="input-group">
+              <label role="input-box" class="input-text">
+                <div class="input-container" data-testid="design-system--text-field-container">
+                  <div class="input-wrapper" data-testid="design-system--lable-input">
+                    <div class="input-label" data-testid="design-system--lable-text">
+                      이메일
                     </div>
+                    <input
+                            role="text-input"
+                            class="input-field"
+                            data-testid="design-system--input"
+                            variant="lable"
+                            th:field="*{email}"
+                            type="email"
+                            placeholder=" "
+                            required
+                    />
                   </div>
-                </label>
-                <div class="box-border flex flex-col gap-input-2 px-[17px]" data-testid="design-system--support-text-container">
-                  <span class="textbox typo-body2 text-w-gray-400">
-                    비즈니스용 이메일 사용을 권장합니다.
-                  </span>
                 </div>
-              </div>
-              <!-- 아이디 -->
-              <div class="flex min-w-fit-input select-none flex-col gap-input-2 textbox">
-                <label role="input-box" class="input-text">
-                  <div class="box-border group flex w-full right-items-center gap-input-chk overflow-hidden text-rounded-xl border px-input-loginBtn py-[11px] border-w-gray-200 right-bg-w-white" data-testid="design-system--text-field-container">
-                    <div class="box-border relative flex h-[42px] w-full flex-col gap-0.5 py-px-input" data-testid="design-system--lable-input">
-                      <div class="absolute textbox typo-body1 transition-transform id-pw-textbox translate-y-2 origin-top-left" data-testid="design-system--lable-text">
-                        아이디
-                      </div>
-                      <input
-                        role="text-input"
-                        class="w-full textbox text-w-gray-600 outline-none typo-body1 placeholder:textbox placeholder:text-w-gray-300 placeholder:typo-body1 disabled:bg-w-gray-10 pt-[14px]"
-                        data-testid="design-system--input"
-                        variant="lable"
-                        name="username"
-                        type="text"
-                        required
-                      />
-                    </div>
-                  </div>
-                </label>
-              </div>
-              <!-- 비밀번호 -->
-              <div class="flex min-w-fit-input select-none flex-col gap-input-2 textbox">
-                <label role="input-box" class="input-text">
-                  <div class="box-border group flex w-full right-items-center gap-input-chk overflow-hidden text-rounded-xl border px-input-loginBtn py-[11px] border-w-gray-200 right-bg-w-white" data-testid="design-system--text-field-container">
-                    <div class="box-border relative flex h-[42px] w-full flex-col gap-0.5 py-px-input" data-testid="design-system--lable-input">
-                      <div class="absolute textbox typo-body1 transition-transform id-pw-textbox translate-y-2 origin-top-left" data-testid="design-system--lable-text">
-                        비밀번호
-                      </div>
-                      <input
-                        role="text-input"
-                        class="w-full textbox text-w-gray-600 outline-none typo-body1 placeholder:textbox placeholder:text-w-gray-300 placeholder:typo-body1 disabled:bg-w-gray-10 pt-[14px]"
-                        data-testid="design-system--input"
-                        variant="lable"
-                        name="password"
-                        type="password"
-                        minlength="8"
-                        maxlength="32"
-                        required
-                      />
-                    </div>
-                  </div>
-                </label>
-                <div class="box-border flex flex-col gap-input-2 px-[17px]" data-testid="design-system--support-text-container">
-                  <span class="textbox typo-body2 text-w-gray-400">
-                    8자 이상 32자 이하로 입력해 주세요.
-                  </span>
-                </div>
-              </div>
-              <!-- 비밀번호 확인 -->
-              <div class="flex min-w-fit-input select-none flex-col gap-input-2 textbox">
-                <label role="input-box" class="input-text">
-                  <div class="box-border group flex w-full right-items-center gap-input-chk overflow-hidden text-rounded-xl border px-input-loginBtn py-[11px] border-w-gray-200 right-bg-w-white" data-testid="design-system--text-field-container">
-                    <div class="box-border relative flex h-[42px] w-full flex-col gap-0.5 py-px-input" data-testid="design-system--lable-input">
-                      <div class="absolute textbox typo-body1 transition-transform id-pw-textbox translate-y-2 origin-top-left" data-testid="design-system--lable-text">
-                        비밀번호 확인
-                      </div>
-                      <input
-                        role="text-input"
-                        class="w-full textbox text-w-gray-600 outline-none typo-body1 placeholder:textbox placeholder:text-w-gray-300 placeholder:typo-body1 disabled:bg-w-gray-10 pt-[14px]"
-                        data-testid="design-system--input"
-                        variant="lable"
-                        name="password_confirm"
-                        type="password"
-                        minlength="8"
-                        maxlength="32"
-                        required
-                      />
-                    </div>
-                  </div>
-                </label>
+              </label>
+              <div class="input-helper" data-testid="design-system--support-text-container">
+                <span class="helper-text">비즈니스용 이메일 사용을 권장합니다.</span>
               </div>
             </div>
-            <!-- 약관 동의 -->
-            <div class="box-border flex flex-col gap-2 my-4">
-              <label class="flex h-right-full right-items-center justify-start gap-input-chk">
-                <input class="absolute h-0 w-0 opacity-0" type="checkbox" name="agree_all"/>
-                <div class="group relative box-border cursor-pointer border size-4 m-px rounded group-hover:border-primary-500 border-w-gray-200 bg-white flex items-center" role="checkbox-button"></div>
-                <span class="textbox typo-body1 cursor-pointer text-w-gray-900 ml-2">
-                  전체 동의하기
+            <!-- 아이디 -->
+            <div class="input-group">
+              <label role="input-box" class="input-text">
+                <div class="input-container" data-testid="design-system--text-field-container">
+                  <div class="input-wrapper" data-testid="design-system--lable-input">
+                    <div class="input-label" data-testid="design-system--lable-text">
+                      아이디
+                    </div>
+                    <input
+                            role="text-input"
+                            class="input-field"
+                            data-testid="design-system--input"
+                            variant="lable"
+                            th:field="*{userId}"
+                            type="text"
+                            required
+                    />
+                  </div>
+                </div>
+              </label>
+            </div>
+            <!-- 닉네임 -->
+            <div class="input-group">
+              <label role="input-box" class="input-text">
+                <div class="input-container" data-testid="design-system--text-field-container">
+                  <div class="input-wrapper" data-testid="design-system--lable-input">
+                    <div class="input-label" data-testid="design-system--lable-text">
+                      닉네임
+                    </div>
+                    <input
+                            role="text-input"
+                            class="input-field"
+                            data-testid="design-system--input"
+                            variant="lable"
+                            th:field="*{nickname}"
+                            type="text"
+                            required
+                    />
+                  </div>
+                </div>
+              </label>
+              <div class="input-helper" data-testid="design-system--support-text-container">
+                <span class="helper-text">2자 이상 10자 이하로 입력해 주세요.</span>
+              </div>
+            </div>
+            <!-- 전화번호 -->
+            <div class="input-group">
+              <label role="input-box" class="input-text">
+                <div class="input-container" data-testid="design-system--text-field-container">
+                  <div class="input-wrapper" data-testid="design-system--lable-input">
+                    <div class="input-label" data-testid="design-system--lable-text">
+                      전화번호
+                    </div>
+                    <input
+                            role="text-input"
+                            class="input-field"
+                            data-testid="design-system--input"
+                            variant="lable"
+                            th:field="*{memberPhone}"
+                            type="tel"
+                            required
+                    />
+                  </div>
+                </div>
+              </label>
+              <div class="input-helper" data-testid="design-system--support-text-container">
+                <span class="helper-text">010-1234-5678 형식으로 입력해 주세요.</span>
+              </div>
+            </div>
+            <!-- 비밀번호 -->
+            <div class="input-group">
+              <label role="input-box" class="input-text">
+                <div class="input-container" data-testid="design-system--text-field-container">
+                  <div class="input-wrapper" data-testid="design-system--lable-input">
+                    <div class="input-label" data-testid="design-system--lable-text">
+                      비밀번호
+                    </div>
+                    <input
+                            role="text-input"
+                            class="input-field"
+                            data-testid="design-system--input"
+                            variant="lable"
+                            th:field="*{password}"
+                            type="password"
+                            minlength="8"
+                            maxlength="32"
+                            required
+                    />
+                  </div>
+                </div>
+              </label>
+              <div class="input-helper" data-testid="design-system--support-text-container">
+                <span class="helper-text">8자 이상 32자 이하로 입력해 주세요.</span>
+              </div>
+            </div>
+            <!-- 비밀번호 확인 -->
+            <div class="input-group">
+              <label role="input-box" class="input-text">
+                <div class="input-container" data-testid="design-system--text-field-container">
+                  <div class="input-wrapper" data-testid="design-system--lable-input">
+                    <div class="input-label" data-testid="design-system--lable-text">
+                      비밀번호 확인
+                    </div>
+                    <input
+                            role="text-input"
+                            class="input-field"
+                            data-testid="design-system--input"
+                            variant="lable"
+                            th:field="*{passwordConfirm}"
+                            type="password"
+                            minlength="8"
+                            maxlength="32"
+                            required
+                    />
+                  </div>
+                </div>
+              </label>
+            </div>
+          </div>
+          <!-- 약관 동의 -->
+          <div class="agreement-section">
+            <div class="agreement-header">
+              <h3>서비스 이용약관</h3>
+            </div>
+            <div class="checkbox-group">
+              <label class="checkbox-item checkbox-all">
+                <input class="checkbox-input" type="checkbox" name="agreeAll"/>
+                <div class="checkbox-custom" role="checkbox-button"></div>
+                <span class="checkbox-text checkbox-text-bold">
+    전체 동의하기
+  </span>
+              </label>
+              <div class="checkbox-divider"></div>
+              <label class="checkbox-item">
+                <input class="checkbox-input" type="checkbox" th:field="*{terms}" required/>
+                <div class="checkbox-custom" role="checkbox-button"></div>
+                <span class="checkbox-text">
+                  이용약관 및 개인정보 처리방침 동의 <span class="required-text">(필수)</span>
                 </span>
               </label>
-              <label class="flex h-right-full right-items-center justify-start gap-input-chk">
-                <input class="absolute h-0 w-0 opacity-0" type="checkbox" name="terms" required/>
-                <div class="group relative box-border cursor-pointer border size-4 m-px rounded group-hover:border-primary-500 border-w-gray-200 bg-white flex items-center" role="checkbox-button"></div>
-                <span class="textbox typo-body1 cursor-pointer text-w-gray-900 ml-2">
-                  이용약관 및 개인정보 처리방침 동의 (필수)
+              <label class="checkbox-item">
+                <input class="checkbox-input" type="checkbox" th:field="*{marketing}"/>
+                <div class="checkbox-custom" role="checkbox-button"></div>
+                <span class="checkbox-text">
+                  개인정보 마케팅 활용 동의 <span class="optional-text">(선택)</span>
                 </span>
               </label>
-              <label class="flex h-right-full right-items-center justify-start gap-input-chk">
-                <input class="absolute h-0 w-0 opacity-0" type="checkbox" name="marketing"/>
-                <div class="group relative box-border cursor-pointer border size-4 m-px rounded group-hover:border-primary-500 border-w-gray-200 bg-white flex items-center" role="checkbox-button"></div>
-                <span class="textbox typo-body1 cursor-pointer text-w-gray-900 ml-2">
-                  개인정보 마케팅 활용 동의 (선택)
+              <label class="checkbox-item">
+                <input class="checkbox-input" type="checkbox" th:field="*{marketingInfo}"/>
+                <div class="checkbox-custom" role="checkbox-button"></div>
+                <span class="checkbox-text">
+                  마케팅 정보 수신 동의 <span class="optional-text">(선택)</span>
                 </span>
               </label>
-              <label class="flex h-right-full right-items-center justify-start gap-input-chk">
-                <input class="absolute h-0 w-0 opacity-0" type="checkbox" name="marketing_info"/>
-                <div class="group relative box-border cursor-pointer border size-4 m-px rounded group-hover:border-primary-500 border-w-gray-200 bg-white flex items-center" role="checkbox-button"></div>
-                <span class="textbox typo-body1 cursor-pointer text-w-gray-900 ml-2">
-                  마케팅 정보 수신 동의 (선택)
-                </span>
-              </label>
-              <div class="textbox typo-caption1 text-w-gray-400" style="margin-left: 26px; margin-bottom: 24px;">
+              <div class="marketing-info">
                 맞춤 추천, 뉴스레터 등 유용한 혜택을 제공받을 수 있습니다.
               </div>
             </div>
-            <div class="box-border pb-4" data-testid="signup-button">
-              <button class="box-border flex cursor-pointer right-items-center right-justify-center h-[50px] text-base leading-[26px] gap-x-1.5 px-input-loginBtn text-w-white bg-primary-500 border-0 hover:bg-primary-700 w-full text-rounded-xl" type="submit">
-                <span class="textbox typo-body1">
-                  회원가입
-                </span>
-              </button>
-            </div>
-          </form>
-          <div class="box-border flex w-full right-items-center right-justify-center my-4">
-            <div class="flex-shrink-0 h-orline-px bg-w-gray-200 w-[40%]" data-testid="design-system-divider"></div>
-            <span class="textbox typo-caption1 or flex w-14 right-justify-center text-w-gray-500">또는</span>
-            <div class="flex-shrink-0 h-orline-px bg-w-gray-200 w-[40%]" data-testid="design-system-divider"></div>
           </div>
-          <div class="box-border flex w-full flex-col gap-UnitedLoginBtn pt-4">
-            <button
-              class="box-border flex cursor-pointer right-items-center right-justify-center border text-base leading-[26px] gap-x-1.5 px-[15px] right-bg-w-white border-w-gray-200 hover:border-primary-500 h-[50px] w-full text-rounded-xl text-w-gray-600"
-              type="button"
-            >
+          <div class="submit-section">
+            <button class="submit-button" type="submit" data-testid="signup-button">
+              <span class="submit-text">회원가입</span>
+            </button>
+          </div>
+        </form>
+        <div class="divider-section">
+          <div class="divider-line"></div>
+          <span class="divider-text">또는</span>
+          <div class="divider-line"></div>
+        </div>
+        <div class="social-login-section">
+          <a href="/oauth2/authorization/google" style="display:block;">
+            <button class="social-button google-button" type="button"
+                    onclick="document.cookie='flowType=signup; path=/;'; location.href='/oauth2/authorization/google';">
               <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                data-testid="social-form-button-icon--google"
-                class="text-w-gray-900"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      data-testid="social-form-button-icon--google"
+                      class="text-w-gray-900"
               >
                 <g clip-path="url(#clip0_2735_3764)">
                   <path fill-rule="evenodd" clip-rule="evenodd" d="M16 8.18185C16 7.61474 15.9483 7.06897 15.8513 6.54541H8.16327V9.63963H12.5569C12.3674 10.6396 11.7923 11.4876 10.9279 12.0547V14.0619H13.5656C15.1093 12.669 16 10.6183 16 8.18185Z" fill="#3E82F1"></path>
@@ -208,29 +268,25 @@
                   </clipPath>
                 </defs>
               </svg>
-              <span class="textbox typo-body1 w-full">구글로 회원가입</span>
+              <span class="social-text">구글로 회원가입</span>
             </button>
-            <button
-              class="box-border flex cursor-pointer right-items-center right-justify-center border text-base leading-[26px] gap-x-1.5 px-[15px] right-bg-w-white border-w-gray-200 hover:border-primary-500 h-[50px] w-full text-rounded-xl text-w-gray-600"
-              type="button"
-            >
-              <img src="/static/image/login/kakaotalk_sharing_btn_small.png" alt="구글 로고" width="20" height="20" style="margin-right:8px;" />
-              <span class="textbox typo-body1 w-full">카카오로 회원가입</span>
-            </button>
-          </div>
-          <div class="box-border isSignUp flex w-full items-end right-justify-center gap-1">
-            <span class="textbox typo-body1 text-w-gray-600">
-              이미 무드트립 통합회원이신가요?
-            </span>
-            <a class="no-underline" data-testid="login-link" href="/login">
-              <span class="textbox typo-body1 font-medium text-w-primary">
-                로그인
-              </span>
-            </a>
-          </div>
+          </a>
+          <button class="social-button kakao-button" type="button"
+                  onclick="document.cookie='flowType=signup; path=/;'; location.href='/oauth2/authorization/kakao';">
+            <img th:src="@{/image/login/kakaotalk_sharing_btn_small.png}" src="/static/image/login/kakaotalk_sharing_btn_small.png" alt="카카오 로고" width="20" height="20" class="social-icon" />
+            <span class="social-text">카카오로 회원가입</span>
+          </button>
+        </div>
+        <div class="login-link-section">
+          <span class="login-text">이미 무드트립 통합회원이신가요?</span>
+          <a class="login-link" data-testid="login-link" href="/login">
+            <span class="login-link-text">로그인</span>
+          </a>
         </div>
       </div>
     </div>
   </div>
+</div>
+
 </body>
 </html>

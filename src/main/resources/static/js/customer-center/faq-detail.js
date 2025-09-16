@@ -1,122 +1,202 @@
 // faq-detail.js
 
 document.addEventListener('DOMContentLoaded', function() {
-    
-    // 도움됨/도움안됨 버튼 기능
-    const helpfulYesButton = document.getElementById('helpful-yes');
-    const helpfulNoButton = document.getElementById('helpful-no');
-    
-    helpfulYesButton.addEventListener('click', function() {
-        handleHelpfulClick('yes', this);
-    });
-    
-    helpfulNoButton.addEventListener('click', function() {
-        handleHelpfulClick('no', this);
-    });
-    
-    function handleHelpfulClick(type, button) {
-        // 다른 버튼 비활성화
-        const otherButton = type === 'yes' ? helpfulNoButton : helpfulYesButton;
-        otherButton.classList.remove('active');
-        
-        // 현재 버튼 토글
-        button.classList.toggle('active');
-        
-        if (button.classList.contains('active')) {
-            // 버튼 애니메이션
-            button.style.transform = 'scale(1.05)';
-            setTimeout(() => {
-                button.style.transform = 'scale(1)';
-            }, 200);
-            
-            // 피드백 메시지
-            const message = type === 'yes' ? '피드백이 전송되었습니다.' : '피드백이 전송되었습니다. 더 나은 답변을 위해 노력하겠습니다.';
-            showToast(message);
-            
-            console.log(`도움됨 피드백: ${type}`);
+    document.addEventListener('click', function (e) {
+        const a = e.target.closest('a[href^="/customer-center/faq/helpful/"], a[href^="/customer-center/faq/not-helpful/"]');
+        if (!a) return;
+        e.preventDefault();
+        e.stopPropagation();
+
+        // URL에서 type과 id 추출
+        const href = a.getAttribute('href');
+        const m = href.match(/\/customer-center\/faq\/(helpful|not-helpful)\/(\d+)/);
+        if (!m) return;
+
+        const type = m[1] === 'helpful' ? 'yes' : 'no';
+        const id   = m[2];
+
+        // 기존 함수가 있으면 재사용, 없으면 바로 POST
+        if (typeof handleHelpfulClick === 'function') {
+            handleHelpfulClick(type, a);
+        } else {
+            fetch(`/customer-center/faq/${m[1]}/${id}`, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest', ...getAuthHeader() },
+                credentials: 'include'
+            }).then(r => r.ok ? showToast('피드백이 반영되었습니다.') : showToast('요청 실패'))
+                .catch(() => showToast('네트워크 오류'));
         }
+    }, true);
+
+    // ========= 공통 유틸 =========
+    function getAuthHeader() {
+        const keys = ['accessToken', 'jwt', 'token'];
+        for (const k of keys) {
+            const v = (window.localStorage && localStorage.getItem(k)) || (window.sessionStorage && sessionStorage.getItem(k));
+            if (v) return { Authorization: `Bearer ${v}` };
+        }
+        const m = document.cookie.match(/(?:^|;\s*)accessToken=([^;]+)/);
+        if (m) return { Authorization: `Bearer ${decodeURIComponent(m[1])}` };
+        return {};
     }
-    
+
+
     // 토스트 메시지 표시
     function showToast(message) {
-        // 기존 토스트 제거
         const existingToast = document.querySelector('.toast');
-        if (existingToast) {
-            existingToast.remove();
-        }
-        
+        if (existingToast) existingToast.remove();
+
         const toast = document.createElement('div');
         toast.className = 'toast';
         toast.textContent = message;
         toast.style.cssText = `
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(to bottom right, #005792, #001A2C);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            box-shadow: 0 4px 12px rgba(0, 87, 146, 0.3);
-            z-index: 1000;
-            animation: slideUp 0.3s ease;
-        `;
-        
-        // 애니메이션 추가
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background: linear-gradient(to bottom right, #005792, #001A2C);
+      color: white; padding: 12px 24px; border-radius: 8px; font-size: 14px;
+      font-weight: 500; box-shadow: 0 4px 12px rgba(0, 87, 146, 0.3);
+      z-index: 1000; animation: slideUp 0.3s ease;
+    `;
         const style = document.createElement('style');
         style.textContent = `
-            @keyframes slideUp {
-                from {
-                    opacity: 0;
-                    transform: translateX(-50%) translateY(20px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateX(-50%) translateY(0);
-                }
-            }
-        `;
+      @keyframes slideUp { from {opacity:0; transform: translateX(-50%) translateY(20px);} to {opacity:1; transform: translateX(-50%) translateY(0);} }
+      @keyframes slideDown { from {opacity:1;} to {opacity:0;} }
+    `;
         document.head.appendChild(style);
-        
         document.body.appendChild(toast);
-        
-        // 3초 후 제거
         setTimeout(() => {
             toast.style.animation = 'slideDown 0.3s ease';
-            setTimeout(() => {
-                if (toast.parentNode) {
-                    toast.remove();
-                }
-                if (style.parentNode) {
-                    style.remove();
-                }
-            }, 300);
+            setTimeout(() => { toast.remove(); style.remove(); }, 300);
         }, 3000);
     }
-    
+
+
+    // 도움됨/도움안됨 버튼 기능
+    const helpfulYesButton = document.getElementById('helpful-yes');
+    const helpfulNoButton  = document.getElementById('helpful-no');
+
+
+    // 페이지 전역에서 사용할 faqId (둘 중 아무 버튼의 data-faq-id 사용)
+    const faqId =
+        helpfulYesButton.getAttribute('data-faq-id') ||
+        helpfulNoButton.getAttribute('data-faq-id');
+
+    // 클릭 핸들러
+    helpfulYesButton?.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        handleHelpfulClick('yes', this);
+    });
+    helpfulNoButton?.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        handleHelpfulClick('no', this);
+    });
+
+    function handleHelpfulClick(type, button) {
+        if (button.disabled) return;
+        button.disabled = true;
+
+        // (안전) 버튼에서 다시 읽어도 됨
+        const id = button.getAttribute('data-faq-id') || faqId;
+
+        const endpoint =
+            type === 'yes'
+                ? `/customer-center/faq/helpful/${id}`
+                : `/customer-center/faq/not-helpful/${id}`;
+
+        const headers = { 'X-Requested-With': 'XMLHttpRequest', ...getAuthHeader() };
+
+        fetch(endpoint, {
+            method: 'POST',
+            headers,
+            credentials: 'include', // 세션/쿠키 방식도 지원
+        })
+            .then(async (res) => {
+                if (res.status === 401) {
+                    requireLoginUI();
+                    return;
+                }
+                if (res.status === 403) {
+                    showToast('권한이 없습니다.');
+                    return;
+                }
+                if (!res.ok) {
+                    const txt = await res.text();
+                    showToast(txt || '오류가 발생했습니다.');
+                    return;
+                }
+
+                // 성공 처리
+                const other = type === 'yes' ? helpfulNoButton : helpfulYesButton;
+                other.classList.remove('active');
+                button.classList.add('active');
+
+                button.style.transform = 'scale(1.05)';
+                setTimeout(() => (button.style.transform = 'scale(1)'), 200);
+
+                localStorage.setItem(`faq-vote-${id}`, type);
+                showToast('피드백이 전송되었습니다.');
+            })
+            .catch(() => showToast('오류가 발생했습니다. 다시 시도해주세요.'))
+            .finally(() => { button.disabled = false; });
+    }
+
+
+    // ===== 로그인 모달 =====
+    const loginModal = document.getElementById('login-modal');
+    const loginBtn   = document.getElementById('login-btn');
+    const closeBtn   = document.getElementById('close-btn');
+
+    function openLoginModal() {
+        if (!loginModal) return;
+        loginModal.classList.remove('hidden');
+        requestAnimationFrame(() => loginModal.classList.add('show')); // ← 핵심
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeLoginModal() {
+        if (!loginModal) return;
+        loginModal.classList.remove('show');
+        setTimeout(() => loginModal.classList.add('hidden'), 200);
+        document.body.style.overflow = '';
+    }
+
+    loginBtn?.addEventListener('click', () => location.href = '/login');
+    closeBtn?.addEventListener('click', closeLoginModal);
+
+    // 오버레이 바깥 클릭 또는 data-close 속성 클릭 시 닫기
+    loginModal?.addEventListener('click', (e) => {
+        if (e.target === loginModal || e.target.hasAttribute('data-close')) closeLoginModal();
+    });
+
+    // ESC로 닫기
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && loginModal && !loginModal.classList.contains('hidden')) {
+            closeLoginModal();
+        }
+    });
+
+    // 401 발생 시 호출되는 함수
+    function requireLoginUI() { openLoginModal(); }
+
+
+
     // 이전/다음 FAQ 버튼 기능
     const prevButton = document.querySelector('.prev-btn');
     const nextButton = document.querySelector('.next-btn');
-    
-    prevButton.addEventListener('click', function() {
-        // 실제로는 이전 FAQ URL로 이동
-        console.log('이전 FAQ로 이동');
-        this.style.transform = 'translateX(-2px)';
-        setTimeout(() => {
-            this.style.transform = 'translateX(0)';
-        }, 200);
-    });
-    
-    nextButton.addEventListener('click', function() {
-        // 실제로는 다음 FAQ URL로 이동
-        console.log('다음 FAQ로 이동');
-        this.style.transform = 'translateX(2px)';
-        setTimeout(() => {
-            this.style.transform = 'translateX(0)';
-        }, 200);
-    });
+
+    if (prevButton) {
+        prevButton.addEventListener('click', function () {
+            this.style.transform = 'translateX(-2px)';
+            setTimeout(() => (this.style.transform = 'translateX(0)'), 200);
+        });
+    }
+    if (nextButton) {
+        nextButton.addEventListener('click', function () {
+            this.style.transform = 'translateX(2px)';
+            setTimeout(() => (this.style.transform = 'translateX(0)'), 200);
+        });
+    }
     
     // 관련 FAQ 클릭 애니메이션
     document.querySelectorAll('.related-faq-item').forEach(item => {
@@ -224,9 +304,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // 좌우 화살표로 이전/다음 FAQ 이동
         if (e.key === 'ArrowLeft') {
-            prevButton.click();
+            prevButton?.click();
         } else if (e.key === 'ArrowRight') {
-            nextButton.click();
+            nextButton?.click();
         }
         
         // Y 키로 도움됨 표시

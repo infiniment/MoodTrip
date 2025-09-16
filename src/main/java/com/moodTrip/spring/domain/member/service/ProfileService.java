@@ -1,0 +1,252 @@
+package com.moodTrip.spring.domain.member.service;
+
+import com.moodTrip.spring.domain.attraction.dto.response.AttractionSearchResponseDto;
+import com.moodTrip.spring.domain.attraction.entity.Attraction;
+import com.moodTrip.spring.domain.attraction.entity.UserAttraction;
+import com.moodTrip.spring.domain.attraction.repository.AttractionRepository;
+import com.moodTrip.spring.domain.attraction.repository.UserAttractionRepository;
+import com.moodTrip.spring.domain.member.dto.request.IntroduceUpdateRequest;
+import com.moodTrip.spring.domain.member.dto.request.ProfileImageUpdateRequest;
+import com.moodTrip.spring.domain.member.dto.response.ProfileResponse;
+import com.moodTrip.spring.domain.member.entity.Member;
+import com.moodTrip.spring.domain.member.entity.Profile;
+import com.moodTrip.spring.domain.member.repository.MemberRepository;
+import com.moodTrip.spring.domain.member.repository.ProfileRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class ProfileService {
+
+    private final ProfileRepository profileRepository;
+    private final MemberRepository memberRepository;
+    private final UserAttractionRepository userAttractionRepository;
+    private final AttractionRepository attractionRepository;
+
+    private static final String DEFAULT_IMAGE = "/image/creatingRoom/landscape-placeholder-svgrepo-com.svg";
+
+    // 프로필 조회
+    public ProfileResponse getMyProfile(Member member) {
+        log.info("프로필 조회 요청 - 회원ID: {}", member.getMemberId());
+
+        Optional<Profile> profileOptional = profileRepository.findByMember(member);
+
+        if (profileOptional.isPresent()) {
+            // Profile이 존재하는 경우
+            Profile profile = profileOptional.get();
+            log.info("기존 프로필 조회 성공 - 회원ID: {}, 프로필ID: {}",
+                    member.getMemberId(), profile.getProfileId());
+            return ProfileResponse.from(profile);
+        } else {
+            // Profile이 없는 경우, Member 정보만으로 기본 응답 생성
+            log.info("프로필이 없음 - Member 정보로 기본 응답 생성 - 회원ID: {}", member.getMemberId());
+            return createBasicProfileResponse(member);
+        }
+    }
+
+    /* member_pk로 프로필 조회 — 채팅 등에서 사용 */
+    public ProfileResponse getProfileByMemberId(Long memberPk) {
+        log.info("member_pk로 프로필 조회 - memberPk: {}", memberPk);
+
+        // 1) 프로필 존재 시 바로 반환(기본 이미지 처리)
+        Optional<Profile> profileOpt = profileRepository.findByMember_MemberPk(memberPk);
+        if (profileOpt.isPresent()) {
+            return toResponseWithDefaultImage(profileOpt.get());
+        }
+
+        // 2) 프로필 없으면 Member 로드 후 기본 응답
+        Member member = memberRepository.findById(memberPk)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다. memberPk=" + memberPk));
+
+        return createBasicProfileResponse(member);
+    }
+
+    private ProfileResponse createBasicProfileResponse(Member member) {
+        return ProfileResponse.builder()
+                .nickname(member.getNickname())
+                .email(member.getEmail())
+                .memberPhone(member.getMemberPhone())
+                .profileBio(null)
+                .profileImage(DEFAULT_IMAGE) // ← 기본 이미지
+                .createdAt(member.getCreatedAt())
+                .build();
+    }
+
+    // 자기소개 수정 로직
+    @Transactional
+    public ProfileResponse updateIntroduce(Member member, IntroduceUpdateRequest request) {
+        log.info("자기소개 수정 요청 - 회원ID: {}, 새로운 자기소개 길이: {}글자",
+                member.getMemberId(),
+                request.getProfileBio() != null ? request.getProfileBio().length() : 0);
+
+        // 유효성 검사
+        String newIntroduce = request.getProfileBio();
+        if (newIntroduce != null && newIntroduce.length() > 500) {
+            throw new RuntimeException("자기소개는 500자 이내로 작성해주세요.");
+        }
+
+        // 기존 Profile 조회
+        Optional<Profile> existingProfile = profileRepository.findByMember(member);
+
+        Profile profile;
+
+        if (existingProfile.isPresent()) {
+            // Profile이 있으면 자기소개만 수정
+            log.info("기존 Profile 수정 - 회원ID: {}", member.getMemberId());
+            profile = existingProfile.get();
+            profile.setProfileBio(newIntroduce);
+        } else {
+            // Profile이 없으면 새로 생성
+            log.info("새 Profile 생성 - 회원ID: {} (신규 사용자)", member.getMemberId());
+            profile = Profile.builder()
+                    .member(member)
+                    .profileBio(newIntroduce)
+                    .profileImage(null)
+                    .build();
+
+            profileRepository.save(profile);
+        }
+
+        log.info("자기소개 수정 성공 - 회원ID: {}, Profile ID: {}",
+                member.getMemberId(), profile.getProfileId());
+
+        return ProfileResponse.from(profile);
+    }
+    // 프로필 사진 변경 로직
+    @Transactional
+    public ProfileResponse updateProfileImage(Member member, ProfileImageUpdateRequest request) {
+        log.info("프로필 사진 변경 요청 - 회원ID: {}, 새이미지URL: {}",
+                member.getMemberId(), request.getProfileImage());
+
+        // 유효성 검사
+        String newImageUrl = request.getProfileImage();
+        if (newImageUrl == null || newImageUrl.trim().isEmpty()) {
+            throw new RuntimeException("프로필 이미지 URL은 필수 입력 항목입니다.");
+        }
+
+        newImageUrl = newImageUrl.trim();
+
+        // URL 형식 검증
+        if (!isValidImageUrl(newImageUrl)) {
+            throw new RuntimeException("올바른 이미지 URL 형식이 아닙니다.");
+        }
+
+        // Profile 조회 또는 생성
+        Optional<Profile> existingProfile = profileRepository.findByMember(member);
+        Profile profile;
+
+        if (existingProfile.isPresent()) {
+            // 기존 Profile 수정
+            profile = existingProfile.get();
+            log.info("기존 Profile의 이미지 수정 - 회원ID: {}", member.getMemberId());
+        } else {
+            // Profile이 없으면 새로 생성 (프로필 이미지만 설정)
+            log.info("새 Profile 생성 (프로필 이미지) - 회원ID: {}", member.getMemberId());
+            profile = Profile.builder()
+                    .member(member)
+                    .profileBio(null)        // 자기소개는 나중에 설정
+                    .profileImage(newImageUrl)
+                    .build();
+
+            profileRepository.save(profile);
+            log.info("새 Profile 저장 완료 - 회원ID: {}, Profile ID: {}",
+                    member.getMemberId(), profile.getProfileId());
+
+            return ProfileResponse.from(profile);
+        }
+
+        // 기존 Profile의 이미지만 수정
+        String oldImageUrl = profile.getProfileImage();
+        profile.setProfileImage(newImageUrl);
+
+        log.info("프로필 사진 변경 성공 - 회원ID: {}, 기존URL: {}, 신규URL: {}",
+                member.getMemberId(), oldImageUrl, newImageUrl);
+
+        return ProfileResponse.from(profile);
+    }
+
+
+    // 이미지 URL 유효성 검사 메서드 분리
+    private boolean isValidImageUrl(String imageUrl) {
+        return imageUrl.startsWith("http://") ||
+                imageUrl.startsWith("https://") ||
+                imageUrl.startsWith("/uploads/") ||
+                imageUrl.startsWith("/static/image/");
+    }
+
+    // 프로필 존재 여부 확인
+    public boolean hasProfile(Member member) {
+        return profileRepository.findByMember(member).isPresent();
+    }
+
+    @Transactional
+    public Profile createDefaultProfile(Member member) {
+        log.info("기본 Profile 생성 - 회원ID: {}", member.getMemberId());
+
+        Profile profile = Profile.builder()
+                .member(member)
+                .profileBio(null)
+                .profileImage(null)
+                .build();
+
+        Profile savedProfile = profileRepository.save(profile);
+        log.info("기본 Profile 생성 완료 - 회원ID: {}, Profile ID: {}",
+                member.getMemberId(), savedProfile.getProfileId());
+
+        return savedProfile;
+    }
+
+
+    // 프로필 → 응답 변환 시 기본 이미지 보정
+    private ProfileResponse toResponseWithDefaultImage(Profile profile) {
+        ProfileResponse resp = ProfileResponse.from(profile);
+        String img = resp.getProfileImage();
+
+        if (img == null || img.isBlank()) {
+            return ProfileResponse.builder()
+                    .nickname(resp.getNickname())
+                    .profileBio(resp.getProfileBio())
+                    .profileImage(DEFAULT_IMAGE)   // 기본 이미지로 보정
+                    .email(resp.getEmail())
+                    .memberPhone(resp.getMemberPhone())
+                    .createdAt(resp.getCreatedAt())
+                    .build();
+        }
+        return resp;
+    }
+
+
+
+    public Page<AttractionSearchResponseDto> getMyWishlist(Long memberPk, Pageable pageable) {
+
+        // 1. 페이지네이션 정보와 함께 찜 목록을 조회합니다.
+        Page<UserAttraction> userAttractionsPage = userAttractionRepository.findByMemberMemberPkWithAttraction(memberPk, pageable);
+
+        // 2. 조회된 Page<UserAttraction>을 Page<AttractionSearchResponseDto>로 변환합니다.
+        // .map() 메서드를 사용하면 페이징 정보(총 페이지 수, 현재 페이지 등)는 그대로 유지됩니다.
+        return userAttractionsPage.map(userAttraction ->
+                // 찜 목록 페이지이므로 isLiked는 항상 true입니다.
+                new AttractionSearchResponseDto(userAttraction.getAttraction(), true)
+        );
+    }
+    public void removeLike(Long memberPk, Long attractionId) {
+        // 1. 회원과 관광지 엔티티를 조회합니다.
+        Member member = memberRepository.findById(memberPk)
+                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다. ID: " + memberPk));
+        Attraction attraction = attractionRepository.findById(attractionId)
+                .orElseThrow(() -> new IllegalArgumentException("관광지를 찾을 수 없습니다. ID: " + attractionId));
+
+        // 2. Repository를 통해 조건에 맞는 찜 기록을 삭제합니다.
+        userAttractionRepository.deleteByMemberAndAttraction(member, attraction);
+    }
+
+}

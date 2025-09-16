@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>관광지 감정 매핑 관리</title>
+    <link rel="stylesheet" th:href="@{/css/admin/adminMapping.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/admin.css}">
+    <script th:src = "@{/js/admin/admin.js}"></script>
+    <script th:src = "@{/js/admin/adminMapping.js}"></script>
+
+
+</head>
+<body>
+<div th:fragment="content">
+
+
+<h2>관광지별 소분류 감정 태그 매핑</h2>
+
+<div class="search-container">
+    <form th:action="@{/admin/attraction-emotions/search}" method="get">
+        <input type="text" name="keyword" th:value="${keyword}" placeholder="관광지명 검색">
+        <input type="hidden" name="size" th:value="${size}">
+        <button type="submit">검색</button>
+    </form>
+</div>
+
+
+<table class="attraction-table">
+    <thead>
+    <tr>
+        <th>관광지명</th>
+        <th>감정 태그 및 가중치</th>
+
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="attraction : ${attractions}">
+        <td>
+            <span class="attraction-title" th:text="${attraction.title}">관광지명</span>
+        </td>
+
+        <td>
+            <form class="attraction-emotion-form"
+                  th:data-attraction-id="${attraction.attractionId}"
+                  onsubmit="submitForm(event, this)">
+            <div class="emotion-grid">
+                    <div th:each="emotion : ${emotions}" class="emotion-item">
+                        <label>
+                            <input type="checkbox" name="emotionId" th:value="${emotion.tagId}" .../>
+                            <span th:text="${emotion.tagName}">감정태그</span>
+                        </label>
+                        <input type="text" name="weight" size="3" .../>
+                    </div>
+                </div>
+                <button type="submit">저장</button>
+            </form>
+        </td>
+
+
+        <td><!-- 필요 시 수정 버튼 자리 --></td>
+    </tr>
+    </tbody>
+</table>
+
+<!-- 페이지네이션 -->
+<div class="pagination" th:with="baseUrl=${#strings.isEmpty(keyword) ? '/admin/attraction-emotions' : '/admin/attraction-emotions/search'}">
+    <ul>
+        <li th:if="${currentPage > 0}">
+            <a th:href="@{${baseUrl}(page=${0}, size=${size}, keyword=${keyword})}">&laquo;</a>
+        </li>
+        <li th:if="${startPage > 0}">
+            <a th:href="@{${baseUrl}(page=${startPage - 1}, size=${size}, keyword=${keyword})}">&lsaquo;</a>
+        </li>
+
+        <li th:each="i : ${#numbers.sequence(startPage, endPage)}">
+            <a th:href="@{${baseUrl}(page=${i}, size=${size}, keyword=${keyword})}"
+               th:text="${i + 1}"
+               th:classappend="${i == currentPage} ? 'active'"></a>
+        </li>
+
+        <li th:if="${endPage + 1 < totalPages}">
+            <a th:href="@{${baseUrl}(page=${endPage + 1}, size=${size}, keyword=${keyword})}">&rsaquo;</a>
+        </li>
+        <li th:if="${currentPage + 1 < totalPages}">
+            <a th:href="@{${baseUrl}(page=${totalPages - 1}, size=${size}, keyword=${keyword})}">&raquo;</a>
+        </li>
+    </ul>
+</div>
+
+
+
+
+</div>
+</body>
+</html>

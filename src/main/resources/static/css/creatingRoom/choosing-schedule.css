@@ -331,6 +331,12 @@ body.room-create .room-create-form-section .form-input-section {
     padding: 3px 0;
 }
 
+.added-single-day {
+    background: #1e88e5 !important;
+    color: #fff !important;
+    border-radius: 6px;
+}
+
 .calendar-days {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -948,29 +954,29 @@ body.room-create .room-create-formview .container::after {
         min-width: auto;
         padding: 20px;
     }
-    
+
     body.room-create .room-create-formview .container {
         width: 100%;
         max-width: 1080px;
     }
-    
+
     body.room-create .submit-progress {
         float: none;
         width: 100%;
         margin-right: 0;
         margin-bottom: 24px;
     }
-    
+
     body.room-create .room-create-form-section {
         float: none;
         width: 100%;
     }
-    
+
     .calendar-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 16px;
     }
-    
+
     .single-calendar-container .calendar-month {
         max-width: 350px;
         padding: 20px;
@@ -982,68 +988,163 @@ body.room-create .room-create-formview .container::after {
         grid-template-columns: 1fr;
         gap: 12px;
     }
-    
+
     .calendar-month {
         padding: 12px;
     }
-    
+
     .day {
         min-height: 28px;
         font-size: 12px;
     }
-    
+
     .single-calendar-container .calendar-month {
         max-width: 100%;
         padding: 16px;
     }
-    
+
     .date-range-item {
         flex-direction: column;
         gap: 8px;
         text-align: center;
     }
-    
+
     .range-text {
         margin-bottom: 8px;
     }
-    
+
     .add-date-container {
         margin: 16px 0;
         padding: 16px;
     }
-    
+
     .btn-add-date {
         padding: 10px 20px;
         font-size: 13px;
     }
-    
+
     .help-modal-content {
         width: 95%;
         margin: 20px;
     }
-    
+
     .help-modal-header {
         padding: 16px 20px 12px;
     }
-    
+
     .help-modal-header h3 {
         font-size: 16px;
     }
-    
+
     .help-modal-body {
         padding: 16px 20px;
     }
-    
+
     .help-modal-footer {
         padding: 12px 20px 20px;
     }
-    
+
     .help-input-section {
         flex-direction: column;
         gap: 8px;
     }
-    
+
     .help-input {
         width: 100%;
     }
 }
+
+/* =========================
+   choosing-schedule: responsive overrides
+   ========================= */
+
+/* 0) 고정폭 제거 + 컨테이너 공통 크기 */
+.big-frame { min-width: 0; }
+
+body.room-create.phase-4 .room-create-formview .container{
+    width: 100%;
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
+/* 1) 데스크톱(>=1025px): 좌측 사이드바 + 우측 폼을 가로로 */
+@media (min-width: 1025px){
+    body.room-create.phase-4 .room-create-formview .container{
+        display: flex;
+        align-items: flex-start;
+        gap: 24px;
+    }
+    body.room-create.phase-4 .submit-progress{
+        float: none;
+        margin: 0;
+        flex: 0 0 264px; /* 사이드바 고정폭 */
+    }
+    body.room-create.phase-4 .room-create-form-section{
+        float: none;
+        flex: 1 1 0;
+        min-width: 0;
+    }
+}
+
+/* 2) 태블릿(가로폭만 줄어든 데스크톱 포함)의 기본 여백 보정
+      (여기서는 레이아웃을 바꾸지 않음 = 창을 줄여도 데스크톱 형태 유지) */
+@media (max-width: 1024px){
+    body.room-create.phase-4 .room-create-form-section .form-section-header{ padding: 22px 20px; }
+    body.room-create.phase-4 .room-create-form-section .form-input-section{  padding: 24px; }
+}
+
+/* 3) 진짜 모바일에서만(터치 디바이스) 1단 레이아웃로 전환 */
+@media (hover: none) and (pointer: coarse){
+    body.room-create.phase-4 .room-create-formview .container{
+        display: block;
+        padding: 0 12px;
+    }
+    body.room-create.phase-4 .submit-progress{
+        width: 100%;
+        margin: 0 0 16px 0;
+    }
+    body.room-create.phase-4 .room-create-form-section{
+        width: 100%;
+    }
+
+    /* 달력/컨트롤 가독성 & 터치 타깃 확장 */
+    .calendar-header{
+        position: sticky;
+        top: 0;
+        background: #fff;
+        z-index: 5;
+        padding: 12px 8px;
+    }
+    .calendar-weekdays{
+        grid-template-columns: repeat(7, 1fr);
+        font-size: 12px;
+    }
+    .calendar-days{
+        grid-template-columns: repeat(7, 1fr);
+        grid-template-rows: repeat(6, 1fr);
+        gap: 1px;
+    }
+    .day{
+        min-height: 44px;         /* 터치 타깃 크게 */
+        padding: 8px 4px;
+        font-size: 13px;
+    }
+    .day .day-number{ font-size: 13px; }
+
+    /* 하단 버튼바가 겹치지 않도록 */
+    body.room-create.phase-4 .room-create-form-section .form-input-section{
+        padding-bottom: 96px;
+    }
+    body.room-create.phase-4 .room-create-form-section .form-section-footer{
+        position: static;         /* sticky 쓰고 있으면 필요에 따라 static 유지 */
+    }
+}
+
+/* 4) 초소형 폰(≤480px): 글자/여백 조금 더 줄이기 */
+@media (hover: none) and (pointer: coarse) and (max-width: 480px){
+    .calendar-header{ padding: 10px 6px; }
+    .day{ min-height: 40px; font-size: 12px; }
+    .day .day-number{ font-size: 12px; }
+}
+

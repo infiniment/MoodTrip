@@ -2,10 +2,23 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>무드트립 : 동행자 매칭 방 만들기 일정 선택</title>
-    <link rel="stylesheet" href="/css/creatingRoom/choosing-schedule.css">
-    <script src="/js/creatingRoom/choosing-schedule.js"></script>
+    <link rel="stylesheet" th:href="@{/css/creatingRoom/choosing-schedule.css}">
+    <script th:src="@{/js/creatingRoom/choosing-schedule.js}"></script>
+    <link rel=" stylesheet" th:href="@{/css/fix/header.css}">
+    <link rel="stylesheet" th:href="@{/css/fix/footer.css}">
+    <link rel="stylesheet" th:href="@{/css/fix/header-after.css}">
 </head>
+<!-- 로그인 상태에 따른 조건부 헤더 렌더링 -->
+<div th:if="${isLoggedIn}">
+    <!-- 로그인된 사용자용 헤더 -->
+    <th:block th:replace="~{fix/header-after-login :: header}"></th:block>
+</div>
+<div th:unless="${isLoggedIn}">
+    <!-- 로그인 안된 사용자용 헤더 -->
+    <th:block th:replace="~{fix/header :: header}"></th:block>
+</div>
 <body class="room-create phase-4">
     <div class="big-frame">
         <div class="room-create-formview">
@@ -13,7 +26,7 @@
                 <div class="submit-progress">
                     <div class="room-status-box">
                         <a class="back-to-before link-text" onclick="goToPreviousPage()" style="cursor: pointer;">
-                            <img class="back-to-before-img" src="/static/image/creatingRoom/back-to-before.svg">
+                            <img class="back-to-before-img" th:src="@{/image/creatingRoom/back-to-before.svg}">
                             <p class="back-to-before-title body-1-medium">이전 화면</p>
                         </a>
                         <p class="menu-title subtitle-1-medium mb4">여행 일정 선택하기</p>
@@ -24,27 +37,27 @@
                             <p class="status-sub-menu-title completed">
                                 <span class="bottom-border"></span>
                                 <span class="sub-menu-marker">1</span>
-                                <img class="phase-complete-icon" src="/static/image/creatingRoom/checkbox-checked.svg">
+                                <img class="phase-complete-icon" th:src="@{/image/creatingRoom/checkbox-checked.svg}">
                                 기본 정보
                             </p>
                             <p class="status-sub-menu-title completed">
                                 <span class="top-border"></span>
                                 <span class="bottom-border"></span>
                                 <span class="sub-menu-marker">2</span>
-                                <img class="phase-complete-icon" src="/static/image/creatingRoom/checkbox-checked.svg">
+                                <img class="phase-complete-icon" th:src="@{/image/creatingRoom/checkbox-checked.svg}">
                                 감정 선택
                             </p>
                             <p class="status-sub-menu-title completed">
                                 <span class="top-border"></span>
                                 <span class="bottom-border"></span>
                                 <span class="sub-menu-marker">3</span>
-                                <img class="phase-complete-icon" src="/static/image/creatingRoom/checkbox-checked.svg">
+                                <img class="phase-complete-icon" th:src="@{/image/creatingRoom/checkbox-checked.svg}">
                                 여행지 선택
                             </p>
                             <p class="status-sub-menu-title active">
                                 <span class="top-border"></span>
                                 <span class="sub-menu-marker">4</span>
-                                <img class="phase-complete-icon" src="/static/image/creatingRoom/checkbox-checked.svg">
+                                <img class="phase-complete-icon" th:src="@{/image/creatingRoom/checkbox-checked.svg}">
                                 일정 선택
                             </p>
                         </div>
@@ -58,7 +71,7 @@
                         <div class="form-section-header">
                             <p class="form-section-title subtitle-1">일정 선택</p>
                             <button class="room-form-guide-button header-button btn btn-8-16" type="button" onclick="openHelpModal()">
-                                <img class="room-form-guide-button-img" src="/static/image/creatingRoom/question.svg">
+                                <img class="room-form-guide-button-img" th:src="@{/image/creatingRoom/question.svg}">
                                 도움말
                             </button>
                         </div>
@@ -223,5 +236,8 @@
             </div>
         </div>
     </div>
+    <th:block th:replace="~{fix/footer :: footer}"></th:block>
+    <script th:src="@{/js/fix/header.js}"></script>
+    <script th:src="@{/js/fix/header-after.js}"></script>
 </body>
 </html>

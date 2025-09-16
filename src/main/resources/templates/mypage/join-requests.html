@@ -1,232 +1,229 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>무드 트립 - 방 입장 요청 관리</title>
-    <link rel="stylesheet" href="/css/mypage/join-requests.css">
+    <link rel="stylesheet" th:href="@{/css/mypage/join-requests.css}">
+    <link rel="stylesheet" th:href="@{/css/fix/header.css}">
+    <link rel="stylesheet" th:href="@{/css/fix/footer.css}">
+    <link rel="stylesheet" th:href="@{/css/fix/header-after.css}">
 </head>
 <body>
-    <div>
-        <div class="wrap">
-            <div class="page">
-                <div class="page-inner">
-                    <aside class="user-settings-nav">
-                        <div class="account-settings">계정 설정</div>
-                        <hr orientation="horizontal" class="horizontal-line">
-                        <a class="my_profile active" href="/templates/mypage/my-profile.html">내 정보</a>
-                        <a class="my_matching active" href="/templates/mypage/my-matching.html">매칭 정보</a>
-                        <a class="join_requests active" href="/templates/mypage/join-requests.html">
-                            방 입장 요청 관리
-                            <span class="notification-badge" id="join-requests-badge">3</span>
-                        </a>
-                        <a class="my_reviews active" href="/templates/mypage/my-reviews.html">내가 쓴 후기</a>
-                        <a class="my_tourist_attraction_wishlist active" href="/templates/mypage/my-tourist-attraction-wishlist.html">관광지 찜 목록</a>
-                        <a class="change_password active" href="/templates/mypage/change-password.html">비밀번호 변경 정보</a>
-                        <a class="alarm active" href="/templates/mypage/alarm.html">알림 설정</a>     
-                    </aside>
-                    <main class="mypage_info">
-                        <div class="total-wrapper">
-                            <div class="requests-header">
-                                <h1 class="info-title">방 입장 요청 관리</h1>
-                                <div class="bulk-actions">
-                                    <button class="btn-bulk btn-approve-all" id="approve-all-btn">모두 승인</button>
-                                    <button class="btn-bulk btn-reject-all" id="reject-all-btn">모두 거절</button>
-                                </div>
+<!-- 로그인 상태에 따른 조건부 헤더 렌더링 -->
+<div th:if="${isLoggedIn}">
+    <th:block th:replace="~{fix/header-after-login :: header}"></th:block>
+</div>
+<div th:unless="${isLoggedIn}">
+    <th:block th:replace="~{fix/header :: header}"></th:block>
+</div>
+
+<div>
+    <div class="wrap">
+        <div class="page">
+            <div class="page-inner">
+                <aside class="user-settings-nav">
+                    <div class="account-settings">계정 설정</div>
+                    <hr orientation="horizontal" class="horizontal-line">
+                    <a class="my_profile" th:href="@{/mypage/my-profile}">내 정보</a>
+                    <a class="my_matching" th:href="@{/mypage/my-matching}">매칭 정보</a>
+                    <a class="join_requests active" th:href="@{/mypage/join-requests}">
+                        방 입장 요청 관리
+                        <!-- 🔥 서버에서 받은 총 대기 요청 수로 배지 표시 -->
+                        <span class="notification-badge" id="join-requests-badge"
+                              th:if="${totalPendingRequests > 0}"
+                              th:text="${totalPendingRequests}">3</span>
+                    </a>
+                    <a class="my_tourist_attraction_wishlist" th:href="@{/mypage/my-tourist-attraction-wishlist}">관광지 찜 목록</a>
+                    <a class="change_password"
+                       th:if="${currentMember != null and #strings.isEmpty(currentMember.providerId)}"
+                       th:href="@{/mypage/change-password}">비밀번호 변경 정보</a>
+                </aside>
+
+                <main class="mypage_info">
+                    <div class="total-wrapper">
+                        <div class="requests-header">
+                            <h1 class="info-title">방 입장 요청 관리</h1>
+                        </div>
+
+                        <!-- 🔥 통계 카드 - 서버 데이터 연동 -->
+                        <div class="requests-stats">
+                            <div class="stat-card">
+                                <div class="stat-number" id="total-requests"
+                                     th:text="${stats.totalRequests ?: 0}">0</div>
+                                <div class="stat-label">총 요청</div>
                             </div>
-                            
-                            <!-- 통계 카드 -->
-                            <div class="requests-stats">
-                                <div class="stat-card">
-                                    <div class="stat-number" id="total-requests">3</div>
-                                    <div class="stat-label">총 요청</div>
-                                </div>
-                                <div class="stat-card">
-                                    <div class="stat-number" id="today-requests">1</div>
-                                    <div class="stat-label">오늘 요청</div>
-                                </div>
-                                <div class="stat-card">
-                                    <div class="stat-number" id="urgent-requests">1</div>
-                                    <div class="stat-label">긴급 요청</div>
-                                </div>
+                            <div class="stat-card">
+                                <div class="stat-number" id="today-requests"
+                                     th:text="${stats.todayRequests ?: 0}">0</div>
+                                <div class="stat-label">오늘 요청</div>
                             </div>
-                            
-                            <!-- 필터 바 -->
-                            <div class="filter-bar">
-                                <select class="filter-select" id="room-filter">
-                                    <option value="all">모든 방</option>
-                                    <option value="경복궁 야간 개장">경복궁 야간 개장</option>
-                                    <option value="대전 대동 하늘공원">대전 대동 하늘공원</option>
-                                </select>
-                                <select class="filter-select" id="priority-filter">
-                                    <option value="all">모든 우선순위</option>
-                                    <option value="high">높음</option>
-                                    <option value="normal">보통</option>
-                                </select>
-                                <input type="text" class="search-input" placeholder="이름 또는 메시지로 검색..." id="search-requests">
-                            </div>
-                            
-                            <div class="main-wrapper">
-                                <!-- 방별 요청 섹션 1 -->
-                                <div class="room-section" data-room-id="room-1">
-                                    <div class="room-header">
-                                        <div>
-                                            <h3 class="room-title">경복궁 야간 개장 같이 보러 가요~!</h3>
-                                            <div class="room-meta">여행 날짜: 25/05/13 | 현재 인원: 3/5명</div>
-                                        </div>
-                                        <div class="waiting-count">2건 대기</div>
-                                    </div>
-                                    
-                                    <div class="requests-container">
-                                        <!-- 요청 1 -->
-                                        <div class="request-item-detailed" data-request-id="1" data-room-id="room-1">
-                                            <div class="request-checkbox">
-                                                <input type="checkbox" class="request-select" data-request-id="1">
-                                            </div>
-                                            <div class="request-avatar-large">
-                                                <img src="/static/image/mypage/test-profile-img.jpg" alt="김여행">
-                                            </div>
-                                            <div class="request-details">
-                                                <div class="request-name-large">
-                                                    김여행
-                                                    <span class="priority-badge priority-high">높음</span>
-                                                </div>
-                                                <div class="request-message">안녕하세요! 경복궁 야간 개장을 정말 보고 싶었는데 혼자 가기는 아쉬워서 신청합니다. 사진 찍는 것을 좋아해서 좋은 스팟도 함께 찾아보면 좋을 것 같아요!</div>
-                                                <div class="request-meta-detailed">
-                                                    <span class="verification-badge verified">신원 인증</span>
-                                                    <span class="verification-badge unverified">연락처 등록</span>
-                                                    <span class="separator">|</span>
-                                                    <span>2025-07-01 14:31 신청</span>
-                                                    <span class="time-ago">2시간 전</span>
-                                                </div>
-                                            </div>
-                                            <div class="request-actions-detailed">
-                                                <button class="btn-approve" data-request-id="1" data-room-id="room-1">승인</button>
-                                                <button class="btn-reject" data-request-id="1" data-room-id="room-1">거절</button>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- 요청 2 -->
-                                        <div class="request-item-detailed" data-request-id="2" data-room-id="room-1">
-                                            <div class="request-checkbox">
-                                                <input type="checkbox" class="request-select" data-request-id="2">
-                                            </div>
-                                            <div class="request-avatar-large">
-                                                <img src="/static/image/mypage/test-profile-img.jpg" alt="박모험">
-                                            </div>
-                                            <div class="request-details">
-                                                <div class="request-name-large">
-                                                    박모험
-                                                    <span class="priority-badge priority-normal">보통</span>
-                                                </div>
-                                                <div class="request-message">여행 경험이 많아요. 경복궁은 여러 번 가봤지만 야간 개장은 처음이라 기대됩니다. 잘 부탁드립니다!</div>
-                                                <div class="request-meta-detailed">
-                                                    <span class="verification-badge unverified">신원 인증</span>
-                                                    <span class="verification-badge verified">연락처 등록</span>
-                                                    <span class="separator">|</span>
-                                                    <span>2025-07-01 16:20 신청</span>
-                                                    <span class="time-ago">30분 전</span>
-                                                </div>
-                                            </div>
-                                            <div class="request-actions-detailed">
-                                                <button class="btn-approve" data-request-id="2" data-room-id="room-1">승인</button>
-                                                <button class="btn-reject" data-request-id="2" data-room-id="room-1">거절</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- 방별 요청 섹션 2 -->
-                                <div class="room-section" data-room-id="room-2">
-                                    <div class="room-header">
-                                        <div>
-                                            <h3 class="room-title">대전 대동 하늘공원</h3>
-                                            <div class="room-meta">여행 날짜: 25/05/13 | 현재 인원: 3/5명</div>
-                                        </div>
-                                        <div class="waiting-count">1건 대기</div>
-                                    </div>
-                                    
-                                    <div class="requests-container">
-                                        <!-- 요청 3 -->
-                                        <div class="request-item-detailed" data-request-id="3" data-room-id="room-2">
-                                            <div class="request-checkbox">
-                                                <input type="checkbox" class="request-select" data-request-id="3">
-                                            </div>
-                                            <div class="request-avatar-large">
-                                                <img src="/static/image/mypage/test-profile-img.jpg" alt="이산행">
-                                            </div>
-                                            <div class="request-details">
-                                                <div class="request-name-large">
-                                                    이산행
-                                                    <span class="priority-badge priority-normal">보통</span>
-                                                </div>
-                                                <div class="request-message">등산을 정말 좋아합니다! 대전 지역은 잘 모르지만 새로운 곳을 탐험하는 것을 좋아해서 신청해봅니다.</div>
-                                                <div class="request-meta-detailed">
-                                                    <span class="verification-badge verified">신원 인증</span>
-                                                    <span class="verification-badge verified">연락처 등록</span>
-                                                    <span class="separator">|</span>
-                                                    <span>2025-07-02 09:15 신청</span>
-                                                    <span class="time-ago">방금 전</span>
-                                                </div>
-                                            </div>
-                                            <div class="request-actions-detailed">
-                                                <button class="btn-approve" data-request-id="3" data-room-id="room-2">승인</button>
-                                                <button class="btn-reject" data-request-id="3" data-room-id="room-2">거절</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- 요청이 없는 방 예시 -->
-                                <div class="room-section" data-room-id="room-3">
-                                    <div class="room-header">
-                                        <div>
-                                            <h3 class="room-title">제주도 올레길 트레킹</h3>
-                                            <div class="room-meta">여행 날짜: 25/06/15 | 현재 인원: 2/6명</div>
-                                        </div>
-                                        <div class="waiting-count no-requests">요청 없음</div>
-                                    </div>
-                                    
-                                    <div class="requests-container">
-                                        <div class="empty-section">
-                                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                                <circle cx="12" cy="12" r="10"></circle>
-                                                <path d="M12 6v6l4 2"></path>
-                                            </svg>
-                                            <h4>아직 입장 요청이 없습니다</h4>
-                                            <p>새로운 참가 요청이 오면 여기에 표시됩니다.</p>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div class="stat-card">
+                                <div class="stat-number" id="urgent-requests"
+                                     th:text="${stats.urgentRequests ?: 0}">0</div>
+                                <div class="stat-label">긴급 요청</div>
                             </div>
                         </div>
-                    </main>
-                </div>
+
+                        <!-- 🔥 필터 바 - 방 목록 동적 생성 -->
+                        <div class="filter-bar">
+                            <select class="filter-select" id="room-filter">
+                                <option value="all">모든 방</option>
+                                <!-- 서버에서 받은 방 목록으로 옵션 생성 -->
+                                <option th:each="room : ${rooms}"
+                                        th:value="${room.roomTitle}"
+                                        th:text="${room.roomTitle}">방 제목</option>
+                            </select>
+                            <select class="filter-select" id="priority-filter">
+                                <option value="all">모든 우선순위</option>
+                                <option value="high">높음</option>
+                                <option value="normal">보통</option>
+                            </select>
+                        </div>
+
+                        <!-- 🔥 에러 메시지 표시 -->
+                        <div th:if="${error}" class="error-message" style="background-color: #fee; color: #c33; padding: 1rem; margin: 1rem 0; border-radius: 4px;">
+                            <p th:text="${error}">오류가 발생했습니다.</p>
+                        </div>
+
+                        <!-- ✅ 부분 렌더링 대상 fragment 선언 -->
+                        <div id="main-wrapper" class="main-wrapper" th:fragment="main-wrapper">
+                            <!-- 🔥 방 목록이 없는 경우 -->
+                            <div th:if="${rooms == null or #lists.isEmpty(rooms)}" class="empty-section">
+                                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M12 6v6l4 2"></path>
+                                </svg>
+                                <h3>아직 만든 방이 없습니다</h3>
+                                <p>방을 만들면 입장 요청을 관리할 수 있습니다.</p>
+                            </div>
+
+                            <!-- 🔥 방별 요청 섹션 - 서버 데이터로 동적 생성 -->
+                            <div th:each="room : ${rooms}" class="room-section" th:data-room-id="${room.roomId}">
+                                <div class="room-header">
+                                    <div>
+                                        <h3 class="room-title" th:text="${room.roomTitle}">방 제목</h3>
+                                        <div class="room-meta"
+                                             th:text="${'여행 날짜: ' + room.travelDate + ' | 현재 인원: '
+              + room.currentParticipants + '/' + room.maxParticipants + '명'}">
+                                        </div>
+                                    </div>
+                                    <div class="waiting-count"
+                                         th:classappend="${room.pendingRequestsCount == 0} ? 'no-requests' : ''"
+                                         th:text="${room.pendingRequestsCount > 0} ? (${room.pendingRequestsCount} + '건 대기') : '요청 없음'">
+                                        요청 없음
+                                    </div>
+                                </div>
+
+                                <div class="requests-container">
+                                    <!-- 🔥 해당 방에 신청이 있는 경우 -->
+                                    <div th:if="${room.joinRequests != null and not #lists.isEmpty(room.joinRequests)}">
+                                        <!-- 각 신청별로 반복 -->
+                                        <div th:each="request : ${room.joinRequests}"
+                                             class="request-item-detailed"
+                                             th:data-request-id="${request.joinRequestId}">
+
+                                            <div class="request-checkbox">
+                                                <input type="checkbox" class="request-select"
+                                                       th:data-request-id="${request.joinRequestId}">
+                                            </div>
+
+                                            <div class="request-avatar-large">
+                                                <img th:src="${request.applicantProfileImage}"
+                                                     th:alt="${request.applicantNickname}"
+                                                     onerror="this.src='/image/creatingRoom/landscape-placeholder-svgrepo-com.svg'">
+                                            </div>
+
+                                            <div class="request-details">
+                                                <div class="request-name-large">
+                                                    <span th:text="${request.applicantNickname}">신청자명</span>
+                                                    <span class="priority-badge"
+                                                          th:classappend="${request.priority == 'HIGH'} ? 'priority-high' : 'priority-normal'"
+                                                          th:text="${request.priority == 'HIGH'} ? '높음' : '보통'">보통</span>
+                                                </div>
+
+                                                <div class="application-message" th:text="${request.message}"
+                                                     style="white-space: pre-line; line-height: 1.5; padding: 12px;
+                                                     background-color: #f8f9fa;">
+                                                    신청 메시지
+                                                </div>
+
+                                                <div class="request-meta-detailed">
+                                                    <span class="separator">|</span>
+                                                    <span th:text="${request.appliedAt} + ' 신청'">신청 시간</span>
+                                                    <span class="time-ago" th:text="${request.timeAgo}">시간 전</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="request-actions-detailed">
+                                                <button class="btn-approve"
+                                                        th:data-request-id="${request.joinRequestId}"
+                                                        th:data-room-id="${room.roomId}">승인</button>
+                                                <button class="btn-reject"
+                                                        th:data-request-id="${request.joinRequestId}"
+                                                        th:data-room-id="${room.roomId}">거절</button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 🔥 해당 방에 신청이 없는 경우 -->
+                                    <div th:if="${room.joinRequests == null or #lists.isEmpty(room.joinRequests)}"
+                                         class="empty-section">
+                                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <circle cx="12" cy="12" r="10"></circle>
+                                            <path d="M12 6v6l4 2"></path>
+                                        </svg>
+                                        <h4>아직 입장 요청이 없습니다</h4>
+                                        <p>새로운 참가 요청이 오면 여기에 표시됩니다.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div> <!-- /main-wrapper -->
+                    </div>
+                </main>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- 확인 모달 -->
-    <div id="confirmModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="confirmTitle">확인</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p id="confirmMessage">작업을 진행하시겠습니까?</p>
-                <div id="confirmDetails" class="confirm-details"></div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-cancel">취소</button>
-                <button class="btn-confirm" id="confirmAction">확인</button>
-            </div>
+<!-- 확인 모달 -->
+<div id="confirmModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="confirmTitle">확인</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p id="confirmMessage">작업을 진행하시겠습니까?</p>
+            <div id="confirmDetails" class="confirm-details"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel">취소</button>
+            <button class="btn-confirm" id="confirmAction">확인</button>
         </div>
     </div>
+</div>
 
-    <!-- 알림 토스트 (동적 생성) -->
-    <div id="toast-container"></div>
+<!-- 알림 토스트 (동적 생성) -->
+<div id="toast-container"></div>
 
-    <script src="/js/mypage/join-requests.js"></script>
+<!-- 🔥 JavaScript에서 사용할 데이터를 JSON으로 전달 -->
+<script th:inline="javascript">
+    // 서버 데이터를 JavaScript로 전달
+    window.serverData = {
+        rooms: /*[[${rooms}]]*/ [],
+        stats: /*[[${stats}]]*/ {},
+        totalPendingRequests: /*[[${totalPendingRequests}]]*/ 0,
+        hasRequests: /*[[${hasRequests}]]*/ false
+    };
+
+    console.log('🔥 서버에서 받은 데이터:', window.serverData);
+</script>
+
+<script th:src="@{/js/mypage/join-requests.js}"></script>
+<th:block th:replace="~{fix/footer :: footer}"></th:block>
+
+<script th:src="@{/js/fix/header.js}"></script>
+<script th:src="@{/js/fix/header-after.js}"></script>
 </body>
 </html>

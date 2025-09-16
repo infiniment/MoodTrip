@@ -1,136 +1,314 @@
 <!DOCTYPE html>
-<html lang="ko" class="no-js modern">
-
+<html lang="ko" class="no-js modern" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <title>사려니숲길 - 제주 힐링 명소</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="/css/recommand-tourist-attractions-detail/detail-page.css">
-  <script src="/js/recommand-tourist-attractions-detail/detail-page.js"></script>
+  <title th:text="${detail != null and detail.title != null ? detail.title + ' - 상세정보' : '상세정보'}">상세정보</title>
+  <script>document.documentElement.classList.remove('no-js');</script>
+  <link rel="stylesheet" href="/static/css/recommand-tourist-attractions-detail/detail-page.css">
+  <script src="/static/js/recommand-tourist-attractions-detail/detail-page.js" defer></script>
   <script src="https://unpkg.com/feather-icons"></script>
+
+  <!-- SSR 데이터를 JS가 감지해서 fetch 생략할 수 있도록 주입 -->
+  <!-- 파서 안전을 위해 detail을 문자열 JSON으로 덤프 -->
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    window.__SSR_DETAIL__ = null;
+    window.__SSR_TAGS__ = [];
+    /*]]>*/
+  </script>
+  <link rel=" stylesheet" th:href="@{/css/fix/header.css}">
+  <link rel="stylesheet" th:href="@{/css/fix/footer.css}">
+  <link rel="stylesheet" th:href="@{/css/fix/header-after.css}">
+
 </head>
+<!-- 로그인 상태에 따른 조건부 헤더 렌더링 -->
+<div th:if="${isLoggedIn}">
+  <!-- 로그인된 사용자용 헤더 -->
+  <th:block th:replace="~{fix/header-after-login :: header}"></th:block>
+</div>
+<div th:unless="${isLoggedIn}">
+  <!-- 로그인 안된 사용자용 헤더 -->
+  <th:block th:replace="~{fix/header :: header}"></th:block>
+</div>
 
 <body>
-  <div class="main">
-    <div class="container-place">
-      <!-- 헤더 섹션 -->
-      <div class="place-header">
-        <div class="page-title">
-          <span class="title-icon">📍</span>
-          <span class="title-text">이 장소, 어때요?</span>
-        </div>
-        <div class="header-gradient"></div>
+<div class="main">
+  <div class="container-place">
+    <!-- 헤더 섹션 -->
+    <div class="place-header">
+      <div class="page-title">
+        <span class="title-icon">📍</span>
+        <span class="title-text">이 장소, 어떤가요?</span>
+      </div>
+      <div class="header-gradient"></div>
+    </div>
+
+    <!-- 오늘의 날씨 -->
+    <div class="today-weather" th:if="${weather != null}">
+      <p class="time" th:text="${weather.formattedDateTime}">2025-09-09 14:00:00</p>
+
+      <div class="weather">
+        <p class="current-degree">
+          <img th:if="${weather.icon == '01n'}"
+               class="wx-icon-filter"
+               th:src="@{https://openweathermap.org/img/wn/{icon}@2x.png(icon=${weather.icon})}"
+               width="80" alt="날씨 아이콘">
+
+          <!-- 그 외 아이콘은 기본 표시 -->
+          <img th:if="${weather.icon != '01n'}"
+               th:src="@{https://openweathermap.org/img/wn/{icon}@2x.png(icon=${weather.icon})}"
+               width="80" alt="날씨 아이콘">
+          <!-- 기온 반올림 표시 -->
+          <span th:text="${T(java.lang.Math).round(weather.temperature)} + '°'">27°</span>
+        </p>
+
+        <!-- 오타: weater-state → weather-state -->
+        <p class="weather-state" th:text="${weather.description}">맑음</p>
+
+        <!-- max/min 있으면 그걸 쓰고, 없으면 임시 (±1) -->
+        <p class="highest-lowest-degree"
+           th:text="${weather.maxTemp != null and weather.minTemp != null} ?
+                 '최고: ' + ${T(java.lang.Math).round(weather.maxTemp)} + '° 최저: ' + ${T(java.lang.Math).round(weather.minTemp)} + '°' :
+                 '최고: ' + ${T(java.lang.Math).round(weather.temperature + 1)} + '° 최저: ' + ${T(java.lang.Math).round(weather.temperature - 1)} + '°'">
+          최고: 28° 최저: 17°
+        </p>
+      </div>
+    </div>
+
+    <div class="today-weather" th:if="${weather == null}">
+      <p>현재 날씨 정보가 없습니다.</p>
+    </div>
+
+    <!-- 장소 정보 섹션 -->
+    <div class="result-section" id="placeView">
+      <div class="place-image-info">
+        <img src="/static/image/recommand-tourist-attractions-detail/location.png" alt="위치" class="location-icon">
+        <span class="place-name" th:text="${detail != null ? detail.title : ''}"> </span>
       </div>
 
-      <!-- 장소 정보 섹션 -->
-      <div class="result-section" id="placeView">
-        <div class="place-image-info">
-          <img src="/static/image/recommand-tourist-attractions-detail/location.png" alt="위치" class="location-icon">
-          <span class="place-name">사려니숲길</span>
+      <div class="result-place">
+        <div class="placeInfo">
+          <section class="place-image">
+            <img class="place"
+                 th:src="${detail != null and detail.image != null ? detail.image : '/static/.../SaryeoniForestTrail.png'}"
+                 th:alt="${detail != null ? detail.title : '이미지'}"
+                 src="/static/image/recommand-tourist-attractions-detail/SaryeoniForestTrail.png"
+                 alt="">
+
+            <div class="like-btn" th:attr="data-attraction-id=${attractionId}">
+              <span>♡</span>
+            </div>
+          </section>
         </div>
+      </div>
+    </div>
 
-        <div class="result-place">
-          <div class="placeInfo">
-            <section class="place-image">
-              <img src="/static/image/recommand-tourist-attractions-detail/SaryeoniForestTrail.png" alt="사려니숲길"
-                class="place">
-              <div class="image-overlay">
-                <div class="overlay-content">
-                  <h3>신성한 숲의 향기</h3>
-                  <p>제주의 숨은 비경을 걸어보세요</p>
-                </div>
-              </div>
-            </section>
+    <div class="place-tag">
+      <span class="tag-icon">ℹ️</span> 감정 태그
+    </div>
+    <div class="tag-info">
+      <div class="place-tag" th:if="${tags != null and !#lists.isEmpty(tags)}">
+        <span class="tag-item" th:each="t : ${tags}" th:text="'#' + ${t}">#태그</span>
+      </div>
+      <div th:if="${tags == null or #lists.isEmpty(tags)}">
+        <p>태그가 없습니다.</p>
+      </div>
+    </div>
 
-            <section class="place-tag-info">
-              <div class="place-tag">
-                <span class="tag-item">#힐링</span>
-                <span class="tag-item">#조용한</span>
-                <span class="tag-item">#피곤한</span>
-                <span class="tag-item">#우울한</span>
-                <span class="tag-item">#지친</span>
-              </div>
-            </section>
+    <!-- 상세정보 섹션 -->
+    <div class="place-middle">
+      <div class="place-detail">
+        <span class="detail-icon">ℹ️</span>
+        상세정보
+      </div>
+
+      <div class="place-detail-info">
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">📞 문의 및 안내</span>
+            <span class="info-value" id="infoTel"
+                  th:text="${detail != null ? detail.tel : ''}"> </span>
+          </div>
+
+          <div class="info-item">
+            <span class="info-label">🎟️ 매표소</span>
+            <span class="info-value" id="infoTi"
+                  th:text="${detail != null ? detail.ticketoffice : ''}"> </span>
+          </div>
+
+          <div class="info-item">
+            <span class="info-label">📍 위치</span>
+            <span class="info-value" id="infoAddr"
+                  th:text="${detail != null ? detail.addr : ''}"> </span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">🕐 이용시간</span>
+            <!-- TourAPI가 <br> 포함할 수 있어 utext -->
+            <span class="info-value" id="infoUseTime"
+                  th:utext="${detail != null ? detail.useTime : ''}"> </span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">🗓️ 휴일</span>
+            <span class="info-value" id="infoRest"
+                  th:utext="${detail != null ? detail.restDate : ''}"> </span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">🚗 주차</span>
+            <span class="info-value" id="infoParking"
+                  th:utext="${detail != null ? detail.parking : ''}"> </span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">👥 체험가능 연령</span>
+            <span class="info-value" id="infoAge"
+                  th:text="${detail != null ? detail.age : ''}"> </span>
           </div>
         </div>
       </div>
 
-      <!-- 상세정보 섹션 -->
-      <div class="place-middle">
-        <div class="place-detail">
-          <span class="detail-icon">ℹ️</span>
-          상세정보
-        </div>
-
-        <div class="place-detail-info">
-          <div class="info-grid">
-            <div class="info-item">
-              <span class="info-label">📞 문의 및 안내</span>
-              <span class="info-value">사려니숲길 064-900-8800</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">📍 위치</span>
-              <span class="info-value">제주특별자치도 서귀포시 표선면 가시리 붉은오름 입구</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">🕐 이용시간</span>
-              <span class="info-value">09:00~17:00 (17:00 까지 퇴장)<br>
-                <small>우천 및 폭설 시 통행 제한 있을 수 있으므로 방문 전 유선 확인 필요</small>
-              </span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">🗓️ 휴일</span>
-              <span class="info-value">연중무휴</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">🚗 주차</span>
-              <span class="info-value">주차가능</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">👥 체험가능 연령</span>
-              <span class="info-value">전연령</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="place-detail-wrapper">
-          <div class="place-detail-content">
-            <div class="content-section">
-              <h4>🎬 한류의 매력을 만나는 여행 정보</h4>
-              <p>
-                영화 &lt;마녀2&gt;에서 비밀연구소 아크에서 빠져나온 소녀가 걷던 숲길로 괴력을 발휘해 용두 일당을 물리친 도로는 '신성한 숲'이라는 의미를 지닌 사려니숲과 삼나무숲길이다.
-                사려니숲길은 독특한 제주의 자연이 잘 보존되어 있고 다양한 수종과 동식물이 서식하는 신비로운 숲으로 도로와 가깝고 입장료가 없어 인기가 많다.
-              </p>
-            </div>
-
-            <div class="content-section extra-info hidden">
-              <h4>🌲 사려니숲길 상세 이야기</h4>
-              <p>
-                사려니숲길은 제주의 숨은 비경 31곳 중 하나로, 비자림로를 시작으로 물찻오름과 사려니 오름을 거쳐가는 삼나무가 우거진 숲길이다. 사려니오름까지 이어지는 숲길이기 때문에 사려니숲길이라고
-                불린다.
-              </p>
-              <p>
-                '사려니'는 '신성한 숲' 혹은 '실 따위를 흩어지지 않게 동그랗게 포개어 감다'라는 뜻으로 숲길을 거닐면 상쾌한 삼나무 향에 포개진 듯한 느낌을 받을 수 있다. 빽빽한 삼나무뿐만 아니라
-                졸참나무, 서어나무, 때죽나무, 편백나무 등 다양한 수종이 서식하고 있다.
-              </p>
-              <p>
-                다양한 수종이 서식하기 때문에 오소리와 제주족제비를 비롯한 포유류, 팔색조와 참매를 비롯한 조류, 쇠살모사를 비롯한 파충류 등의 보금자리가 되기도 한다. 사려니숲길은 본래 숲의 모습이
-                많이 훼손되지 않아 트래킹을 좋아하는 여행자들이 즐겨 찾는다.
-              </p>
-              <p>
-                지난 2002년 유네스코가 지정한 제주 생물권 보전지역(Biosphere Reserve)이기도 하다. 숲보호를 위해 자연휴식년제로 '물찻오름'은 탐방을 제한했었으나, 한시적으로 이곳을
-                개방하는 &lt;사려니숲 에코힐링(Eco-Healing)&gt; 행사가 열리기도 했다.
-              </p>
-            </div>
-
-            <button class="toggle-btn">
-              <span class="toggle-text">더 자세히 보기</span>
-              <span class="toggle-icon">▼</span>
-            </button>
+      <!-- 개요(상세설명) : 값 없으면 섹션 감춤 -->
+      <div class="place-detail-wrapper"
+           th:if="${detail != null and !#strings.isEmpty(detail.overview)}">
+        <div class="place-detail-content">
+          <div class="content-section" id="overviewSection">
+            <h4>🌲 상세 이야기</h4>
+            <p id="overviewPreview"></p>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- 장애인 편의 정보 -->
+    <!-- 장애인 편의 정보 -->
+    <!-- 장애인 편의 정보 -->
+    <!-- 장애인 편의 정보 -->
+    <div class="place-middle" th:if="${detail != null}">
+      <div class="place-detail">
+        <span class="detail-icon">♿</span>
+        장애인 편의 정보
+      </div>
+
+      <div class="accessibility-info">
+        <div class="accessibility-grid">
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.wheelchair)}">
+            <div>
+              <div class="label"> ♿ 휠체어</div>
+              <div class="value" th:text="${detail.wheelchair}"></div>
+            </div>
+          </div>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.elevator)}">
+            <div>
+              <div class="label">🛗 엘리베이터</div>
+              <div class="value" th:text="${detail.elevator}"></div>
+            </div>
+          </div>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.braileblock)}">
+            <div>
+              <div class="label">⬜ 점자 블록</div>
+              <div class="value" th:text="${detail.braileblock}"></div>
+            </div>
+          </div>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.exit)}">
+            <div>
+              <div class="label">🚪 출입구</div>
+              <div class="value" th:text="${detail.exit}"></div>
+            </div>
+          </div>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.signguide)}">
+            <div>
+              <div class="label">ℹ️ 안내 시스템</div>
+              <div class="value" th:text="${detail.signguide}"></div>
+            </div>
+          </div>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.guidesystem)}">
+            <div>
+              <div class="label">🤟 수화 안내</div>
+              <div class="value" th:text="${detail.guidesystem}"></div>
+            </div>
+          </div>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.videoguide)}">
+            <div>
+              <div class="label">🎥 영상 안내</div>
+              <div class="value" th:text="${detail.videoguide}"></div>
+            </div>
+          </div>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.audioguide)}">
+            <div>
+              <div class="label">🎧 오디오 가이드</div>
+              <div class="value" th:text="${detail.audioguide}"></div>
+            </div>
+          </div>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.bigprint)}">
+            <div>
+              <div class="label">🔠 큰 글자 안내</div>
+              <div class="value" th:text="${detail.bigprint}"></div>
+            </div>
+          </div>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.brailepromotion)}">
+            <div>
+              <div class="label">📖 점자 안내자료</div>
+              <div class="value" th:text="${detail.brailepromotion}"></div>
+            </div>
+          </div>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.helpdog)}">
+            <div>
+              <div class="label">🦮 도우미견 출입</div>
+              <div class="value" th:text="${detail.helpdog}"></div>
+            </div>
+          </div>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.hearingroom) or !#strings.isEmpty(detail.hearinghandicapetc)}">
+            <div>
+              <div class="label">👂 청각장애 편의</div>
+              <div class="value" th:text="${detail.hearingroom}"></div>
+              <div class="value" th:text="${detail.hearinghandicapetc}"></div>
+            </div>
+          </div>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.blindhandicapetc)}">
+            <div>
+              <div class="label">👁️ 시각장애 편의</div>
+              <div class="value" th:text="${detail.blindhandicapetc}"></div>
+            </div>
+          </div>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.publictransport)}">
+            <div>
+              <div class="label"> 🚌 대중교통 접근</div>
+              <div class="value" th:text="${detail.publictransport}"></div>
+            </div>
+          </div>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.guidehuman)}">
+            <div>
+              <div class="label">🙋 안내 인력</div>
+              <div class="value" th:text="${detail.guidehuman}"></div>
+            </div>
+          </div>
+
+          <div class="accessibility-item" th:if="${!#strings.isEmpty(detail.handicapetc)}">
+            <div>
+              <div class="label">💡 기타</div>
+              <div class="value" th:text="${detail.handicapetc}"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+
 
     <!-- 매칭 서비스 섹션 -->
     <div class="container-match-service">
@@ -149,13 +327,16 @@
           <div class="guide-body"></div>
 
           <div class="button-group">
-            <a class="guide-btn" href="/templates/enteringRoom/enteringRoom.html">
-              <span>동행자 찾기</span>
-              <span class="btn-arrow">→</span>
+            <a class="guide-btn"
+               th:href="@{/companion-rooms/list(keyword=${detail != null ? detail.title : ''})}">
+              <span>동행자 찾기</span><span class="btn-arrow">→</span>
             </a>
-            <a class="ask-btn" href="/templates/creatingRoom/creatingRoom-detail.html">
-              <span>방 만들기</span>
-              <span class="btn-plus">+</span>
+
+            <a id="btnMakeRoom"
+               class="ask-btn"
+               th:href="@{/companion-rooms/create}"
+               th:attr="data-content-id=${detail != null ? detail.contentId : 0}">
+              <span>방 만들기</span><span class="btn-plus">+</span>
             </a>
           </div>
         </div>
@@ -165,53 +346,11 @@
         </div>
       </section>
     </div>
-
-    <!--후기남기기 섹션-->
-    <!-- 후기 남기기 섹션 -->
-    <div class="container-review">
-      <div class="container-title">
-        <span class="review-icon">📝</span>
-        <span>관광지 리뷰</span>
-      </div>
-
-      <section class="review-section">
-        <form class="review-form">
-
-          <div class="review-list">
-
-            <div class="review-wrapper">
-              <div class="review-zip">등록된 리뷰</div>
-              <div class="divider"></div>
-              <div class="review-more" id="moreBtn">더보기 ❯</div>
-            </div>
-
-            <!-- JavaScript로 후기가 동적으로 추가될 공간 -->
-            <div class="review-count" id="reviewcount"></div>
-            <ul id="reviewContainer"></ul>
-
-          </div>
-
-          <div class="divider"></div>
-          <div class="my-review">
-
-            <label for="review">나의 리뷰 등록하기</label>
-
-            <div class="star-rating" id="starRating">
-              <div class="star" data-index="0"></div>
-              <div class="star" data-index="1"></div>
-              <div class="star" data-index="2"></div>
-              <div class="star" data-index="3"></div>
-              <div class="star" data-index="4"></div>
-              <input type="hidden" id="ratingValue" name="rating" />
-            </div>
-            <textarea id="review" name="review" maxlength="400" placeholder="이곳에서의 경험을 공유해 주세요!"></textarea>
-          </div>
-          <div class="form-footer">
-            <button type="submit" class="submit-review-btn">후기 등록</button>
-          </div>
-        </form>
-      </section>
-    </div>
   </div>
+</div>
+<th:block th:replace="~{fix/footer :: footer}"></th:block>
+
+<script th:src="@{/js/fix/header.js}"></script>
+<script th:src="@{/js/fix/header-after.js}"></script>
 </body>
 </html>

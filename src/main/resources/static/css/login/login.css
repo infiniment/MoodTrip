@@ -178,7 +178,7 @@ img[Attributes Style] {
     aspect-ratio: auto 461 / 240;
     height: 240px;
     aspect-ratio: auto 461 / 240;
-}  
+}
 */
 
 /*로그인박스*/
@@ -195,12 +195,12 @@ img[Attributes Style] {
         box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
     }
 }
-@media (min-width: 960px) {
-    .desktop\:shadow-contents-container {
-        --tw-shadow: 0 2px 8px 0px rgba(0, 0, 0, 0.16);
-        --tw-shadow-colored: 0 2px 8px 0px var(--tw-shadow-color);
-    }
-}
+/*@media (min-width: 960px) {*/
+/*    .desktop\:shadow-contents-container {*/
+/*        --tw-shadow: 0 2px 8px 0px rgba(0, 0, 0, 0.16);*/
+/*        --tw-shadow-colored: 0 2px 8px 0px var(--tw-shadow-color);*/
+/*    }*/
+/*}*/
 @media (min-width: 960px) {
     .desktop\:p-8 {
         padding: 2rem;
@@ -377,10 +377,10 @@ button, input, optgroup, select, textarea {
     margin: 0;
     padding: 0;
 }
-.min-w-fit-input {
-    min-width: -moz-fit-content;
-    min-width: fit-content;
-}
+/*.min-w-fit-input {*/
+/*    min-width: -moz-fit-content;*/
+/*    min-width: fit-content;*/
+/*}*/
 .border {
     border-width: 1px;
 }
@@ -655,4 +655,137 @@ input[type="checkbox"][name="remember"]:checked + div[role="checkbox-button"] sv
   visibility: visible;
   color: #1877F2; /* 원하는 색상으로 변경 가능 */
 }
+/* === Mobile (<= 959px)에서 welcome 영역 보이게 & 레이아웃 정의 === */
+@media (max-width: 959px) {
+    /* 그리드 영역 이름 정의: welcome -> form 순서로 세로 스택 */
+    .grid-areas-signUp-mobile {
+        display: grid;
+        grid-template-areas:
+      "welcome"
+      "form";
+        row-gap: 24px; /* 모바일에서 간격 조금 */
+    }
+
+    /* hidden을 덮어써서 모바일에서도 보이도록 */
+    .grid-in-welcome {
+        display: block !important; /* hidden override */
+        grid-area: welcome;
+    }
+
+    /* 폼 영역은 기존대로 form 그리드 영역에 */
+    .right-grid-in-form {
+        grid-area: form;
+    }
+
+    /* 모바일에서 타이틀/이미지 크기 튜닝(선택) */
+    .grid-in-welcome .introduce-title {
+        font-size: 24px;
+        line-height: 36px;
+        letter-spacing: .48px; /* 기존 textbox와 톤 맞춤 */
+    }
+    .grid-in-welcome img {
+        width: 100%;
+        max-width: 360px;   /* 너무 커지지 않도록 */
+        height: auto;
+        margin-top: 12px;
+    }
+}
+
+/* === Tablet (예: 960px 미만을 tablet로 안 쓰는 경우라면 필요 없음)
+   필요하면 여기도 원하는 2열 구성으로 정의 가능 === */
+@media (min-width: 600px) and (max-width: 959px) {
+    .tablet\:grid-areas-signUp-tablet {
+        display: grid;
+        grid-template-areas:
+      "welcome"
+      "form";
+        row-gap: 28px;
+    }
+}
+/* 전체 타이틀 컨테이너 */
+.login-title {
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: -0.3px;
+    display: inline-block;
+}
+
+/* 브랜드명 강조 */
+.login-title .brand {
+    color: #005792;      /* 브랜드 컬러 */
+    font-weight: 700;
+    font-size: 1.6em;    /* 주변 글자보다 크게 */
+}
+
+/* 서브 문구 */
+.login-title .sub {
+    color: #333;
+    font-size: 1.2em;
+    font-weight: 500;
+}
+
+/* 모바일에서 가운데 정렬 + 크기 조금 축소 */
+@media (max-width: 959px) {
+    .login-title {
+        display: block;
+        text-align: center;
+        font-size: 20px;
+        line-height: 32px;
+        margin: 0 auto;
+    }
+    .login-title .brand {
+        font-size: 1.4em;
+    }
+    .login-title .sub {
+        font-size: 1em;
+    }
+}
+
+/* 데스크톱에서 큼직하게 */
+@media (min-width: 960px) {
+    .login-title {
+        font-size: 28px;
+        line-height: 42px;
+    }
+}
+
+/* 기존 클래스를 수정하는 대신 중앙 정렬용 클래스를 추가하는 것이 더 안전합니다. */
+.left-items-center {
+    align-items: center; /* 수직 중앙 정렬 (flex-direction이 col이므로) */
+}
+
+.left-justify-center {
+    justify-content: center; /* 수평 중앙 정렬 */
+}
+
+/* ... 기존 CSS ... */
+
+/* left-items-start, left-justify-start는 그대로 두거나,
+   데스크톱에서만 적용되도록 미디어 쿼리 안에 넣을 수 있습니다. */
+.left-items-start {
+    align-items: flex-start;
+}
+
+.left-justify-start {
+    justify-content: flex-start;
+}
+/* === 480px 이하 모바일 화면에서 이미지 및 텍스트 중앙 정렬 === */
+@media (max-width: 480px) {
+    /* 이미지를 감싸는 부모(.grid-in-welcome)를 Flexbox 컨테이너로 만들고,
+       내부 아이템들을 수직/수평 중앙에 배치합니다. */
+    .grid-in-welcome {
+        display: flex !important; /* 기존 display: block을 덮어씁니다. */
+        flex-direction: column;   /* 아이템들을 세로로 쌓습니다 (텍스트 위, 이미지 아래) */
+        justify-content: center;  /* 수직 중앙 정렬 (세로 방향 기준) */
+        align-items: center;      /* 수평 중앙 정렬 */
+    }
+
+    /* 이미지 자체에 좌우 마진을 자동으로 주어
+       Flexbox 컨테이너 내에서 확실하게 중앙을 차지하도록 합니다. */
+    .grid-in-welcome img {
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
 

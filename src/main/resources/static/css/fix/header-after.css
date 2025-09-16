@@ -1,14 +1,242 @@
-.right-nav {
+/* ================= 기본 설정 ================= */
+header.header {
+  width: 100%;
+  background: white;
+  position: relative;
+  overflow: visible;
+  z-index : 9999;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'SUIT', 'NotoSansKR', sans-serif;
+  line-height: 1rem;
+  -webkit-font-smoothing: antialiased;
+  max-width: 100%;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+html {
+  overflow-x: hidden;
+}
+
+a {
+  text-decoration: none;
+  color: #212121;
+}
+
+.header-container {
+  max-width: 1080px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+/* ================= 로고 ================= */
+.header-nav-logo-wrapper {
+  display: flex;
+  align-items: center;
+  padding: 22px 12px;
+  margin-right: 16px;
+  min-width: 130px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.header-nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  height: 30px;
+}
+
+.header-logo-squares {
+  display: flex;
+  flex-wrap: wrap;
+  width: 32px;
+  height: 24px;
+  gap: 3px;
+}
+
+.header-logo-square {
+  width: 13px;
+  height: 10px;
+  border-radius: 2px;
+}
+.header-logo-square.header-black { background-color: #000; }
+.header-logo-square.header-yellow { background-color: #FFD700; }
+.header-logo-square.header-red { background-color: #FF4444; }
+.header-logo-square.header-blue { background-color: #4444FF; }
+
+.header-logo-text {
+  font-size: 18px;
+  font-weight: bold;
+  color: #212121;
+  letter-spacing: 0.8px;
+  line-height: 1.1;
+}
+
+/* ================= 메뉴 ================= */
+.header-left-nav {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-shrink: 1;
+  overflow: hidden;
+}
+
+.header-left-nav-menu {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  padding: 0 16px;
+  height: 65px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.header-left-nav-menu .header-main-header {
+  font-size: 14px;
+  font-weight: 400;
+  color: #212121;
+  line-height: normal;
+}
+
+.header-text-header {
+  color: #212121;
+}
+
+/* header-after.css에 추가 */
+.header-search-form-select {
+  height: 40px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  margin-right: 8px;
+  min-width: 150px;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+}
+
+.header-search-form-select:focus {
+  outline: none;
+  border-color: #005792;
+}
+
+.header-search-form-select:hover {
+  border-color: #ccc;
+}
+
+/* ================= 검색창 ================= */
+.header-search-nav {
+  margin: 0 24px;
+  flex: 1;
+  max-width: 420px;
+  min-width: 200px;
+  flex-shrink: 0;
+}
+
+.header-logged-in-search-form {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+/* 비활성화된 소분류 스타일 */
+.header-search-form-select:disabled {
+  background-color: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+  border-color: #e5e7eb;
+}
+
+.header-search-form-select:disabled:hover {
+  cursor: not-allowed;
+}
+.header-logged-in-search-form select {
+  height: 40px;
+  padding: 0 10px;
+  margin-right: 8px;
+  min-width: 120px;
+  font-size: 14px;
+  flex: 1;
+}
+
+.header-logged-in-emotion-search-input {
+  display: none !important;
+}
+
+.header-logged-in-emotion-search-btn {
+  margin-left: 8px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  width: 36px;
+  border-radius: 50%;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.header-logged-in-emotion-search-btn:hover {
+  background-color: rgba(0, 87, 146, 0.1);
+  transform: scale(1.1);
+}
+
+.header-logged-in-search-icon {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+/* ================= 프로필 영역 ================= */
+.header-right-nav {
   display: flex;
   align-items: center;
   position: relative;
+  flex-shrink: 0;
+  min-width: fit-content;
 }
 
-.profile-menu-wrapper {
-  position: relative;
+.header-profile-menu-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.profile-thumb {
+.header-profile-display {
+  font-size: 16px;
+  font-weight: 500;
+  color: #212121;
+  white-space: nowrap;
+}
+
+.header-profile-nickname-header {
+  font-weight: bold;
+  color: #212121;
+}
+
+.header-profile-suffix {
+  margin-left: 2px;
+  color: #666;
+  font-weight: 500;
+}
+
+.header-profile-thumb {
   width: 38px;
   height: 38px;
   border-radius: 50%;
@@ -19,15 +247,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: border-color 0.2s;
+  flex-shrink: 0;
 }
-
-.profile-thumb img {
+.header-profile-thumb:hover {
+  border-color: #005792;
+}
+.header-profile-thumb img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.profile-dropdown {
+/* ================= 프로필 드롭다운 ================= */
+.header-profile-dropdown {
   display: none;
   position: absolute;
   top: 48px;
@@ -38,64 +271,335 @@
   box-shadow: 0 2px 12px rgba(0,0,0,0.12);
   min-width: 220px;
   z-index: 3000;
-  font-family: 'SUIT', 'Noto Sans KR', sans-serif;
   padding: 16px 18px 10px 18px;
 }
 
-.profile-dropdown .profile-info {
+.header-profile-dropdown .header-profile-info {
   margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
 }
-
-.profile-nickname {
+.header-profile-nickname {
   font-weight: 700;
   font-size: 16px;
   color: #222;
+  margin-bottom: 2px;
 }
-
-.profile-email {
+.header-profile-email {
   font-size: 13px;
   color: #757575;
-  margin-top: 2px;
 }
 
-.profile-btn {
+.header-profile-btn {
   width: 100%;
-  padding: 8px 0;
-  margin-bottom: 7px;
+  padding: 10px 0;
+  margin-bottom: 8px;
   border: none;
   border-radius: 8px;
   background: linear-gradient(to right, #005792, #001A2C);
   color: #fff;
-  font-size: 15px;
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
-  font-family: inherit;
-  transition: background 0.2s;
+  transition: all 0.2s;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.header-profile-btn:hover {
+  background: linear-gradient(to right, #0066a3, #002a3d);
 }
 
-.profile-btn:last-child {
-  margin-bottom: 0;
+/* 프로필 관리 버튼과 배지 스타일 */
+.header-profile-manage-with-badge {
+  position: relative;
 }
 
-.logout-btn {
+.header-notification-badge {
+  background: #ff4444;
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.header-logout-btn {
   width: 100%;
-  padding: 8px 0;
-  margin-bottom: 7px;
-  border: none; /* 기존 border: none; → 2px solid로 변경 */
-  border-image: linear-gradient(to right, #ffffff, #ced9f9) 1; /* 그라데이션 테두리 */
+  padding: 10px 0;
+  border: 2px solid #ccc;
   border-radius: 8px;
-  background: #c2cde7; /* 배경만 흰색 */
-  color: linear-gradient(to right, #ffffff, #ffffff);  /* 글씨색은 진한 파랑으로 변경하면 잘 보입니다 */
-  font-size: 15px;
+  background: #f8f9fa;
+  color: #666;
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
-  font-family: inherit;
-  transition: background 0.2s, color 0.2s, border 0.2s;
-  box-sizing: border-box;
+}
+.header-logout-btn:hover {
+  background: #eef2f5;
+  color: #005792;
 }
 
+/* ================= 드롭다운 메뉴 ================= */
+.header-dropdown-nav-container {
+  border-radius: 0 0 16px 16px;
+  background: #fff;
+  z-index: 9998;
+  width: 100%;
+  max-height: 0;
+  overflow: visible;
+  transition: max-height 0.4s ease, opacity 0.3s, transform 0.4s ease;
+  opacity: 0;
+  position: absolute;
+  transform: translateY(-24px);
+}
+.header-dropdown-nav-container.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+.header-dropdown-nav {
+  display: flex;
+  max-width: 1080px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px 20px 32px 20px;
+}
+.header-dropdown-menu-container {
+  display: flex;
+  gap: 40px;
+}
+.header-dropdown-menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.header-dropdown-menu-item {
+  font-size: 14px;
+  color: #424242;
+  line-height: 24px;
+  cursor: pointer;
+}
 
+/* ================= 반응형 ================= */
+@media (max-width: 1200px) {
+  .header-container {
+    padding: 0 15px;
+  }
+}
 
-.logout-btn:hover {
-  background: linear-gradient(to right, #005792, #89ccfc);
-  color: #005792;
-  border-image: linear-gradient(to right,#ffffff, #46588e) 1;
+@media (max-width: 1080px) {
+  .header-container {
+    padding: 0 20px;
+  }
+  .header-search-nav {
+    max-width: 300px;
+    min-width: 150px;
+  }
+  .header-logged-in-search-form select {
+    min-width: 100px;
+  }
+}
+
+@media (max-width: 900px) {
+  .header-left-nav {
+    gap: 15px;
+  }
+  .header-left-nav-menu {
+    padding: 0 12px;
+  }
+  .header-search-nav {
+    max-width: 250px;
+  }
+}
+
+/* 데스크톱에서는 메뉴 드롭다운이 확실히 보이도록 보장 */
+@media (min-width: 900px) {
+  .header-dropdown-nav-container {
+    display: block !important;
+  }
+}
+
+/* 900px 이하에서만 메뉴와 드롭다운 숨김 (기존 768px에서 조정) */
+@media (max-width: 899px) {
+  .header-left-nav {
+    display: none !important;
+  }
+
+  .header-search-nav {
+    display: none !important;
+  }
+
+  .header-dropdown-nav-container {
+    display: none !important;
+  }
+}
+
+/* 768px 이하 - 프로필 조정만 */
+@media (max-width: 768px) {
+  header.header {
+    min-height: 60px;
+  }
+
+  .header-container {
+    padding: 0 15px;
+    justify-content: space-between;
+  }
+
+  .header-profile-display {
+    font-size: 14px;
+  }
+
+  .header-profile-thumb {
+    width: 35px;
+    height: 35px;
+  }
+}
+
+/* 480px 이하 - 로고와 프로필만 표시 */
+@media (max-width: 480px) {
+  header.header {
+    min-height: 60px;
+  }
+
+  .header-container {
+    padding: 0 10px !important;
+    gap: 8px !important;
+    min-height: 60px;
+    justify-content: space-between !important;
+  }
+
+  /* 로고 크기 조정 - 2x2 격자 유지 */
+  .header-nav-logo-wrapper {
+    min-width: 90px !important;
+    padding: 18px 6px !important;
+    margin-right: 0 !important;
+  }
+
+  .header-nav-logo {
+    gap: 8px !important;
+  }
+
+  .header-logo-squares {
+    display: grid !important;
+    grid-template-columns: 12px 12px !important;
+    grid-template-rows: 8px 8px !important;
+    width: 26px !important;
+    height: 18px !important;
+    gap: 2px !important;
+    flex-wrap: unset !important;
+  }
+
+  .header-logo-square {
+    width: 12px !important;
+    height: 8px !important;
+    border-radius: 2px !important;
+    display: block !important;
+  }
+
+  .header-logo-text {
+    font-size: 13px !important;
+    line-height: 1.0 !important;
+  }
+
+  /* 메뉴 완전히 숨김 */
+  .header-left-nav {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+  /* 검색창 완전히 숨김 */
+  .header-search-nav {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+  /* 드롭다운 완전히 숨김 */
+  .header-dropdown-nav-container {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+  }
+
+  /* 프로필 영역 조정 */
+  .header-right-nav {
+    gap: 6px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .header-profile-menu-wrapper {
+    gap: 8px !important;
+  }
+
+  .header-profile-display {
+    font-size: 12px !important;
+  }
+
+  .header-profile-thumb {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  /* 프로필 드롭다운 모바일 최적화 */
+  .header-profile-dropdown {
+    min-width: 200px !important;
+    right: -10px !important;
+    padding: 14px 16px 8px 16px !important;
+  }
+
+  .header-profile-nickname {
+    font-size: 14px !important;
+  }
+
+  .header-profile-email {
+    font-size: 12px !important;
+  }
+
+  .header-profile-btn {
+    padding: 8px 0 !important;
+    font-size: 13px !important;
+  }
+
+  .header-logout-btn {
+    padding: 8px 0 !important;
+    font-size: 13px !important;
+  }
+}
+
+/* 360px 이하 초소형 모바일 */
+@media (max-width: 360px) {
+  .header-container {
+    padding: 0 8px !important;
+  }
+
+  .header-nav-logo-wrapper {
+    min-width: 80px !important;
+    padding: 16px 4px !important;
+  }
+
+  .header-logo-text {
+    font-size: 12px !important;
+  }
+
+  .header-profile-display {
+    font-size: 11px !important;
+  }
+
+  .header-profile-thumb {
+    width: 30px !important;
+    height: 30px !important;
+  }
 }

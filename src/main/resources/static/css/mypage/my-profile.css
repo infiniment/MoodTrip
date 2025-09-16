@@ -233,6 +233,7 @@
 .file-input-label {
     cursor: pointer;
     font-weight: 600;
+    font-size: 10px;
 }
 
 /* 정보 수정 섹션 */
@@ -407,9 +408,7 @@
     margin-bottom: 4px;
     line-height: 1.4;
 }
-
-.email-info-label-wrapper, 
-.phone-authentication-label-wrapper {
+.email-info-label-wrapper {
     justify-content: space-between;
     align-items: baseline;
     display: flex;
@@ -452,19 +451,22 @@
     vertical-align: -0.125em;
     text-rendering: optimizelegibility;
     -webkit-font-smoothing: antialiased;
-    color: #10b981;
 }
 
-.email-check-icon svg {
-    width: 22px;
-    height: 22px;
-    fill: #10b981;
+/* 기존 color/fill 하드코딩 삭제하고 상태별 색상 지정 */
+.email-check-green svg {
+    fill: #22c55e; /* 초록 */
+}
+
+.email-check-red svg {
+    fill: #ef4444; /* 빨강 */
 }
 
 .email-svg-icon {
     display: inline-block;
     vertical-align: middle;
 }
+
 
 /* 연동된 계정 */
 .linked-account-type {
@@ -475,7 +477,8 @@
     list-style: none;
 }
 
-.kakao-logo-icon, 
+.kakao-logo-icon,
+.google-logo-icon,
 .google-logo-disabled-icon {
     width: 48px;
     height: 48px;
@@ -490,6 +493,7 @@
 }
 
 .kakao-logo-icon:hover,
+.google-logo-icon,
 .google-logo-disabled-icon:hover {
     transform: scale(1.1);
     box-shadow: 0 8px 24px rgba(0, 26, 44, 0.15);
@@ -602,6 +606,28 @@
 .self-introduction-textarea::placeholder {
     color: rgb(156, 163, 175);
     font-weight: 400;
+}
+
+/* 알림 배지 */
+.notification-badge {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 12px;
+    min-width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
 }
 
 .not-authentication {
@@ -964,5 +990,49 @@
     .cancel-btn,
     .confirm-btn {
         width: 100%;
+    }
+}
+
+/* ===========================
+   🔳 탈퇴 모달 컴팩트 & 정사각형화 패치
+   (my-profile.css 맨 아래에 추가)
+   =========================== */
+
+/* 1) 컨테이너를 거의 정사각형으로 고정 + 내부 스크롤 영역화 */
+.modal-container{
+    width: min(420px, 90vw) !important;    /* 가로 */
+    height: min(420px, 90vh) !important;   /* 세로 -> 정사각형 느낌 */
+    display: grid !important;
+    grid-template-rows: auto 1fr auto !important;  /* 헤더 / 내용(스크롤) / 푸터 */
+    padding: 0 !important;
+    border-radius: 16px !important;
+}
+
+/* 2) 내용 영역은 넘치면 스크롤 */
+.modal-content{
+    overflow: auto !important;
+}
+
+/* 3) 여백/타이포 컴팩트(전체 균형 잡기) */
+.modal-header, .modal-footer{ padding: 16px 20px !important; }
+.modal-title{ font-size: 18px !important; }
+.main-warning{ font-size: 16px !important; margin-bottom: 6px !important; }
+.sub-warning{ font-size: 13px !important; }
+.deletion-list{ padding: 12px !important; }
+.deletion-item{ padding: 6px 0 !important; }
+.final-warning{ padding: 10px 12px !important; font-size: 13px !important; }
+
+/* 4) 버튼도 살짝 슬림 */
+.cancel-btn, .confirm-btn{
+    height: 40px !important;
+    padding: 0 18px !important;
+}
+
+/* 5) 작은 폰에서는 화면 꽉 안 차게 약간 더 작게 */
+@media (max-width: 480px){
+    .modal-container{
+        width: 92vw !important;
+        height: 75vh !important; /* 세로 좀 더 줄임 */
+        border-radius: 14px !important;
     }
 }

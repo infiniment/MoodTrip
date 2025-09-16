@@ -2,12 +2,23 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>무드트립 : 동행자 매칭 시작 페이지</title>
-    <link rel="stylesheet" href="/css/creatingRoom/creatingRoom-start.css">
-    <script src="/js/creatingRoom/creatingRoom-start.js"></script>
+    <link rel="stylesheet" th:href="@{/css/creatingRoom/creatingRoom-start.css}">
+    <script th:src="@{/js/creatingRoom/creatingRoom-start.js}"></script>
+    <link rel=" stylesheet" th:href="@{/css/fix/header.css}">
+    <link rel="stylesheet" th:href="@{/css/fix/footer.css}">
+    <link rel="stylesheet" th:href="@{/css/fix/header-after.css}">
 </head>
-<body>
+<!-- 로그인 상태에 따른 조건부 헤더 렌더링 -->
+<div th:if="${isLoggedIn}">
+    <!-- 로그인된 사용자용 헤더 -->
+    <th:block th:replace="~{fix/header-after-login :: header}"></th:block>
+</div>
+<div th:unless="${isLoggedIn}">
+    <!-- 로그인 안된 사용자용 헤더 -->
+    <th:block th:replace="~{fix/header :: header}"></th:block>
+</div>
     <div class="bg-animation"></div>
     <div class="floating-elements">
         <div class="floating-circle circle-1"></div>
@@ -28,8 +39,8 @@
                         "무드 트립에서 함께 떠나요."
                     </p>
                     <div class="cta-buttons fade-in-delay-3">
-                        <a href="/templates/creatingRoom/creatingRoom-detail.html" class="btn btn-primary">방 만들러 가기</a>
-                        <a href="/templates/enteringRoom/enteringRoom.html" class="btn btn-secondary">방 찾으러 가기</a>
+                        <a th:href="@{/companion-rooms/create}" class="btn btn-primary">방 만들러 가기</a>
+                        <a th:href="@{/entering-room}" class="btn btn-secondary">방 찾으러 가기</a>
                     </div>
                 </div>
                 <div class="hero-image fade-in-delay-2">
@@ -97,7 +108,7 @@
 
     <section class="companies-section">
         <div class="container">
-            <h2 class="companies-title">100,000+ 기업이 믿고 사용 중인 국내 1위 동행자 매칭 플랫폼 무드트립</h2>
+            <h2 class="companies-title">나와 맞는 동행자, 빠르고 안전하게</h2>
             <div class="logo-carousel">
                 <div class="logo-track">
                     <div class="logo-item">
@@ -153,5 +164,8 @@
             </div>
         </div>
     </section>
+    <th:block th:replace="~{fix/footer :: footer}"></th:block>
+    <script th:src="@{/js/fix/header.js}"></script>
+    <script th:src="@{/js/fix/header-after.js}"></script>
 </body>
 </html>

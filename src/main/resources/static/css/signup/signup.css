@@ -1,0 +1,982 @@
+/* 구글 폰트 추가 */
+@import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap');
+
+/* 기본 리셋 */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    line-height: 1.6;
+    color: #1a1a1a;
+    background: #f8fafc;
+}
+
+/* 메인 컨테이너 */
+.py-6 {
+    padding: 1.5rem 0;
+}
+
+@media (min-width: 960px) {
+    .desktop\:py-\[120px\] {
+        padding: 120px 0;
+    }
+
+    .desktop\:bg-w-gray-10 {
+        background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    }
+
+    .desktop\:min-h-screen {
+        min-height: 100vh;
+    }
+}
+
+/* 그리드 레이아웃 */
+.grid {
+    display: grid;
+}
+
+.mx-auto {
+    margin: 0 auto;
+}
+
+.max-w-container {
+    max-width: 1200px;
+}
+
+.w-full {
+    width: 100%;
+}
+
+.px-5 {
+    padding: 0 1.25rem;
+}
+
+@media (min-width: 960px) {
+    .desktop\:px-9 {
+        padding: 0 2.25rem;
+    }
+
+    .desktop\:gap-x-6 {
+        column-gap: 1.5rem;
+    }
+
+    .desktop\:grid-areas-signUp-desktop {
+        grid-template-areas: "welcome welcome welcome welcome welcome welcome form form form form form form";
+        gap: 3rem;
+    }
+}
+
+/* 환영 섹션 */
+.grid-in-welcome {
+    grid-area: welcome;
+}
+
+.hidden {
+    display: none;
+}
+
+@media (min-width: 960px) {
+    .desktop\:block {
+        display: block;
+    }
+}
+
+.flex {
+    display: flex;
+}
+
+.flex-col {
+    flex-direction: column;
+}
+
+.left-items-start {
+    align-items: flex-start;
+}
+
+.left-justify-start {
+    justify-content: flex-start;
+}
+
+.gap-left {
+    gap: 3rem;
+}
+
+.py-left {
+    padding: 3rem 0;
+}
+
+/* 환영 텍스트 스타일링 */
+.welcome-text-container {
+    margin-bottom: 2.5rem;
+}
+
+.welcome-main-title {
+    font-family: 'Pretendard', sans-serif;
+    font-size: 2.25rem;       /* 살짝 줄이면 줄바꿈 덜 어색 */
+    font-weight: 700;
+    line-height: 1.35;        /* 줄 간격 넉넉히 */
+    letter-spacing: -0.015em; /* 자간 좁혀주기 */
+    color: #0f172a;           /* 조금 더 진한 네이비톤 */
+    margin-bottom: 1rem;
+}
+
+.highlight-text {
+    background: linear-gradient(90deg, #005792, #001A2C);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800;
+    white-space: nowrap;      /* "무드트립"이 잘리지 않게 */
+}
+
+.welcome-sub-title {
+    font-size: 1.125rem;
+    color: #64748b;
+    font-weight: 400;
+    line-height: 1.6;
+}
+
+/* 환영 이미지 */
+.welcome-image-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.welcome-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 1rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* 폼 섹션 */
+.right-grid-in-form {
+    grid-area: form;
+}
+
+.signup-form-container {
+    background: white;
+    border-radius: 1.5rem;
+    padding: 2.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    backdrop-filter: blur(10px);
+}
+
+/* 폼 헤더 */
+.form-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.form-title {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.75rem;
+    letter-spacing: -0.01em;
+}
+
+.form-subtitle {
+    color: #64748b;
+    font-size: 1rem;
+    font-weight: 400;
+}
+
+/* 입력 섹션 */
+.input-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+    margin-bottom: 2rem;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.input-text {
+    cursor: text;
+}
+
+.input-container {
+    position: relative;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 0.875rem;
+    background: white;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.input-container:hover {
+    border-color: #0ea5e9;
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+}
+
+.input-container.input-hover-focus {
+    border-color: #0ea5e9;
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+}
+
+.input-wrapper {
+    position: relative;
+    height: 3.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 1rem;
+}
+
+.input-label {
+    position: absolute;
+    top: 50%;
+    left: 1rem;
+    transform: translateY(-50%);
+    color: #64748b;
+    font-size: 1rem;
+    font-weight: 400;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    background: white;
+    padding: 0 0.25rem;
+}
+
+.input-label.label-float {
+    top: 0;
+    transform: translateY(-50%) scale(0.85);
+    color: #0ea5e9;
+    font-weight: 500;
+}
+
+.input-field {
+    border: none !important;        /* 내부 테두리 완전 제거 */
+    outline: none !important;       /* 포커스시 외곽선 제거 */
+    background: transparent;
+    box-shadow: none !important;
+}
+
+.input-field::placeholder {
+    color: #94a3b8;
+}
+
+/* 헬퍼 텍스트 */
+.input-helper {
+    padding: 0 1rem;
+}
+
+.helper-text {
+    font-size: 0.875rem;
+    color: #64748b;
+    font-weight: 400;
+}
+
+/* 에러 메시지 */
+.input-error-message {
+    color: #ef4444;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-top: 0.25rem;
+    padding: 0 1rem;
+}
+
+/* 약관 동의 섹션 */
+.agreement-section {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: #f8fafc;
+    border-radius: 1rem;
+    border: 1px solid #e2e8f0;
+}
+
+.agreement-header h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 1rem;
+}
+
+.checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    padding: 0.5rem 0;
+    transition: all 0.2s ease;
+}
+
+.checkbox-item:hover {
+    background: rgba(14, 165, 233, 0.05);
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    margin: 0 -0.5rem;
+}
+
+.checkbox-all {
+    padding: 0.75rem;
+    background: white;
+    border-radius: 0.75rem;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 0.5rem;
+}
+
+.checkbox-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.checkbox-custom {
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 2px solid #d1d5db;
+    border-radius: 0.375rem;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.checkbox-custom.bg-primary-500 {
+    background: linear-gradient(to right, #005792, #001A2C);
+
+    border-color: #0ea5e9;
+}
+
+.checkbox-text {
+    font-size: 0.95rem;
+    color: #374151;
+    font-weight: 400;
+    line-height: 1.5;
+}
+
+.checkbox-text-bold {
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.required-text {
+    color: #ef4444;
+    font-weight: 500;
+}
+
+.optional-text {
+    color: #64748b;
+    font-weight: 400;
+}
+
+.checkbox-divider {
+    height: 1px;
+    background: #e2e8f0;
+    margin: 0.5rem 0;
+}
+
+.marketing-info {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin-left: 2rem;
+    margin-top: 0.5rem;
+    line-height: 1.4;
+}
+
+/* 제출 버튼 */
+.submit-section {
+    margin: 2rem 0 1.5rem;
+}
+
+.submit-button {
+    width: 100%;
+    height: 3.25rem;
+    background: linear-gradient(to right, #005792, #001A2C);
+
+    color: white;
+    border: none;
+    border-radius: 0.875rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+}
+
+.submit-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(14, 165, 233, 0.4);
+}
+
+.submit-button:active {
+    transform: translateY(0);
+}
+
+.submit-text {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+/* 구분선 */
+.divider-section {
+    display: flex;
+    align-items: center;
+    margin: 1.5rem 0;
+}
+
+.divider-line {
+    flex: 1;
+    height: 1px;
+    background: #e2e8f0;
+}
+
+.divider-text {
+    padding: 0 1rem;
+    color: #64748b;
+    font-size: 0.875rem;
+    font-weight: 400;
+}
+
+/* 소셜 로그인 */
+.social-login-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+}
+
+.social-button {
+    width: 100%;
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 0.875rem;
+    background: white;
+    color: #374151;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.social-button:hover {
+    border-color: #0ea5e9;
+    background: #f8fafc;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.social-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.social-text {
+    font-weight: 500;
+}
+
+/* 로그인 링크 */
+.login-link-section {
+    text-align: center;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.login-text {
+    color: #64748b;
+    font-size: 0.95rem;
+    margin-right: 0.5rem;
+}
+
+.login-link {
+    text-decoration: none;
+}
+
+.login-link-text {
+    color: #0ea5e9;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: color 0.2s ease;
+}
+
+.login-link:hover .login-link-text {
+    color: #0284c7;
+    text-decoration: underline;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 959px) {
+    .signup-form-container {
+        padding: 1.5rem;
+        border-radius: 1rem;
+        margin: 1rem;
+    }
+
+    .welcome-main-title {
+        font-size: 2rem;
+    }
+
+    .form-title {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .signup-form-container {
+        padding: 1.25rem;
+        margin: 0.5rem;
+    }
+
+    .welcome-main-title {
+        font-size: 1.75rem;
+    }
+
+    .input-section {
+        gap: 1.5rem;
+    }
+}
+
+/* 추가 애니메이션 */
+.signup-form-container {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 포커스 상태 개선 */
+.input-field:focus + .input-label,
+.input-field:not(:placeholder-shown) + .input-label {
+    top: 0;
+    transform: translateY(-50%) scale(0.85);
+    color: #0ea5e9;
+    font-weight: 500;
+}
+
+/* Warning 메시지 스타일 */
+.terms-warning {
+    color: #ef4444;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin: 0.5rem 0 0 2rem;
+}
+
+/* 체크박스 호버 효과 개선 */
+.checkbox-item:hover .checkbox-custom {
+    border-color: #0ea5e9;
+    box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.1);
+}
+
+/* 입력 필드 포커스 시 라벨 애니메이션 개선 */
+.input-field:focus ~ .input-label {
+    color: #0ea5e9;
+}
+.input-field:focus {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+/* 소셜 버튼별 스타일링 */
+.google-button:hover {
+    border-color: #4285f4;
+}
+
+.kakao-button:hover {
+    border-color: #fee500;
+    background: #fffbf0;
+}
+
+/* 글로벌 스크롤바 스타일링 */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* 접근성 개선 */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* 다크모드 대응 (추후 확장 가능) */
+@media (prefers-color-scheme: dark) {
+    /* 다크모드 스타일을 여기에 추가할 수 있습니다 */
+}
+
+/* 프린트 스타일 */
+@media print {
+    .signup-form-container {
+        box-shadow: none;
+        border: 1px solid #ccc;
+    }
+
+    .social-login-section,
+    .divider-section {
+        display: none;
+    }
+}
+
+/* 고해상도 디스플레이 대응 */
+/*@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {*/
+/*    .welcome-image {*/
+/*        image-rendering: -webkit-optimize-contrast;*/
+/*        image-rendering: crisp-edges;*/
+/*    }*/
+/*}*/
+
+/* 터치 디바이스를 위한 개선 */
+@media (hover: none) and (pointer: coarse) {
+    .checkbox-item:hover {
+        background: transparent;
+    }
+
+    .input-container:hover {
+        border-color: #e2e8f0;
+        box-shadow: none;
+    }
+
+    .social-button:hover {
+        transform: none;
+        border-color: #e2e8f0;
+        background: white;
+        box-shadow: none;
+    }
+
+    .submit-button:hover {
+        transform: none;
+        box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+    }
+}
+
+/* 로딩 상태 (JavaScript로 제어) */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.loading .submit-button {
+    background: #94a3b8;
+    cursor: not-allowed;
+}
+
+.loading .submit-button::after {
+    content: "";
+    width: 16px;
+    height: 16px;
+    margin-left: 8px;
+    border: 2px solid transparent;
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 성공 상태 애니메이션 */
+.success-animation {
+    animation: successPulse 0.6s ease-out;
+}
+
+@keyframes successPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* 에러 상태 애니메이션 */
+.error-shake {
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* 유틸리티 클래스 */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* 포커스 가시성 개선 */
+.input-field:focus,
+.checkbox-input:focus + .checkbox-custom,
+.submit-button:focus,
+.social-button:focus,
+.login-link:focus {
+    outline: 2px solid #0ea5e9;
+    outline-offset: 2px;
+}
+
+/* 추가 마이크로 인터랙션 */
+.submit-button {
+    position: relative;
+    overflow: hidden;
+}
+
+.submit-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.submit-button:hover::before {
+    left: 100%;
+}
+
+/* === 모바일/태블릿(≤959.98px) 레이아웃 고정: [웰컴] → [폼] 2행, 가운데 정렬 === */
+@media (max-width: 959.98px) {
+    /* 1) 페이지 그리드를 1컬럼 2행으로 고정 */
+    .mx-auto.grid.w-full.max-w-container {
+        display: grid !important;
+        grid-auto-flow: row !important;
+        grid-template-columns: 1fr !important;
+        grid-template-areas:
+      "welcome"
+      "form" !important;
+        row-gap: 16px !important;
+    }
+
+    /* 2) 섹션을 정확한 영역에 배치 */
+    .grid-in-welcome {
+        grid-area: welcome !important;
+        display: block !important;         /* hidden 해제 */
+        justify-self: stretch !important;
+        align-self: start !important;
+    }
+    .hidden.grid-in-welcome {            /* 부모에 hidden이 있어도 보이게 */
+        display: block !important;
+    }
+    .right-grid-in-form {
+        grid-area: form !important;
+        justify-self: stretch !important;
+        align-self: start !important;
+    }
+
+    /* 3) 웰컴 내용 중앙 정렬 + 이미지 크기 보정 */
+    .grid-in-welcome .flex.flex-col.left-items-start.left-justify-start {
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        gap: 1.25rem !important;
+    }
+    .welcome-text-container { width: 100% !important; }
+    .welcome-image-container {
+        width: 100% !important;
+        display: flex !important;
+        justify-content: center !important;
+    }
+    .welcome-image {
+        max-width: 260px !important;
+        height: auto !important;
+    }
+    .welcome-main-title { font-size: 1.75rem !important; line-height: 1.3 !important; }
+    .welcome-sub-title { font-size: 1rem !important; }
+
+    /* 4) 폼 카드 가운데 정렬 + 최대 폭 제한 */
+    .signup-form-container {
+        margin: 0.5rem auto !important;
+        padding: 1.25rem !important;
+        border-radius: 1rem !important;
+        max-width: 640px !important;
+    }
+
+    /* 5) 터치 타깃/간격 보정 */
+    .submit-button { min-height: 48px !important; }
+    .checkbox-item { min-height: 40px !important; }
+    .checkbox-custom { width: 20px !important; height: 20px !important; }
+    .divider-section { margin: 1.25rem 0 !important; }
+}
+
+/* 아주 작은 기기(≤360px) 여백 추가 보정 */
+@media (max-width: 359.98px) {
+    .signup-form-container { margin: 0.25rem auto !important; padding: 1rem !important; }
+}
+
+/* === 데스크톱(≥960px) 그리드 확실히 적용 (간헐적 충돌 방지) === */
+@media (min-width: 960px) {
+    .desktop\:grid-areas-signUp-desktop {
+        display: grid !important;
+        grid-template-columns: repeat(12, 1fr) !important;
+        grid-template-areas:
+      "welcome welcome welcome welcome welcome welcome form form form form form form" !important;
+        column-gap: 24px !important;
+    }
+}
+
+/* === 플로팅 라벨: 현재 마크업(라벨이 input 앞)에 맞춘 포커스 처리 === */
+.input-wrapper:focus-within .input-label {
+    top: 0;
+    transform: translateY(-50%) scale(0.85);
+    color: #0ea5e9;
+    font-weight: 500;
+}
+
+/* 값이 있을 때도 라벨 유지 (input에 placeholder=" " 넣어둔 상태 기준) */
+.input-field:not(:placeholder-shown) ~ .input-label {
+    top: 0;
+    transform: translateY(-50%) scale(0.85);
+    color: #0ea5e9;
+    font-weight: 500;
+}
+
+/* 포커스 테두리 가시성 */
+.input-container:focus-within {
+    border-color: #0ea5e9 !important;
+    box-shadow: 0 0 0 3px rgba(14,165,233,0.10) !important;
+}
+
+@media (max-width: 640px) {
+    .login-link-section {
+        padding-bottom: 3rem; /* 작은 화면에서는 여백을 더 */
+    }
+}
+
+/* 로그인 문구/링크 줄바꿈·간격 보정 */
+.login-link-section {
+    display: flex;                /* 가운데 정렬 + 안정적인 간격 */
+    justify-content: center;
+    align-items: baseline;
+    gap: .5rem;                   /* "…신가요?"와 "로그인" 사이 간격 */
+    text-align: center;
+    padding-bottom: 2rem;         /* 하단 잘림 방지용 여백 */
+}
+
+.login-text {
+    word-break: keep-all;         /* 한국어 단어 단위로 줄바꿈 */
+}
+
+.login-link {
+    display: inline-block;        /* 클릭 타깃 안정화 */
+    padding: 0 .25rem;
+    text-decoration: none;
+}
+
+.login-link-text {
+    word-break: keep-all;         /* 한글 자모 단위로 안 쪼개지게 */
+    white-space: nowrap;          /* "로그인"은 절대 줄바꿈 금지 */
+    line-height: 1.6;             /* 잘림 방지 */
+}
+
+/* 화면이 아주 좁을 때는 전체 문구가 다음 줄로 내려가도록(링크는 한 덩어리 유지) */
+@media (max-width: 360px) {
+    .login-link-section { flex-wrap: wrap; gap: .375rem; }
+    .login-link { padding: 0; }
+}
+
+/* 공통 브랜드 컬러 변수(있으면 무시됨) */
+:root{
+    --brand: #005792;
+    --brand-dark: #001A2C;
+}
+
+/* 1) 타이틀 톤 통일: 굵기/자간/줄바꿈/반응형 크기 */
+.welcome-main-title{
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    text-wrap: balance;                  /* 줄바꿈 균형 */
+    margin: 0;                           /* 여백은 컨테이너에서 */
+}
+
+/* 데스크톱 크기(로그인 타이틀과 톤 맞춤) */
+@media (min-width: 960px){
+    .welcome-main-title{
+        font-size: clamp(28px, 2.2vw + 8px, 40px);
+        line-height: 1.35;
+    }
+}
+
+/* 모바일: 가운데 정렬 & 살짝 축소 */
+@media (max-width: 959.98px){
+    .welcome-main-title{
+        text-align: center;
+        font-size: 22px;
+        line-height: 1.35;
+        padding: 0 8px; /* 좌우 숨쉬기 */
+    }
+    .welcome-sub-title{
+        text-align: center;
+    }
+}
+
+/* 2) 브랜드 강조(gradient 텍스트) — 로그인 타이틀의 brand 효과와 통일 */
+.highlight-text{
+    background: linear-gradient(90deg, var(--brand), var(--brand-dark));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800;
+    white-space: nowrap; /* '무드트립' 끊김 방지 */
+}
+
+/* 3) 은은한 하이라이트 밑줄(옵션) */
+.highlight-text::after{
+    content: "";
+    display: block;
+    height: 8px;
+    margin-top: 6px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--brand) 0%, transparent 100%);
+    opacity: .18;
+}
+
+/* 서브 문구도 로그인과 톤 맞춤 */
+.welcome-sub-title{
+    color: #64748b;
+    font-size: 1.05rem;   /* 살짝 키워 가독성 */
+    line-height: 1.6;
+    margin-top: .25rem;
+}

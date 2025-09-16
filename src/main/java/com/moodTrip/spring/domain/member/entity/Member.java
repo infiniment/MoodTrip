@@ -1,24 +1,92 @@
 package com.moodTrip.spring.domain.member.entity;
 
+import com.moodTrip.spring.domain.fire.entity.MemberFire;
+import com.moodTrip.spring.domain.fire.entity.RoomFire;
+import com.moodTrip.spring.global.common.entity.BaseEntity; // BaseEntity import 추가
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+
+@Table(name = "member")
 @Entity
-@Table(name = "member") // 테이블 이름 명시 (안 적으면 클래스명 그대로 생성)
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class Member {
+@SuperBuilder
+public class Member extends BaseEntity { // BaseEntity 상속
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // PK (Auto Increment)
+    @Column(name = "member_pk")
+    private Long memberPk;
 
-    @Column(nullable = false, length = 50)
-    private String name;
+    @Column(name = "member_id", nullable = false, length = 50)
+    private String memberId;
 
-    @Column(nullable = false, unique = true, length = 100)
+    @Column(name = "member_pw", nullable = false, length = 100)
+    private String memberPw;
+
+    @Column(name = "member_phone", nullable = false, length = 20)
+    private String memberPhone;
+
+    @Column(name = "nickname", nullable = false, length = 30)
+    private String nickname;
+
+    @Column(name = "member_auth", nullable = false, length = 1)
+    private String memberAuth;
+
+    @Column(name = "email", nullable = true, length = 100)
     private String email;
+
+    @Column(name = "is_withdraw", nullable = false)
+    private Boolean isWithdraw;
+
+    @Column(name = "rpt_cnt")
+    private Long rptCnt;
+
+    @Column(name = "rpt_rcvd_cnt")
+    private Long rptRcvdCnt;
+
+    @Column(name = "provider", length = 20)
+    private String provider; // KAKAO, GOOGLE 등. 폼 회원이면 null
+
+    @Column(name = "provider_id", length = 100)
+    private String providerId; // 소셜 플랫폼 내 고유 ID. 폼 회원이면 null
+
+    //수연 추가 어드민에서 마지막 로그인 기록, 회원 상태 관리하기 위해 필요.
+    @Column(name = "last_login_at")
+    private LocalDateTime lastLoginAt;  // 최근 로그인
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 20)
+    @Builder.Default
+    private MemberStatus status = MemberStatus.ACTIVE;  // 회원 상태
+
+    public enum MemberStatus {
+        ACTIVE,      // 활성
+        SUSPENDED,   // 정지
+        WITHDRAWN    // 탈퇴
+    }
+
+    // 주의!
+    // createdAt, updatedAt은 BaseEntity에서 상속받으므로 선언 필요 없음!
+
+    // r상우가 추가. 마이페이지에서 프로필 이미지 가져오기 위해 필요.
+    @OneToOne(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Profile profile;
+
+    // 내가 신고한 멤버 신고 목록 (rpt_cnt와 연관)
+    @OneToMany(mappedBy = "fireReporter", fetch = FetchType.LAZY)
+    private List<MemberFire> reportedMemberFires = new ArrayList<>();
+
+    // 내가 당한 멤버 신고 목록 (rpt_rcvd_cnt와 연관)
+    @OneToMany(mappedBy = "reportedMember", fetch = FetchType.LAZY)
+    private List<MemberFire> receivedMemberFires = new ArrayList<>();
+
 }

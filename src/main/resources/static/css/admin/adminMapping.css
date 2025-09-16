@@ -1,0 +1,148 @@
+/* 공통 스타일 */
+body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding : 10px;
+    color: #333;
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #2c3e50;
+}
+
+/* 테이블 */
+.attraction-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.attraction-table th, .attraction-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.attraction-table th {
+    background-color: #2c3e50;
+    color: #fff;
+    font-weight: 600;
+}
+
+.attraction-table tr:hover {
+linear-gradient(135deg, #005792 0%, #001A2C 100%);
+}
+
+/* 감정 태그 flex grid */
+.emotion-grid {
+    display: flex;
+    flex-wrap: wrap; /* 여러 줄로 감싸기 */
+    gap: 10px;
+    margin-bottom: 10px;
+}
+.emotion-item {
+    flex: 0 0 auto; /* 내용에 따라 크기 */
+    min-width: 140px; /* 최소 너비 */
+    max-width: 220px; /* 너무 길지 않게 제한 */
+    background: #f9fafb;
+    border: 1px solid #dee2e6;
+    padding: 6px 10px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.emotion-item label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    white-space: nowrap; /* 태그 줄바꿈 방지 */
+}
+.emotion-item input[type="text"] {
+    width: 50px;
+    padding: 3px 5px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 13px;
+    text-align: center;
+}
+
+/* 버튼 */
+
+.adminMapping button[type="submit"] {
+    display: inline-block;
+    padding: 6px 14px;
+    background: #2c3e50;
+    color: #fff;
+    font-size: 14px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.attraction-emotion-form {
+    display: flex;
+    flex-direction: column;  /* 위에는 그리드, 아래는 버튼 */
+    align-items: flex-end;   /* 버튼을 오른쪽으로 */
+}
+
+
+button[type="submit"]:hover {
+    background: #1a252f;
+}
+
+/* 페이지네이션 */
+.pagination {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.pagination ul {
+    list-style: none;
+    display: inline-flex;
+    padding: 0;
+    gap: 6px;
+}
+
+.pagination li a {
+    display: block;
+    padding: 6px 12px;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+    color: #2c3e50;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.pagination li a.active,
+.pagination li a:hover {
+    background: #2c3e50;
+    color: #fff;
+}
+/* 관광지명 셀 스타일 */
+.attraction-table td:first-child {
+    font-weight: 600;
+    color: #2c3e50;
+    padding: 18px 16px;
+}
+
+/* 카드 느낌 */
+.attraction-title {
+    background: linear-gradient(135deg, #005792 0%, #001A2C 100%);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    display: inline-block;
+    font-size: 16px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+

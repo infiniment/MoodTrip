@@ -113,46 +113,6 @@
     text-shadow: 0 2px 4px rgba(0, 26, 44, 0.1);
 }
 
-/* 대량 작업 버튼 */
-.bulk-actions {
-    display: flex;
-    gap: 1rem;
-}
-
-.btn-bulk {
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: none;
-}
-
-.btn-approve-all {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: white;
-}
-
-.btn-approve-all:hover {
-    background: linear-gradient(135deg, #059669 0%, #047857 100%);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-}
-
-.btn-reject-all {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.05) 100%);
-    color: #dc2626;
-    border: 1px solid rgba(239, 68, 68, 0.2);
-}
-
-.btn-reject-all:hover {
-    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-    color: white;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-}
-
 /* 통계 카드 */
 .requests-stats {
     display: flex;
@@ -268,12 +228,17 @@
     font-weight: 600;
     color: #001A2C;
     margin: 0;
+    max-width: 20ch;  /* 20개 문자 너비로 제한 */
+    word-break: break-all;
+    overflow-wrap: break-word;
+    white-space: normal;
+    line-height: 1.4;
 }
 
 .room-meta {
     font-size: 14px;
     color: #64748b;
-    margin-top: 4px;
+    margin-top: 10px;
 }
 
 .waiting-count {
@@ -635,6 +600,7 @@
 
 /* 토스트 알림 */
 #toast-container {
+    margin: 55px auto;
     position: fixed;
     top: 20px;
     right: 20px;
@@ -854,11 +820,6 @@
         padding: 1rem;
     }
     
-    .bulk-actions {
-        flex-direction: column;
-        width: 100%;
-    }
-    
     .modal-content {
         width: 95%;
         margin: 1rem;
@@ -928,4 +889,67 @@ select:focus:not(:focus-visible) {
 
 ::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(135deg, rgba(0, 87, 146, 0.5) 0%, rgba(0, 26, 44, 0.4) 100%);
+}
+
+@media (max-width: 1200px) {
+    .user-settings-nav{
+        width: 100% !important;
+        max-width: 680px;              /* 필요시 600~720px로 조절 */
+        margin: 0 0 2rem 0 !important; /* 레이아웃에 맞게 좌측 정렬 유지 */
+        flex-direction: column !important;
+        overflow-x: visible !important; /* 가로 스크롤 제거 */
+        gap: 0 !important;
+    }
+    .user-settings-nav > a{
+        white-space: normal !important; /* 한글 줄바꿈 허용 */
+        border: none !important;        /* 칩 보더 제거 */
+        background: transparent !important; /* 기본 배경 투명(hover/active는 기존 규칙 사용) */
+    }
+    .account-settings,
+    .horizontal-line{
+        display: block !important;      /* 제목/구분선 항상 보이기 */
+    }
+}
+
+.user-settings-nav a.active,
+.user-settings-nav .my_profile.active,
+.user-settings-nav .my_matching.active,
+.user-settings-nav .join_requests.active,
+.user-settings-nav .my_tourist_attraction_wishlist.active,
+.user-settings-nav .change_password.active,
+.user-settings-nav .alarm.active,
+.user-settings-nav .my_reviews.active {
+    background: linear-gradient(135deg, rgba(0,87,146,.10) 0%, rgba(0,26,44,.05) 100%) !important;
+    color: #005792 !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+    display: flex !important;           /* 폭 전체로 칠해지도록 */
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 8px 20px !important;
+    width: 100%;
+}
+
+/* 모바일에서도 세로 리스트 유지 + 칩 규칙 무효화 */
+@media (max-width: 1200px){
+    .user-settings-nav{
+        flex-direction: column !important;
+        overflow-x: visible !important;
+        gap: 0 !important;
+        width: 100% !important;
+        max-width: 680px;
+        margin-bottom: 16px;
+    }
+    /* 기본 항목은 투명, active만 위에서 강제 */
+    .user-settings-nav a{
+        background: transparent !important;
+        border: none !important;
+        white-space: normal !important;
+    }
+
+    /* 제목/구분선도 항상 표시 */
+    .account-settings,
+    .horizontal-line{
+        display: block !important;
+    }
 }

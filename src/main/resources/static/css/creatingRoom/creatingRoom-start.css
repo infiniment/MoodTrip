@@ -77,6 +77,7 @@ body {
 /* 헤더 섹션 */
 .hero-section {
     min-height: 100vh;
+    min-width: 100%;
     display: flex;
     align-items: center;
     position: relative;
@@ -169,6 +170,13 @@ body {
     position: relative;
     z-index: 2;
 }
+
+.hero-image svg {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
 
 .image-container {
     position: relative;
@@ -314,6 +322,35 @@ body {
     .companies-section {
         margin-top: 50px;
     }
+}
+
+@media (max-width: 768px) {
+    .container { padding: 0 16px; }
+
+    .hero-title { font-size: 2.2rem; }   /* 조금 더 줄임 */
+    .hero-subtitle { font-size: 1.05rem; line-height: 1.5; }
+
+    .cta-buttons { gap: 12px; }
+    .btn { width: 100%; max-width: 100%; }
+
+    /* 로고 캐러셀 가장자리 마스크 너무 넓은 문제 조정 */
+    .logo-carousel::before, .logo-carousel::after { width: 40px; }
+
+    /* 스크롤 인디케이터는 모바일에서 숨김(공간 확보) */
+    .scroll-indicator { display: none; }
+}
+
+/* 초소형 기기 대응 */
+@media (max-width: 480px) {
+    .hero-title { font-size: 1.9rem; }
+    .hero-subtitle { font-size: 0.95rem; }
+    .companies-section { padding: 36px 0; }
+    .logo-item { margin: 0 10px; padding: 14px 18px; }
+}
+
+@media (max-width: 768px) {
+    .gnb-menu { display: none; }  /* 기본 메뉴 숨김 */
+    .btn-hamburger { display: inline-flex; } /* 햄버거 표시 */
 }
 
 /* 스크롤 인디케이터 */

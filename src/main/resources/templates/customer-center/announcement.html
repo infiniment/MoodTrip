@@ -5,7 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>무드트립 - 전체 공지사항</title>
     <link rel="stylesheet" href="/css/customer-center/announcement.css">
+    <link rel=" stylesheet" th:href="@{/css/fix/header.css}">
+    <link rel="stylesheet" th:href="@{/css/fix/footer.css}">
+    <link rel="stylesheet" th:href="@{/css/fix/header-after.css}">
+
 </head>
+<!-- 로그인 상태에 따른 조건부 헤더 렌더링 -->
+<div th:if="${isLoggedIn}">
+    <!-- 로그인된 사용자용 헤더 -->
+    <th:block th:replace="~{fix/header-after-login :: header}"></th:block>
+</div>
+<div th:unless="${isLoggedIn}">
+    <!-- 로그인 안된 사용자용 헤더 -->
+    <th:block th:replace="~{fix/header :: header}"></th:block>
+</div>
 <body>
     <div class="announcement-layout">
         <div class="announcement-layout-main">
@@ -53,143 +66,36 @@
                                 <button class="sort-button" data-sort="important">중요공지</button>
                                 <button class="sort-button" data-sort="popular">조회순</button>
                             </div>
+                            <!-- 결과 개수 -->
                             <div class="result-count">
-                                <span>총 <strong>42</strong>개의 공지사항</span>
+                                <span>총 <strong th:text="${totalItems}">0</strong>개의 공지사항</span>
                             </div>
                         </div>
 
                         <!-- 공지사항 목록 -->
                         <ul class="announcement-list-container">
-                            <li class="announcement-list-item important">
-                                <div class="announcement-badge important">중요</div>
+                            <li th:each="notice : ${notices}"
+                                class="announcement-list-item"
+                                th:classappend="${notice.isImportant} ? 'important' : ''">
+                                <div class="announcement-badge"
+                                     th:class="${notice.isImportant} ? 'announcement-badge important' : 'announcement-badge'"
+                                     th:text="${notice.isImportant} ? '중요' : '공지'">공지</div>
                                 <div class="announcement-content">
-                                    <a class="announcement-list-item-link" href="#">
-                                        [중요] 무드트립을 사칭하며 개인정보를 요구하는 피싱 메시지에 주의하세요!
+                                    <a class="announcement-list-item-link"
+                                       th:href="@{/customer-center/announcement-detail(id=${notice.id})}"
+                                       th:text="${notice.title}">
+                                        공지사항 제목
                                     </a>
                                     <div class="announcement-meta">
-                                        <span class="announcement-date">2025.04.17</span>
-                                        <span class="announcement-views">조회 1,254</span>
-                                    </div>
-                                </div>
-                            </li>
-                            
-                            <li class="announcement-list-item important">
-                                <div class="announcement-badge important">중요</div>
-                                <div class="announcement-content">
-                                    <a class="announcement-list-item-link" href="#">
-                                        [중요] 무드트립에서 안전하게 동행을 구해요!
-                                    </a>
-                                    <div class="announcement-meta">
-                                        <span class="announcement-date">2025.04.15</span>
-                                        <span class="announcement-views">조회 987</span>
-                                    </div>
-                                </div>
-                            </li>
-                            
-                            <li class="announcement-list-item">
-                                <div class="announcement-badge">공지</div>
-                                <div class="announcement-content">
-                                    <a class="announcement-list-item-link" href="#">
-                                        [공지] 무드트립 공식 계정 이름 표기 안내 (2025.06.09)
-                                    </a>
-                                    <div class="announcement-meta">
-                                        <span class="announcement-date">2025.06.09</span>
-                                        <span class="announcement-views">조회 456</span>
-                                    </div>
-                                </div>
-                            </li>
-                            
-                            <li class="announcement-list-item">
-                                <div class="announcement-badge">공지</div>
-                                <div class="announcement-content">
-                                    <a class="announcement-list-item-link" href="#">
-                                        [공지] 개인정보처리방침 개정 안내 (2025.06.03)
-                                    </a>
-                                    <div class="announcement-meta">
-                                        <span class="announcement-date">2025.06.03</span>
-                                        <span class="announcement-views">조회 289</span>
-                                    </div>
-                                </div>
-                            </li>
-                            
-                            <li class="announcement-list-item">
-                                <div class="announcement-badge">공지</div>
-                                <div class="announcement-content">
-                                    <a class="announcement-list-item-link" href="#">
-                                        [공지] 7월, 고객센터 운영 시간 안내
-                                    </a>
-                                    <div class="announcement-meta">
-                                        <span class="announcement-date">2025.03.31</span>
-                                        <span class="announcement-views">조회 672</span>
-                                    </div>
-                                </div>
-                            </li>
-                            
-                            <li class="announcement-list-item">
-                                <div class="announcement-badge">공지</div>
-                                <div class="announcement-content">
-                                    <a class="announcement-list-item-link" href="#">
-                                        [공지] 2차 인증 도입 안내 (2025.04.21)
-                                    </a>
-                                    <div class="announcement-meta">
-                                        <span class="announcement-date">2025.04.09</span>
-                                        <span class="announcement-views">조회 834</span>
-                                    </div>
-                                </div>
-                            </li>
-                            
-                            <li class="announcement-list-item">
-                                <div class="announcement-badge">공지</div>
-                                <div class="announcement-content">
-                                    <a class="announcement-list-item-link" href="#">
-                                        [공지] 무드트립 앱 업데이트 안내 (v2.3.1)
-                                    </a>
-                                    <div class="announcement-meta">
-                                        <span class="announcement-date">2025.03.25</span>
-                                        <span class="announcement-views">조회 521</span>
-                                    </div>
-                                </div>
-                            </li>
-                            
-                            <li class="announcement-list-item">
-                                <div class="announcement-badge">공지</div>
-                                <div class="announcement-content">
-                                    <a class="announcement-list-item-link" href="#">
-                                        [공지] 서비스 이용약관 개정 안내
-                                    </a>
-                                    <div class="announcement-meta">
-                                        <span class="announcement-date">2025.03.20</span>
-                                        <span class="announcement-views">조회 398</span>
-                                    </div>
-                                </div>
-                            </li>
-                            
-                            <li class="announcement-list-item">
-                                <div class="announcement-badge">공지</div>
-                                <div class="announcement-content">
-                                    <a class="announcement-list-item-link" href="#">
-                                        [공지] 무드트립 결제 시스템 점검 안내
-                                    </a>
-                                    <div class="announcement-meta">
-                                        <span class="announcement-date">2025.03.15</span>
-                                        <span class="announcement-views">조회 712</span>
-                                    </div>
-                                </div>
-                            </li>
-                            
-                            <li class="announcement-list-item">
-                                <div class="announcement-badge">공지</div>
-                                <div class="announcement-content">
-                                    <a class="announcement-list-item-link" href="#">
-                                        [공지] 무드트립 커뮤니티 가이드라인 안내
-                                    </a>
-                                    <div class="announcement-meta">
-                                        <span class="announcement-date">2025.03.10</span>
-                                        <span class="announcement-views">조회 445</span>
+                <span class="announcement-date"
+                      th:text="${#temporals.format(notice.registeredDate, 'yyyy.MM.dd')}">2025.04.17</span>
+                                        <span class="announcement-views"
+                                              th:text="'조회 ' + ${notice.viewCount != null ? notice.viewCount : 0}">조회 0</span>
                                     </div>
                                 </div>
                             </li>
                         </ul>
+
 
                         <!-- 페이징 섹션 -->
                         <div class="pagination-container">
@@ -200,15 +106,13 @@
                                     </svg>
                                     이전
                                 </button>
-                                
+
                                 <div class="pagination-numbers">
-                                    <button class="pagination-number active" data-page="1">1</button>
-                                    <button class="pagination-number" data-page="2">2</button>
-                                    <button class="pagination-number" data-page="3">3</button>
-                                    <button class="pagination-number" data-page="4">4</button>
-                                    <button class="pagination-number" data-page="5">5</button>
-                                    <span class="pagination-ellipsis">...</span>
-                                    <button class="pagination-number" data-page="10">10</button>
+                                    <button th:each="pageNum : ${#numbers.sequence(1, totalPages)}"
+                                            class="pagination-number"
+                                            th:classappend="${pageNum == currentPage} ? 'active' : ''"
+                                            th:data-page="${pageNum}"
+                                            th:text="${pageNum}">1</button>
                                 </div>
                                 
                                 <button class="pagination-button next">
@@ -220,7 +124,7 @@
                             </nav>
                             
                             <div class="pagination-info">
-                                <span>1 - 10 / 42개</span>
+                                <span>1 - 10 / <span><strong th:text="${totalItems}">0</strong>개</span></span>
                             </div>
                         </div>
                     </div>
@@ -230,5 +134,9 @@
     </div>
 
     <script src="/js/customer-center/announcement.js"></script>
+    <th:block th:replace="~{fix/footer :: footer}"></th:block>
+
+    <script th:src="@{/js/fix/header.js}"></script>
+    <script th:src="@{/js/fix/header-after.js}"></script>
 </body>
 </html>

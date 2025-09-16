@@ -126,10 +126,11 @@ body {
 }
 
 .title-text {
+    padding : 13px;
     font-size: 32px;
     font-weight: 700;
     color: #1e293b;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
     background: linear-gradient(to bottom right, #005792, #001A2C);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;

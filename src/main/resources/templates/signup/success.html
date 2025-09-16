@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MOOD TRIP - 회원가입 완료</title>
+
+    <!-- CSS 파일들 -->
+    <link rel="stylesheet" th:href="@{/css/fix/header.css}">
+    <link rel="stylesheet" th:href="@{/css/fix/footer.css}">
+    <link rel="stylesheet" th:href="@{/css/fix/header-after.css}">
+
+    <!-- 폰트 -->
+    <link href="https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/static/woff2/SUIT.css" rel="stylesheet">
+
+    <!-- 성공 페이지 전용 스타일 -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'SUIT', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #005792 0%, #001A2C 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .success-container {
+            background: white;
+            border-radius: 20px;
+            padding: 50px 40px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+            animation: slideUp 0.8s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            animation: bounce 1s ease-out;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .success-icon::after {
+            content: '✓';
+            color: white;
+            font-size: 40px;
+            font-weight: bold;
+        }
+
+        .success-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .success-message {
+            font-size: 16px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+
+        .welcome-text {
+            background: linear-gradient(135deg, #005792, #001A2C);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 600;
+            font-size: 18px;
+            margin-bottom: 30px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #005792, #001A2C);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 87, 146, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #005792;
+            border-color: #005792;
+        }
+
+        .btn-secondary:hover {
+            background: #005792;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .info-box {
+            background: #f0f6fb;
+            border-left: 4px solid #005792;
+            padding: 20px;
+            margin: 30px 0;
+            border-radius: 8px;
+            text-align: left;
+        }
+
+        .info-box h4 {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .info-box ul {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.8;
+            padding-left: 20px;
+        }
+
+        .info-box li {
+            margin-bottom: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .success-container {
+                margin: 20px;
+                padding: 40px 30px;
+            }
+
+            .success-title {
+                font-size: 24px;
+            }
+
+            .button-group {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 200px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<!-- 로그인 상태에 따른 조건부 헤더 렌더링 -->
+<div th:if="${isLoggedIn}">
+    <!-- 로그인된 사용자용 헤더 -->
+    <th:block th:replace="~{fix/header-after-login :: header}"></th:block>
+</div>
+<div th:unless="${isLoggedIn}">
+    <!-- 로그인 안된 사용자용 헤더 -->
+    <th:block th:replace="~{fix/header :: header}"></th:block>
+</div>
+
+<!-- 메인 컨텐츠 -->
+<div class="main-content">
+    <div class="success-container">
+        <!-- 성공 아이콘 -->
+        <div class="success-icon"></div>
+
+        <!-- 제목 -->
+        <h1 class="success-title">회원가입이 완료되었습니다!</h1>
+
+        <!-- 환영 메시지 -->
+        <p class="welcome-text">MOOD TRIP에 오신 것을 환영합니다!</p>
+
+        <!-- 상세 메시지 -->
+        <p class="success-message">
+            이제 감정 기반 여행지 추천과 동행자 매칭 서비스를<br>
+            마음껏 이용하실 수 있습니다.
+        </p>
+
+        <!-- 서비스 안내 -->
+        <div class="info-box">
+            <h4>🌟 이제 이런 것들을 할 수 있어요!</h4>
+            <ul>
+                <li>감정 태그로 나만의 여행지 찾기</li>
+                <li>날씨별 맞춤 관광지 추천받기</li>
+                <li>취향이 비슷한 동행자와 매칭하기</li>
+                <li>여행 일정 함께 계획하기</li>
+                <li>여행 후기 공유하고 소통하기</li>
+            </ul>
+        </div>
+
+        <!-- 버튼 그룹 -->
+        <div class="button-group">
+            <a th:href="@{/login}" class="btn btn-primary">
+                🚀 로그인하러 가기
+            </a>
+            <a th:href="@{/}" class="btn btn-secondary">
+                🏠 메인페이지 구경하기
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- 푸터 -->
+<th:block th:replace="~{fix/footer :: footer}"></th:block>
+
+<!-- JavaScript -->
+<script th:src="@{/js/fix/header.js}"></script>
+<script th:src="@{/js/fix/header-after.js}"></script>
+
+<!-- 축하 효과 스크립트 -->
+<script>
+    // 🎉 축하 효과 추가
+    document.addEventListener('DOMContentLoaded', function() {
+        // 5초 후 자동으로 로그인 페이지로 이동 (선택사항)
+        // setTimeout(() => {
+        //     if (confirm('로그인 페이지로 이동하시겠습니까?')) {
+        //         window.location.href = '/login';
+        //     }
+        // }, 5000);
+
+        console.log('🎉 회원가입 축하합니다! MOOD TRIP에 오신 것을 환영합니다!');
+    });
+</script>
+</body>
+</html>

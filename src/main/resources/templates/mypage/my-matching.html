@@ -1,388 +1,338 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>무드 트립 - 매칭 정보</title>
-    <link rel="stylesheet" href="/css/mypage/my-matching.css">
+    <link rel="stylesheet" th:href="@{/css/mypage/my-matching.css}">
+    <script th:src="@{/js/mypage/my-matching.js}"></script>
+    <link rel=" stylesheet" th:href="@{/css/fix/header.css}">
+    <link rel="stylesheet" th:href="@{/css/fix/footer.css}">
+    <link rel="stylesheet" th:href="@{/css/fix/header-after.css}">
 </head>
 <body>
-    <div>
-        <div class="wrap">
-            <div class="page">
-                <div class="page-inner">
-                    <aside class="user-settings-nav">
-                        <div class="account-settings">계정 설정</div>
-                        <hr orientation="horizontal" class="horizontal-line">
-                        <a class="my_profile active" href="/templates/mypage/my-profile.html">내 정보</a>
-                        <a class="my_matching active" href="/templates/mypage/my-matching.html">매칭 정보</a>
-                        <a class="join_requests active" href="/templates/mypage/join-requests.html">
-                            방 입장 요청 관리
-                            <span class="notification-badge" id="join-requests-badge" style="display: none;">0</span>
-                        </a>
-                        <a class="my_reviews active" href="/templates/mypage/my-reviews.html">내가 쓴 후기</a>
-                        <a class="my_tourist_attraction_wishlist active" href="/templates/mypage/my-tourist-attraction-wishlist.html">관광지 찜 목록</a>
-                        <a class="change_password active" href="/templates/mypage/change-password.html">비밀번호 변경 정보</a>
-                        <a class="alarm active" href="/templates/mypage/alarm.html">알림 설정</a>             
-                    </aside>
-                    <main class="mypage_info">
-                        <div class="total-wrapper">
-                            <h1 class="info-title">매칭 정보</h1>
-                            
-                            <div class="main-wrapper">
-                                <!-- 탭 네비게이션 -->
-                                <div class="tab-navigation">
-                                    <button class="tab-btn active" data-tab="received">내가 입장한 방</button>
-                                    <button class="tab-btn" data-tab="created">내가 만든 방</button>
-                                </div>
-
-                                <!-- 내가 입장한 방 탭 -->
-                                <section class="tab-content active" id="received-tab">
-                                    <div class="matching-list-wrapper">
-                                        <!-- 매칭 항목 1 -->
-                                        <div class="matching-item">
-                                            <div class="matching-item-inner">
-                                                <div class="matching-info-section">
-                                                    <div class="matching-image-wrapper">
-                                                        <img src="/static/image/mypage/test-profile-img.jpg" alt="경복궁 야간 개장 달빛 보러 가기요~!" class="matching-image">
-                                                    </div>
-                                                    <div class="matching-details">
-                                                        <h3 class="matching-title">경복궁 야간 개장 같이 보러 가요~!</h3>
-                                                        <div class="matching-meta">
-                                                            <span class="host-badge">방장</span>
-                                                            <span class="separator">|</span>
-                                                            <span class="host-name">이진영</span>
-                                                            <span class="verification-badge verified">신원 인증</span>
-                                                            <span class="verification-badge verified">연락처 등록</span>
-                                                        </div>
-                                                        <div class="matching-meta-secondary">
-                                                            <span class="category">문화재</span>
-                                                            <span class="separator">|</span>
-                                                            <span class="tags">액티비티 컬쳐</span>
-                                                            <span class="location-tag">서울시 · 종로구</span>
-                                                        </div>
-                                                        <p class="matching-description">
-                                                            안녕하세요~ 방장 이진영입니다. 최근 경복궁 야간 개장을 다시 시작한다고 하더라구요. 여름 더위에 기운이 없어 지친 사람들과 함께 선선한 저녁에 야간 개장을 보러 가고 싶은 분들은 언제나 환영입니다!!!
-                                                        </p>
-                                                        <div class="matching-tags">
-                                                            <span class="tag">#지친</span>
-                                                            <span class="tag">#우울한</span>
-                                                            <span class="tag">#슬픈</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="matching-status-section">
-                                                    <div class="status-info">
-                                                        <div class="participants-info">
-                                                            <span class="label">멤버 인원</span>
-                                                            <span class="count">3 / 5</span>
-                                                        </div>
-                                                        <div class="travel-date">
-                                                            <span class="label">여행 날짜</span>
-                                                            <span class="date">25/05/13</span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="action-buttons">
-                                                        <button class="btn-chat">스케줄 짜러 가기</button>
-                                                        <button class="btn-exit-room" data-room-type="participant">방 나가기</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- 매칭 항목 2 -->
-                                        <div class="matching-item">
-                                            <div class="matching-item-inner">
-                                                <div class="matching-info-section">
-                                                    <div class="matching-image-wrapper">
-                                                        <img src="/static/image/mypage/test-profile-img.jpg" alt="전주 한옥 마을 도서관" class="matching-image">
-                                                    </div>
-                                                    <div class="matching-details">
-                                                        <h3 class="matching-title">전주 한옥마을 도서관</h3>
-                                                        <div class="matching-meta">
-                                                            <span class="host-badge">방장</span>
-                                                            <span class="separator">|</span>
-                                                            <span class="host-name">김전주</span>
-                                                            <span class="verification-badge verified">신원 인증</span>
-                                                            <span class="verification-badge unverified">연락처 등록</span>
-                                                        </div>
-                                                        <div class="matching-meta-secondary">
-                                                            <span class="category">문화 시설</span>
-                                                            <span class="separator">|</span>
-                                                            <span class="tags">액티비티 컬쳐</span>
-                                                            <span class="location-tag">전주시 · 완산구</span>
-                                                        </div>
-                                                        <p class="matching-description">
-                                                            이번 여행 방장을 맡은 김전주입니다. 이번 여행 목적은 조용하고, 힐링되는 전주 한옥 도서관을 방문할 예정입니다. 책 읽기를 좋아하고 기분 전환하고 싶은 사람들을 모집합니다.
-                                                        </p>
-                                                        <div class="matching-tags">
-                                                            <span class="tag">#힐링</span>
-                                                            <span class="tag">#조용한</span>
-                                                            <span class="tag">#회복되는</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="matching-status-section">
-                                                    <div class="status-info">
-                                                        <div class="participants-info">
-                                                            <span class="label">멤버 인원</span>
-                                                            <span class="count">4 / 6</span>
-                                                        </div>
-                                                        <div class="travel-date">
-                                                            <span class="label">여행 날짜</span>
-                                                            <span class="date">25/06/20</span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="action-buttons">
-                                                        <button class="btn-chat">스케줄 짜러 가기</button>
-                                                        <button class="btn-exit-room" data-room-type="participant">방 나가기</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- 페이지네이션 -->
-                                        <div class="pagination-wrapper">
-                                            <nav class="pagination">
-                                                <button class="page-btn prev" disabled>
-                                                    <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
-                                                        <path d="M8.354 1.646a.5.5 0 0 1 0 .708L2.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
-                                                        <path d="M12.354 1.646a.5.5 0 0 1 0 .708L6.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
-                                                    </svg>
-                                                </button>
-                                                <button class="page-btn prev" disabled>
-                                                    <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
-                                                        <path d="M8.354 1.646a.5.5 0 0 1 0 .708L2.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
-                                                    </svg>
-                                                </button>
-                                                <button class="page-btn active">1</button>
-                                                <button class="page-btn">2</button>
-                                                <button class="page-btn next">
-                                                    <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
-                                                        <path d="M7.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L13.293 8 7.646 2.354a.5.5 0 0 1 0-.708z"/>
-                                                    </svg>
-                                                </button>
-                                                <button class="page-btn next">
-                                                    <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
-                                                        <path d="M3.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L9.293 8 3.646 2.354a.5.5 0 0 1 0-.708z"/>
-                                                        <path d="M7.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L13.293 8 7.646 2.354a.5.5 0 0 1 0-.708z"/>
-                                                    </svg>
-                                                </button>
-                                            </nav>
-                                        </div>
-                                    </div>
-                                </section>
-
-                                <!-- 내가 만든 방 탭 -->
-                                <section class="tab-content" id="created-tab">
-                                    <div class="matching-list-wrapper">
-                                        <!-- 매칭 항목 1 -->
-                                        <div class="matching-item">
-                                            <div class="matching-item-inner">
-                                                <div class="matching-info-section">
-                                                    <div class="matching-image-wrapper">
-                                                        <img src="/static/image/mypage/test-profile-img.jpg" alt="대전 대청 하늘공원" class="matching-image">
-                                                    </div>
-                                                    <div class="matching-details">
-                                                        <h3 class="matching-title">대전 대동 하늘공원</h3>
-                                                        <div class="matching-meta">
-                                                            <span class="host-badge host">방장</span>
-                                                            <span class="separator">|</span>
-                                                            <span class="host-name">김대전</span>
-                                                            <span class="verification-badge unverified">신원 인증</span>
-                                                            <span class="verification-badge verified">연락처 등록</span>
-                                                        </div>
-                                                        <div class="matching-meta-secondary">
-                                                            <span class="category">산행</span>
-                                                            <span class="separator">|</span>
-                                                            <span class="tags">액티비티 컬쳐</span>
-                                                            <span class="location-tag">대전광역시 · 동구</span>
-                                                        </div>
-                                                        <p class="matching-description">
-                                                            안녕하세요~ 방장 김대전입니다. 대전에 있는 대동 하늘공원으로 여행가실 분들을 모집합니다.
-                                                        </p>
-                                                        <div class="matching-tags">
-                                                            <span class="tag">#활기찬</span>
-                                                            <span class="tag">#운동</span>
-                                                            <span class="tag">#행복한</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="matching-status-section">
-                                                    <div class="status-info">
-                                                        <div class="participants-info">
-                                                            <span class="label">멤버 인원</span>
-                                                            <span class="count">3 / 5</span>
-                                                        </div>
-                                                        <div class="travel-date">
-                                                            <span class="label">여행 날짜</span>
-                                                            <span class="date">25/05/13</span>
-                                                        </div>
-                                                        <div class="join-requests-info">
-                                                            <span class="label">대기 중인 요청</span>
-                                                            <span class="count pending-requests" data-room-id="room-1">2건</span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="action-buttons">
-                                                        <button class="btn-chat">스케줄 짜러 가기</button>
-                                                        <button class="btn-manage-requests" data-room-id="room-1">입장 요청 관리</button>
-                                                        <button class="btn-delete-room" data-room-type="host">방 삭제하기</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- 매칭 항목 2 -->
-                                        <div class="matching-item">
-                                            <div class="matching-item-inner">
-                                                <div class="matching-info-section">
-                                                    <div class="matching-image-wrapper">
-                                                        <img src="/static/image/mypage/test-profile-img.jpg" alt="대전 대청 하늘공원" class="matching-image">
-                                                    </div>
-                                                    <div class="matching-details">
-                                                        <h3 class="matching-title">대전 대동 하늘공원</h3>
-                                                        <div class="matching-meta">
-                                                            <span class="host-badge host">방장</span>
-                                                            <span class="separator">|</span>
-                                                            <span class="host-name">김대전</span>
-                                                            <span class="verification-badge unverified">신원 인증</span>
-                                                            <span class="verification-badge verified">연락처 등록</span>
-                                                        </div>
-                                                        <div class="matching-meta-secondary">
-                                                            <span class="category">산행</span>
-                                                            <span class="separator">|</span>
-                                                            <span class="tags">액티비티 컬쳐</span>
-                                                            <span class="location-tag">대전광역시 · 동구</span>
-                                                        </div>
-                                                        <p class="matching-description">
-                                                            안녕하세요~ 방장 김대전입니다. 대전에 있는 대동 하늘공원으로 여행가실 분들을 모집합니다.
-                                                        </p>
-                                                        <div class="matching-tags">
-                                                            <span class="tag">#활기찬</span>
-                                                            <span class="tag">#운동</span>
-                                                            <span class="tag">#행복한</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="matching-status-section">
-                                                    <div class="status-info">
-                                                        <div class="participants-info">
-                                                            <span class="label">멤버 인원</span>
-                                                            <span class="count">3 / 5</span>
-                                                        </div>
-                                                        <div class="travel-date">
-                                                            <span class="label">여행 날짜</span>
-                                                            <span class="date">25/05/13</span>
-                                                        </div>
-                                                        <div class="join-requests-info">
-                                                            <span class="label">대기 중인 요청</span>
-                                                            <span class="count pending-requests" data-room-id="room-2">0건</span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="action-buttons">
-                                                        <button class="btn-chat">스케줄 짜러 가기</button>
-                                                        <button class="btn-manage-requests" data-room-id="room-2" disabled>입장 요청 관리</button>
-                                                        <button class="btn-delete-room" data-room-type="host">방 삭제하기</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- 페이지네이션 -->
-                                        <div class="pagination-wrapper">
-                                            <nav class="pagination">
-                                                <button class="page-btn prev" disabled>
-                                                    <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
-                                                        <path d="M8.354 1.646a.5.5 0 0 1 0 .708L2.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
-                                                        <path d="M12.354 1.646a.5.5 0 0 1 0 .708L6.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
-                                                    </svg>
-                                                </button>
-                                                <button class="page-btn prev" disabled>
-                                                    <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
-                                                        <path d="M8.354 1.646a.5.5 0 0 1 0 .708L2.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
-                                                    </svg>
-                                                </button>
-                                                <button class="page-btn active">1</button>
-                                                <button class="page-btn">2</button>
-                                                <button class="page-btn next">
-                                                    <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
-                                                        <path d="M7.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L13.293 8 7.646 2.354a.5.5 0 0 1 0-.708z"/>
-                                                    </svg>
-                                                </button>
-                                                <button class="page-btn next">
-                                                    <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
-                                                        <path d="M3.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L9.293 8 3.646 2.354a.5.5 0 0 1 0-.708z"/>
-                                                        <path d="M7.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L13.293 8 7.646 2.354a.5.5 0 0 1 0-.708z"/>
-                                                    </svg>
-                                                </button>
-                                            </nav>
-                                        </div>
-                                    </div>
-                                </section>
+<!-- 로그인 상태에 따른 조건부 헤더 렌더링 -->
+<div th:if="${isLoggedIn}">
+    <!-- 로그인된 사용자용 헤더 -->
+    <th:block th:replace="~{fix/header-after-login :: header}"></th:block>
+</div>
+<div th:unless="${isLoggedIn}">
+    <!-- 로그인 안된 사용자용 헤더 -->
+    <th:block th:replace="~{fix/header :: header}"></th:block>
+</div>
+<div id="notification-container"></div>
+<div>
+    <div class="wrap">
+        <div class="page">
+            <div class="page-inner">
+                <aside class="user-settings-nav">
+                    <div class="account-settings">계정 설정</div>
+                    <hr orientation="horizontal" class="horizontal-line">
+                    <a class="my_profile" th:href="@{/mypage/my-profile}">내 정보</a>
+                    <a class="my_matching active" th:href="@{/mypage/my-matching}">매칭 정보</a>
+                    <a class="join_requests" th:href="@{/mypage/join-requests}">
+                        방 입장 요청 관리
+                        <span class="notification-badge" id="join-requests-badge"
+                              th:if="${totalPendingRequests > 0}"
+                              th:text="${totalPendingRequests}">3</span>
+                    </a>
+                    <a class="my_tourist_attraction_wishlist" th:href="@{/mypage/my-tourist-attraction-wishlist}">관광지 찜 목록</a>
+                    <a class="change_password"
+                       th:if="${currentMember != null and #strings.isEmpty(currentMember.providerId)}"
+                       th:href="@{/mypage/change-password}">비밀번호 변경 정보</a>
+                </aside>
+                <main class="mypage_info">
+                    <div class="total-wrapper">
+                        <h1 class="info-title">매칭 정보</h1>
+                        <div class="main-wrapper">
+                            <div class="tab-navigation">
+                                <button class="tab-btn" th:classappend="${activeTab == 'received' ? 'active' : ''}" data-tab="received">내가 입장한 방</button>
+                                <button class="tab-btn" th:classappend="${activeTab == 'created' ? 'active' : ''}" data-tab="created">내가 만든 방</button>
                             </div>
+
+                            <!-- 🔥 내가 입장한 방 탭 (Thymeleaf 렌더링) -->
+                            <section class="tab-content" th:classappend="${activeTab == 'received' ? 'active' : ''}" id="received-tab">
+                                <div class="matching-list-wrapper">
+
+                                    <!-- 🎯 입장한 방이 있는 경우 -->
+                                    <div th:if="${hasJoinedRooms}">
+                                        <div th:each="room : ${joinedRooms}" class="matching-item" th:attr="data-room-id=${room.roomId}">
+                                            <div class="matching-item-inner">
+                                                <div class="matching-info-section">
+                                                    <div class="matching-image-wrapper">
+                                                        <img th:src="${room.image} ?: '/image/creatingRoom/landscape-placeholder-svgrepo-com.svg'"
+                                                             th:alt="${room.roomName}"
+                                                             class="matching-image">
+                                                    </div>
+                                                    <div class="matching-details">
+                                                        <h3 class="matching-title" th:text="${room.roomName}">방 제목</h3>
+                                                        <div class="matching-meta">
+                                                                <span class="host-badge" th:classappend="${room.myRole == 'LEADER' ? 'host' : ''}"
+                                                                      th:text="${room.myRole == 'LEADER' ? '방장' : '멤버'}">역할</span>
+                                                            <span class="separator">|</span>
+                                                            <span class="host-name" th:text="${room.creatorNickname ?: '알 수 없음'}">방장명</span>
+                                                        </div>
+                                                        <div class="matching-meta-secondary">
+                                                            <span class="category" th:text="${room.destinationCategory ?: '기타'}">카테고리</span>
+                                                            <span class="separator">|</span>
+                                                            <span class="tags">여행</span>
+                                                            <span class="location-tag" th:text="${room.destinationName ?: ''}">목적지</span>
+                                                        </div>
+                                                        <p class="matching-description"
+                                                           th:text="${room.roomDescription ?: '즐거운 여행을 함께 하실 분들을 찾습니다!'}">설명</p>
+                                                        <div class="matching-tags">
+                                                                <span th:each="emotion : ${room.emotions}"
+                                                                      class="tag" th:text="'#' + ${emotion}">#감정태그</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!-- 🔥 핵심: 상태 및 버튼 섹션 -->
+                                                <div class="matching-status-section">
+                                                    <div class="status-info">
+                                                        <div class="participants-info">
+                                                            <span class="label">멤버 인원</span>
+                                                            <span class="count" th:text="${room.currentCount} + ' / ' + ${room.maxCount}">0 / 0</span>
+                                                        </div>
+                                                        <div class="travel-date">
+                                                            <span class="label">여행 날짜</span>
+                                                            <span class="date">
+                                                                <span th:text="${#temporals.format(room.travelStartDate, 'yy/MM/dd')}">시작일</span>
+                                                                ~
+                                                                <span th:text="${#temporals.format(room.travelEndDate, 'yy/MM/dd')}">종료일</span>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <!-- 🔥 중요: 버튼 섹션 -->
+                                                    <div class="action-buttons">
+                                                        <button class="btn-chat" th:attr="data-room-id=${room.roomId}">스케줄 짜러 가기</button>
+
+                                                        <!-- ✅ 새로 추가된 신고 버튼 -->
+                                                        <button class="btn-report-room" th:attr="data-room-id=${room.roomId}">신고하기</button>
+
+                                                        <button class="btn-exit-room" data-room-type="participant"
+                                                                th:attr="data-room-id=${room.roomId}">방 나가기</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 🎯 입장한 방이 없는 경우 -->
+                                    <div th:unless="${hasJoinedRooms}" class="empty-state">
+                                        <div style="text-align: center; padding: 4rem 2rem; color: #64748b;">
+                                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="margin-bottom: 1rem; opacity: 0.5;">
+                                                <circle cx="12" cy="12" r="10"></circle>
+                                                <path d="M12 6v6l4 2"></path>
+                                            </svg>
+                                            <h3 style="margin-bottom: 0.5rem; color: #475569;">참여 중인 매칭이 없습니다</h3>
+                                            <p style="color: #64748b;">새로운 여행 매칭을 찾아보세요!</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- 🔥 내가 만든 방 탭 -->
+                            <section class="tab-content" th:classappend="${activeTab == 'created' ? 'active' : ''}" id="created-tab">
+                                <div class="matching-list-wrapper">
+
+                                    <!-- 🎯 생성한 방이 있는 경우 -->
+                                    <div th:if="${hasCreatedRooms}">
+                                        <div th:each="room : ${createdRooms}" class="matching-item" th:attr="data-room-id=${room.roomId}">
+                                            <div class="matching-item-inner">
+                                                <div class="matching-info-section">
+                                                    <div class="matching-image-wrapper">
+                                                        <img th:src="${room.image} ?: '/image/creatingRoom/landscape-placeholder-svgrepo-com.svg'"
+                                                             th:alt="${room.roomName}"
+                                                             class="matching-image">
+                                                    </div>
+                                                    <div class="matching-details">
+                                                        <h3 class="matching-title" th:text="${room.roomName}">방 제목</h3>
+                                                        <div class="matching-meta">
+                                                            <span class="host-badge host">방장</span>
+                                                            <span class="separator">|</span>
+                                                            <span class="host-name" th:text="${currentMember.nickname}">나</span>
+                                                        </div>
+                                                        <div class="matching-meta-secondary">
+                                                            <span class="category" th:text="${room.destinationCategory ?: '기타'}">카테고리</span>
+                                                            <span class="separator">|</span>
+                                                            <span class="tags">여행</span>
+                                                            <span class="location-tag" th:text="${room.destinationName ?: ''}">목적지</span>
+                                                        </div>
+                                                        <p class="matching-description"
+                                                           th:text="${room.roomDescription ?: '즐거운 여행을 함께 하실 분들을 찾습니다!'}">설명</p>
+                                                        <div class="matching-tags">
+                                                                <span th:each="emotion : ${room.emotions}"
+                                                                      class="tag" th:text="'#' + ${emotion}">#감정태그</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!-- 🔥 핵심: 방장용 버튼들 -->
+                                                <div class="matching-status-section">
+                                                    <div class="status-info">
+                                                        <div class="participants-info">
+                                                            <span class="label">멤버 인원</span>
+                                                            <span class="count" th:text="${room.currentCount} + ' / ' + ${room.maxCount}">0 / 0</span>
+                                                        </div>
+                                                        <div class="travel-date">
+                                                            <span class="label">여행 날짜</span>
+                                                            <span class="date">
+                                                            <span th:text="${#temporals.format(room.travelStartDate, 'yy/MM/dd')}">시작일</span>
+                                                                ~
+                                                            <span th:text="${#temporals.format(room.travelEndDate, 'yy/MM/dd')}">종료일</span>
+                                                        </span>
+                                                        </div>
+                                                    </div>
+                                                    <!-- 🔥 중요: 방장용 버튼들 -->
+                                                    <div class="action-buttons">
+                                                        <button class="btn-chat" th:attr="data-room-id=${room.roomId}">스케줄 짜러 가기</button>
+                                                        <button class="btn-manage-requests" th:attr="data-room-id=${room.roomId}">입장 요청 관리</button>
+                                                        <button class="btn-delete-room" data-room-type="host"
+                                                                th:attr="data-room-id=${room.roomId}">방 삭제하기</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 🎯 생성한 방이 없는 경우 -->
+                                    <div th:unless="${hasCreatedRooms}" class="empty-state">
+                                        <div style="text-align: center; padding: 4rem 2rem; color: #64748b;">
+                                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="margin-bottom: 1rem; opacity: 0.5;">
+                                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                                            </svg>
+                                            <h3 style="margin-bottom: 0.5rem; color: #475569;">생성한 매칭이 없습니다</h3>
+                                            <p style="color: #64748b;">새로운 여행 매칭을 만들어보세요!</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
                         </div>
-                    </main>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 🔥 모달들 -->
+<!-- 방 나가기 확인 모달 -->
+<div id="exitRoomModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>방 나가기 확인</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>정말로 이 방을 나가시겠습니까?</p>
+            <p class="modal-warning">방을 나가면 다시 참여하려면 방장의 승인이 필요합니다.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel">취소</button>
+            <button class="btn-confirm">방 나가기</button>
+        </div>
+    </div>
+</div>
+
+<!-- 방 삭제 확인 모달 -->
+<div id="deleteRoomModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>방 삭제 확인</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>정말로 이 방을 삭제하시겠습니까?</p>
+            <p class="modal-warning">방을 삭제하면 모든 참여자가 내보내지며, 채팅 기록도 삭제됩니다.</p>
+            <p class="modal-danger">이 작업은 되돌릴 수 없습니다.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel">취소</button>
+            <button class="btn-confirm btn-danger">방 삭제하기</button>
+        </div>
+    </div>
+</div>
+
+<!-- 신고하기 모달 -->
+<div id="reportRoomModal" class="modal" style="display: none;">
+    <div class="modal-content modal-large">
+        <div class="modal-header">
+            <h3>방 인원 신고하기</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>신고할 대상을 선택하세요.</p>
+            <ul id="reportMemberList" class="member-list">
+            </ul>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel">취소</button>
+            <button class="btn-confirm btn-danger" id="submitReportBtn">신고하기</button>
+        </div>
+    </div>
+</div>
+
+<!-- 입장 요청 관리 모달 -->
+<div id="manageRequestsModal" class="modal" style="display: none;">
+    <div class="modal-content modal-large">
+        <div class="modal-header">
+            <h3>입장 요청 관리</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="requests-list">
+                <div class="empty-requests">
+                    <p>대기 중인 요청이 없습니다.</p>
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- 모달들 -->
-    <!-- 방 나가기 확인 모달 -->
-    <div id="exitRoomModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>방 나가기 확인</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p>정말로 이 방을 나가시겠습니까?</p>
-                <p class="modal-warning">방을 나가면 다시 참여하려면 방장의 승인이 필요합니다.</p>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-cancel">취소</button>
-                <button class="btn-confirm">방 나가기</button>
-            </div>
+        <div class="modal-footer">
+            <button class="btn-cancel">닫기</button>
         </div>
     </div>
+</div>
+</div>
+</main>
+</div>
+</div>
+</div>
+</div>
 
-    <!-- 방 삭제 확인 모달 -->
-    <div id="deleteRoomModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>방 삭제 확인</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p>정말로 이 방을 삭제하시겠습니까?</p>
-                <p class="modal-warning">방을 삭제하면 모든 참여자가 내보내지며, 채팅 기록도 삭제됩니다.</p>
-                <p class="modal-danger">이 작업은 되돌릴 수 없습니다.</p>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-cancel">취소</button>
-                <button class="btn-confirm btn-danger">방 삭제하기</button>
-            </div>
+<!-- 승인/거절 알림 모달 -->
+<div id="roomStatusModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="roomStatusTitle">알림</h3>
+            <button class="modal-close">&times;</button>
         </div>
-    </div>
-
-    <!-- 입장 요청 관리 모달 -->
-    <div id="manageRequestsModal" class="modal" style="display: none;">
-        <div class="modal-content modal-large">
-            <div class="modal-header">
-                <h3>입장 요청 관리</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="requests-list">
-                    <!-- 요청 항목들이 동적으로 추가됩니다 -->
+        <div class="modal-body">
+            <div class="status-icon-container" style="text-align: center; margin-bottom: 1rem;">
+                <div id="approvedIcon" style="display: none;">
+                    <svg width="64" height="64" fill="#10b981" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <div id="rejectedIcon" style="display: none;">
+                    <svg width="64" height="64" fill="#ef4444" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                    </svg>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn-cancel">닫기</button>
-            </div>
+            <p id="roomStatusMessage" style="text-align: center; font-size: 16px; line-height: 1.5;"></p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-confirm" onclick="closeRoomStatusModal()">확인</button>
         </div>
     </div>
+</div>
 
-    <script src="/js/mypage/my-matching.js"></script>
+
+<!-- 푸터 포함 -->
+<th:block th:replace="~{fix/footer :: footer}"></th:block>
+
+<script th:inline="javascript">
+    window.notificationData = /*[[${notification}]]*/ null;
+</script>
+<script th:src="@{/js/fix/header.js}"></script>
+<script th:src="@{/js/fix/header-after.js}"></script>
 </body>
 </html>

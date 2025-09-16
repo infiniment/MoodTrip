@@ -1,220 +1,159 @@
 // 선택된 감정들을 저장할 배열
 let selectedEmotions = [];
 
-// 카테고리별 감정 데이터 (사진의 모든 카테고리 포함)
-const categoryEmotions = {
-    'healing': [
-        { id: 'peace', text: '평온' },
-        { id: 'stable', text: '안정' },
-        { id: 'rest', text: '휴식' },
-        { id: 'freedom', text: '자유' },
-        { id: 'meditation', text: '명상' },
-        { id: 'quiet', text: '고요' },
-        { id: 'tired', text: '힘듦' },
-        { id: 'leisure', text: '여유' }
-    ],
-    'romance': [
-        { id: 'excitement', text: '설렘' },
-        { id: 'romance', text: '낭만' },
-        { id: 'love', text: '사랑' },
-        { id: 'affection', text: '애정' },
-        { id: 'sweetness', text: '달콤함' },
-        { id: 'tender', text: '애틋함' },
-        { id: 'longing', text: '그리움' },
-        { id: 'emotion', text: '감성' }
-    ],
-    'adventure': [
-        { id: 'adventure', text: '모험' },
-        { id: 'thrill', text: '스릴' },
-        { id: 'challenge', text: '도전' },
-        { id: 'exciting', text: '짜릿함' },
-        { id: 'courage', text: '용기' },
-        { id: 'boldness', text: '대담함' },
-        { id: 'dynamic', text: '역동성' },
-        { id: 'energetic', text: '활기참' }
-    ],
-    'freedom': [
-        { id: 'free', text: '자유' },
-        { id: 'liberation', text: '해방' },
-        { id: 'independence', text: '독립' },
-        { id: 'openness', text: '개방' },
-        { id: 'unbound', text: '무구속' },
-        { id: 'escape', text: '탈출' },
-        { id: 'refreshing', text: '시원함' },
-        { id: 'release', text: '해소' }
-    ],
-    'joy': [
-        { id: 'joy', text: '기쁨' },
-        { id: 'fun', text: '즐거움' },
-        { id: 'happiness', text: '행복' },
-        { id: 'satisfaction', text: '만족' },
-        { id: 'ecstasy', text: '희열감' },
-        { id: 'cheerful', text: '즐거운' },
-        { id: 'enthusiasm', text: '흥겨움' },
-        { id: 'delight', text: '기뻐함' }
-    ],
-    'artistic': [
-        { id: 'sensitivity', text: '감성적' },
-        { id: 'inspiration', text: '영감' },
-        { id: 'creativity', text: '창조성' },
-        { id: 'artistic', text: '예술적' },
-        { id: 'beauty', text: '아름다움' },
-        { id: 'elegance', text: '우아함' },
-        { id: 'aesthetic', text: '미적감각' },
-        { id: 'poetic', text: '시적' }
-    ],
-    'effort': [
-        { id: 'passion', text: '열정' },
-        { id: 'energy', text: '에너지' },
-        { id: 'vitality', text: '활력' },
-        { id: 'powerful', text: '힘참' },
-        { id: 'motivation', text: '의욕' },
-        { id: 'driven', text: '동기부여' },
-        { id: 'dynamic2', text: '생동감' },
-        { id: 'lively', text: '발랄' }
-    ],
-    'growth': [
-        { id: 'growth', text: '성장' },
-        { id: 'reflection', text: '사색' },
-        { id: 'contemplation', text: '고민' },
-        { id: 'depth', text: '깊이' },
-        { id: 'philosophical', text: '철학적' },
-        { id: 'introspection', text: '내면탐구' },
-        { id: 'serious', text: '진중함' },
-        { id: 'wisdom', text: '지혜' }
-    ],
-    'comfort': [
-        { id: 'comfort', text: '위로' },
-        { id: 'empathy', text: '공감' },
-        { id: 'understanding', text: '이해' },
-        { id: 'support', text: '지지' },
-        { id: 'care', text: '보살핌' },
-        { id: 'warmth', text: '따뜻함' },
-        { id: 'kindness', text: '친절' },
-        { id: 'gentle', text: '부드러움' }
-    ],
-    'hope': [
-        { id: 'hope', text: '희망' },
-        { id: 'positive', text: '긍정' },
-        { id: 'optimism', text: '낙관' },
-        { id: 'bright', text: '밝음' },
-        { id: 'expectation', text: '기대' },
-        { id: 'confidence', text: '확신' },
-        { id: 'faith', text: '믿음' },
-        { id: 'trust', text: '신뢰' }
-    ],
-    'sadness': [
-        { id: 'depression', text: '우울' },
-        { id: 'sadness', text: '슬픔' },
-        { id: 'loneliness', text: '외로움' },
-        { id: 'melancholy', text: '우수' },
-        { id: 'sorrow', text: '슬픔' },
-        { id: 'grief', text: '상심' },
-        { id: 'despair', text: '절망' },
-        { id: 'gloom', text: '침울함' }
-    ],
-    'calm': [
-        { id: 'peace2', text: '평안' },
-        { id: 'intellectual', text: '지적' },
-        { id: 'calm', text: '차분' },
-        { id: 'serenity', text: '고요' },
-        { id: 'tranquil', text: '안온함' },
-        { id: 'stillness', text: '정적' },
-        { id: 'composure', text: '침착함' },
-        { id: 'mindful', text: '의식적' }
-    ],
-    'anger': [
-        { id: 'anger', text: '분노' },
-        { id: 'irritation', text: '짜증' },
-        { id: 'frustration', text: '좌절' },
-        { id: 'annoyance', text: '어긋남' },
-        { id: 'rage', text: '격분' },
-        { id: 'hostility', text: '적의' },
-        { id: 'resentment', text: '원망' },
-        { id: 'fury', text: '분함' }
-    ],
-    'quiz': [
-        { id: 'quiz', text: '퀴즈' },
-        { id: 'heavy', text: '무거움' },
-        { id: 'serious2', text: '진지' },
-        { id: 'difficult', text: '난해함' },
-        { id: 'complex', text: '복잡함' },
-        { id: 'mysterious', text: '신비' },
-        { id: 'enigmatic', text: '수수께끼' },
-        { id: 'profound', text: '심오함' }
-    ],
-    'honesty': [
-        { id: 'honesty', text: '솔직함' },
-        { id: 'wonder', text: '신기함' },
-        { id: 'authenticity', text: '진실함' },
-        { id: 'sincerity', text: '성의' },
-        { id: 'genuine', text: '순수함' },
-        { id: 'transparent', text: '투명함' },
-        { id: 'openness2', text: '개방성' },
-        { id: 'curious', text: '호기심' }
-    ]
-};
-
 // DOM 로드 후 실행
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function () {
+    const hasPeople = !!localStorage.getItem('selected_people');
+    const hasName   = !!localStorage.getItem('room_name');
+    const hasIntro  = !!localStorage.getItem('room_description');
+    if (!hasPeople || !hasName || !hasIntro) {
+        alert('먼저 기본 정보를 입력해주세요.');
+        window.location.replace('/companion-rooms/create');
+    }
+
+    if (sessionStorage.getItem('prefill_from_detail') !== '1') {
+        sessionStorage.removeItem('room_prefill');
+        localStorage.removeItem('room_prefill');
+    }
+
     initializeCategoryButtons();
-    initializeCustomEmotionInput();
     restoreTemporaryEmotions();
+
+    await waitForEmotionData();
+
+    applyEmotionPrefill();
     initializeNextButton();
 });
+
+document.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href]');
+    if (!a) return;
+
+    const href = a.getAttribute('href');
+    if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
+
+    if (href.startsWith('/companion-rooms/attraction')) navIntent = 'next';      // 다음 단계
+    else if (href.startsWith('/companion-rooms/create')) navIntent = 'back';     // 이전 단계
+    else navIntent = 'leave';                                                    // 그 외 페이지
+});
+
+// 프리필 감정 자동 적용(최대 3개, 이미 선택한 건 유지)
+function applyEmotionPrefill() {
+    if (selectedEmotions.length > 0) return;
+
+    const p = getRoomPrefill({ consume: false });
+    if (!p || p.source !== 'attraction-detail' || !Array.isArray(p.emotions) || p.emotions.length === 0) return;
+
+
+    const remain = Math.max(0, 3 - selectedEmotions.length);
+    p.emotions.slice(0, remain).forEach(name => {
+        const em = findEmotionByName(name);
+        if (em) addEmotionTag(em, 'preset');
+    });
+
+    updateSelectedEmotionsDisplay();
+    updateCategoryButtonBadges();
+
+    console.log('[prefill] applied:', selectedEmotions.map(e => e.text)); // ← 확인용
+}
+// 상세 페이지에서 sessionStorage에 저장한 프리필 읽기
+function getRoomPrefill({ consume = true, ttlMs = 2 * 60 * 1000 } = {}) {
+    const raw = sessionStorage.getItem('room_prefill') || localStorage.getItem('room_prefill');
+    if (!raw) return null;
+
+    let p;
+    try { p = JSON.parse(raw); } catch { return null; }
+
+    const now = Date.now();
+    const fromDetail = sessionStorage.getItem('prefill_from_detail') === '1';
+    const okSource   = p?.source === 'attraction-detail';
+
+    // exp(우선) 또는 ts+ttl 검사
+    const exp = Number(p.exp || 0);
+    const ts  = Number(p.ts || 0);
+    const fresh = exp ? (now <= exp) : (ts ? (now - ts) <= ttlMs : true);
+
+    if (!fromDetail || !okSource || !fresh) {
+        // 만료/잘못된 경우 찌꺼기 정리하고 사용하지 않음
+        sessionStorage.removeItem('room_prefill');
+        sessionStorage.removeItem('prefill_from_detail');
+        localStorage.removeItem('room_prefill');
+        return null;
+    }
+
+    if (consume) {
+        sessionStorage.removeItem('room_prefill');
+        sessionStorage.removeItem('prefill_from_detail');
+        localStorage.removeItem('room_prefill');
+    }
+    return p;
+}
+
+// emotionCategoryData 안에서 '감정 이름'으로 태그(id, 이름) 찾기
+function findEmotionByName(name) {
+    // '#기쁨 ' 같은 입력도 맞춰지도록 정규화
+    const norm = (s) => String(s || '')
+        .replace(/^#/, '')        // 앞의 # 제거
+        .replace(/\s+/g, '')      // 공백 제거
+        .trim()
+        .toLowerCase();
+
+    const target = norm(name);
+
+    for (const cat of (window.emotionCategoryData || [])) {
+        const hit = (cat.emotions || []).find(e => {
+            const now = norm(e.tagName || e.name || e.text || '');
+            return now === target;
+        });
+        if (hit) return { id: hit.tagId ?? hit.id, text: hit.tagName ?? hit.text };
+    }
+    return null;
+}
 
 // 카테고리 버튼 초기화
 function initializeCategoryButtons() {
     const categoryButtons = document.querySelectorAll('.category-btn');
     const closeBtn = document.getElementById('closeTagsBtn');
-    
+
     categoryButtons.forEach(button => {
         button.addEventListener('click', function() {
-            const category = this.getAttribute('data-category');
-            showCategoryEmotions(category, this);
+            const categoryId = this.getAttribute('data-category-id');
+            showCategoryEmotions(categoryId, this);
         });
     });
-    
-    // 닫기 버튼
+
     if (closeBtn) {
-        closeBtn.addEventListener('click', function() {
-            hideCategoryEmotions();
-        });
+        closeBtn.addEventListener('click', hideCategoryEmotions);
     }
 }
 
 // 카테고리 감정 표시
-function showCategoryEmotions(category, button) {
+function showCategoryEmotions(categoryId, button) {
     const displayArea = document.getElementById('emotionTagsDisplay');
     const titleElement = document.getElementById('selectedCategoryTitle');
     const gridElement = document.getElementById('emotionTagsGrid');
-    
-    // 모든 버튼 비활성화
-    document.querySelectorAll('.category-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    
-    // 선택된 버튼 활성화
+
+    // 버튼 UI 상태 업데이트
+    document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
     button.classList.add('active');
-    
-    // 제목 설정
+
+    // 카테고리 정보 설정
     const categoryIcon = button.querySelector('.category-icon').textContent;
     const categoryName = button.querySelector('.category-name').textContent;
     titleElement.innerHTML = `${categoryIcon} ${categoryName}`;
-    
-    // 감정 태그들 생성
+
+    // 소분류 감정 가져오기
+    const category = emotionCategoryData.find(c => c.emotionCategoryId == categoryId);
+    const emotions = category ? category.emotions : [];
+
+    // 감정 태그 렌더링
     gridElement.innerHTML = '';
-    const emotions = categoryEmotions[category] || [];
-    
     emotions.forEach(emotion => {
-        const tagItem = createEmotionTagItem(emotion, category);
+        const tagItem = createEmotionTagItem({ id: emotion.tagId, text: emotion.tagName }, categoryId);
         gridElement.appendChild(tagItem);
     });
-    
-    // 표시 영역 보이기
+
     displayArea.style.display = 'block';
-    
-    // 부드러운 스크롤
     displayArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
@@ -223,95 +162,81 @@ function createEmotionTagItem(emotion, category) {
     const tagItem = document.createElement('div');
     tagItem.className = 'emotion-tag-item';
     tagItem.setAttribute('data-emotion', emotion.text);
-    
+
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.id = `emotion-${emotion.id}`;
     checkbox.name = 'emotions';
     checkbox.value = emotion.text;
     checkbox.className = 'emotion-checkbox';
-    
+
     // 이미 선택된 감정인지 확인
     if (isEmotionAlreadySelected(emotion.text)) {
         checkbox.checked = true;
     }
-    
+
     const label = document.createElement('label');
     label.setAttribute('for', checkbox.id);
     label.className = 'emotion-label';
     label.textContent = emotion.text;
-    
+
     // 체크박스 이벤트
-    checkbox.addEventListener('change', function() {
+    checkbox.addEventListener('change', function () {
         if (this.checked) {
-            addEmotionTag(emotion.text, 'preset');
+            const added = addEmotionTag({ id: emotion.id, text: emotion.text }, 'preset');
+            if (!added) {
+                this.checked = false; // 3개 초과일 경우 체크 해제
+            }
         } else {
-            removeEmotionTag(emotion.text);
+            removeEmotionTag(emotion);
         }
     });
-    
+
+
     tagItem.appendChild(checkbox);
     tagItem.appendChild(label);
-    
+
     return tagItem;
 }
 
 // 카테고리 감정 숨기기
 function hideCategoryEmotions() {
     const displayArea = document.getElementById('emotionTagsDisplay');
-    
+
     // 모든 버튼 비활성화
     document.querySelectorAll('.category-btn').forEach(btn => {
         btn.classList.remove('active');
     });
-    
+
     // 표시 영역 숨기기
     displayArea.style.display = 'none';
 }
 
-// 커스텀 감정 입력 초기화
-function initializeCustomEmotionInput() {
-    const customInput = document.getElementById('customEmotionInput');
-    
-    customInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            const emotion = this.value.trim();
-            
-            if (emotion && !isEmotionAlreadySelected(emotion)) {
-                addEmotionTag(emotion, 'custom');
-                this.value = ''; // 입력창 비우기
-            } else if (isEmotionAlreadySelected(emotion)) {
-                alert('이미 선택된 감정 태그입니다.');
-                this.value = '';
-            }
-        }
-    });
-}
+let navIntent = 'unknown';
 
 // 감정 태그 추가
 function addEmotionTag(emotion, type) {
-    // 중복 체크
-    if (isEmotionAlreadySelected(emotion)) {
-        return;
+    if (selectedEmotions.length >= 3 && !isEmotionAlreadySelected(emotion)) {
+        alert("감정은 최대 3개까지 선택할 수 있습니다.");
+        return false; // 추가 실패
     }
-    
-    // 배열에 추가
-    selectedEmotions.push({
-        text: emotion,
-        type: type
-    });
-    
-    // UI 업데이트
+
+    if (isEmotionAlreadySelected(emotion)) {
+        return false;
+    }
+
+    selectedEmotions.push({ id: emotion.id, text: emotion.text, type: type || 'preset' });
+
     updateSelectedEmotionsDisplay();
     updateCategoryButtonBadges();
+    return true; // 추가 성공
 }
 
 // 감정 태그 제거
 function removeEmotionTag(emotion) {
     // 배열에서 제거
-    selectedEmotions = selectedEmotions.filter(item => item.text !== emotion);
-    
+    selectedEmotions = selectedEmotions.filter(item => item.id !== emotion.id);
+
     // UI 업데이트
     updateSelectedEmotionsDisplay();
     updateCategoryButtonBadges();
@@ -319,26 +244,27 @@ function removeEmotionTag(emotion) {
 
 // 이미 선택된 감정인지 확인
 function isEmotionAlreadySelected(emotion) {
-    return selectedEmotions.some(item => item.text === emotion);
+    const id   = (emotion && typeof emotion === 'object') ? emotion.id   : null;
+    const text = (emotion && typeof emotion === 'object') ? emotion.text : String(emotion);
+    return selectedEmotions.some(item => (id != null ? item.id === id : item.text === text));
 }
-
 // 선택된 감정 태그 UI 업데이트
 function updateSelectedEmotionsDisplay() {
     const container = document.getElementById('selectedEmotionsContainer');
     const list = document.getElementById('selectedEmotionsList');
-    
+
     // 리스트 비우기
     list.innerHTML = '';
-    
+
     // 선택된 감정이 없으면 컨테이너 숨기기
     if (selectedEmotions.length === 0) {
         container.style.display = 'none';
         return;
     }
-    
+
     // 컨테이너 보이기
     container.style.display = 'block';
-    
+
     // 각 감정 태그 생성
     selectedEmotions.forEach(emotion => {
         const tagElement = createEmotionTagElement(emotion);
@@ -351,54 +277,51 @@ function createEmotionTagElement(emotion) {
     const tag = document.createElement('div');
     tag.className = `selected-emotion-tag ${emotion.type}`;
     tag.setAttribute('data-emotion', emotion.text);
-    
+
     // 태그 텍스트
     const tagText = document.createElement('span');
     tagText.textContent = `# ${emotion.text}`;
     tag.appendChild(tagText);
-    
+
     // 삭제 버튼
     const removeBtn = document.createElement('button');
     removeBtn.className = 'emotion-tag-remove';
     removeBtn.innerHTML = '×';
     removeBtn.setAttribute('type', 'button');
     removeBtn.setAttribute('aria-label', `${emotion.text} 태그 삭제`);
-    
+
     // 삭제 버튼 클릭 이벤트
     removeBtn.addEventListener('click', function() {
-        removeEmotionTag(emotion.text);
-        
+        removeEmotionTag(emotion);
+
         // 현재 표시된 카테고리에서 해당 체크박스 해제
         const checkbox = document.querySelector(`input[value="${emotion.text}"]`);
         if (checkbox) {
             checkbox.checked = false;
         }
     });
-    
+
     tag.appendChild(removeBtn);
-    
+
     return tag;
 }
 
 // 카테고리 버튼 뱃지 업데이트
 function updateCategoryButtonBadges() {
-    Object.keys(categoryEmotions).forEach(category => {
-        const button = document.querySelector(`[data-category="${category}"]`);
+    emotionCategoryData.forEach(category => {
+        const button = document.querySelector(`[data-category-id="${category.emotionCategoryId}"]`);
         if (!button) return;
-        
+
         // 기존 뱃지 제거
         const existingBadge = button.querySelector('.emotion-count-badge');
         if (existingBadge) {
             existingBadge.remove();
         }
-        
-        // 해당 카테고리의 선택된 감정 개수 계산
-        const categoryEmotionTexts = categoryEmotions[category].map(e => e.text);
-        const selectedCount = selectedEmotions.filter(emotion => 
-            categoryEmotionTexts.includes(emotion.text)
+
+        const selectedCount = selectedEmotions.filter(emotion =>
+            category.emotions.some(e => e.tagId === emotion.id)
         ).length;
-        
-        // 선택된 감정이 있으면 뱃지 추가
+
         if (selectedCount > 0) {
             const badge = document.createElement('span');
             badge.className = 'emotion-count-badge';
@@ -410,37 +333,39 @@ function updateCategoryButtonBadges() {
 
 // 임시 저장된 감정 복원
 function restoreTemporaryEmotions() {
-    const tempEmotions = localStorage.getItem('temp_selected_emotions');
+    const tempEmotions = sessionStorage.getItem('temp_selected_emotions');
     if (tempEmotions) {
         try {
             const emotions = JSON.parse(tempEmotions);
-            
+
             emotions.forEach(emotion => {
-                addEmotionTag(emotion.text, emotion.type);
+                // id, text, type 모두 포함된 객체로 전달
+                addEmotionTag({ id: emotion.id, text: emotion.text }, emotion.type);
             });
-            
+
             // 임시 저장 데이터 삭제
-            localStorage.removeItem('temp_selected_emotions');
+            sessionStorage.removeItem('temp_selected_emotions');
         } catch (e) {
             console.error('임시 저장된 감정 데이터 복원 실패:', e);
         }
     }
 }
 
+
 // 폼 제출 시 선택된 감정들을 hidden input에 추가
 function prepareFormSubmission() {
     const form = document.getElementById('temporary_room_phase_1');
-    
+
     // 기존 hidden input들 제거
     const existingInputs = form.querySelectorAll('input[name="selected_emotions"]');
     existingInputs.forEach(input => input.remove());
-    
+
     // 선택된 감정들을 hidden input으로 추가
     selectedEmotions.forEach(emotion => {
         const hiddenInput = document.createElement('input');
         hiddenInput.type = 'hidden';
         hiddenInput.name = 'selected_emotions';
-        hiddenInput.value = emotion.text;
+        hiddenInput.value =  JSON.stringify({ id: emotion.id, text: emotion.text });
         form.appendChild(hiddenInput);
     });
 }
@@ -452,25 +377,23 @@ function validationPhase(form) {
         alert('최소 하나의 감정 태그를 선택해주세요.');
         return false;
     }
-    
+
     // 폼 제출 준비
     prepareFormSubmission();
-    
+
     // 선택된 감정들을 다음 페이지로 전달하기 위해 저장
     saveEmotionsForNextPage();
-    
+
     return true;
 }
 
 // 뒤로가기 함수
 function exitWithSubmit(formId, canSubmit) {
-    // 현재 선택된 감정들을 로컬 스토리지에 저장
+    navIntent = 'back';
     if (selectedEmotions.length > 0) {
-        localStorage.setItem('temp_selected_emotions', JSON.stringify(selectedEmotions));
+        sessionStorage.setItem('temp_selected_emotions', JSON.stringify(selectedEmotions));
     }
-    
-    // 이전 페이지로 이동
-    window.location.href = '/templates/creatingRoom/creatingRoom-detail.html';
+    window.location.href = '/companion-rooms/create';
 }
 
 // 다음 버튼 초기화
@@ -479,17 +402,10 @@ function initializeNextButton() {
     if (nextButton) {
         nextButton.addEventListener('click', function(e) {
             e.preventDefault();
-            
-            // 유효성 검사
-            if (selectedEmotions.length === 0) {
-                alert('최소 하나의 감정 태그를 선택해주세요.');
-                return;
-            }
-            
-            // 선택된 감정들 저장
-            saveEmotionsForNextPage();
-            
-            // 다음 페이지로 이동
+            if (selectedEmotions.length === 0) { alert('최소 하나의 감정 태그를 선택해주세요.'); return; }
+
+            navIntent = 'next';
+            saveEmotionsForNextPage();                  // 다음 단계에서 읽을 값 저장
             goToNextPage();
         });
     }
@@ -497,29 +413,27 @@ function initializeNextButton() {
 
 // 다음 페이지로 전달할 감정 데이터 저장
 function saveEmotionsForNextPage() {
-    localStorage.setItem('selected_emotions_step2', JSON.stringify(selectedEmotions));
-    sessionStorage.setItem('selected_emotions_step2', JSON.stringify(selectedEmotions));
-    console.log('다음 페이지로 전달할 감정 데이터 저장 완료:', selectedEmotions);
+    sessionStorage.setItem('selected_emotions', JSON.stringify(selectedEmotions));
 }
 
 // 다음 페이지로 이동
 function goToNextPage() {
-    window.location.href = "/templates/creatingRoom/choosing-tour.html"; 
+    window.location.href = "/companion-rooms/attraction";
 }
 
 // 저장된 감정 데이터 불러오기
 function getSelectedEmotionsFromPreviousPage() {
     try {
-        let emotions = localStorage.getItem('selected_emotions_step2');
+        let emotions = localStorage.getItem('selected_emotions');
         if (emotions) {
             return JSON.parse(emotions);
         }
-        
-        emotions = sessionStorage.getItem('selected_emotions_step2');
+
+        emotions = sessionStorage.getItem('selected_emotions');
         if (emotions) {
             return JSON.parse(emotions);
         }
-        
+
         return [];
     } catch (e) {
         console.error('저장된 감정 데이터 불러오기 실패:', e);
@@ -527,11 +441,23 @@ function getSelectedEmotionsFromPreviousPage() {
     }
 }
 
+function waitForEmotionData(maxWaitMs = 1500) {
+    return new Promise(resolve => {
+        const t0 = Date.now();
+        (function tick() {
+            if (Array.isArray(window.emotionCategoryData) && window.emotionCategoryData.length > 0) {
+                return resolve(true);
+            }
+            if (Date.now() - t0 > maxWaitMs) return resolve(false); // 타임아웃이면 그냥 진행
+            setTimeout(tick, 50);
+        })();
+    });
+}
+
 // 감정 데이터 정리
 function clearEmotionData() {
-    localStorage.removeItem('selected_emotions_step2');
-    sessionStorage.removeItem('selected_emotions_step2');
-    localStorage.removeItem('temp_selected_emotions');
+    sessionStorage.removeItem('selected_emotions');
+    sessionStorage.removeItem('temp_selected_emotions');
 }
 
 // 도움말 모달 관련 함수들
@@ -558,10 +484,10 @@ document.addEventListener('keydown', function(e) {
 // 빠른 선택 기능
 function selectQuickEmotions(type) {
     const emotionSets = {
-        'positive': ['기쁨', '즐거움', '행복', '만족'],
-        'healing': ['평온', '안정', '휴식', '여유'],
-        'adventure': ['모험', '스릴', '도전', '짜릿함'],
-        'comfort': ['위로', '공감', '이해', '지지']
+        positive: ['기쁨','즐거움','행복','만족'],
+        healing:  ['평온','안정','휴식','여유'],
+        adventure:['모험','스릴','도전','짜릿함'],
+        comfort:  ['위로','공감','이해','지지']
     };
 
     // 기존 선택 해제
@@ -569,14 +495,14 @@ function selectQuickEmotions(type) {
     updateSelectedEmotionsDisplay();
     updateCategoryButtonBadges();
 
-    // 새로운 감정들 선택
+    // 이름으로 id 찾아서 정상 추가
     if (emotionSets[type]) {
-        emotionSets[type].forEach(emotion => {
-            addEmotionTag(emotion, 'preset');
+        emotionSets[type].forEach((name) => {
+            const em = findEmotionByName(name);
+            if (em) addEmotionTag(em, 'preset');
         });
     }
 
-    // 모달 닫기
     closeHelpModal();
 }
 
@@ -590,7 +516,7 @@ document.addEventListener('keydown', function(e) {
             nextButton.click();
         }
     }
-    
+
     // 숫자키로 카테고리 선택 (1-9, 0)
     const keyNumber = parseInt(e.key);
     if (keyNumber >= 0 && keyNumber <= 9) {
@@ -602,39 +528,21 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// 카테고리 이름 매핑
-const categoryNames = {
-    'healing': '평온 & 힐링',
-    'romance': '사랑 & 로맨스',
-    'adventure': '모험 & 스릴',
-    'freedom': '자유 & 해방',
-    'joy': '기쁨 & 즐거움',
-    'artistic': '감성 & 예술',
-    'effort': '열정 & 에너지',
-    'growth': '성장 & 사색',
-    'comfort': '위로 & 공감',
-    'hope': '희망 & 긍정',
-    'sadness': '우울 & 슬픔',
-    'calm': '평안 & 지적',
-    'anger': '분노 & 짜증',
-    'quiz': '퀴즈 & 무거움',
-    'honesty': '솔직함 & 신기함'
-};
 
 // 감정 통계 정보
 function getEmotionStats() {
     const counts = {};
     const total = selectedEmotions.length;
     const custom = selectedEmotions.filter(e => e.type === 'custom').length;
-    
+
     Object.keys(categoryEmotions).forEach(category => {
         const categoryEmotionTexts = categoryEmotions[category].map(e => e.text);
-        const selectedCount = selectedEmotions.filter(emotion => 
+        const selectedCount = selectedEmotions.filter(emotion =>
             categoryEmotionTexts.includes(emotion.text)
         ).length;
         counts[category] = selectedCount;
     });
-    
+
     return {
         total: total,
         preset: total - custom,
@@ -643,18 +551,20 @@ function getEmotionStats() {
     };
 }
 
-// 페이지 언로드 시 임시 저장
-window.addEventListener('beforeunload', function() {
-    if (selectedEmotions.length > 0) {
-        localStorage.setItem('temp_selected_emotions', JSON.stringify(selectedEmotions));
+
+window.addEventListener('beforeunload', function () {
+    if (navIntent === 'next') {
+        // 남아있을 수 있는 임시값은 정리
+        sessionStorage.removeItem('temp_selected_emotions');
+    } else if (navIntent === 'back') {
+        // 이전 단계로 돌아갈 때: 임시값만 보존
+        if (selectedEmotions.length > 0) {
+            localStorage.setItem('temp_selected_emotions', JSON.stringify(selectedEmotions));
+        } else {
+            localStorage.removeItem('temp_selected_emotions');
+        }
+    } else {
+        // 그 외(헤더 이동, 주소창 입력, 새 탭/닫기 등): 전부 초기화
+        clearEmotionData(); // selected_emotions / temp_selected_emotions 모두 제거
     }
 });
-
-// 디버그 정보 (개발용)
-function getDebugInfo() {
-    return {
-        selectedEmotions: selectedEmotions,
-        stats: getEmotionStats(),
-        categoryNames: categoryNames
-    };
-}
