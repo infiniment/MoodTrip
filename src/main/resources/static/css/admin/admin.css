@@ -13,8 +13,6 @@
     margin: 0;
     padding: 0;
     color: rgb(48, 52, 65);
-    /* 헤더가 있을 때를 대비한 상단 여백 */
-    padding-top: 65px; /* 헤더 높이만큼 */
 }
 
 /* 헤더가 없는 경우를 위한 클래스 */
@@ -22,18 +20,17 @@
     padding-top: 0;
 }
 
-/* 사이드바 */
 .sidebar {
     width: 250px;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%);
     backdrop-filter: blur(10px);
     border-right: 1px solid rgba(0, 87, 146, 0.1);
     box-shadow: 2px 0 20px rgba(0, 26, 44, 0.1);
-    position: fixed;
-    height: 100vh;
-    top: 65px; /* 헤더 아래에 위치 */
+    /* position: fixed 제거 */
+    flex-shrink: 0; /* 사이드바 너비 고정 */
     overflow-y: auto;
-    z-index: 1500; /* 헤더보다 낮게 설정 */
+    z-index: 1500;
+    /* height 관련 속성 제거 - flex가 알아서 처리 */
 }
 
 /* 헤더가 없는 경우의 사이드바 */
@@ -104,7 +101,7 @@
 /* 메인 콘텐츠 */
 .main-content {
     flex: 1;
-    margin-left: 250px;
+    /* margin-left: 250px; 제거 - flex에서는 필요없음 */
     padding: 0;
     min-width: 0;
     overflow-x: clip;
