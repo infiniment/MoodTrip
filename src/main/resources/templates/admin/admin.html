@@ -10,20 +10,6 @@
     <script src="/js/admin/adminMapping.js" defer></script>
     <meta name="_csrf" th:content="${_csrf?.token}"/>
     <meta name="_csrf_header" th:content="${_csrf?.headerName}"/>
-    <!--불안정 수정 ver1-->
-<!--    <script>-->
-<!--        const matchingMembersData = {-->
-<!--        <th:block th:each="matching : ${matchings}">-->
-<!--            '<th:block th:text="${matching.roomId}"></th:block>': {-->
-<!--            participants: [<th:block th:each="participant : ${matching.participants}">'<th:block th:text="${participant}"></th:block>',</th:block>],-->
-<!--            createdAt: '<th:block th:text="${matching.createdAt}"></th:block>'-->
-<!--        },-->
-<!--        </th:block>-->
-<!--        };-->
-
-<!--        console.log("matchingMembersData:", matchingMembersData);-->
-<!--    </script>-->
-    <!--불안정 수정 ver2-->
     <script th:inline="javascript">
         /*<![CDATA[*/
         const matchingMembersData = {
@@ -300,10 +286,10 @@
 
                 <!-- 테이블 하단 정보 -->
                 <div class="table-footer" style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center; color: #666; font-size: 14px;">
-                    <div class="table-info">
-                        총<span th:text="${members != null ? #lists.size(members) : 0}">0</span>명의 회원
-                        (<span th:text="${members != null ? #lists.size(members) : 0}">0</span>명 표시 중)
-                    </div>
+<!--                    <div class="table-info">-->
+<!--                        총<span th:text="${members != null ? #lists.size(members) : 0}">0</span>명의 회원-->
+<!--                        (<span th:text="${members != null ? #lists.size(members) : 0}">0</span>명 표시 중)-->
+<!--                    </div>-->
                     <div class="table-actions">
                         <button class="btn-small" onclick="exportMemberList()">목록 내보내기</button>
                     </div>
