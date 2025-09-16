@@ -1,6 +1,7 @@
 package com.moodTrip.spring.global.config;
 
 import com.moodTrip.spring.domain.member.service.MemberService;
+import com.moodTrip.spring.global.security.filter.AdminAccessFilter;
 import com.moodTrip.spring.global.security.jwt.JwtAuthenticationFilter;
 import com.moodTrip.spring.global.security.jwt.JwtUtil;
 import com.moodTrip.spring.global.security.oauth.CustomOAuth2SuccessHandler;
@@ -82,13 +83,13 @@ public class SecurityConfig {
         };
     }
 
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            ClientRegistrationRepository clientRegistrationRepository,
                                            MemberService memberService,
                                            JwtUtil jwtUtil,
-                                           UserDetailsService userDetailsService
+                                           UserDetailsService userDetailsService,
+                                           AdminAccessFilter adminAccessFilter
     ) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
@@ -97,16 +98,16 @@ public class SecurityConfig {
                                 "/logout", "/login", "/api/login", "/signup",
                                 "/css/**", "/js/**", "/image/**", "/uploads/**",
                                 "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/api-docs/**",
-                                "/error", "/api/v1/room-online/**", "/api/v1/profiles/**"
+                                "/error", "/api/v1/room-online/**", "/api/v1/profiles/**",
+                                "/suspended", "/withdraw"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/attractions/content/*/emotion-tags").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/attractions/content/*/detail").permitAll()
                         .requestMatchers("/mypage/**").authenticated()
-                        // [원래 설정 유지] 모든 요청을 허용하는 기존 설정
+                        .requestMatchers("/admin/**").permitAll()
                         .anyRequest().permitAll()
                 )
                 .exceptionHandling(exception -> exception
-                        // [수정된 EntryPoint 적용]
                         .authenticationEntryPoint(customAuthenticationEntryPoint())
                 )
                 .formLogin(form -> form.disable())
@@ -126,14 +127,15 @@ public class SecurityConfig {
                         .invalidateHttpSession(true)
                 );
 
-        http.addFilterBefore(
-                new JwtAuthenticationFilter(jwtUtil, userDetailsService),
-                UsernamePasswordAuthenticationFilter.class
-        );
+        // ✅ 올바른 필터 순서: JWT 토큰 처리 → 관리자 권한 체크
+        // 1. JwtAuthenticationFilter를 먼저 실행 (JWT 토큰 처리)
+        http.addFilterBefore(new JwtAuthenticationFilter(jwtUtil, userDetailsService), UsernamePasswordAuthenticationFilter.class);
+
+        // 2. AdminAccessFilter를 JwtAuthenticationFilter 뒤에 실행 (관리자 권한 체크)
+        http.addFilterAfter(adminAccessFilter, JwtAuthenticationFilter.class);
 
         return http.build();
     }
-
     @Bean
     public OAuth2AuthorizationRequestResolver customAuthorizationRequestResolver(
             ClientRegistrationRepository clientRegistrationRepository) {
