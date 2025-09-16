@@ -1,0 +1,21 @@
+# --- build stage ---
+FROM eclipse-temurin:17-jdk as build
+WORKDIR /workspace
+COPY . .
+# Gradle이면:
+RUN ./gradlew clean bootJar -x test
+# jar 경로 확인: build/libs/*.jar
+RUN ls -l build/libs
+
+# --- run stage ---
+FROM eclipse-temurin:17-jre
+WORKDIR /app
+# 빌드 산출물 복사
+COPY --from=build /workspace/build/libs/*.jar /app/app.jar
+
+# 프로필/외부설정 주입을 위해 추가 로케이션 열어둠
+ENV SPRING_CONFIG_ADDITIONAL_LOCATION=file:/app/config/
+ENV JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8 -XX:+UseContainerSupport"
+
+EXPOSE 8080
+ENTRYPOINT ["java","-jar","/app/app.jar","--spring.profiles.active=prod"
