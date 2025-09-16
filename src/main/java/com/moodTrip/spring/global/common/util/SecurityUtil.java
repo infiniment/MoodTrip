@@ -109,6 +109,30 @@ public class SecurityUtil {
         }
     }
 
+    // SecurityUtil.java 클래스 끝 부분에 추가할 메서드
+
+    /**
+     * 현재 로그인한 사용자가 관리자인지 확인
+     * member_pk가 1인 경우에만 관리자로 인정
+     */
+    public boolean isAdmin() {
+        try {
+            Member currentMember = getCurrentMember();
+            boolean isAdminUser = currentMember != null && currentMember.getMemberPk().equals(1L);
+
+            log.debug("관리자 권한 체크 - memberId: {}, memberPk: {}, isAdmin: {}",
+                    currentMember != null ? currentMember.getMemberId() : "null",
+                    currentMember != null ? currentMember.getMemberPk() : "null",
+                    isAdminUser);
+
+            return isAdminUser;
+
+        } catch (Exception e) {
+            log.warn("관리자 권한 체크 중 오류 발생: {}", e.getMessage());
+            return false;
+        }
+    }
+
 
 
 
