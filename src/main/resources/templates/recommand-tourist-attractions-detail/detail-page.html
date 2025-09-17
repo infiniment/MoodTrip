@@ -132,41 +132,62 @@
           </div>
 
           <div class="info-item">
+            <span class="info-label">📍 위치</span>
+            <span class="info-value" id="infoAddr"
+                  th:text="${detail != null ? detail.addr : ''}"> </span>
+          </div>
+
+          <div class="info-item homepage-card" th:if="${detail != null and detail.homepage != null}">
+            <span class="info-label">🏠 홈페이지</span>
+            <a class="homepage-link"
+               th:href="${detail.homepage}"
+               target="_blank"
+               rel="noopener noreferrer">
+              공식 사이트 바로가기
+            </a>
+          </div>
+
+          <div class="info-item">
             <span class="info-label">🎟️ 매표소</span>
             <span class="info-value" id="infoTi"
                   th:text="${detail != null ? detail.ticketoffice : ''}"> </span>
           </div>
 
           <div class="info-item">
-            <span class="info-label">📍 위치</span>
-            <span class="info-value" id="infoAddr"
-                  th:text="${detail != null ? detail.addr : ''}"> </span>
+            <span class="info-label">🗓️ 휴일</span>
+            <span class="info-value" id="infoRest"
+                  th:utext="${detail != null ? detail.restDate : ''}"> </span>
           </div>
+
+          <div class="info-item">
+            <span class="info-label">🚗 주차</span>
+            <span class="info-value" id="infoParking"
+                  th:utext="${detail != null ? detail.parking : ''}"> </span>
+          </div>
+
+          <div class="info-item">
+            <span class="info-label">👥 체험가능 연령</span>
+            <span class="info-value" id="infoAge"
+                  th:text="${detail != null ? detail.age : ''}"> </span>
+          </div>
+
           <div class="info-item">
             <span class="info-label">🕐 이용시간</span>
             <!-- TourAPI가 <br> 포함할 수 있어 utext -->
             <span class="info-value" id="infoUseTime"
                   th:utext="${detail != null ? detail.useTime : ''}"> </span>
           </div>
+
           <div class="info-item">
-            <span class="info-label">🗓️ 휴일</span>
-            <span class="info-value" id="infoRest"
-                  th:utext="${detail != null ? detail.restDate : ''}"> </span>
+            <span class="info-label">🏷️ 이용요금</span>
+            <span class="info-value" id="infoUseFee"
+                  th:utext="${detail != null ? detail.usefee : ''}">제공되지 않음</span>
           </div>
-          <div class="info-item">
-            <span class="info-label">🚗 주차</span>
-            <span class="info-value" id="infoParking"
-                  th:utext="${detail != null ? detail.parking : ''}"> </span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">👥 체험가능 연령</span>
-            <span class="info-value" id="infoAge"
-                  th:text="${detail != null ? detail.age : ''}"> </span>
-          </div>
+
         </div>
       </div>
 
-      <!-- 개요(상세설명) : 값 없으면 섹션 감춤 -->
+
       <div class="place-detail-wrapper"
            th:if="${detail != null and !#strings.isEmpty(detail.overview)}">
         <div class="place-detail-content">
