@@ -265,85 +265,13 @@
   box-shadow: 0 6px 20px rgba(0, 26, 44, 0.15);
 }
 
-/* 상세정보 스타일 */
-.place-detail {
-  font-size: 28px;
-  font-weight: 700;
-  color: #2d3748;
-  margin: 50px 0 30px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.place-detail-wrapper .content-section h4 {
-  font-size: 28px;
-  font-weight: 700;
-  color: #2d3748;
-  margin: 30px 0 30px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
 .detail-icon {
   font-size: 32px;
 }
 
-.place-detail-info {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 16px;
-  padding: 32px;
-  margin-bottom: 30px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-.info-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 20px;
-}
-
-.info-item {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 16px;
-  background: rgba(1, 96, 161, 0.15);
-  border-radius: 12px;
-  border-left: 4px solid #005792;
-  transition: background 0.2s ease;
-  backdrop-filter: blur(10px);
-}
 
 .info-item:hover {
   background: rgba(0, 87, 146, 0.15);
-}
-
-.info-label {
-  font-weight: 600;
-  color: #005792;
-  font-size: 20px;
-}
-
-.info-value {
-  font-size: 20px;
-  color: #2d3748;
-  margin-top: 15px;
-  white-space: pre-line;
-}
-
-
-.info-value small {
-  color: #4a5568;
-  font-size: 25px;
-}
-
-.overviewMoreBody {
-  color: #4a5568;
-  font-size: 25px;
 }
 
 /* 상세 내용 스타일 */
@@ -356,40 +284,6 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
-.content-section {
-  margin-bottom: 24px;
-}
-
-.content-section h4 {
-  font-size: 20px;
-  font-weight: 600;
-  color: #2d3748;
-  margin-bottom: 16px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.content-section p {
-  font-size: 16px;
-  color: #4a5568;
-  margin-bottom: 16px;
-  line-height: 1.8;
-}
-
-
-.extra-info {
-  overflow: hidden;
-  transition: all 0.5s ease;
-}
-
-.hidden {
-  max-height: 0;
-  opacity: 0;
-  margin-bottom: 0;
-  padding-top: 0;
-  padding-bottom: 0;
-}
 
 /* 매칭 서비스 스타일 */
 .container-match-service {
@@ -588,30 +482,11 @@
 }
 
 /* ===== 장애인 편의 정보 스타일 ===== */
-.accessibility-info {
-  background: rgba(0, 87, 146, 0.2);/* 연한 하늘 배경 */
-  border-radius: 20px;
-  padding: 24px;
-  margin-bottom: 40px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.05);
-}
 
 .accessibility-grid {
   display: grid;
   gap: 20px;
 }
-
-.accessibility-item {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 18px 20px;
-  border-radius: 14px;
-  background: white;
-  border: 1px solid #dbeafe;  /* 연한 파랑 테두리 */
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
 .accessibility-item:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 12px rgba(0,0,0,0.08);
@@ -805,15 +680,16 @@
 
 /* 상단 제목 */
 .place-detail {
-  font-size: 1.3rem;
-  font-weight: 600;
-  margin-bottom: 1.2rem;
+  font-size: 28px;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 50px 0 30px;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  color: #2a7d8c;
+  gap: 12px;
+  justify-content: flex-start;
 }
-
 .place-detail .detail-icon {
   font-size: 1.4rem;
 }
@@ -834,8 +710,8 @@
 }
 
 .info-item:hover {
-  border-color: #2a7d8c;
-  background: #f0fbfb;
+  border-color: #005792;
+  background: rgba(2, 101, 168, 0.12);
   transform: translateY(-2px);
 }
 
@@ -853,6 +729,7 @@
   font-size: 0.95rem;
   color: #555;
   word-break: keep-all;
+  line-height: 1.6;
 }
 
 /* 상세 이야기 */
@@ -935,4 +812,35 @@
   font-size: 16px;
   color: #2d3748;
   margin-top: 6px;
+}
+
+/* 홈페이지 전용 카드 */
+.info-item.homepage-card {
+  grid-column: span 2;            /* 가로 두 칸 차지 (강조) */
+  text-align: center;
+  background: rgba(0, 87, 146, 0.1);
+  border: none;
+}
+
+.homepage-card .info-label {
+  color: black;
+  font-size: 22px;
+}
+
+.homepage-link {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 12px 20px;
+  background: #fff;
+  color: #005792;
+  font-weight: 600;
+  border-radius: 10px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.homepage-link:hover {
+  background: rgba(0, 87, 146, 0.15);
+  color: #001A2C;
+  transform: translateY(-2px);
 }

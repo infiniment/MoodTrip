@@ -28,10 +28,8 @@ public class AttractionIntro {
     @Column(name = "usefee")        private String usefee;       // 이용요금
     @Column(name = "parking")       private String parking;      // 주차
     @Column(name = "restdate")      private String restdate;     // 휴일
-
-    // 체험 가능 연령
-    @Column(name = "expagerange")   private String expagerange;
-    @Column(name = "agelimit")      private String agelimit;
+    @Column(name = "homepage")      private String homepage;
+    @Column(name = "age")      private String age;
     // 관광지 개요 (detailCommon2에서 받아와 저장)
     @Column(columnDefinition = "TEXT")
     private String overview;
