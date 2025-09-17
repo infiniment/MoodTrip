@@ -234,8 +234,49 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .catch(err => console.error('3일 예보 불러오기 실패:', err));
 
+    initChatSendBinding();
 });
 
+
+function initChatSendBinding() {
+    if (window.__chatSendBound) return;
+    window.__chatSendBound = true;
+
+    // 버튼 클릭 바인딩(존재 시)
+    const tryBindButton = () => {
+        const sendBtn = document.getElementById('sendBtn');
+        if (!sendBtn || sendBtn.__bound) return;
+        sendBtn.__bound = true;
+        sendBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            sendMessage();
+        });
+    };
+    tryBindButton();
+    // 나중에 버튼이 생겨도 붙도록 관찰
+    const obBtn = new MutationObserver(tryBindButton);
+    obBtn.observe(document.body, { childList: true, subtree: true });
+
+    // ⬇️ 핵심: 전역 keyup 핸들러 (IME 안전)
+    document.addEventListener('keyup', (e) => {
+        // 타겟이 입력창일 때만
+        const ae = document.activeElement;
+        if (!ae || ae.id !== 'chatInput') return;
+
+        // Shift+Enter는 줄바꿈, Enter만 전송
+        if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
+    // 폼이 있다면 제출 막고 전송
+    const chatForm = document.getElementById('chatForm');
+    chatForm?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        sendMessage();
+    });
+}
 
 
 function loadSeenSet(key) {
@@ -290,11 +331,16 @@ function toggleMessenger() {
 // 메시지 전송 기능
 function sendMessage() {
     const chatInput = document.getElementById('chatInput');
-    const message = chatInput.value.trim();
+    if (!chatInput) return;
+
+    // input/textarea면 .value, contenteditable이면 .innerText/.textContent
+    const raw = (typeof chatInput.value === 'string')
+        ? chatInput.value
+        : (chatInput.innerText ?? chatInput.textContent ?? '');
+    const message = String(raw).trim();
 
     if (message === '' || !stompClient || !stompClient.connected) return;
 
-    // Spring Boot ChatMessageRequest 형태로 메시지 전송
     const chatMessage = {
         type: 'TALK',
         chattingRoomId: chattingRoomId,
@@ -302,12 +348,13 @@ function sendMessage() {
         message: message
     };
 
-    // 서버로 메시지 전송
     stompClient.send("/pub/chat/message", {}, JSON.stringify(chatMessage));
 
     // 입력창 초기화
-    chatInput.value = '';
+    if (typeof chatInput.value === 'string') chatInput.value = '';
+    else chatInput.textContent = '';
 }
+
 
 // 서버에서 받은 메시지 처리
 function addReceivedMessage(chatMessageResponse) {
@@ -485,6 +532,8 @@ function connectWebSocket() {
         }
     );
 }
+
+
 
 function addScheduleToUI(data) {
     const date = data.travelStartDate.split('T')[0];

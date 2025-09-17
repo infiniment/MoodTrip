@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -128,11 +129,13 @@ public class RoomRequest {
 //            @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
 //            private LocalDateTime endDate;
 
-            @Schema(description = "시작 날짜 (ISO 8601)", example = "2025-08-01T09:00:00.000Z")
-            private OffsetDateTime startDate;
+            @Schema(description = "시작 날짜 (yyyy-MM-dd)", example = "2025-08-01")
+            @JsonFormat(pattern = "yyyy-MM-dd")
+            private LocalDate startDate;
 
-            @Schema(description = "종료 날짜 (ISO 8601)", example = "2025-08-03T18:00:00.000Z")
-            private OffsetDateTime endDate;
+            @Schema(description = "종료 날짜 (yyyy-MM-dd)", example = "2025-08-03")
+            @JsonFormat(pattern = "yyyy-MM-dd")
+            private LocalDate endDate;
 
             @Schema(description = "시작 날짜(문자열)", example = "2025-08-01")
             private String startDateFormatted;

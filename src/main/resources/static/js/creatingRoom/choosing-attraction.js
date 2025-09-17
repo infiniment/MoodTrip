@@ -10,6 +10,8 @@ let serverPage = 0;
 const serverSize = 9;  // (3열 × 3행)
 let lastQuery = '';
 
+const PREFILL_TTL_MS =  60 * 10 * 1000;
+
 // DOM 로드 후 실행
 document.addEventListener('DOMContentLoaded', function() {
     // 새 방문(초진입) 판별
@@ -41,6 +43,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // 첫 렌더 직후 프리필 한 번 시도
 });
 
+function updateResultCount(total) {
+    const el = document.getElementById('searchCount');
+    if (el) el.textContent = `${total}개 검색어 추천`;
+}
+
 
 function getActiveFilters() {
     const usp = new URLSearchParams(location.search);
@@ -54,7 +61,7 @@ function getActiveFilters() {
 // hidden 필드 레퍼런스
 function hiddenRefs() {
     return {
-        id:  document.getElementById('destAttractionId'),
+        id:  document.getElementById('destContentId'),
         ttl: document.getElementById('destTitle'),
         addr:document.getElementById('destAddr'),
         img: document.getElementById('destImage'),
@@ -224,8 +231,10 @@ function setupServerPagination(totalPages, current, totalElements) {
     const container = document.getElementById('paginationContainer');
     if (!container) return;
 
-    if (totalPages <= 1) { container.hidden = true; return; }
+    if (!totalPages || totalPages <= 1) { container.hidden = true; return; }
     container.hidden = false;
+
+    current = Math.max(0, Math.min(current, totalPages - 1));
 
     const { mode, max } = paginationMode();
 
@@ -308,8 +317,8 @@ window.addEventListener('resize', () => {
 async function runSearchPaged(q, page = 0) {
     const grid = document.getElementById('destinationResults');
     if (!grid) return;
-
     const { areaCode, sigunguCode, contentTypeId } = getActiveFilters();
+
     lastQuery = q;
     serverPage = page;
 
@@ -327,9 +336,31 @@ async function runSearchPaged(q, page = 0) {
         if (!res.ok) throw new Error('검색 실패');
 
         const data = await res.json(); // { content, page, size, totalElements, totalPages }
+        const totalElements = Number(data.totalElements ?? 0);
+        const totalPagesCalc = totalElements === 0 ? 0 : Math.ceil(totalElements / serverSize);
+        const safePage = Math.max(0, Math.min(Number(data.page ?? 0), Math.max(0, totalPagesCalc - 1)));
         renderAttractions(data.content);
         initializeDestinationSelection();
-        setupServerPagination(data.totalPages, data.page, data.totalElements);
+        updateResultCount(totalElements);
+        const container = document.getElementById('paginationContainer');
+        if (totalElements === 0) {
+            if (container) {
+                container.hidden = true;
+                const nums = container.querySelector('.pagination-numbers');
+                if (nums) nums.innerHTML = '';
+                const prev = container.querySelector('.pagination-button.prev');
+                const next = container.querySelector('.pagination-button.next');
+                if (prev) prev.disabled = true;
+                if (next) next.disabled = true;
+                const range = container.querySelector('.pagination-info .range');
+                const total = container.querySelector('.pagination-info .total');
+                if (range) range.textContent = `0 - 0 / `;
+                if (total) total.textContent = `0`;
+            }
+            return; // ← 여기서 끝
+        }
+
+        setupServerPagination(totalPagesCalc, safePage, totalElements);
         applyPrefillIfAny();
         recheckRadioFromSelected();
     } catch (e) {
@@ -339,6 +370,7 @@ async function runSearchPaged(q, page = 0) {
         const container = document.getElementById('paginationContainer');
         if (container) container.hidden = true;
     }
+
 }
 
 function renderAttractions(items) {
@@ -800,7 +832,7 @@ function recheckRadioFromSelected() {
     }
 }
 
-const PREFILL_TTL_MS =  60 * 10 * 1000;
+
 let __prefillApplied = false;
 let __prefillTimer = null;
 

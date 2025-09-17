@@ -149,6 +149,12 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
                     response.sendRedirect("/withdraw");
                     return;
                 }
+                // 정지된 회원인지 체크 (추가된 부분)
+                if (member.getStatus() == Member.MemberStatus.SUSPENDED) {
+                    log.warn("정지된 회원 OAuth2 로그인 시도 - memberId: {}", member.getMemberId());
+                    response.sendRedirect("/suspended");
+                    return;
+                }
 
 
                 // memberPk가 1이면 관리자용 스타일을 추가

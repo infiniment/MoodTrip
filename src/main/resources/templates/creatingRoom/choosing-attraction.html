@@ -63,7 +63,7 @@
                 <!-- 서버 제출용 폼은 유지(다음 단계로 이동 시 hidden 채우는 용도) -->
                 <form autocomplete="off" enctype="multipart/form-data"
                       id="temporary_room_phase_3" method="POST"
-                      onsubmit="return validationPhase(this);">
+                      onsubmit="return false;">
 
                     <!-- CSRF: 활성화된 경우에만 렌더 -->
                     <input type="hidden"
@@ -108,8 +108,9 @@
                             <!-- 검색 결과 -->
                             <div class="form-group-light">
                                 <label class="form-group-title body-1-bold mb4">관광지 검색 결과</label>
-                                <p class="mb16 body-2 text900"
-                                   th:text="${#lists.size(attractions)} + '개 검색어 추천'">0개 검색어 추천</p>
+                                <p id="searchCount" class="mb16 body-2 text900">
+                                    0개 검색어 추천
+                                </p>
 
                                 <div class="destination-filter mb16">
                                     <select class="filter-select" id="regionFilter">
@@ -220,7 +221,7 @@
 
                             <div class="form-section-footer" style="position:sticky;bottom:0;background-color:white;z-index:50">
                                 <!-- 🔧 실제 제출 막고 JS로만 이동 -->
-                                <button class="btn btn-client btn-11-24 btn-right" type="button" id="nextButton">다음</button>
+                                    <button class="btn btn-client btn-11-24 btn-right" type="button" id="nextButton">다음</button>
                             </div>
                         </div>
                     </div>

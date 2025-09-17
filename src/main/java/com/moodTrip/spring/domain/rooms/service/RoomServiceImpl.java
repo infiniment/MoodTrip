@@ -63,12 +63,12 @@ public class RoomServiceImpl implements RoomService {
         // 날짜 범위 계산
         List<DateRangeDto> ranges = request.getSchedule().getDateRanges();
         LocalDate travelStartDate = ranges.stream()
-                .map(r -> r.getStartDate().toLocalDate())
+                .map(DateRangeDto::getStartDate)   // 이미 LocalDate
                 .min(Comparator.naturalOrder())
                 .orElseThrow(() -> new CustomException(INVALID_TRAVEL_DATE));
 
         LocalDate travelEndDate = ranges.stream()
-                .map(r -> r.getEndDate().toLocalDate())
+                .map(DateRangeDto::getEndDate)     // 이미 LocalDate
                 .max(Comparator.naturalOrder())
                 .orElseThrow(() -> new CustomException(INVALID_TRAVEL_DATE));
 
