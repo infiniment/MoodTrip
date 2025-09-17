@@ -67,10 +67,10 @@ public class AttractionServiceImpl implements AttractionService {
     public int syncAreaBasedListOnly12And14(int areaCode, Integer sigunguCode,
                                             int pageSize, long pauseMillis) {
         int created = 0;
-        //created += syncAreaBasedList(areaCode, sigunguCode, 12, pageSize, pauseMillis); // 관광지
-        //created += syncAreaBasedList(areaCode, sigunguCode, 14, pageSize, pauseMillis); // 문화시설
-        //created += syncAreaBasedList(areaCode, sigunguCode, 15, pageSize, pauseMillis); // 행사/축제
-        //created += syncAreaBasedList(areaCode, sigunguCode, 28, pageSize, pauseMillis); // 레포츠
+        created += syncAreaBasedList(areaCode, sigunguCode, 12, pageSize, pauseMillis); // 관광지
+        created += syncAreaBasedList(areaCode, sigunguCode, 14, pageSize, pauseMillis); // 문화시설
+        created += syncAreaBasedList(areaCode, sigunguCode, 15, pageSize, pauseMillis); // 행사/축제
+        created += syncAreaBasedList(areaCode, sigunguCode, 28, pageSize, pauseMillis); // 레포츠
         created += syncAreaBasedList(areaCode, sigunguCode, 38, pageSize, pauseMillis); // 쇼핑
         return created;
     }
