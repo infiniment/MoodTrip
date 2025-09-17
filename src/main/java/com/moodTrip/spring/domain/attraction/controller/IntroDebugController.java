@@ -43,8 +43,7 @@ public class IntroDebugController {
             out.put("usetime", i.getUsetime());
             out.put("restdate", i.getRestdate());
             out.put("parking", i.getParking());
-            out.put("expagerange", i.getExpagerange());
-            out.put("agelimit", i.getAgelimit());
+            out.put("age", i.getAge());
 
             Map<String, Object> a11y = new LinkedHashMap<>();
             a11y.put("wheelchair", i.getWheelchair());

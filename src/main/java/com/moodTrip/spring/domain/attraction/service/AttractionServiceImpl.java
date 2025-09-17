@@ -18,6 +18,7 @@ import com.moodTrip.spring.domain.emotion.repository.AttractionEmotionRepository
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpEntity;
@@ -66,10 +67,11 @@ public class AttractionServiceImpl implements AttractionService {
     public int syncAreaBasedListOnly12And14(int areaCode, Integer sigunguCode,
                                             int pageSize, long pauseMillis) {
         int created = 0;
-        created += syncAreaBasedList(areaCode, sigunguCode, 12, pageSize, pauseMillis); // 관광지
-        created += syncAreaBasedList(areaCode, sigunguCode, 14, pageSize, pauseMillis); // 문화시설
-        created += syncAreaBasedList(areaCode, sigunguCode, 15, pageSize, pauseMillis); // 행사/축제
-        created += syncAreaBasedList(areaCode, sigunguCode, 28, pageSize, pauseMillis); // 레포츠
+        //created += syncAreaBasedList(areaCode, sigunguCode, 12, pageSize, pauseMillis); // 관광지
+        //created += syncAreaBasedList(areaCode, sigunguCode, 14, pageSize, pauseMillis); // 문화시설
+        //created += syncAreaBasedList(areaCode, sigunguCode, 15, pageSize, pauseMillis); // 행사/축제
+        //created += syncAreaBasedList(areaCode, sigunguCode, 28, pageSize, pauseMillis); // 레포츠
+        created += syncAreaBasedList(areaCode, sigunguCode, 38, pageSize, pauseMillis); // 쇼핑
         return created;
     }
 
@@ -282,7 +284,7 @@ public class AttractionServiceImpl implements AttractionService {
         // overview 누락 시 → 즉시 보강
         if (intro != null && (intro.getOverview() == null || intro.getOverview().isBlank())) {
             try {
-                syncOverview(contentId);  // ✅ finalTypeId 제거
+                syncDetailCommon(contentId); // ✅ finalTypeId 제거
                 intro = introRepository.findById(contentId).orElse(intro);
             } catch (Exception e) {
                 log.warn("overview sync fail contentId={} : {}", contentId, e.getMessage());
@@ -309,6 +311,7 @@ public class AttractionServiceImpl implements AttractionService {
                 (intro != null)
                         ? AttractionDetailResponse.DetailCommon.builder()
                         .overview(intro.getOverview())
+                        .homepage(intro.getHomepage())
                         .infocenter(intro.getInfocenter())
                         .usetime(intro.getUsetime())
                         .restdate(intro.getRestdate())
@@ -316,7 +319,13 @@ public class AttractionServiceImpl implements AttractionService {
                         .build()
                         : AttractionDetailResponse.DetailCommon.builder().build();
 
-        return AttractionDetailResponse.of(baseResp, introNorm, common, intro);
+        AttractionDetailResponse resp = AttractionDetailResponse.of(baseResp, introNorm, common, intro);
+
+        // ✅ 여기서 로그 찍기
+        log.info("[DETAIL] contentId={} homepage={} usefee={}",
+                resp.getContentId(), resp.getHomepage(), resp.getUsefee());
+
+        return resp;
     }
 
 
@@ -400,7 +409,7 @@ public class AttractionServiceImpl implements AttractionService {
 
 
 
-    private void syncOverview(Long contentId) {
+    private void syncDetailCommon(Long contentId) {
         URI uri = UriComponentsBuilder.fromHttpUrl(BASE + "/detailCommon2")
                 .queryParam("serviceKey", encodeApiKey)
                 .queryParam("_type", "json")
@@ -423,9 +432,11 @@ public class AttractionServiceImpl implements AttractionService {
                     item = item.get(0);
                 }
                 String overview = item.path("overview").asText(null);
+                String homepageRaw = item.path("homepage").asText(null);
 
                 introRepository.findById(contentId).ifPresent(intro -> {
                     intro.setOverview(overview);
+                    intro.setHomepage(cleanHomepage(homepageRaw));
                     intro.setRawJson(raw);
                     intro.setSyncedAt(LocalDateTime.now());
                     introRepository.save(intro);
@@ -448,6 +459,24 @@ public class AttractionServiceImpl implements AttractionService {
                 .toUri();
     }
 
+    private String cleanHomepage(String raw) {
+        if (raw == null || raw.isBlank()) return null;
+
+        // 1. HTML 엔티티 디코딩
+        String decoded = StringEscapeUtils.unescapeHtml4(raw);
+
+        // 2. href 속성 추출
+        java.util.regex.Matcher m = java.util.regex.Pattern
+                .compile("href\\s*=\\s*\"([^\"]+)\"")
+                .matcher(decoded);
+        if (m.find()) {
+            return m.group(1); // href 값
+        }
+
+        // 3. href 없으면 태그 안쪽 텍스트 반환
+        return decoded.replaceAll("<[^>]*>", "").trim();
+    }
+
     private void upsertIntro(JsonNode it) {
         long contentId = asLong(it, "contentid");
         if (contentId == 0L) return;
@@ -458,31 +487,78 @@ public class AttractionServiceImpl implements AttractionService {
 
         intro.setContentTypeId(ctype);
 
-        // ===== 12/14 공통 필드 =====
-        intro.setInfocenter(firstNonEmpty(
-                asText(it,"infocenter")
-        ));
-        intro.setUsetime(firstNonEmpty(
-                asText(it,"usetime"),
-                asText(it,"usetimeculture")
-        ));
-        intro.setUsefee(firstNonEmpty(
-                asText(it,"usefee")
-        ));
-        intro.setParking(firstNonEmpty(
-                asText(it,"parking"),
-                asText(it,"parkingculture")
-        ));
-        intro.setRestdate(firstNonEmpty(
-                asText(it,"restdate"),
-                asText(it,"restdateculture")
-        ));
-        intro.setExpagerange(firstNonEmpty(
-                asText(it,"expagerange"),
-                asText(it,"agelimit")
-        ));
+        // === 공통 필드 ===
+        String infocenter = asText(it, "infocenter");
+        String usetime    = asText(it, "usetime");
+        String usefee     = asText(it, "usefee");
+        String restdate   = asText(it, "restdate");
+        String parking    = asText(it, "parking");
+        String age        = asText(it, "age");
 
-        // ===== raw_json 백업 =====
+        // === 타입별 변형 필드 반영 ===
+        if (ctype != null) {
+            switch (ctype) {
+                case 12: // 관광지
+                    infocenter = firstNonEmpty(infocenter, asText(it, "infocenter"));
+                    usetime    = firstNonEmpty(usetime, asText(it, "usetime"));
+                    age = firstNonEmpty(age, asText(it, "expagerange"));
+                    restdate   = firstNonEmpty(restdate, asText(it, "restdate"));
+                    parking    = firstNonEmpty(parking, asText(it, "parking"));
+
+                    break;
+
+                case 14: // 문화시설
+                    infocenter = firstNonEmpty(infocenter, asText(it, "infocenterculture"));
+                    usetime    = firstNonEmpty(usetime, asText(it, "usetimeculture"));
+                    restdate   = firstNonEmpty(restdate, asText(it, "restdateculture"));
+                    parking    = firstNonEmpty(parking, asText(it, "parkingculture"));
+                    age        = firstNonEmpty(age, asText(it, "agelimit"));
+                    usefee     = firstNonEmpty(usefee, asText(it, "usefee"));
+
+                    break;
+
+                case 15: // 축제/공연/행사
+                    usetime    = firstNonEmpty(usetime, asText(it, "playtime"));
+                    restdate   = firstNonEmpty(restdate, asText(it, "restdatefestival"));
+                    parking    = firstNonEmpty(parking, asText(it, "parkingfestival"));
+                    usefee     = firstNonEmpty(usefee, asText(it, "usetimefestival"));
+                    infocenter = firstNonEmpty(infocenter, asText(it, "sponsor1tel"), asText(it, "sponsor2tel"));
+                    age        = firstNonEmpty(age, asText(it, "agelimit"));
+                    break;
+
+                case 28: // 레포츠
+                    infocenter = firstNonEmpty(infocenter, asText(it, "infocenterleports"));
+                    usetime    = firstNonEmpty(usetime, asText(it, "usetimeleports"));
+                    restdate   = firstNonEmpty(restdate, asText(it, "restdateleports"));
+                    parking    = firstNonEmpty(parking, asText(it, "parkingleports"));
+                    usefee     = firstNonEmpty(usefee, asText(it, "usefeeleports"));
+                    age        = firstNonEmpty(age, asText(it, "expagerangeleports"));
+                    break;
+
+                case 38: // 쇼핑
+                    infocenter = firstNonEmpty(infocenter, asText(it, "infocentershopping"));
+                    restdate   = firstNonEmpty(restdate, asText(it, "restdateshopping"));
+                    parking    = firstNonEmpty(parking, asText(it, "parkingshopping"));
+                    usetime    = firstNonEmpty(usetime, asText(it, "opentime"));
+                    break;
+
+            }
+        }
+
+        // === 최종 세팅 ===
+        intro.setInfocenter(infocenter);
+        intro.setUsetime(usetime);
+        intro.setUsefee(usefee);
+        intro.setRestdate(restdate);
+        intro.setParking(parking);
+        intro.setAge(age);
+
+        String homepageRaw = firstNonEmpty(
+                asText(it, "homepage"),
+                asText(it, "eventhomepage")
+        );
+        intro.setHomepage(cleanHomepage(homepageRaw));
+
         try {
             intro.setRawJson(om.writeValueAsString(it));
         } catch (JsonProcessingException e) {
@@ -492,6 +568,9 @@ public class AttractionServiceImpl implements AttractionService {
         intro.setSyncedAt(LocalDateTime.now());
         introRepository.save(intro);
     }
+
+
+
 
 
     // ===== 조회 =====
@@ -714,38 +793,96 @@ public class AttractionServiceImpl implements AttractionService {
         }
         return intro; // null 이어도 아래 normalizeIntro가 안전 폴백함
     }
+    private AttractionDetailResponse.IntroNormalized normalizeIntro(AttractionIntro intro) {
+        if (intro == null) {
+            return AttractionDetailResponse.IntroNormalized.builder().build();
+        }
 
-    // ===== intro 정규화 =====
-    private AttractionDetailResponse.IntroNormalized normalizeIntro(AttractionIntro i) {
-        if (i == null) return AttractionDetailResponse.IntroNormalized.builder().build();
-
-        // ✅ 예전에는 분기별 필드(firstNonEmpty) 사용 → 현재는 단일 필드만 남겨둔 상태
         return AttractionDetailResponse.IntroNormalized.builder()
-                .infocenter(i.getInfocenter())
-                .usetime(i.getUsetime())
-                .restdate(i.getRestdate())
-                .parking(i.getParking())
-                .age(i.getExpagerange() != null ? i.getExpagerange() : i.getAgelimit())
-                .wheelchair(i.getWheelchair())
-                .elevator(i.getElevator())
-                .braileblock(i.getBraileblock())
-                .exit(i.getExit())
-                .guidesystem(i.getGuidesystem())
-                .signguide(i.getSignguide())
-                .videoguide(i.getVideoguide())
-                .audioguide(i.getAudioguide())
-                .bigprint(i.getBigprint())
-                .brailepromotion(i.getBrailepromotion())
-                .helpdog(i.getHelpdog())
-                .hearingroom(i.getHearingroom())
-                .hearinghandicapetc(i.getHearinghandicapetc())
-                .blindhandicapetc(i.getBlindhandicapetc())
-                .handicapetc(i.getHandicapetc())
-                .publictransport(i.getPublictransport())
-                .ticketoffice(i.getTicketoffice())
-                .guidehuman(i.getGuidehuman())
+                .infocenter(intro.getInfocenter())
+                .usetime(intro.getUsetime())
+                .usefee(intro.getUsefee())
+                .restdate(intro.getRestdate())
+                .parking(intro.getParking())
+                .homepage(intro.getHomepage())
+                .age(intro.getAge())
                 .build();
     }
+
+    // ===== intro 정규화 =====
+    private AttractionDetailResponse.IntroNormalized normalizeIntro(JsonNode item, int contentTypeId) {
+        // 공통
+        String infocenter = asText(item, "infocenter");
+        String usetime    = asText(item, "usetime");
+        String usefee     = asText(item, "usefee");   // ✅ 추가
+        String restdate   = asText(item, "restdate");
+        String parking    = asText(item, "parking");
+        String age        = asText(item, "age");
+
+        // 타입별
+        switch (contentTypeId) {
+            case 12: // 관광지
+                infocenter = firstNonEmpty(infocenter, asText(item, "infocenter"));
+                usetime    = firstNonEmpty(usetime, asText(item, "usetime"));
+                age = firstNonEmpty(age, asText(item, "expagerange"));
+                restdate   = firstNonEmpty(restdate, asText(item, "restdate"));
+                parking    = firstNonEmpty(parking, asText(item, "parking"));
+
+                break;
+
+            case 14: // 문화시설
+                infocenter = firstNonEmpty(infocenter, asText(item, "infocenterculture"));
+                usetime    = firstNonEmpty(usetime, asText(item, "usetimeculture"));
+                restdate   = firstNonEmpty(restdate, asText(item, "restdateculture"));
+                parking    = firstNonEmpty(parking, asText(item, "parkingculture"));
+                age        = firstNonEmpty(age, asText(item, "agelimit"));
+                usefee     = firstNonEmpty(usefee, asText(item, "usefee"));
+                break;
+
+            case 15: // 축제/공연/행사
+                usetime    = firstNonEmpty(asText(item, "playtime"));
+                restdate   = firstNonEmpty(asText(item, "restdatefestival"));
+                parking    = firstNonEmpty(asText(item, "parkingfestival"));
+                usefee = firstNonEmpty(
+                        asText(item, "usetimefestival")
+                );
+                infocenter = firstNonEmpty(
+                        asText(item, "infocenter"),
+                        asText(item, "sponsor1tel"),
+                        asText(item, "sponsor2tel")
+                );
+                usefee     = firstNonEmpty(usefee, asText(item, "usetimefestival"));
+                age        = firstNonEmpty(age, asText(item, "agelimit"));
+
+                break;
+
+            case 28: // 레포츠
+                infocenter = firstNonEmpty(infocenter, asText(item, "infocenterleports"));
+                usetime    = firstNonEmpty(usetime, asText(item, "usetimeleports"));
+                restdate   = firstNonEmpty(restdate, asText(item, "restdateleports"));
+                parking    = firstNonEmpty(parking, asText(item, "parkingleports"));
+                usefee     = firstNonEmpty(usefee, asText(item, "usefeeleports"));
+                age        = firstNonEmpty(age, asText(item, "expagerangeleports"));
+                break;
+
+            case 38: // 쇼핑
+                infocenter = firstNonEmpty(infocenter, asText(item, "infocentershopping"));
+                restdate   = firstNonEmpty(restdate, asText(item, "restdateshopping"));
+                parking    = firstNonEmpty(parking, asText(item, "parkingshopping"));
+                usetime    = firstNonEmpty(usetime, asText(item, "opentime"));
+                break;
+        }
+
+        return AttractionDetailResponse.IntroNormalized.builder()
+                .infocenter(infocenter)
+                .usetime(usetime)
+                .usefee(usefee)  // ✅ 항상 포함
+                .restdate(restdate)
+                .parking(parking)
+                .homepage(asText(item, "homepage"))
+                .build();
+    }
+
 
     private void setIfHasText(java.util.function.Consumer<String> setter, String v) {
         if (StringUtils.hasText(v)) setter.accept(v);

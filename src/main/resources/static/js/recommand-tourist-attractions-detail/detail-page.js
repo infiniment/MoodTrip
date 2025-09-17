@@ -155,6 +155,8 @@ document.addEventListener("DOMContentLoaded", async function () {
   setMultiline("#infoParking", d.parking);
   setText("#infoAge", d.age);
   setMultiline("#infoTi", d.ticketoffice);
+  setMultiline("#infoHomepage", d.homepage);
+  setMultiline("#infoUseFee", d.usefee);
 
   // 5) 개요(상세설명) — 길면 자동 2파트 + 토글
   renderOverview(d.overview);
