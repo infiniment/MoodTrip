@@ -680,3 +680,41 @@ a {
     .destination-name.is-medium { font-size: 17px; }
     .destination-name.is-small { font-size: 15px; }
 }
+
+.pagination {
+    margin-top: 16px;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.pagination .page-btn,
+.pagination .page-nav {
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    background: #fff;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+/* ✅ 활성화된 버튼을 그라디언트 색상으로 변경 */
+.pagination .page-btn.active {
+    background: linear-gradient(135deg, #005792 0%, #001A2C 100%);
+    color: #fff;
+    border: none; /* 경계선 지우고 싶으면 */
+}
+
+/* 비활성화 상태 */
+.pagination .page-nav[disabled],
+.pagination .page-btn[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination .page-ellipsis {
+    padding: 0 4px;
+    color: #94a3b8;
+}

@@ -2,6 +2,12 @@
 let selectedTags = new Map();
 const MAX_TAGS = 3; // 최대 태그 개수 제한
 
+// ✅ 페이징 상태
+let page = 0;
+let size = 12;
+let totalPages = 0;
+let totalElements = 0;
+
 function toggleEmotionCategories() {
     const categories = document.getElementById('emotionCategories');
     const toggleText = document.querySelector('.toggle-text');
@@ -23,10 +29,11 @@ function toggleSortDropdown() {
     const dropdown = document.querySelector('.sort-dropdown');
     dropdown.classList.toggle('active');
 }
-// 페이지 로드 시, 현재 정렬 상태를 드롭다운에 반영하는 로직 (선택 사항이지만 권장)
+
+// 페이지 로드 시, 현재 정렬 상태를 드롭다운에 반영
 document.addEventListener('DOMContentLoaded', function() {
     const params = new URLSearchParams(window.location.search);
-    const currentSort = params.get('sort') || 'recommended'; // URL에 sort값이 없으면 recommended
+    const currentSort = params.get('sort') || 'recommended';
 
     const activeOption = document.querySelector(`.sort-option[data-sort="${currentSort}"]`);
     if (activeOption) {
@@ -36,8 +43,83 @@ document.addEventListener('DOMContentLoaded', function() {
         activeOption.classList.add('active');
     }
 
-    // ... 기존의 다른 DOMContentLoaded 리스너 내용들 ...
+    // 초기 상태 설정
+    updateTagCounter();
+    updateInputState();
+
+    const destinationGrid = document.querySelector('.destination-grid');
+    if (destinationGrid) {
+        destinationGrid.addEventListener('click', function(event) {
+            const likeButton = event.target.closest('.like-btn');
+            if (likeButton) {
+                event.preventDefault();
+                event.stopPropagation();
+                handleLikeClick(likeButton);
+            }
+        });
+    }
+
+    // 감정 태그 클릭 시 ID와 이름을 함께 사용하여 태그 추가
+    document.querySelectorAll('.emotion-tag').forEach(tag => {
+        tag.addEventListener('click', function() {
+            if (selectedTags.size >= MAX_TAGS) {
+                showNotification(`감정 태그는 최대 ${MAX_TAGS}개까지 선택할 수 있습니다.`, 'warning');
+                return;
+            }
+
+            const tagId = this.getAttribute('data-tag-id');
+            const tagName = this.textContent.trim();
+            addTag(tagId, tagName);
+        });
+    });
+
+    // 인기 태그 클릭 시 (data-tag-id 없으면 연동 불가)
+    const popularTags = document.querySelectorAll('.popular-tag');
+    popularTags.forEach(tag => {
+        tag.addEventListener('click', function() {
+            showNotification('인기 태그는 현재 검색 기능과 연동되지 않습니다.', 'warning');
+        });
+    });
+
+    // 입력창 엔터 키 이벤트 (직접 입력 태그는 현재 검색 API와 연동 불가)
+    const inputArea = document.getElementById('emotionInput');
+    if (inputArea) {
+        inputArea.addEventListener('keypress', handleInputKeyPress);
+    }
+
+    // 정렬 옵션 클릭 이벤트
+    const sortOptions = document.querySelectorAll('.sort-option');
+    sortOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            const sortValue = this.getAttribute('data-sort');
+            const sortText = this.textContent;
+            selectSortOption(sortValue, sortText);
+        });
+    });
+
+    // 드롭다운 외부 클릭 시 닫기
+    document.addEventListener('click', function(e) {
+        const dropdown = document.querySelector('.sort-dropdown');
+        if (dropdown && !dropdown.contains(e.target)) {
+            dropdown.classList.remove('active');
+        }
+    });
+
+    // 검색 버튼 클릭 이벤트(감정 태그 기반 검색)
+    const searchBtn = document.querySelector('.search-btn');
+    if (searchBtn) {
+        searchBtn.addEventListener('click', async function() {
+            if (selectedTags.size === 0) {
+                showNotification('하나 이상의 감정을 선택해주세요.', 'warning');
+                return;
+            }
+            // 검색 시 항상 첫 페이지부터
+            page = 0;
+            await doSearch({ append: false });
+        });
+    }
 });
+
 // 정렬 옵션 선택
 function selectSortOption(sortValue, sortText) {
     const sortTextElement = document.querySelector('.sort-text');
@@ -47,22 +129,14 @@ function selectSortOption(sortValue, sortText) {
     sortTextElement.textContent = sortText;
     dropdown.classList.remove('active');
 
-    // --- [핵심] URL을 변경하여 페이지를 다시 로드하는 로직 ---
-
-    // 1. 현재 URL의 쿼리 파라미터를 가져옵니다.
+    // URL 파라미터 업데이트 후 새로고침
     const currentParams = new URLSearchParams(window.location.search);
-
-    // 2. 'sort' 파라미터 값을 새로 선택한 값으로 설정합니다.
     currentParams.set('sort', sortValue);
-
-    // 3. 새로운 URL로 페이지를 이동시킵니다. (기존 tagId 등은 유지됩니다)
     window.location.href = window.location.pathname + '?' + currentParams.toString();
 }
 
-
 // 알림 메시지 표시 함수
 function showNotification(message, type = 'info') {
-    // 기존 알림 제거
     const existingNotification = document.querySelector('.notification');
     if (existingNotification) {
         existingNotification.remove();
@@ -88,7 +162,6 @@ function showNotification(message, type = 'info') {
 
     notification.textContent = message;
 
-    // 애니메이션 추가
     const style = document.createElement('style');
     style.textContent = `
         @keyframes slideIn {
@@ -104,38 +177,28 @@ function showNotification(message, type = 'info') {
 
     document.body.appendChild(notification);
 
-    // 3초 후 제거
     setTimeout(() => {
         notification.style.animation = 'slideOut 0.3s ease';
         setTimeout(() => {
-            if (notification.parentNode) {
-                notification.remove();
-            }
-            if (style.parentNode) {
-                style.remove();
-            }
+            if (notification.parentNode) notification.remove();
+            if (style.parentNode) style.remove();
         }, 300);
     }, 3000);
 }
 
-// 태그 추가 함수: ID와 이름을 함께 받도록 변경
+// 태그 추가 함수
 function addTag(tagId, tagName) {
-    // ID를 기준으로 이미 존재하는 태그인지 확인
     if (selectedTags.has(tagId)) {
         showNotification('이미 선택된 태그입니다.', 'warning');
         return;
     }
-
-    // 최대 개수 체크
     if (selectedTags.size >= MAX_TAGS) {
         showNotification(`감정 태그는 최대 ${MAX_TAGS}개까지 선택할 수 있습니다.`, 'warning');
         return;
     }
 
-    // Map에 태그 ID와 이름 추가
     selectedTags.set(tagId, tagName);
 
-    // UI 업데이트
     renderTags();
     updateTagCounter();
     updateInputState();
@@ -143,7 +206,7 @@ function addTag(tagId, tagName) {
     showNotification(`'${tagName}' 태그가 추가되었습니다.`, 'info');
 }
 
-// 태그 제거 함수: ID를 기준으로 제거
+// 태그 제거 함수
 function removeTag(tagId) {
     const tagName = selectedTags.get(tagId);
     if (selectedTags.delete(tagId)) {
@@ -154,7 +217,7 @@ function removeTag(tagId) {
     }
 }
 
-// 태그 카운터 업데이트: selectedTags.size 사용
+// 태그 카운터 업데이트
 function updateTagCounter() {
     const counter = document.querySelector('.tag-counter');
     if (counter) {
@@ -169,7 +232,7 @@ function updateTagCounter() {
     }
 }
 
-// 입력 상태 업데이트: selectedTags.size 사용
+// 입력 상태 업데이트
 function updateInputState() {
     const inputArea = document.getElementById('emotionInput');
     const isMaxReached = selectedTags.size >= MAX_TAGS;
@@ -181,7 +244,6 @@ function updateInputState() {
         inputArea.style.color = '';
     }
 
-    // 감정 태그들 비활성화
     document.querySelectorAll('.emotion-tag').forEach(tag => {
         if (isMaxReached) {
             tag.style.opacity = '0.5';
@@ -194,7 +256,6 @@ function updateInputState() {
         }
     });
 
-    // 인기 태그들 비활성화
     document.querySelectorAll('.popular-tag').forEach(tag => {
         if (isMaxReached) {
             tag.style.opacity = '0.5';
@@ -208,7 +269,7 @@ function updateInputState() {
     });
 }
 
-// 태그들을 화면에 렌더링: Map 객체를 순회하며 UI 생성
+// 태그 렌더링
 function renderTags() {
     const selectedTagsContainer = document.getElementById('selectedTags');
     if (!selectedTagsContainer) return;
@@ -218,7 +279,6 @@ function renderTags() {
     selectedTags.forEach((name, id) => {
         const tagElement = document.createElement('div');
         tagElement.className = 'tag-item';
-        // removeTag 함수에 ID를 전달하도록 수정
         tagElement.innerHTML = `
             <span class="tag-text">${name}</span>
             <button class="tag-remove" onclick="removeTag('${id}')" title="태그 제거">×</button>
@@ -227,7 +287,7 @@ function renderTags() {
     });
 }
 
-// 입력창에서 엔터 입력 처리 (ID 없는 직접 입력은 현재 검색 API와 연동 불가)
+// 입력창에서 엔터 입력 처리 (직접 입력 태그는 현재 검색 API와 연동 불가)
 function handleInputKeyPress(event) {
     if (event.key === 'Enter') {
         event.preventDefault();
@@ -235,24 +295,8 @@ function handleInputKeyPress(event) {
         if (inputValue) {
             showNotification('직접 입력 태그는 현재 검색 기능과 연동되지 않습니다.', 'warning');
         }
-        // inputArea.value = ''; // 입력창 비우기
     }
 }
-
-// 하트 버튼 토글 기능
-// function toggleLike(button) {
-//     button.classList.toggle('liked');
-//
-//     if (button.classList.contains('liked')) {
-//         button.innerHTML = '♥'; // 채워진 하트
-//         button.style.color = '#ff4757'; // 빨간색
-//         button.style.background = 'rgba(255, 255, 255, 0.95)';
-//     } else {
-//         button.innerHTML = '♡'; // 빈 하트
-//         button.style.color = '#005792'; // 원래 색상
-//         button.style.background = 'rgba(255, 255, 255, 0.9)';
-//     }
-// }
 
 // 모든 태그 초기화
 function clearAllTags() {
@@ -268,26 +312,29 @@ function clearAllTags() {
     showNotification('모든 태그가 제거되었습니다.', 'info');
 }
 
-// 검색 결과를 바탕으로 여행지 카드를 동적으로 생성하는 함수
-function renderResults(attractions) {
+// 결과 카드 렌더링 (append 지원)
+function renderResults(attractions, { append = false } = {}) {
     const destinationGrid = document.querySelector('.destination-grid');
-    destinationGrid.innerHTML = ''; // 기존 결과 초기화
+    if (!destinationGrid) return;
+
+    if (!append) {
+        destinationGrid.innerHTML = ''; // 기존 결과 초기화
+    }
 
     if (!attractions || attractions.length === 0) {
-        destinationGrid.innerHTML = '<p class="no-results">선택한 감정과 일치하는 여행지가 없습니다.</p>';
+        if (!append) {
+            destinationGrid.innerHTML = '<p class="no-results">선택한 감정과 일치하는 여행지가 없습니다.</p>';
+        }
         return;
     }
 
     attractions.forEach(attr => {
-        // 서버에서 isLikedByCurrentUser와 같은 이름으로 현재 사용자의 찜 상태를 전달받아야 합니다.
         const isLiked = attr.isLikedByCurrentUser || false;
-
         const cardHTML = `
             <a href="/attractions/detail/${attr.contentId}" class="destination-card-link">
                 <div class="destination-card">
                     <div class="card-image">
                         <img src="${attr.firstImage || '/static/image/emotion-search/default-image.png'}" alt="${attr.title}" />
-                        
                         <button class="like-btn ${isLiked ? 'liked' : ''}" data-attraction-id="${attr.attractionId}">
                             <span>${isLiked ? '♥' : '♡'}</span>
                         </button>
@@ -300,140 +347,62 @@ function renderResults(attractions) {
                         <p class="destination-description">${attr.description || '여행지에 대한 설명이 준비중입니다.'}</p>
                     </div>
                 </div>
-            </a>    
-        `;
+            </a>`;
         destinationGrid.insertAdjacentHTML('beforeend', cardHTML);
     });
+    console.log('renderResults()', { append, count: attractions.length });
 }
 
-// 페이지 로드 시 실행
-document.addEventListener('DOMContentLoaded', function() {
-    // 초기 상태 설정
-    updateTagCounter();
-    updateInputState();
-
-    const destinationGrid = document.querySelector('.destination-grid');
-    if (destinationGrid) {
-        destinationGrid.addEventListener('click', function(event) {
-            // 클릭된 요소가 .like-btn이 맞는지 확인
-            const likeButton = event.target.closest('.like-btn');
-            if (likeButton) {
-                event.preventDefault();
-                event.stopPropagation();
-                handleLikeClick(likeButton); // 2단계에서 추가한 함수 호출
-            }
-        });
-    }
-    // 감정 태그 클릭 시 ID와 이름을 함께 사용하여 태그 추가
-    document.querySelectorAll('.emotion-tag').forEach(tag => {
-        tag.addEventListener('click', function() {
-            if (selectedTags.size >= MAX_TAGS) {
-                // 최대 태그 개수 초과 시 알림
-                showNotification(`감정 태그는 최대 ${MAX_TAGS}개까지 선택할 수 있습니다.`, 'warning');
-                return;
-            }
-
-            const tagId = this.getAttribute('data-tag-id');
-            const tagName = this.textContent.trim();
-            addTag(tagId, tagName);
-        });
-    });
-
-    // 인기 태그 클릭 시 추가 (data-tag-id가 없으므로 검색 API와 연동이 어려움)
-    const popularTags = document.querySelectorAll('.popular-tag');
-    popularTags.forEach(tag => {
-        tag.addEventListener('click', function() {
-            showNotification('인기 태그는 현재 검색 기능과 연동되지 않습니다.', 'warning');
-            // 만약 popular tags도 data-tag-id를 가질 수 있도록 HTML이 수정된다면,
-            // emotion-tag와 동일한 addTag(tagId, tagName) 로직을 사용할 수 있습니다.
-        });
-    });
-
-    // 입력창 엔터 키 이벤트 (직접 입력 태그는 현재 검색 API와 연동 불가)
-    const inputArea = document.getElementById('emotionInput');
-    if (inputArea) {
-        inputArea.addEventListener('keypress', handleInputKeyPress);
+// 서버 호출 공통 함수 (페이징 대응)
+async function doSearch({ append = false } = {}) {
+    const ids = Array.from(selectedTags.keys()).join(',');
+    if (!ids) {
+        showNotification('하나 이상의 감정을 선택해주세요.', 'warning');
+        return;
     }
 
-    // 하트 버튼 이벤트 리스너 추가
-    // const likeButtons = document.querySelectorAll('.like-btn');
-    // likeButtons.forEach(button => {
-    //     button.addEventListener('click', function(e) {
-    //         e.preventDefault();
-    //         e.stopPropagation();
-    //         toggleLike(this);
-    //     });
-    // });
+    const url = new URL('/api/attractions/search/paged', window.location.origin);
+    url.searchParams.set('emotionIds', ids);
+    url.searchParams.set('page', page);
+    url.searchParams.set('size', size);
+    // 정렬 쓰려면: url.searchParams.set('sort', 'title,asc');
 
-
-    // 정렬 옵션 클릭 이벤트
-    const sortOptions = document.querySelectorAll('.sort-option');
-    sortOptions.forEach(option => {
-        option.addEventListener('click', function() {
-            const sortValue = this.getAttribute('data-sort');
-            const sortText = this.textContent;
-            selectSortOption(sortValue, sortText);
+    try {
+        const response = await fetch(url.toString(), {
+            headers: { 'Accept': 'application/json' }
         });
-    });
+        if (!response.ok) throw new Error('서버에서 데이터를 가져오는 데 실패했습니다.');
 
-    // 드롭다운 외부 클릭 시 닫기
-    document.addEventListener('click', function(e) {
-        const dropdown = document.querySelector('.sort-dropdown');
-        if (dropdown && !dropdown.contains(e.target)) {
-            dropdown.classList.remove('active');
+        const data = await response.json();
+        // data: { content, totalElements, totalPages, number, size, ... }
+        totalPages = data.totalPages ?? 0;
+        totalElements = data.totalElements ?? (data.content?.length || 0);
+
+        // 결과 렌더링
+        renderResults(data.content || [], { append });
+
+        // 부제목 업데이트
+        const resultsSubtitle = document.querySelector('.results-subtitle');
+        if (resultsSubtitle) {
+            resultsSubtitle.textContent = `${totalElements}개 결과가 있어요`;
         }
-    });
 
-    // 검색 버튼 클릭 이벤트(실질적인 로직 감정검색 -> 가중치 기반 관광지)
-    const searchBtn = document.querySelector('.search-btn');
-    if (searchBtn) {
-        searchBtn.addEventListener('click', async function() {
-            if (selectedTags.size === 0) {
-                showNotification('하나 이상의 감정을 선택해주세요.', 'warning');
-                return;
-            }
+        // 스크롤 이동
+        document.querySelector('.search-results-section')
+            ?.scrollIntoView({ behavior: 'smooth' });
 
-            // Map의 key(ID)들을 배열로 변환 후 콤마로 연결
-            const ids = Array.from(selectedTags.keys()).join(',');
-
-            try {
-                // 서버에 검색 요청 (예: /api/attractions/search?emotionIds=1,5,12)
-                const response = await fetch(`/api/attractions/search?emotionIds=${ids}`);
-                if (!response.ok) {
-                    throw new Error('서버에서 데이터를 가져오는 데 실패했습니다.');
-                }
-                const attractions = await response.json();
-
-
-                const resultsSubtitle = document.querySelector('.results-subtitle');
-                if (resultsSubtitle) {
-                    resultsSubtitle.textContent = `${attractions.length}개 결과가 있어요`;
-                }
-
-
-                // 결과 렌더링
-                renderResults(attractions);
-
-                // 검색 결과 섹션으로 스크롤 이동 (선택 사항)
-                document.querySelector('.search-results-section').scrollIntoView({ behavior: 'smooth' });
-
-            } catch (error) {
-                console.error('Search Error:', error);
-                showNotification('여행지 검색 중 오류가 발생했습니다.', 'warning');
-            }
-        });
+        console.log('doSearch()', { page, size, totalPages, totalElements, received: data.content?.length || 0 });
+        renderPagination();
+    } catch (error) {
+        console.error('Search Error:', error);
+        showNotification('여행지 검색 중 오류가 발생했습니다.', 'warning');
     }
 
 
 
+}
 
-
-
-});
-
-
-
-
+// 좋아요 토글
 async function handleLikeClick(button) {
     const attractionId = button.dataset.attractionId;
     if (!attractionId) {
@@ -443,27 +412,20 @@ async function handleLikeClick(button) {
 
     const isLiked = button.classList.contains('liked');
     const method = isLiked ? 'DELETE' : 'POST';
-    const url = `/api/likes/${attractionId}`; // 백엔드 찜 API 주소
+    const url = `/api/likes/${attractionId}`;
 
     try {
-        const response = await fetch(url, {
-            method: method,
-            // headers: { 'X-CSRF-TOKEN': '...' } // Spring Security CSRF 보호 사용 시 필요
-        });
-
+        const response = await fetch(url, { method });
         if (response.ok) {
             button.classList.toggle('liked');
-
-            // 버튼 안의 span 태그를 찾아서 내용만 변경
             const heartSpan = button.querySelector('span');
             if (heartSpan) {
-                // 버튼에 'liked' 클래스가 있는지 여부로 하트 모양 결정
-                heartSpan.textContent = button.classList.contains('liked') ? '♥' : '♡';   } else {
+                heartSpan.textContent = button.classList.contains('liked') ? '♥' : '♡';
+            } else {
                 button.innerHTML = '♡';
-                button.style.color = '#005792'; // 기본 색상으로 변경
+                button.style.color = '#005792';
             }
         } else {
-            // 서버가 오류를 반환한 경우
             const errorData = await response.json().catch(() => null);
             const errorMessage = errorData?.message || '요청에 실패했습니다.';
             showNotification(errorMessage, 'warning');
@@ -472,4 +434,92 @@ async function handleLikeClick(button) {
         console.error('Like Error:', error);
         showNotification('네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'warning');
     }
+}
+
+// (선택) 다음 페이지 로딩 예시 — 무한스크롤/더보기 버튼에서 사용
+async function loadNextPage() {
+    if (page + 1 >= totalPages) {
+        showNotification('마지막 페이지입니다.', 'info');
+        return;
+    }
+    page += 1;
+    await doSearch({ append: true });
+}
+// ✅ 페이지 이동 공통 함수
+async function goToPage(targetPage) {
+    if (targetPage < 0) targetPage = 0;
+    if (totalPages && targetPage > totalPages - 1) targetPage = totalPages - 1;
+    if (targetPage === page) return;
+
+    page = targetPage;
+    await doSearch({ append: false });
+    renderPagination();
+}
+
+// ✅ 숫자 페이징 렌더링 (1..10 스타일)
+function renderPagination() {
+    const container = document.getElementById('pagination');
+    if (!container) return;
+
+    // Page 응답이 아닌 경우/1페이지 이하인 경우 숨김
+    if (!totalPages || totalPages <= 1) {
+        container.innerHTML = '';
+        return;
+    }
+
+    // 서버가 Page를 주면 number(현재 페이지, 0-based)를 신뢰
+    // 혹시 서버가 number를 안 준다면 클라이언트 page 유지
+    // (원하면 여기서 page = data.number; 로 동기화 가능)
+
+    const maxButtons = 10;         // 한 화면에 보여줄 최대 숫자 버튼
+    const half = Math.floor(maxButtons / 2);
+
+    // 윈도우 계산 (0-based)
+    let start = Math.max(0, page - half);
+    let end = start + maxButtons - 1;
+    if (end > totalPages - 1) {
+        end = totalPages - 1;
+        start = Math.max(0, end - (maxButtons - 1));
+    }
+
+    let html = '';
+
+    // Prev
+    html += `<button class="page-nav prev" ${page === 0 ? 'disabled' : ''} data-role="prev">이전</button>`;
+
+    // 처음으로/앞쪽 생략
+    if (start > 0) {
+        html += `<button class="page-btn" data-page="0">1</button>`;
+        if (start > 1) html += `<span class="page-ellipsis">…</span>`;
+    }
+
+    // 숫자 버튼
+    for (let i = start; i <= end; i++) {
+        html += `<button class="page-btn ${i === page ? 'active' : ''}" data-page="${i}">${i + 1}</button>`;
+    }
+
+    // 뒤쪽 생략/마지막으로
+    if (end < totalPages - 1) {
+        if (end < totalPages - 2) html += `<span class="page-ellipsis">…</span>`;
+        html += `<button class="page-btn" data-page="${totalPages - 1}">${totalPages}</button>`;
+    }
+
+    // Next
+    html += `<button class="page-nav next" ${page >= totalPages - 1 ? 'disabled' : ''} data-role="next">다음</button>`;
+
+    container.innerHTML = html;
+
+    // 이벤트 바인딩
+    container.querySelectorAll('.page-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const target = parseInt(btn.dataset.page, 10);
+            if (Number.isNaN(target)) return;
+            goToPage(target);
+        });
+    });
+    const prev = container.querySelector('[data-role="prev"]');
+    const next = container.querySelector('[data-role="next"]');
+
+    if (prev) prev.addEventListener('click', () => goToPage(page - 1));
+    if (next) next.addEventListener('click', () => goToPage(page + 1));
 }

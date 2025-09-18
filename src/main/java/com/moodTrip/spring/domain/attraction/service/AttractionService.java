@@ -18,6 +18,7 @@ import java.util.Set;
 
 public interface AttractionService {
 
+    Page<AttractionCardDTO> findAttractionsByEmotionIdsPaged(List<Integer> emotionIds, Pageable pageable);
 
     int syncAreaBasedList(int areaCode, Integer sigunguCode, Integer contentTypeId, int pageSize, long pauseMillis);
     int syncDetailIntro(long contentId, Integer contentTypeId);
@@ -55,6 +56,7 @@ public interface AttractionService {
 
     // 카드/초기 로딩
     List<AttractionCardDTO> findAttractionsByEmotionIds(List<Integer> emotionIds);
+
     List<AttractionCardDTO> findInitialAttractions(int limit);
 
     // 기타
@@ -80,6 +82,9 @@ public interface AttractionService {
     Attraction getEntityByContentId(Long contentId);
     List<AttractionCardDTO> findPopularAttractions(int limit);
     Page<AttractionAdminDto> getAttractionsForAdmin(String search, int page, int size);
+
+
+
 
 
 }
