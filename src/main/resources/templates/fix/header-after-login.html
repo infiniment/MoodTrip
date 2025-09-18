@@ -95,9 +95,9 @@
                             <div class="header-profile-email" th:text="${currentMember.email}">이메일</div>
                         </div>
 
-                        <!-- 프로필 관리 버튼 + 배지 -->
+                        <!-- 마이페이지 버튼 + 배지 -->
                         <button class="header-profile-btn header-profile-manage-with-badge" id="profileManageBtn">
-                            <span>프로필 관리</span>
+                            <span>마이페이지</span>
                             <span class="header-notification-badge"
                                   th:if="${totalPendingRequests > 0}"
                                   th:text="${totalPendingRequests}">3</span>
