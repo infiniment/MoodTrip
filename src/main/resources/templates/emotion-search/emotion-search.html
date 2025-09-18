@@ -9,7 +9,8 @@
     <link rel="stylesheet" th:href="@{/css/fix/footer.css}">
     <link rel="stylesheet" th:href="@{/css/fix/header-after.css}">
 </head>
-<body><!-- 로그인 상태에 따른 조건부 헤더 렌더링 -->
+<body>
+<!-- 로그인 상태에 따른 조건부 헤더 렌더링 -->
 <div th:if="${isLoggedIn}">
     <th:block th:replace="~{fix/header-after-login :: header}"></th:block>
 </div>
@@ -66,7 +67,6 @@
                                 🌿 평온 & 힐링
                             </h3>
                             <div class="emotion-tags">
-
                                 <button class="emotion-tag"
                                         th:each="emotion : ${category.emotions}"
                                         th:text="${emotion.tagName}"
@@ -77,7 +77,6 @@
                         </div>
                     </div>
                 </div>
-
 
             </div>
         </section>
@@ -103,17 +102,12 @@
                     <div class="sort-dropdown-menu" id="sortDropdown">
                         <div class="sort-option active" data-sort="recommended">추천순</div>
                         <div class="sort-option" data-sort="popular">인기순</div>
-
                     </div>
                 </div>
             </div>
         </div>
 
-
-            <!--
-              [수정] th:each를 사용하여 컨트롤러에서 받은 initialAttractions 리스트를 순회합니다.
-              각 AttractionCardDTO 객체는 'attraction' 변수에 담깁니다.
-            -->
+        <!-- 초기 렌더 (서버에서 주는 초기 attractions) -->
         <div class="destination-grid">
             <th:block th:each="attraction : ${attractions}">
                 <!-- contentId가 있을 때만 상세 링크 -->
@@ -123,8 +117,8 @@
                     <div class="destination-card">
                         <div class="card-image">
                             <img th:src="${attraction.firstImage != null
-              ? attraction.firstImage
-              : '/image/emotion-search/default-image.png'}"
+                              ? attraction.firstImage
+                              : '/image/emotion-search/default-image.png'}"
                                  th:alt="${attraction.title}" />
 
                             <button class="like-btn"
@@ -167,10 +161,16 @@
             </th:block>
         </div>
 
+        <!-- ✅ 페이징 바 영역 (JS의 renderPagination()가 그려 넣음) -->
+        <div id="pagination" class="pagination"></div>
 
+        <!-- (선택) 더보기 버튼을 쓰고 싶다면 아래 주석 해제 + JS의 loadNextPage() 사용
+        <button class="load-more-btn" onclick="loadNextPage()">더보기</button>
+        -->
 
     </div>
 </div>
+
 <script src="/js/emotion-search/emotion-search.js"></script>
 <th:block th:replace="~{fix/footer :: footer}"></th:block>
 
