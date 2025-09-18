@@ -52,10 +52,30 @@ public interface AttractionRepository extends JpaRepository<Attraction, Long> {
             "WHERE aet.tag_id IN (:emotionIds)", nativeQuery = true)
     List<Attraction> findAttractionsByEmotionIds(@Param("emotionIds") List<Integer> emotionIds);
 
-
 //메인 서치 JPQL
 @Query("SELECT a FROM Attraction a JOIN a.attractionEmotions ae WHERE ae.emotion.tagId = :tagId AND ae.isActive = true")
 Page<Attraction> findByEmotionTagId(@Param("tagId") Integer tagId, Pageable pageable);
+
+
+    @Query(
+            value = """
+            SELECT DISTINCT a.* 
+            FROM attraction a
+            JOIN attraction_emotion_tags aet ON a.attraction_id = aet.attraction_id
+            WHERE aet.tag_id IN (:emotionIds)
+            """,
+            countQuery = """
+            SELECT COUNT(DISTINCT a.attraction_id)
+            FROM attraction a
+            JOIN attraction_emotion_tags aet ON a.attraction_id = aet.attraction_id
+            WHERE aet.tag_id IN (:emotionIds)
+            """,
+            nativeQuery = true
+    )
+    Page<Attraction> findAttractionsByEmotionIdsPaged(
+            @Param("emotionIds") List<Integer> emotionIds,
+            Pageable pageable
+    );
 
 
 //

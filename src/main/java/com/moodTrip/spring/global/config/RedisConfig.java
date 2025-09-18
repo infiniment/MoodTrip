@@ -15,7 +15,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 
 @Configuration
-@Profile({"local","prod"})
+@Profile({"prod","local"})
 @RequiredArgsConstructor
 public class RedisConfig {
 

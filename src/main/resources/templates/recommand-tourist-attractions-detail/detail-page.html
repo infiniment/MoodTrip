@@ -91,9 +91,9 @@
         <div class="placeInfo">
           <section class="place-image">
             <img class="place"
-                 th:src="${detail != null and detail.image != null ? detail.image : '/static/.../SaryeoniForestTrail.png'}"
+                 th:src="${detail != null and detail.image != null ? detail.image : '/.../default.png'}"
                  th:alt="${detail != null ? detail.title : '이미지'}"
-                 src="/static/image/recommand-tourist-attractions-detail/SaryeoniForestTrail.png"
+                 src="/image/recommand-tourist-attractions-detail/default.png"
                  alt="">
 
             <div class="like-btn" th:attr="data-attraction-id=${attractionId}">

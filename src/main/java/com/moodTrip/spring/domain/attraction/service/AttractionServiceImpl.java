@@ -1194,7 +1194,20 @@ public class AttractionServiceImpl implements AttractionService {
                 .firstImage(a.getFirstImage())
                 .build();
     }
+    @Override
+    @Transactional(readOnly = true)
+    public Page<AttractionCardDTO> findAttractionsByEmotionIdsPaged(
+            List<Integer> emotionIds, Pageable pageable) {
 
+        return repository.findAttractionsByEmotionIdsPaged(emotionIds, pageable)
+                .map(a -> AttractionCardDTO.builder()
+                        .attractionId(a.getAttractionId())
+                        .contentId(a.getContentId())
+                        .title(a.getTitle())
+                        .addr1(a.getAddr1())
+                        .firstImage(a.getFirstImage())
+                        .build());
+    }
 
 
 }

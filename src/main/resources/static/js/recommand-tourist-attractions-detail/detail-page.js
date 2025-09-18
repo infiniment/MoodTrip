@@ -1,5 +1,5 @@
 // -------------------- 유틸 --------------------
-const FallbackImg = "/static/image/recommand-tourist-attractions-detail/SaryeoniForestTrail.png";
+const FallbackImg = "/static/image/recommand-tourist-attractions-detail/default.png";
 const $ = (s) => document.querySelector(s);
 
 function escapeHtml(str) {
