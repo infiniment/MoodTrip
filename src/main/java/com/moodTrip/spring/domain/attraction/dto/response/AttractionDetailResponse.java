@@ -17,6 +17,8 @@ public class AttractionDetailResponse {
     private String parking;    // 주차
     private String age;        // 체험가능 연령
     private String overview;   // 개요(detailCommon2)
+    private String homepage;
+    private String usefee;
 
     //장애 편의 시설
     private String a11yParking;
@@ -47,6 +49,7 @@ public class AttractionDetailResponse {
     @Getter @Builder
     public static class DetailCommon {
         private String overview;
+        private String homepage;
         private String infocenter;
         private String usetime;
         private String restdate;
@@ -57,9 +60,15 @@ public class AttractionDetailResponse {
     public static class IntroNormalized {
         private String infocenter;
         private String usetime;
+        private String homepage;
         private String restdate;
         private String parking;
         private String age;
+        private String usefee;
+
+        private String image;      // 대표 이미지 (firstImage || firstImage2)
+        private String tel;        // 문의/안내 (common.tel || intro.infocenter || base.tel)
+        private String addr;       // 주소 (common.addrDisplay || addr1 + addr2
 
         private String a11yParking;
         private String wheelchair;
@@ -90,7 +99,6 @@ public class AttractionDetailResponse {
     ) {
         String image = firstNonBlank(base.getFirstImage(), base.getFirstImage2());
 
-        // ✅ tel: common.infocenter → intro.infocenter → base.tel 순으로 안전한 폴백
         String tel = firstNonBlank(
                 common != null ? common.getInfocenter() : null,
                 intro != null ? intro.getInfocenter() : null,
@@ -107,16 +115,21 @@ public class AttractionDetailResponse {
                 .image(image)
                 .tel(tel)
                 .addr(addr)
+                .usefee(firstNonBlank(intro != null ? intro.getUsefee() : null))
                 .useTime(firstNonBlank(intro != null ? intro.getUsetime() : null))
                 .restDate(firstNonBlank(intro != null ? intro.getRestdate() : null))
                 .parking(firstNonBlank(intro != null ? intro.getParking() : null))
                 .a11yParking(a11y != null ? a11y.getA11yParking() : null)
                 .age(firstNonBlank(intro != null ? intro.getAge() : null))
-
+                .homepage(firstNonBlank(
+                        common != null ? common.getHomepage() : null,
+                        intro != null ? intro.getHomepage() : null
+                ))
                 .overview(firstNonBlank(
                         common != null ? common.getOverview() : null,
                         a11y  != null ? a11y.getOverview() : null
                 ))
+
 
                 .attractionId(base.getAttractionId())
 
