@@ -41,4 +41,11 @@ public class Schedule extends BaseEntity {
 
     @Column(name = "place_lon", precision = 10, scale = 7)
     private BigDecimal placeLon;
+
+    public void setRoom(Room room) {
+        this.room = room;
+        if (room != null && !room.getSchedules().contains(this)) {
+            room.getSchedules().add(this);
+        }
+    }
 }

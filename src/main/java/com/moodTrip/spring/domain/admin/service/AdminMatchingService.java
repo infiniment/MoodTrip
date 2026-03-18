@@ -57,7 +57,7 @@ public class AdminMatchingService {
                 .travelEndDate(room.getTravelEndDate())
                 .travelPeriod(period)
                 .regionName(room.getAttraction() != null
-                        ? com.moodTrip.spring.global.util.AreaCodeMapper.getAreaName(room.getAttraction().getAreaCode())
+                        ? com.moodTrip.spring.global.common.util.AreaCodeMapper.getAreaName(room.getAttraction().getAreaCode())
                         : "-")
                 .attractionTitle(room.getAttraction() != null
                         ? room.getAttraction().getTitle()

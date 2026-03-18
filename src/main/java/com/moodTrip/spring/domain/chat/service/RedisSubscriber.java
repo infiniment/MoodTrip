@@ -1,12 +1,11 @@
 package com.moodTrip.spring.domain.chat.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.moodTrip.spring.domain.chat.dto.request.ChatMessageRequest;
+import com.moodTrip.spring.domain.chat.event.ChatEvent;
 import com.moodTrip.spring.domain.chat.dto.response.ChatMessageResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.MessageListener;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
@@ -22,20 +21,20 @@ public class RedisSubscriber implements MessageListener {
     @Override
     public void onMessage(Message message, byte[] pattern) {
         try {
-            // Redis에서 발행된 메시지 역직렬화
+            // Redis에서 발행된 메시지 역직렬화(json)
             String publishMessage = new String(message.getBody());
 
             // JSON -> ChatMessageRequest 변환
-            ChatMessageRequest request = objectMapper.readValue(publishMessage, ChatMessageRequest.class);
+            ChatEvent event = objectMapper.readValue(publishMessage, ChatEvent.class);
 
             // 응답 DTO로 변환
-            ChatMessageResponse response = ChatMessageResponse.fromRequest(request.getSender(), request.getMessage());
+            ChatMessageResponse response = ChatMessageResponse.fromRequest(event.sender(), event.message());
 
             // WebSocket 구독자에게 메시지 전송
-            messagingTemplate.convertAndSend("/sub/chatroom/" + request.getChattingRoomId(), response);
+            messagingTemplate.convertAndSend("/sub/chatroom/" + event.chattingRoomId(), response);
 
             log.info("Redis → WebSocket 전송 완료 : chattingRoomId={}, sender={}, message={}",
-                    request.getChattingRoomId(), request.getSender(), request.getMessage());
+                    event.chattingRoomId(), event.sender(), event.message());
         }catch (Exception e) {
             log.error("RedisSubscriber 오류 : {}", e.getMessage());
         }

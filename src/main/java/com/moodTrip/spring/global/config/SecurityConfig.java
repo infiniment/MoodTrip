@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.core.AuthenticationException;
@@ -24,12 +25,25 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import java.util.Arrays;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Configuration
 public class SecurityConfig {
+
+    private static final List<String> PUBLIC_PATHS = Arrays.asList(
+            "/logout", "/login", "/signup", "/signup/**", "/password/**",
+            "/css/**", "/js/**", "/image/**", "/uploads/**",
+            "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/api-docs/**",
+            "/error", "/suspended", "/withdraw",
+            "/oauth2/**", "/login/oauth2/**",
+            "/api/login", "/api/v1/room-online/**"
+    );
+
+    private static final List<String> JWT_EXCLUDE_PATHS = PUBLIC_PATHS;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -48,9 +62,6 @@ public class SecurityConfig {
         return new CustomOAuth2SuccessHandler(memberService, jwtUtil);
     }
 
-    /**
-     * [수정됨] 커스텀 AuthenticationEntryPoint - HTML, JSON, 기타 리소스 요청을 구분해서 처리
-     */
     @Bean
     public AuthenticationEntryPoint customAuthenticationEntryPoint() {
         return new AuthenticationEntryPoint() {
@@ -93,18 +104,15 @@ public class SecurityConfig {
     ) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
+                .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/logout", "/login", "/api/login", "/signup",
-                                "/css/**", "/js/**", "/image/**", "/uploads/**",
-                                "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/api-docs/**",
-                                "/error", "/api/v1/room-online/**", "/api/v1/profiles/**",
-                                "/suspended", "/withdraw"
-                        ).permitAll()
+                        .requestMatchers(PUBLIC_PATHS.toArray(new String[0])).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/companion-rooms", "/api/v1/companion-rooms/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/attractions/content/*/emotion-tags").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/attractions/content/*/detail").permitAll()
                         .requestMatchers("/mypage/**").authenticated()
                         .requestMatchers("/admin/**").permitAll()
+                        .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll()
                 )
                 .exceptionHandling(exception -> exception
@@ -127,15 +135,20 @@ public class SecurityConfig {
                         .invalidateHttpSession(true)
                 );
 
-        // ✅ 올바른 필터 순서: JWT 토큰 처리 → 관리자 권한 체크
         // 1. JwtAuthenticationFilter를 먼저 실행 (JWT 토큰 처리)
-        http.addFilterBefore(new JwtAuthenticationFilter(jwtUtil, userDetailsService), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtAuthenticationFilter(jwtUtil, userDetailsService), UsernamePasswordAuthenticationFilter.class);
 
         // 2. AdminAccessFilter를 JwtAuthenticationFilter 뒤에 실행 (관리자 권한 체크)
         http.addFilterAfter(adminAccessFilter, JwtAuthenticationFilter.class);
 
         return http.build();
     }
+
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter(JwtUtil jwtUtil, UserDetailsService userDetailsService) {
+        return new JwtAuthenticationFilter(jwtUtil, userDetailsService, JWT_EXCLUDE_PATHS);
+    }
+
     @Bean
     public OAuth2AuthorizationRequestResolver customAuthorizationRequestResolver(
             ClientRegistrationRepository clientRegistrationRepository) {

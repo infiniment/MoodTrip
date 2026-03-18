@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -35,6 +36,17 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     Page<Room> findAll(Pageable pageable);
 
     long countByIsDeleteRoomFalseAndTravelEndDateBefore(java.time.LocalDate date);
+
+    @EntityGraph(attributePaths = {"creator", "attraction"})
+    @Query("""
+            select r
+            from Room r
+            where :keyword is null
+               or trim(:keyword) = ''
+               or r.destinationName like concat('%', :keyword, '%')
+               or r.roomName like concat('%', :keyword, '%')
+            """)
+    List<Room> searchByKeyword(@Param("keyword") String keyword);
 
 
 

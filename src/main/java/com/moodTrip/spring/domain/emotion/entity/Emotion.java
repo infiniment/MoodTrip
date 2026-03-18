@@ -2,6 +2,7 @@ package com.moodTrip.spring.domain.emotion.entity;
 
 
 import com.moodTrip.spring.global.common.entity.BaseEntity;
+import com.moodTrip.spring.domain.rooms.entity.EmotionRoom;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -37,5 +38,9 @@ public class Emotion extends BaseEntity {
     @Builder.Default
     @OneToMany(mappedBy = "emotion", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AttractionEmotion> attractionEmotions = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "emotion", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EmotionRoom> emotionRooms = new ArrayList<>();
 
 }

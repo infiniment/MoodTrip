@@ -1,12 +1,11 @@
 package com.moodTrip.spring.global.controller;
 
 import com.moodTrip.spring.domain.enteringRoom.service.JoinRequestManagementService;
+import com.moodTrip.spring.domain.enteringRoom.service.JoinRequestManagementService;
 import com.moodTrip.spring.domain.mainpage.dto.response.MainPageRoomResponse;
 import com.moodTrip.spring.domain.mainpage.service.MainPageService;
 import com.moodTrip.spring.domain.member.entity.Member;
 import com.moodTrip.spring.domain.member.repository.ProfileRepository;
-import com.moodTrip.spring.domain.rooms.dto.response.RoomResponse;
-import com.moodTrip.spring.domain.rooms.service.RoomService;
 import com.moodTrip.spring.domain.weather.dto.response.MainPageWeatherAttractionResponse;
 import com.moodTrip.spring.domain.weather.service.WeatherAttractionService;
 import com.moodTrip.spring.global.common.util.SecurityUtil;
@@ -31,7 +30,6 @@ class MainPageControllerTest {
 
     @Mock private SecurityUtil securityUtil;
     @Mock private ProfileRepository profileRepository;
-    @Mock private RoomService roomService;
     @Mock private JoinRequestManagementService joinRequestManagementService;
     @Mock private MainPageService mainPageService;
     @Mock private WeatherAttractionService weatherAttractionService;
@@ -59,7 +57,6 @@ class MainPageControllerTest {
         initMockMvc();
         Member testMember = createTestMember();
 
-        // given
         given(securityUtil.isAuthenticated()).willReturn(true);
         given(securityUtil.getCurrentMember()).willReturn(testMember);
         given(profileRepository.findByMember(testMember)).willReturn(Optional.empty());
@@ -74,11 +71,6 @@ class MainPageControllerTest {
                 MainPageWeatherAttractionResponse.builder().attractionId(10L).attractionName("날씨추천1").build()
         ));
 
-        given(roomService.getAllRooms()).willReturn(List.of(
-                RoomResponse.builder().roomId(1L).roomName("방A").build()
-        ));
-
-        // when & then
         mockMvc.perform(get("/"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("mainpage/mainpage"))
@@ -88,8 +80,7 @@ class MainPageControllerTest {
                 .andExpect(model().attribute("userEmail", "test@example.com"))
                 .andExpect(model().attribute("totalPendingRequests", 3))
                 .andExpect(model().attributeExists("popularRooms"))
-                .andExpect(model().attributeExists("weatherRecommendations"))
-                .andExpect(model().attributeExists("rooms"));
+                .andExpect(model().attributeExists("weatherRecommendations"));
     }
 
     @Test
@@ -97,19 +88,15 @@ class MainPageControllerTest {
     void mainPage_NotLoggedIn() throws Exception {
         initMockMvc();
 
-        // given
         given(securityUtil.isAuthenticated()).willReturn(false);
         given(mainPageService.getPopularRooms()).willReturn(List.of());
         given(weatherAttractionService.getMainPageWeatherRecommendations()).willReturn(List.of());
-        given(roomService.getAllRooms()).willReturn(List.of());
 
-        // when & then
         mockMvc.perform(get("/"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("mainpage/mainpage"))
                 .andExpect(model().attribute("isLoggedIn", false))
                 .andExpect(model().attribute("popularRooms", List.of()))
-                .andExpect(model().attribute("weatherRecommendations", List.of()))
-                .andExpect(model().attribute("rooms", List.of()));
+                .andExpect(model().attribute("weatherRecommendations", List.of()));
     }
 }

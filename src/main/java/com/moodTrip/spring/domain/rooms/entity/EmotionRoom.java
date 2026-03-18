@@ -25,6 +25,18 @@ public class EmotionRoom extends BaseEntity {
     @JoinColumn(name = "tag_id")
     private Emotion emotion;
 
+    public void setRoom(Room room) {
+        this.room = room;
+        if (room != null && !room.getEmotionRooms().contains(this)) {
+            room.getEmotionRooms().add(this);
+        }
+    }
 
+    public void setEmotion(Emotion emotion) {
+        this.emotion = emotion;
+        if (emotion != null && !emotion.getEmotionRooms().contains(this)) {
+            emotion.getEmotionRooms().add(this);
+        }
+    }
 
 }

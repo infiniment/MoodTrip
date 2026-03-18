@@ -3,7 +3,7 @@ package com.moodTrip.spring.domain.member.controller;
 import com.moodTrip.spring.domain.member.dto.request.LoginRequest;
 import com.moodTrip.spring.domain.member.dto.response.LoginResponse;
 import com.moodTrip.spring.domain.member.service.LoginService;
-import com.moodTrip.spring.global.common.dto.ApiResponse; // ApiResponse import!
+import com.moodTrip.spring.global.common.response.ApiResponse; // ApiResponse import!
 import com.moodTrip.spring.global.common.code.status.SuccessStatus;
 import com.moodTrip.spring.global.common.code.status.ErrorStatus;
 import io.swagger.v3.oas.annotations.Operation;

@@ -18,9 +18,8 @@ public class Profile extends BaseEntity {
     @Column(name = "profile_id")
     private Long profileId;
 
-    // Member와 일대일 관계 설정
-    @OneToOne(fetch = FetchType.LAZY)  // 지연 로딩으로 성능 최적화
-    @JoinColumn(name = "member_pk")
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "member_pk", nullable = false, unique = true)
     private Member member;
 
     @Column(name = "profile_image")
@@ -28,4 +27,11 @@ public class Profile extends BaseEntity {
 
     @Column(name = "profile_bio")
     private String profileBio;
+
+    public void setMember(Member member) {
+        this.member = member;
+        if (member != null && member.getProfile() != this) {
+            member.setProfile(this);
+        }
+    }
 }

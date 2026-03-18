@@ -19,6 +19,10 @@ public class MyUserDetails implements UserDetails {
         return this.member;
     }
 
+    public Long getMemberPk() {
+        return this.member.getMemberPk();
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         // 권한이 있을 경우 셋팅, 그렇지 않으면 Collections.emptyList() 등

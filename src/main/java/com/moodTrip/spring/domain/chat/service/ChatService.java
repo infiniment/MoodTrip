@@ -1,6 +1,8 @@
 package com.moodTrip.spring.domain.chat.service;
 
 import com.moodTrip.spring.domain.chat.dto.request.ChatMessageRequest;
+import com.moodTrip.spring.domain.chat.event.ChatEvent;
+import com.moodTrip.spring.domain.chat.exception.ChatException;
 import com.moodTrip.spring.global.websocket.OnlineUserTracker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,9 +39,10 @@ public class ChatService {
             return;
         }
 
+        if (message.getType() == null) throw ChatException.invalidMessageType();
         // 1) 타입별 부가 로직
-        switch (String.valueOf(message.getType())) {
-            case "ENTER" -> {
+        switch (message.getType()) {
+            case ENTER -> {
                 accessor.getSessionAttributes().put("chattingRoomId", chattingRoomId);
                 accessor.getSessionAttributes().put("nickname", sender);
 
@@ -61,7 +64,7 @@ public class ChatService {
                         headersFor(sessionId)
                 );
             }
-            case "LEAVE" -> {
+            case LEAVE -> {
                 // 선택: 나가기 메시지일 경우 온라인 사용자 목록에서 제거
                 onlineUserTracker.removeUser(chattingRoomId, sender);
                 messagingTemplate.convertAndSend(
@@ -78,8 +81,16 @@ public class ChatService {
         chatHistoryCacheService.appendByChatId(chattingRoomId, toCacheObject(message), KEEP_LAST_N);
 
         // 3) Redis Pub/Sub 발행(기존 흐름 유지)
+        ChatEvent event = ChatEvent.of(
+                message.getChattingRoomId(),
+                message.getType(),
+                message.getSender(),
+                message.getMessage()
+        );
+        event.validate();
+
         ChannelTopic topic = new ChannelTopic("chatroom:" + chattingRoomId);
-        redisPublisher.publish(topic, message);
+        redisPublisher.publish(topic, event);
     }
 
     private Map<String, Object> toCacheObject(ChatMessageRequest m) {

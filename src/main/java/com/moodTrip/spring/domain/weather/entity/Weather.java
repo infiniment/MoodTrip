@@ -63,4 +63,18 @@ public class Weather {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id", nullable = false)
     private Room room;
+
+    public void setAttraction(Attraction attraction) {
+        this.attraction = attraction;
+        if (attraction != null && !attraction.getWeatherSnapshots().contains(this)) {
+            attraction.getWeatherSnapshots().add(this);
+        }
+    }
+
+    public void setRoom(Room room) {
+        this.room = room;
+        if (room != null && !room.getWeatherSnapshots().contains(this)) {
+            room.getWeatherSnapshots().add(this);
+        }
+    }
 }

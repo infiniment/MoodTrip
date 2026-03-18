@@ -39,7 +39,21 @@ public class UserAttraction {
 
     // 생성자: Service 로직에서 찜 정보를 생성할 때 사용됩니다.
     public UserAttraction(Member member, Attraction attraction) {
+        setMember(member);
+        setAttraction(attraction);
+    }
+
+    public void setMember(Member member) {
         this.member = member;
+        if (member != null && !member.getUserAttractions().contains(this)) {
+            member.getUserAttractions().add(this);
+        }
+    }
+
+    public void setAttraction(Attraction attraction) {
         this.attraction = attraction;
+        if (attraction != null && !attraction.getUserAttractions().contains(this)) {
+            attraction.getUserAttractions().add(this);
+        }
     }
 }

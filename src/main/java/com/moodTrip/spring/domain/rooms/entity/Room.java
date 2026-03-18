@@ -1,7 +1,10 @@
 package com.moodTrip.spring.domain.rooms.entity;
 
 import com.moodTrip.spring.domain.attraction.entity.Attraction;
+import com.moodTrip.spring.domain.enteringRoom.entity.EnteringRoom;
 import com.moodTrip.spring.domain.member.entity.Member;
+import com.moodTrip.spring.domain.schedule.entity.Schedule;
+import com.moodTrip.spring.domain.weather.entity.Weather;
 import com.moodTrip.spring.global.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -54,6 +57,7 @@ public class Room extends BaseEntity {
     @Column(name = "destination_name")
     private String destinationName;
 
+    @Builder.Default
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EmotionRoom> emotionRooms = new ArrayList<>();
 
@@ -73,6 +77,7 @@ public class Room extends BaseEntity {
     private Member creator;
 
     @Column(name = "is_delete_room")
+    @Builder.Default
     private Boolean isDeleteRoom = false;
 
     // 상우가 방 입장하기 만들 때 추가한 조회수 필드!!
@@ -85,7 +90,34 @@ public class Room extends BaseEntity {
     }
 
     // 해당 member가 참여하고 있는 방을 가져오겠다는 뜻
+    @Builder.Default
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RoomMember> roomMembers = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Schedule> schedules = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EnteringRoom> enteringRooms = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Weather> weatherSnapshots = new ArrayList<>();
+
+    public void setAttraction(Attraction attraction) {
+        this.attraction = attraction;
+        if (attraction != null && !attraction.getRooms().contains(this)) {
+            attraction.getRooms().add(this);
+        }
+    }
+
+    public void setCreator(Member creator) {
+        this.creator = creator;
+        if (creator != null && !creator.getCreatedRooms().contains(this)) {
+            creator.getCreatedRooms().add(this);
+        }
+    }
 
 }

@@ -95,10 +95,10 @@ public class MemberService {
 
             // ✅ Profile도 함께 생성 (develop 반영)
             Profile profile = Profile.builder()
-                    .member(savedMember)
                     .profileImage("/image/creatingRoom/landscape-placeholder-svgrepo-com.svg") // 기본 프로필 이미지
                     .profileBio("안녕하세요~")  // 기본값
                     .build();
+            profile.setMember(savedMember);
 
             profileRepository.save(profile);
             log.info("프로필 생성 완료 - 회원ID: {}", savedMember.getMemberId());
@@ -122,10 +122,10 @@ public class MemberService {
 
             // ✅ Profile도 함께 생성
             Profile profile = Profile.builder()
-                    .member(savedMember)
                     .profileImage("/image/creatingRoom/landscape-placeholder-svgrepo-com.svg") // 기본 프로필 이미지
                     .profileBio("안녕하세요~")  // 기본값
                     .build();
+            profile.setMember(savedMember);
 
             profileRepository.save(profile);
             log.info("소셜 회원 프로필 생성 완료 - 회원ID: {}", savedMember.getMemberId());
@@ -198,10 +198,10 @@ public class MemberService {
                 .orElseGet(() -> {
                     log.warn("프로필이 없어서 새로 생성 - 회원ID: {}", member.getMemberId());
                     Profile newProfile = Profile.builder()
-                            .member(member)
                             .profileImage("/image/creatingRoom/landscape-placeholder-svgrepo-com.svg") // 기본 프로필 이미지
                             .profileBio("안녕하세요~")
                             .build();
+                    newProfile.setMember(member);
                     return profileRepository.save(newProfile);
                 });
 
@@ -299,10 +299,10 @@ public class MemberService {
         // ✅ 복구된 계정의 Profile도 확인하고 없으면 생성
         if (!profileRepository.existsByMember(reactivatedMember)) {
             Profile profile = Profile.builder()
-                    .member(reactivatedMember)
                     .profileImage("/image/creatingRoom/landscape-placeholder-svgrepo-com.svg") // 기본 프로필 이미지
                     .profileBio("안녕하세요~")
                     .build();
+            profile.setMember(reactivatedMember);
             profileRepository.save(profile);
             log.info("복구된 계정의 프로필 생성 완료 - 회원ID: {}", reactivatedMember.getMemberId());
         }

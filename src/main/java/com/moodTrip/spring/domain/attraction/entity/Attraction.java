@@ -1,6 +1,9 @@
 package com.moodTrip.spring.domain.attraction.entity;
 
 import com.moodTrip.spring.domain.emotion.entity.AttractionEmotion;
+import com.moodTrip.spring.domain.rooms.entity.Room;
+import com.moodTrip.spring.domain.weather.entity.Weather;
+import com.moodTrip.spring.domain.weather.entity.WeatherAttraction;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -65,6 +68,20 @@ public class Attraction {
     @OneToMany(mappedBy = "attraction", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AttractionEmotion> attractionEmotions = new ArrayList<>();
 
+    @Builder.Default
+    @OneToMany(mappedBy = "attraction", fetch = FetchType.LAZY)
+    private List<Room> rooms = new ArrayList<>();
 
+    @Builder.Default
+    @OneToMany(mappedBy = "attraction", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserAttraction> userAttractions = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "attraction", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Weather> weatherSnapshots = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "attraction", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<WeatherAttraction> weatherAttractions = new ArrayList<>();
 
 }

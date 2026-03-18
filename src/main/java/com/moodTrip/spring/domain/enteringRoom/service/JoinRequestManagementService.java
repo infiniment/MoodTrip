@@ -243,12 +243,12 @@ public class JoinRequestManagementService {
         try {
             // 1️⃣ RoomMember 테이블에 실제 참여자로 추가
             RoomMember newMember = RoomMember.builder()
-                    .member(request.getApplicant())  // 신청자
-                    .room(request.getRoom())         // 방
                     .joinedAt(LocalDateTime.now())   // 참여 시간
                     .role("MEMBER")                  // 일반 참여자
                     .isActive(true)                  // 활성 상태
                     .build();
+            newMember.setMember(request.getApplicant());
+            newMember.setRoom(request.getRoom());
 
             roomMemberRepository.save(newMember);
             log.info("✅ RoomMember 추가 완료");

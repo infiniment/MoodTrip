@@ -68,11 +68,11 @@ public class JoinService {
 
             // 6. 신청 엔티티 생성 및 저장
             EnteringRoom enteringRoom = EnteringRoom.builder()
-                    .applicant(currentMember)
-                    .room(targetRoom)
                     .message(combinedMessage) // 조합된 메시지 사용
                     .status(EnteringRoom.EnteringStatus.PENDING)
                     .build();
+            enteringRoom.setApplicant(currentMember);
+            enteringRoom.setRoom(targetRoom);
 
             EnteringRoom savedApplication = joinRepository.save(enteringRoom);
 

@@ -108,10 +108,10 @@ public class ProfileService {
             // Profile이 없으면 새로 생성
             log.info("새 Profile 생성 - 회원ID: {} (신규 사용자)", member.getMemberId());
             profile = Profile.builder()
-                    .member(member)
                     .profileBio(newIntroduce)
                     .profileImage(null)
                     .build();
+            profile.setMember(member);
 
             profileRepository.save(profile);
         }
@@ -152,10 +152,10 @@ public class ProfileService {
             // Profile이 없으면 새로 생성 (프로필 이미지만 설정)
             log.info("새 Profile 생성 (프로필 이미지) - 회원ID: {}", member.getMemberId());
             profile = Profile.builder()
-                    .member(member)
                     .profileBio(null)        // 자기소개는 나중에 설정
                     .profileImage(newImageUrl)
                     .build();
+            profile.setMember(member);
 
             profileRepository.save(profile);
             log.info("새 Profile 저장 완료 - 회원ID: {}, Profile ID: {}",
@@ -193,10 +193,10 @@ public class ProfileService {
         log.info("기본 Profile 생성 - 회원ID: {}", member.getMemberId());
 
         Profile profile = Profile.builder()
-                .member(member)
                 .profileBio(null)
                 .profileImage(null)
                 .build();
+        profile.setMember(member);
 
         Profile savedProfile = profileRepository.save(profile);
         log.info("기본 Profile 생성 완료 - 회원ID: {}, Profile ID: {}",

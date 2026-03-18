@@ -38,6 +38,20 @@ public class EnteringRoom extends BaseEntity {
     @Builder.Default
     private EnteringStatus status = EnteringStatus.PENDING;  // 기본값: 대기중
 
+    public void setApplicant(Member applicant) {
+        this.applicant = applicant;
+        if (applicant != null && !applicant.getEnteringRooms().contains(this)) {
+            applicant.getEnteringRooms().add(this);
+        }
+    }
+
+    public void setRoom(Room room) {
+        this.room = room;
+        if (room != null && !room.getEnteringRooms().contains(this)) {
+            room.getEnteringRooms().add(this);
+        }
+    }
+
     // 방 입장 상태 열거형
     public enum EnteringStatus {
         PENDING,    // 대기중 (방장이 아직 확인 안함)
