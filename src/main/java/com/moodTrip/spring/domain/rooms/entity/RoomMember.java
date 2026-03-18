@@ -39,4 +39,18 @@ public class RoomMember extends BaseEntity {
     @Column(name = "is_active")
     private Boolean isActive;
 
+    public void setMember(Member member) {
+        this.member = member;
+        if (member != null && !member.getRoomMembers().contains(this)) {
+            member.getRoomMembers().add(this);
+        }
+    }
+
+    public void setRoom(Room room) {
+        this.room = room;
+        if (room != null && !room.getRoomMembers().contains(this)) {
+            room.getRoomMembers().add(this);
+        }
+    }
+
 }

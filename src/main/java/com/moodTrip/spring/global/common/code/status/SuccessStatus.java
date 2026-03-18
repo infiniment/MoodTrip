@@ -1,15 +1,30 @@
 package com.moodTrip.spring.global.common.code.status;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import com.moodTrip.spring.global.common.code.ResponseCode;
 
-@Getter
-@AllArgsConstructor
-public enum SuccessStatus {
-    OK("SUCCESS_200", "요청이 성공적으로 처리되었습니다."),
-    CREATED("SUCCESS_201", "리소스가 성공적으로 생성되었습니다."),
-    LOGIN_SUCCESS("SUCCESS_200" , "로그인 성공");
+public enum SuccessStatus implements ResponseCode {
 
-    private final String code;
+    LOGIN_SUCCESS("AUTH_002", "로그인에 성공했습니다.");
+
+    private final String statusCode;
     private final String message;
+
+    SuccessStatus(String statusCode, String message) {
+        this.statusCode = statusCode;
+        this.message = message;
+    }
+
+    @Override
+    public String getStatusCode() {
+        return statusCode;
+    }
+
+    @Override
+    public String getMessage() {
+        return message;
+    }
+
+    public String getCode() {
+        return statusCode;
+    }
 }

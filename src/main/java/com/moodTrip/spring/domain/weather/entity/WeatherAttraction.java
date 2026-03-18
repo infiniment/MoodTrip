@@ -59,4 +59,11 @@ public class WeatherAttraction {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "attraction_id", nullable = false)
     private Attraction attraction;
+
+    public void setAttraction(Attraction attraction) {
+        this.attraction = attraction;
+        if (attraction != null && !attraction.getWeatherAttractions().contains(this)) {
+            attraction.getWeatherAttractions().add(this);
+        }
+    }
 }

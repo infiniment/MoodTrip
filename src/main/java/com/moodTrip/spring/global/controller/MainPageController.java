@@ -1,14 +1,13 @@
 package com.moodTrip.spring.global.controller;
 
 import com.moodTrip.spring.domain.enteringRoom.service.JoinRequestManagementService;
+import com.moodTrip.spring.domain.enteringRoom.service.JoinRequestManagementService;
 import com.moodTrip.spring.domain.mainpage.dto.response.MainPageRoomResponse;
 import com.moodTrip.spring.domain.mainpage.service.MainPageService;
 import com.moodTrip.spring.domain.member.entity.Member;
 import com.moodTrip.spring.domain.member.repository.ProfileRepository;
-import com.moodTrip.spring.domain.rooms.dto.response.RoomResponse;
-import com.moodTrip.spring.domain.rooms.service.RoomService;
-import com.moodTrip.spring.domain.weather.dto.response.MainPageWeatherAttractionResponse; // 추가
-import com.moodTrip.spring.domain.weather.service.WeatherAttractionService; // 추가
+import com.moodTrip.spring.domain.weather.dto.response.MainPageWeatherAttractionResponse;
+import com.moodTrip.spring.domain.weather.service.WeatherAttractionService;
 import com.moodTrip.spring.global.common.util.SecurityUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -26,10 +25,9 @@ public class MainPageController {
 
     private final SecurityUtil securityUtil;
     private final ProfileRepository profileRepository;
-    private final RoomService roomService;
     private final JoinRequestManagementService joinRequestManagementService;
     private final MainPageService mainPageService;
-    private final WeatherAttractionService weatherAttractionService; // 새로 추가
+    private final WeatherAttractionService weatherAttractionService;
 
     @GetMapping("/")
     public String mainPage(HttpServletRequest request, Model model) {
@@ -39,7 +37,6 @@ public class MainPageController {
         Boolean isAdmin = (Boolean) request.getSession().getAttribute("isAdmin");
         model.addAttribute("isAdmin", isAdmin);
 
-        // 로그인 상태 확인 및 사용자 정보 설정
         if (securityUtil.isAuthenticated()) {
             Member currentMember = securityUtil.getCurrentMember();
             if (currentMember != null) {
@@ -48,11 +45,9 @@ public class MainPageController {
                 model.addAttribute("userNickname", currentMember.getNickname());
                 model.addAttribute("userEmail", currentMember.getEmail());
 
-                // 프로필 이미지 설정
                 profileRepository.findByMember(currentMember)
                         .ifPresent(profile -> model.addAttribute("profileImage", profile.getProfileImage()));
 
-                // 사이드바 배지용 데이터 추가
                 try {
                     Integer totalPendingRequests = joinRequestManagementService.getTotalPendingRequestsForSidebar();
                     model.addAttribute("totalPendingRequests", totalPendingRequests);
@@ -66,7 +61,6 @@ public class MainPageController {
 
         model.addAttribute("isLoggedIn", loggedIn);
 
-        // 인기 방 6개 데이터 추가
         try {
             List<MainPageRoomResponse> popularRooms = mainPageService.getPopularRooms();
             model.addAttribute("popularRooms", popularRooms);
@@ -82,7 +76,6 @@ public class MainPageController {
             model.addAttribute("roomError", "방 목록을 불러오는 중 오류가 발생했습니다.");
         }
 
-        // 날씨별 여행지 추천 3개 데이터 추가
         try {
             List<MainPageWeatherAttractionResponse> weatherRecommendations =
                     weatherAttractionService.getMainPageWeatherRecommendations();
@@ -98,10 +91,6 @@ public class MainPageController {
             model.addAttribute("weatherCount", 0);
             model.addAttribute("weatherError", "날씨별 추천을 불러오는 중 오류가 발생했습니다.");
         }
-
-        List<RoomResponse> rooms = roomService.getAllRooms();
-        log.info("rooms 개수: {}", rooms.size());
-        model.addAttribute("rooms", rooms);
 
         return "mainpage/mainpage";
     }

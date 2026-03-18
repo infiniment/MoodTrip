@@ -1,4 +1,4 @@
-package com.moodTrip.spring.global.util;
+package com.moodTrip.spring.global.common.util;
 
 import java.util.Map;
 

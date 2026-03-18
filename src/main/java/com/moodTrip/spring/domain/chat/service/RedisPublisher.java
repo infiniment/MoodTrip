@@ -1,5 +1,8 @@
 package com.moodTrip.spring.domain.chat.service;
 
+import com.moodTrip.spring.domain.chat.dto.request.ChatMessageRequest;
+import com.moodTrip.spring.domain.chat.enums.MessageType;
+import com.moodTrip.spring.domain.chat.event.ChatEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
@@ -15,7 +18,7 @@ public class RedisPublisher {
     * @Param topic : 발행할 채널 (ex : chatroom:1)
     * @Param message : 발행할 메시지 (JSON 형태)
     * */
-    public void publish(ChannelTopic topic, Object message) {
-        redisTemplate.convertAndSend(topic.getTopic(), message);
+    public void publish(ChannelTopic topic, ChatEvent event) {
+        redisTemplate.convertAndSend(topic.getTopic(), event);
     }
 }

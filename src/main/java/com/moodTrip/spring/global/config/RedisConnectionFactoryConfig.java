@@ -6,43 +6,61 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisClusterConfiguration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.RedisPassword;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.util.StringUtils;
 
 import java.time.Duration;
-import java.util.Collections;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Configuration
 public class RedisConnectionFactoryConfig {
 
-    // yml/ENV에 이미 넣은 값과 매칭
-    @Value("${spring.redis.cluster.nodes:clustercfg.moodtrip-redis.cjw2ml.apn2.cache.amazonaws.com:6379}")
+    @Value("${spring.data.redis.cluster.nodes:}")
     private String clusterNodes;
 
-    @Value("${spring.redis.ssl.enabled:true}")
+    @Value("${spring.data.redis.host:localhost}")
+    private String host;
+
+    @Value("${spring.data.redis.port:6379}")
+    private int port;
+
+    @Value("${spring.data.redis.ssl.enabled:false}")
     private boolean sslEnabled;
 
-    // (ElastiCache AUTH 토큰을 쓰면 값 채움, 아니면 빈값)
-    @Value("${spring.redis.password:}")
+    @Value("${spring.data.redis.password:}")
     private String password;
 
     @Bean
     @Primary
     public RedisConnectionFactory redisConnectionFactory() {
-        RedisClusterConfiguration cluster =
-                new RedisClusterConfiguration(Collections.singletonList(clusterNodes));
-
-        if (password != null && !password.isEmpty()) {
-            cluster.setPassword(RedisPassword.of(password));
-        }
-
         LettuceClientConfiguration.LettuceClientConfigurationBuilder client =
                 LettuceClientConfiguration.builder()
                         .commandTimeout(Duration.ofSeconds(5));
         if (sslEnabled) {
             client.useSsl();
         }
-        return new LettuceConnectionFactory(cluster, client.build());
+
+        if (StringUtils.hasText(clusterNodes)) {
+            List<String> nodes = Arrays.stream(clusterNodes.split(","))
+                    .map(String::trim)
+                    .filter(StringUtils::hasText)
+                    .collect(Collectors.toList());
+            RedisClusterConfiguration cluster = new RedisClusterConfiguration(nodes);
+            if (StringUtils.hasText(password)) {
+                cluster.setPassword(RedisPassword.of(password));
+            }
+            return new LettuceConnectionFactory(cluster, client.build());
+        }
+
+        RedisStandaloneConfiguration standalone = new RedisStandaloneConfiguration(host, port);
+        if (StringUtils.hasText(password)) {
+            standalone.setPassword(RedisPassword.of(password));
+        }
+        return new LettuceConnectionFactory(standalone, client.build());
     }
 }

@@ -38,13 +38,13 @@ public class ScheduleServiceImpl implements ScheduleService {
                 .orElseThrow(() -> new CustomException(ROOM_NOT_FOUND));
 
         Schedule schedule = Schedule.builder()
-                .room(room)
                 .scheduleTitle(request.getScheduleTitle())
                 .scheduleDescription(request.getScheduleDescription())
                 .travelStartDate(request.getTravelStartDate())
                 .startedSchedule(LocalDateTime.now())
                 .updatedSchedule(LocalDateTime.now())
                 .build();
+        schedule.setRoom(room);
 
         return ScheduleResponse.from(scheduleRepository.save(schedule));
     }

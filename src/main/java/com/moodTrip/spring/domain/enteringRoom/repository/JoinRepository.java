@@ -38,7 +38,7 @@ public interface JoinRepository extends JpaRepository<EnteringRoom, Long> {
 
     @Query("SELECT er FROM EnteringRoom er " +
             "JOIN FETCH er.applicant m " +
-            "JOIN FETCH m.profile " +
+            "LEFT JOIN FETCH m.profile " +
             "WHERE er.room.roomId = :roomId")
     List<EnteringRoom> findByRoomIdWithProfile(@Param("roomId") Long roomId);
 

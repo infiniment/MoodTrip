@@ -92,7 +92,6 @@ public class RoomResponse {
             // 카테고리는 Attraction에 직접 매핑 필드가 없으므로, 기존 값 유지
             builder.destinationCategory(room.getDestinationCategory());
         } else {
-            // ⬇️ 레거시 fallback
             builder.destinationCategory(room.getDestinationCategory())
                     .destinationName(room.getDestinationName())
                     .destinationLat(room.getDestinationLat())

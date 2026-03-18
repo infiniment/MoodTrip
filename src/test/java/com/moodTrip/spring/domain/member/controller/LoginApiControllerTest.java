@@ -5,7 +5,7 @@ import com.moodTrip.spring.domain.member.dto.response.LoginResponse;
 import com.moodTrip.spring.domain.member.service.LoginService;
 import com.moodTrip.spring.global.common.code.status.ErrorStatus;
 import com.moodTrip.spring.global.common.code.status.SuccessStatus;
-import com.moodTrip.spring.global.common.dto.ApiResponse;
+import com.moodTrip.spring.global.common.response.ApiResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

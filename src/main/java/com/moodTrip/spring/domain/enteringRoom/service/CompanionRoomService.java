@@ -106,7 +106,6 @@ public class CompanionRoomService {
     }
 
     // 조회수 증가 포함 방 상세 조회 메서드
-    @Transactional
     public CompanionRoomListResponse getRoomDetailWithViewCount(Long roomId) {
         try {
             // 방 조회

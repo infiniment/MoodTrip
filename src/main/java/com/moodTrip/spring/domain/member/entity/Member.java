@@ -1,7 +1,11 @@
 package com.moodTrip.spring.domain.member.entity;
 
+import com.moodTrip.spring.domain.attraction.entity.UserAttraction;
+import com.moodTrip.spring.domain.enteringRoom.entity.EnteringRoom;
 import com.moodTrip.spring.domain.fire.entity.MemberFire;
 import com.moodTrip.spring.domain.fire.entity.RoomFire;
+import com.moodTrip.spring.domain.rooms.entity.Room;
+import com.moodTrip.spring.domain.rooms.entity.RoomMember;
 import com.moodTrip.spring.global.common.entity.BaseEntity; // BaseEntity import 추가
 import jakarta.persistence.*;
 import lombok.*;
@@ -74,19 +78,45 @@ public class Member extends BaseEntity { // BaseEntity 상속
         WITHDRAWN    // 탈퇴
     }
 
-    // 주의!
-    // createdAt, updatedAt은 BaseEntity에서 상속받으므로 선언 필요 없음!
-
     // r상우가 추가. 마이페이지에서 프로필 이미지 가져오기 위해 필요.
-    @OneToOne(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private Profile profile;
 
+    @Builder.Default
+    @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
+    private List<Room> createdRooms = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
+    private List<RoomMember> roomMembers = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "applicant", fetch = FetchType.LAZY)
+    private List<EnteringRoom> enteringRooms = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
+    private List<UserAttraction> userAttractions = new ArrayList<>();
+
     // 내가 신고한 멤버 신고 목록 (rpt_cnt와 연관)
+    @Builder.Default
     @OneToMany(mappedBy = "fireReporter", fetch = FetchType.LAZY)
     private List<MemberFire> reportedMemberFires = new ArrayList<>();
 
     // 내가 당한 멤버 신고 목록 (rpt_rcvd_cnt와 연관)
+    @Builder.Default
     @OneToMany(mappedBy = "reportedMember", fetch = FetchType.LAZY)
     private List<MemberFire> receivedMemberFires = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "fireReporter", fetch = FetchType.LAZY)
+    private List<RoomFire> roomFires = new ArrayList<>();
+
+    public void setProfile(Profile profile) {
+        this.profile = profile;
+        if (profile != null && profile.getMember() != this) {
+            profile.setMember(this);
+        }
+    }
 
 }

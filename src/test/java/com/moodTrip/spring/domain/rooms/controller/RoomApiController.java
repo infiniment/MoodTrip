@@ -5,6 +5,7 @@ import com.moodTrip.spring.domain.emotion.service.EmotionService;
 import com.moodTrip.spring.domain.member.entity.Member;
 import com.moodTrip.spring.domain.rooms.dto.request.RoomRequest;
 import com.moodTrip.spring.domain.rooms.dto.request.UpdateRoomRequest;
+import com.moodTrip.spring.domain.rooms.dto.response.RoomPageResponse;
 import com.moodTrip.spring.domain.rooms.dto.response.RoomResponse;
 import com.moodTrip.spring.domain.rooms.service.RoomService;
 import com.moodTrip.spring.global.common.util.SecurityUtil; // ⬅️ 추가
@@ -26,7 +27,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
@@ -138,9 +138,15 @@ class RoomApiControllerIT {
     @Test
     @DisplayName("GET /api/v1/companion-rooms - 전체 조회 200")
     void getAllRooms_200() throws Exception {
-        RoomResponse r1 = Mockito.mock(RoomResponse.class);
-        RoomResponse r2 = Mockito.mock(RoomResponse.class);
-        when(roomService.getAllRooms()).thenReturn(List.of(r1, r2));
+        RoomPageResponse pageResponse = RoomPageResponse.builder()
+                .content(List.of())
+                .page(0)
+                .size(20)
+                .totalElements(0)
+                .totalPages(0)
+                .hasNext(false)
+                .build();
+        when(roomService.getAllRooms(any())).thenReturn(pageResponse);
 
         mockMvc.perform(
                         get("/api/v1/companion-rooms")
@@ -189,7 +195,7 @@ class RoomApiControllerIT {
         """;
 
         RoomResponse r = Mockito.mock(RoomResponse.class);
-        when(roomService.updateRoom(eq(1L), any(UpdateRoomRequest.class))).thenReturn(r);
+        when(roomService.updateRoom(eq(1L), any(UpdateRoomRequest.class), eq(100L))).thenReturn(r);
 
         mockMvc.perform(
                         patch("/api/v1/companion-rooms/{id}", 1L)
@@ -208,7 +214,7 @@ class RoomApiControllerIT {
     { "title": "수정 타이틀" }
     """;
 
-        when(roomService.updateRoom(eq(999L), any(UpdateRoomRequest.class)))
+        when(roomService.updateRoom(eq(999L), any(UpdateRoomRequest.class), eq(100L)))
                 .thenThrow(new ResponseStatusException(NOT_FOUND, "not found"));
 
         mockMvc.perform(
@@ -221,22 +227,22 @@ class RoomApiControllerIT {
     }
 
     @Test
-    @DisplayName("DELETE /api/v1/companion-rooms/{id} - 삭제 204")
-    void deleteRoom_204() throws Exception {
-        doNothing().when(roomService).deleteRoomById(1L);
+    @DisplayName("DELETE /api/v1/companion-rooms/{id} - 삭제 200")
+    void deleteRoom_200() throws Exception {
+        doNothing().when(roomService).deleteRoomById(1L, 100L);
 
         mockMvc.perform(
                         delete("/api/v1/companion-rooms/{id}", 1L)
                                 .with(auth())
                 )
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk());
     }
 
     @Test
     @DisplayName("DELETE /api/v1/companion-rooms/{id} - 존재하지 않을 때 404")
     void deleteRoom_404() throws Exception {
         Mockito.doThrow(new ResponseStatusException(NOT_FOUND, "not found"))
-                .when(roomService).deleteRoomById(999L);
+                .when(roomService).deleteRoomById(999L, 100L);
 
         mockMvc.perform(
                         delete("/api/v1/companion-rooms/{id}", 999L)

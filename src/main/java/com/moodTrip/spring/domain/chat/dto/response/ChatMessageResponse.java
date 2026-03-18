@@ -6,13 +6,11 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 
 @Getter
-@Setter
-@NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class ChatMessageResponse {
     private String sender; // 보낸 사람 닉네임
-    private String message; // 메시지 내용z
+    private String message; // 메시지 내용
     private LocalDateTime sendTime; // 보낸 시간
 
     /*

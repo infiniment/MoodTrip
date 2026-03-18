@@ -260,7 +260,7 @@ public class WeatherServiceImpl implements WeatherService {
 
             String[] p = dtTxtRaw.split(" ");
 
-            batch.add(Weather.builder()
+            Weather weather = Weather.builder()
                     .dateTime(dt).date(p[0]).time(p[1])
                     .temperature(node.get("main").get("temp").asDouble())
                     .feelsLike(node.get("main").get("feels_like").asDouble())
@@ -269,9 +269,10 @@ public class WeatherServiceImpl implements WeatherService {
                     .description(node.get("weather").get(0).get("description").asText())
                     .icon(node.get("weather").get(0).get("icon").asText())
                     .lat(lat).lon(lon)
-                    .room(room)
-                    .attraction(attraction)
-                    .build());
+                    .build();
+            weather.setRoom(room);
+            weather.setAttraction(attraction);
+            batch.add(weather);
         }
         return batch.isEmpty() ? List.of() : weatherRepository.saveAll(batch);
     }
@@ -455,8 +456,8 @@ public class WeatherServiceImpl implements WeatherService {
                 .icon(weather0.get("icon").asText(null))
                 .lat(SEOUL_LAT)
                 .lon(SEOUL_LON)
-                .attraction(attraction)
                 .build();
+        toSave.setAttraction(attraction);
 
         WeatherAttraction saved = upsertWeatherAttraction(toSave);
         return new WeatherResponse(saved);
